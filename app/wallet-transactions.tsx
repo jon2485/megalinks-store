@@ -1,0 +1,8 @@
+'use client';
+import React from 'react';
+import {Button} from '@/components/ui/button';
+import {money,when,type Row} from '@/lib/shared';
+import {type Ctx} from './workspace';
+import SiteReference from './site-reference';
+import {OrderBreakdown} from './billing-workspace';
+export default function WalletTransactions({ctx,entries}:{ctx:Ctx;entries:Row[]}){return <ul className="wallet-transaction-list">{entries.map(entry=><li key={entry.id} className={'wallet-transaction-card'+(entry.cancellation?' is-cancellation':'')}><div className="wallet-transaction-info">{entry.cancellation?<><h3>זיכוי בעקבות ביטול</h3><dl><div><dt>המוצר שבוטל:</dt><dd>{entry.products?.length?entry.products.map((p:Row,index:number)=><SiteReference key={p.article_id||index} name={p.name} url={p.url}/>):'פרטי האתר אינם זמינים'}</dd></div><div><dt>מספר הזמנה:</dt><dd>{entry.order_id?<Button variant="link" onClick={()=>ctx.open({kind:'admin-finance',title:'פרטי הזמנה '+entry.order_number,render:()=> <OrderBreakdown id={entry.order_id} ctx={ctx}/>})}><bdi>{entry.order_number}</bdi></Button>:entry.order_number||'לא זמין'}</dd></div><div><dt>תאריך הביטול:</dt><dd><time dateTime={entry.cancelled_at||entry.created}>{when(entry.cancelled_at||entry.created)}</time></dd></div></dl></>:<><h3>{entry.reason}</h3><time dateTime={entry.created}>{when(entry.created)}</time>{entry.reference&&<p>אסמכתא: <bdi>{entry.reference}</bdi></p>}</>}</div><div className="wallet-transaction-amount"><strong><bdi>{entry.amount>0?'+':''}{money(entry.amount)}</bdi></strong><span>{entry.cancellation?'זיכוי ביטול':entry.amount>0?'זיכוי / טעינה':'חיוב'}</span></div></li>)}</ul>;}

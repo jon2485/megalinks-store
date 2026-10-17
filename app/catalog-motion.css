@@ -1,0 +1,9 @@
+/* Entrance shells do not restyle PublicationCard or change its handlers. */
+.azure-catalog{--catalog-motion-duration:520ms;--catalog-motion-ease:cubic-bezier(.22,.65,.32,1)}
+.azure-catalog .catalog-card-reveal{min-width:0;display:flex;transition:opacity var(--catalog-motion-duration) var(--catalog-motion-ease),transform var(--catalog-motion-duration) var(--catalog-motion-ease);transition-delay:var(--catalog-reveal-delay,0ms)}
+.azure-catalog .catalog-card-reveal>.publication-catalog-card{width:100%}
+.azure-catalog [data-catalog-reveal="pending"]{opacity:0;transform:translateY(24px)}
+.azure-catalog [data-catalog-reveal="visible"]{opacity:1;transform:none}
+.azure-catalog .catalog-card-reveal:focus-within{opacity:1;transform:none;transition-delay:0ms}
+@media(prefers-reduced-motion:reduce){.azure-catalog .catalog-card-reveal{transition:none;transform:none!important;opacity:1}}
+@media print{.azure-catalog .catalog-card-reveal{opacity:1;transform:none;transition:none}}

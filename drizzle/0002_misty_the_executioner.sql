@@ -1,0 +1,1 @@
+CREATE INDEX `monthly_charges_user_month` ON `monthly_charges` (`user_id`,`month`);

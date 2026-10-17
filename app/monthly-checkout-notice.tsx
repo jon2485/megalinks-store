@@ -1,0 +1,4 @@
+'use client';
+import React from 'react';
+import {money,type Row} from '@/lib/shared';
+export function MonthlyCheckoutNotice({order,closedOrder,account}:{order?:Row|null;closedOrder?:Row|null;account?:Row}){return <div dir="rtl" role="status" className="grid gap-2 text-right text-base leading-7 text-[#071f4b]">{order?<><p className="font-bold">הוספה להזמנה <bdi>{order.number}</bdi></p><p>הרכישה תצורף להזמנה הפתוחה לתשלום בסוף החודש.</p></>:closedOrder?<><p className="font-bold">הזמנה <bdi>{closedOrder.number}</bdi> סגורה לרכישות נוספות</p><p>רכישת כתבה נוספת תפתח הזמנה חדשה ונפרדת. ההזמנה שנסגרה והסכומים שלה יישארו ללא שינוי.</p></>:<><p className="font-bold">הרכישה תפתח הזמנה חודשית חדשה</p><p>הרכישה תצורף לרשימה לתשלום בסוף החודש.</p></>}<p className="font-semibold">מסגרת פנויה: <bdi>{money(Number(account?.credit_limit||0)-Number(account?.balance||0))}</bdi></p></div>;}

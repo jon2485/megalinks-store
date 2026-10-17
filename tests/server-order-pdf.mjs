@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {readFileSync,writeFileSync,mkdirSync,realpathSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json');
+const result=await require('esbuild').build({entryPoints:['lib/order-pdf-server.ts'],bundle:true,platform:'node',format:'esm',write:false,external:['pdf-lib','@pdf-lib/fontkit','bidi-js']});
+mkdirSync('.sites-runtime/pdf-qa',{recursive:true});writeFileSync('.sites-runtime/pdf-server.mjs',result.outputFiles[0].text);
+const {makeOrderPdf}=await import(pathToFileURL(realpathSync('.sites-runtime/pdf-server.mjs')));
+const summary={order_number:'#1050',order_date:'2026-10-13T12:00:00Z',closed_at:'2026-10-13T14:00:00Z',customer:{name:'אשר ויצמן',email:'test@example.test'},items:Array.from({length:65},(_,i)=>({name:'אתר בדיקה',url:'https://pcmag.com',date:'2026-10-13T12:00:00Z',net:i===4?0:12000,cancelled:i===4})),net:768000,vat:138240,total:906240,vat_percent:18,bank:{name:'בנק פאג״י - פועלי אגודת ישראל',branch:'174',account:'064314',beneficiary:'גרינטק - מגלינקס'}};
+const bytes=await makeOrderPdf(summary,readFileSync('public/brand/pdf-hebrew.ttf'),readFileSync('public/brand/megalinks-logo.png'));assert(Buffer.from(bytes).toString().startsWith('%PDF'));writeFileSync('.sites-runtime/pdf-qa/server-order.pdf',bytes);console.log('SERVER PDF: 65 sites, Hebrew, logo, cancelled item, VAT and bank details generated for visual QA');

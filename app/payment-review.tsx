@@ -1,0 +1,38 @@
+'use client';
+import React,{useState,useRef} from 'react';
+import {Landmark,ShieldCheck,Eye} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Checkbox} from '@/components/ui/checkbox';
+import {api,useData} from '@/lib/client';
+import {money,when,type Row} from '@/lib/shared';
+import {isAwaitingPayment,isBankPayment,isCardPayment,paymentStatusLabel} from '@/lib/payment-state';
+import {orderCancellation} from '@/lib/order-finance';
+import {OrderBreakdown} from './billing-workspace';
+import {type Ctx,Field,ErrorBox} from './workspace';
+const action='min-h-11 h-auto rounded-xl border-cyan-300 px-4 py-3 text-[#075995] whitespace-normal';
+export function PaymentOrderActions({ctx,order:initialOrder,close=()=>{}}:{ctx:Ctx;order:Row;close?:()=>void}){
+ const state=useData('orders/'+initialOrder.id,ctx.revision,true,15000),order=state.data?.order||initialOrder;
+ const [busy,setBusy]=useState(false),[error,setError]=useState('');
+ if(!isAwaitingPayment(order))return null;
+ return <div className="admin-mega-dialog space-y-3"><ErrorBox error={error}/>{isBankPayment(order)&&<><BankTransferInstructions ctx={ctx} total={order.total}/>{ctx.user?.role==='admin'&&<Button className={action} onClick={()=>ctx.open({kind:'admin-finance',title:'אימות העברה בנקאית',render:(done:()=>void)=><BankPaymentReview ctx={ctx} order={order} close={()=>{done();close();}}/>})}><ShieldCheck size={18}/>אימות קבלת התשלום</Button>}</>}{isCardPayment(order)&&<><div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm leading-7"><p>ההזמנה ממתינה לאישור אשראי. כתבות ייפתחו לטיפול רק לאחר הצלחת מלוא התשלום.</p>{order.payment==='credits_card'&&<><p>יתרה שמורה: {money(order.wallet_amount||0)} - טרם חויבה.</p><p>להשלמה באשראי: {money(order.card_amount)}</p></>}</div><Button className={action} disabled={busy} onClick={async()=>{setBusy(true);setError('');try{const result=await api('orders/'+order.id+'/payment-link','POST',{});window.location.assign(result.payment_url);}catch(e){setError((e as Error).message);}finally{setBusy(false);}}}>{busy?'פותח תשלום…':'השלמת התשלום באשראי'}</Button></>}</div>;
+}
+export function BankPaymentReview({ctx,order,close}:{ctx:Ctx;order:Row;close:()=>void}){
+ const [reference,setReference]=useState(''),[date,setDate]=useState(''),[confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('');const lock=useRef(false);
+ return <form dir="rtl" className="admin-mega-dialog space-y-4" onSubmit={async e=>{e.preventDefault();if(lock.current)return;lock.current=true;setBusy(true);setError('');try{await ctx.run(()=>api('orders/'+order.id+'/paid','POST',{reference,payment_date:date,confirmed,expected_total:order.total}),'התשלום אושר וההזמנה זמינה לטיפול');close();}catch(e){setError((e as Error).message);}finally{setBusy(false);lock.current=false;}}}><div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4"><strong>{order.number} · {order.user_name||order.name}</strong><p className="mt-2 text-2xl font-bold">{money(order.total)}</p><p className="mt-2 text-sm">יש לאמת קבלת מלוא הסכום. בחירה בהעברה או אסמכתא מהלקוח אינן אישור תשלום.</p></div>{order.bank_reference&&<p>אסמכתא שדווחה על ידי הלקוח: <bdi>{order.bank_reference}</bdi></p>}<Field label="אסמכתת התקבול *"><Input required minLength={3} maxLength={300} value={reference} onChange={e=>setReference(e.target.value)}/></Field><Field label="תאריך קבלת התשלום *"><Input required type="date" value={date} onChange={e=>setDate(e.target.value)}/></Field><label className="payment-confirm-control"><Checkbox checked={confirmed} onCheckedChange={v=>setConfirmed(v===true)}/><span>בדקתי שכל הסכום התקבל בחשבון הבנק.</span></label><ErrorBox error={error}/><Button type="submit" className="w-full admin-mega-primary" disabled={busy||!confirmed}><ShieldCheck size={18}/>{busy?'מאמת…':'אישור קבלת התשלום'}</Button></form>;
+}
+export function PendingBankPayments({ctx}:{ctx:Ctx}){
+ const state=useData('payment-alerts',ctx.revision,ctx.user?.role==='admin',15000);const rows:Row[]=state.data?.orders||[];
+ if(ctx.user?.role!=='admin')return null;
+ const review=(order:Row)=>ctx.open({kind:'admin-finance',title:'פרטי הזמנה ואישור תשלום '+order.number,description:'פירוט הפרסומים ואימות ההעברה הבנקאית באותה חלונית',render:(close:()=>void)=><BankOrderReview ctx={ctx} id={order.id} close={close}/>});
+ return <section dir="rtl" className="admin-mega-dialog mb-5 rounded-2xl border border-cyan-200 bg-white p-4 shadow-sm"><h2 className="flex items-center gap-2 !text-lg font-bold text-[#09234b]"><Landmark size={21}/>העברות בנקאיות שממתינות לאישור תשלום <span className="rounded-full bg-orange-100 px-3 py-1 text-sm text-orange-900">{rows.length}</span></h2><p className="mt-2 text-sm text-slate-600">עד לאישור קבלת הכסף, ההזמנות אינן זמינות לשליחת כתבות.</p><ErrorBox error={state.error}/>{state.loading&&!state.data?<p role="status" className="mt-3">טוען בקשות תשלום…</p>:!rows.length?<p className="mt-3 text-sm text-teal-800">אין כרגע העברות שממתינות לבדיקה.</p>:<div className="mt-3 divide-y divide-cyan-100">{rows.map(o=><div key={o.id} className="grid items-center gap-3 py-4 sm:grid-cols-[minmax(0,1fr)_auto_auto]"><div className="min-w-0"><strong>{o.user_name} · <bdi>{o.number}</bdi></strong><p className="mt-1 text-sm text-slate-600">{when(o.created)} · {o.bank_reference?'אסמכתא מהלקוח: '+o.bank_reference:'טרם נמסרה אסמכתא מהלקוח'}</p></div><strong>{money(o.total)}</strong><div className="flex flex-wrap gap-2"><Button variant="outline" className={action} onClick={()=>review(o)}><Eye size={16}/>פירוט הזמנה</Button><Button className={action} onClick={()=>review(o)}><ShieldCheck size={16}/>בדיקה ואישור תשלום</Button></div></div>)}</div>}</section>;
+}
+export function BankOrderReview({ctx,id,close}:{ctx:Ctx;id:string;close:()=>void}){
+ const state=useData('orders/'+id,ctx.revision,ctx.user?.role==='admin',15000),order=state.data?.order;
+ if(ctx.user?.role!=='admin')return null;
+ return <div dir="rtl" className="bank-order-review space-y-6 text-right"><ErrorBox error={state.error}/>{!order?state.loading?<p role="status">טוען את ההזמנה…</p>:null:<><section aria-label="פירוט ההזמנה"><h2 className="mb-4 text-xl font-bold text-[#09234b]">הזמנה <bdi>{order.number}</bdi></h2><OrderBreakdown ctx={ctx} id={id} invoiceControls={false}/></section><section className="border-t-2 border-cyan-100 pt-5" aria-label="אישור התשלום">{isAwaitingPayment(order)&&isBankPayment(order)?<><h2 className="mb-4 text-xl font-bold text-[#09234b]">בדיקה ואישור התשלום</h2><BankPaymentReview ctx={ctx} order={order} close={close}/></>:<p role="status" className={'rounded-xl p-4 font-bold '+(orderCancellation(order)==='full'?'bg-rose-100 text-rose-800':'bg-teal-50 text-teal-900')}>{paymentStatusLabel(order)} · אין תשלום שממתין לאישור.</p>}</section></>}</div>;
+}
+export function BankTransferInstructions({ctx,total}:{ctx:Ctx;total:number}){
+ const state=useData('bank-details',ctx.revision),bank=state.data?.bank;
+ return <section dir="rtl" className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm leading-7"><strong className="block text-[#09234b]">ממתינה לאישור תשלום - {money(total)}</strong><p>ההזמנה תיפתח לטיפול ולשליחת כתבות לאחר שהמנהל יאמת קבלת מלוא הסכום. יתרת הארנק אינה מחויבת במסלול זה.</p>{bank?<dl className="mt-3 grid gap-2 sm:grid-cols-2"><div><dt>בנק</dt><dd>{bank.bank_name} ({bank.bank_number})</dd></div><div><dt>סניף</dt><dd>{bank.branch}</dd></div><div><dt>חשבון</dt><dd><bdi>{bank.account}</bdi></dd></div><div><dt>בעל החשבון</dt><dd>{bank.holder}</dd></div></dl>:<p className="mt-2">לקבלת פרטי העברה פנו לתמיכה.</p>}<ErrorBox error={state.error}/></section>;
+}

@@ -1,0 +1,41 @@
+/* Shared action styling for the reviewed admin pages and their portal dialogs. */
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button]{
+  min-height:44px!important;height:auto!important;max-width:100%;min-width:0;border-radius:8px!important;
+  padding:10px 16px!important;font:700 15px/1.5 Heebo,Arial,sans-serif!important;gap:8px;
+  white-space:normal!important;overflow-wrap:normal;word-break:normal;box-shadow:none!important;text-align:center;
+  transition:background-color .15s,border-color .15s,color .15s;
+}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button][data-variant=default],
+.catalog-pricing-workspace .catalog-sync-actions a.catalog-primary{
+  background:#087aa4!important;color:#fff!important;border:1px solid #087aa4!important;box-shadow:none!important;
+}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button][data-variant=outline]{
+  background:#fff!important;color:#173e62!important;border:1px solid #adcddd!important;
+}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button][data-variant=ghost]{
+  background:transparent!important;color:#173e62!important;border:1px solid transparent!important;
+}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button][data-variant=default]:not(:disabled):hover,
+.catalog-pricing-workspace .catalog-sync-actions a.catalog-primary:hover{background:#066386!important;border-color:#066386!important;filter:none}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button]:is([data-variant=outline],[data-variant=ghost]):not(:disabled):hover{background:#eef7fb!important;border-color:#81b2cb!important;filter:none}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button].reviewed-danger{
+  color:#a52e38!important;background:#fff!important;border:1px solid #e4b6bb!important;
+}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button][data-variant=destructive]{background:#ac2938!important;color:#fff!important;border:1px solid #ac2938!important}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button].reviewed-danger:not(:disabled):hover{background:#fff1f2!important;border-color:#c96f7a!important}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button][data-variant=destructive]:not(:disabled):hover{background:#8d1f2c!important;filter:none}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button]:disabled{opacity:.55;cursor:default;box-shadow:none!important}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid #087aa4!important;outline-offset:3px}
+:is(.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.reviewed-connection-dialog) [data-slot=dialog-close]{left:16px;right:auto;min-width:36px;min-height:36px;display:grid;place-items:center;border-radius:8px}
+:is(.catalog-price-review-dialog,.reviewed-connection-dialog) [data-slot=dialog-header]{text-align:right;padding-inline-end:32px}
+:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button]>svg{width:18px;height:18px;flex:none}
+.catalog-pricing-workspace .catalog-sync-actions a.catalog-primary{border-radius:8px;font-size:15px;line-height:1.5;min-height:44px}
+.gemini-connection-form{min-width:0}.gemini-connection-form>div:first-child{align-items:flex-start}.gemini-connection-form>div:first-child>svg{flex:none}.gemini-connection-form :is(p,h3,label){overflow-wrap:anywhere}
+.mega-admin-lobby :is(.lobby-primary,.lobby-outline){min-height:44px;border-radius:8px;font-size:15px;box-shadow:none}
+.mega-admin-lobby .lobby-primary{background:#087aa4;color:#fff;border-color:#087aa4}.mega-admin-lobby .lobby-primary:hover{background:#066386}
+.mega-admin-lobby .lobby-outline{color:#173e62}.mega-admin-lobby .lobby-panel-tabs button{min-height:44px;font-size:14px}
+@media(max-width:480px){.gemini-connection-actions{grid-template-columns:minmax(0,1fr)}.catalog-form-footer{flex-wrap:wrap}.catalog-form-footer>[data-slot=button]{flex:1 1 100%!important}.personal-price-editor .price-editor-actions>[data-slot=button]{flex-basis:100%}.reviewed-connection-dialog{width:calc(100vw - 24px);max-height:92dvh}}
+@media(prefers-reduced-motion:reduce){:is(.catalog-pricing-workspace,.catalog-website-dialog,.catalog-supplier-dialog,.catalog-price-review-dialog,.personal-price-editor,.reviewed-connections,.reviewed-connection-dialog) [data-slot=button]{transition:none}}
+
+.studio-ai-progress{display:flex;align-items:flex-start;gap:12px;padding:16px;border:1px solid #badce9;border-radius:10px;background:#edf8fc;color:#153e5c}.studio-ai-progress>svg{flex:none;margin-top:3px}.studio-ai-progress strong{display:block;font-weight:750}.studio-ai-progress p{margin-top:5px;line-height:1.8}.studio-ai-notice-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.studio-ai-notice-actions [data-slot=button]{min-height:44px;height:auto;padding:10px 16px;border-radius:8px!important;white-space:normal;word-break:normal;overflow-wrap:normal}.studio-ai-notice [data-slot=dialog-description]{font-size:16px;line-height:1.8;color:#38516b;margin-top:10px}.studio-ai-notice [data-slot=dialog-title]{padding-inline-end:28px}
+@media(max-width:480px){.studio-ai-notice-actions{grid-template-columns:minmax(0,1fr)}}

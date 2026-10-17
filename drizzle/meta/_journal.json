@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1791113922502,
+      "tag": "0000_wide_mauler",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791136350687,
+      "tag": "0001_simple_living_mummy",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791136883208,
+      "tag": "0002_misty_the_executioner",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791214872742,
+      "tag": "0003_supplier_dispatch_inventory",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1791269013849,
+      "tag": "0004_bouncy_firestar",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1791440255422,
+      "tag": "0005_melted_captain_america",
+      "breakpoints": true
+    }
+  ]
+}

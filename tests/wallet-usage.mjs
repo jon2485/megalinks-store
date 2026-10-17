@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {walletUsageHistory} from '../lib/wallet-usage.ts';
+const products=[{article_id:'a',name:'אתר א',url:'https://a.example',paid_amount:12000},{article_id:'b',name:'אתר ב',url:'https://b.example',paid_amount:6000}];
+const base={id:'debit',created:'2026-10-13T10:00:00Z',order_id:'order',order_number:'#1024',amount:-18000,products};
+let rows=walletUsageHistory([base]);assert.equal(rows.length,2);assert.deepEqual(rows.map(r=>r.amount_cents),[12000,6000]);assert(rows.every(r=>r.order_number==='#1024'&&r.created===base.created));
+rows=walletUsageHistory([{...base,amount:-5001}]);assert.deepEqual(rows.map(r=>r.amount_cents),[3334,1667]);assert.equal(rows.reduce((s,r)=>s+r.amount_cents,0),5001,'split order shows only actual wallet debit');
+assert.equal(walletUsageHistory([{...base,amount:18000},{...base,amount:0}]).length,0,'refunds and holds are not usages');
+rows=walletUsageHistory([{...base,products:[],order_id:null,order_number:null,reason:'התאמת יתרה'}]);assert.equal(rows.length,1);assert.equal(rows[0].amount_cents,18000);assert.equal(rows[0].website_url,null);
+rows=walletUsageHistory([{...base,amount:-1}]);assert.equal(rows.reduce((s,r)=>s+r.amount_cents,0),1,'allocation conserves one-cent debits');
+assert.equal(walletUsageHistory([base,{...base,id:'refund',amount:18000}]).reduce((s,r)=>s+r.amount_cents,0),18000,'later refund never erases original usage');
+console.log('WALLET USAGE PASSED: full credit, split credit/card allocation, exact cents, actual debits only, manual adjustments and immutable usage after refund.');

@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { mkdirSync, realpathSync, writeFileSync } from 'node:fs';
+import { pathToFileURL } from 'node:url';
+const require = createRequire(realpathSync('node_modules/wrangler') + '/package.json');
+const { build } = require('esbuild');
+const result = await build({entryPoints:['lib/bundle-pricing.ts'],bundle:true,platform:'node',format:'esm',write:false});
+mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/bundle-pricing-test.mjs',result.outputFiles[0].text);
+const { bundlePricing } = await import(pathToFileURL(realpathSync('.sites-runtime/bundle-pricing-test.mjs')));
+const sites = [{regular_price_cents:50000,price_cents:40000},{regular_price_cents:40000,price_cents:30000}];
+assert.deepEqual(bundlePricing(sites,{price_cents:60000}),{original:90000,current:70000,final:60000,saving:30000,percent:33});
+assert.deepEqual(bundlePricing(sites,{discount:10}),{original:90000,current:70000,final:63000,saving:27000,percent:30});
+assert.equal(bundlePricing(sites,{price_cents:80000}).final,80000,'fixed bundles are identical for every price tier');
+assert.equal(bundlePricing([{price_cents:12345}],{price_cents:10000}).original,12345,'unreduced sites without separate original price remain supported');
+assert.deepEqual(bundlePricing([],{price_cents:100}),{original:0,current:0,final:0,saving:0,percent:0});
+assert.equal(bundlePricing([{regular_price_cents:200,price_cents:101}],{discount:10}).final,91,'coupon rounding matches the server quote');
+console.log('Bundle price display: original prices before all discounts, final price, cumulative savings, legacy coupon and rounding passed');

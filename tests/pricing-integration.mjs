@@ -1,0 +1,73 @@
+import assert from 'node:assert/strict';
+import {createHmac,randomBytes} from 'node:crypto';
+import { readFileSync, realpathSync,readdirSync } from 'node:fs';
+import { createRequire } from 'node:module';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json');
+const {Miniflare}=require('miniflare');
+const secret=randomBytes(32).toString('base64');
+let capturedAIPrompt='';const deliveredMail=[];
+const mf=new Miniflare({outboundService:async request=>{const url=new URL(request.url);if(url.hostname==='api.openai.com'&&url.pathname==='/v1/chat/completions'){const body=await request.json();capturedAIPrompt=body.messages[0].content;return Response.json({choices:[{message:{content:JSON.stringify({title:'טיוטת AI בבדיקה',content:'תוכן שנוצר מתשובת ספק מדומה לצורך בדיקה.',meta_description:'תיאור הבדיקה'})}}]});}if(url.hostname==='mailer.example.test'){deliveredMail.push(await request.json());return Response.json({ok:true});}if(url.pathname==='/broken')return new Response('not found',{status:404});if(url.pathname==='/redirect-private')return new Response(null,{status:302,headers:{location:'http://127.0.0.1/secret'}});return new Response('reachable',{status:200});},modules:[{type:'ESModule',path:'dist/server/index.js'},...readdirSync('dist/server',{recursive:true}).filter(p=>/\.(m?js)$/.test(p)&&p!=='index.js').map(p=>({type:'ESModule',path:'dist/server/'+p}))],compatibilityDate:'2026-05-15',compatibilityFlags:['nodejs_compat'],d1Databases:['DB'],r2Buckets:['BUCKET'],bindings:{SETTINGS_ENCRYPTION_KEY:secret,POSTFLOW_OWNER_EMAIL:'owner@example.test',POSTFLOW_ADMIN_EMAILS:'extra-admin@example.test'},assets:{directory:'dist/client',binding:'ASSETS',routerConfig:{has_user_worker:true,invoke_user_worker_ahead_of_assets:true}},cf:false});
+let checks=0;const check=(test,msg)=>{assert(test,msg);checks++};
+async function req(path,method='GET',body,user='owner',expected=200){if(path==='checkout'&&body)body={invoice_name:'בדיקת חשבונית',...body};const headers={};if(user){headers['oai-authenticated-user-id']=user;headers['oai-authenticated-user-email']=user+'@example.test';}if(!(body instanceof FormData)&&body!==undefined)headers['Content-Type']='application/json';let payload=body===undefined?undefined:JSON.stringify(body);if(body instanceof FormData){const multipart=new Request('https://postflow.test/api/'+path,{method,headers,body});headers['Content-Type']=multipart.headers.get('Content-Type');payload=await multipart.arrayBuffer();}const res=await mf.dispatchFetch('https://postflow.test/api/'+path,{method,headers,body:payload});const contentType=res.headers.get('Content-Type')||'';const out=contentType.includes('json')?await res.json():await res.arrayBuffer();assert.equal(res.status,expected,`${method} ${path}: ${JSON.stringify(out)}`);checks++;return out;}
+
+try{
+const database=await mf.getD1Database('DB');
+for(const migration of readdirSync('drizzle').filter(x=>x.endsWith('.sql')).sort())for(const part of readFileSync('drizzle/'+migration,'utf8').split('--> statement-breakpoint').map(x=>x.trim()).filter(Boolean))await database.prepare(part).run();
+await req('me');await req('me','GET',undefined,'nimrod');await req('me','GET',undefined,'other');await req('catalog');
+const version=async()=> (await req('admin/pricing')).version;
+const liveVersion=async()=> (await req('pricing-version','GET',undefined,null)).pricing_version;
+const write=async(path,body,expected=200)=>req('admin/pricing/'+path,'POST',{version:await version(),...body},'owner',expected);
+const create=async(name,price,cost)=> (await req('admin/websites','POST',{name,url:'https://'+name+'.example.com',category:'general',price_ils:price,cost_ils:cost,procurement_verified:true})).id;
+const a=await create('pricing-a',3000,2000),b=await create('pricing-b',1000,500);
+await write('tier',{id:'regular',name:'רגילים',discount_percent:10,acknowledge:true});await write('tier',{id:'vip',name:'VIP',discount_percent:15,acknowledge:true});
+await write('membership',{user_id:'nimrod',tier_id:'vip'});
+const price=async(user,id)=> (await req('catalog','GET',undefined,user)).websites.find(w=>w.id===id).price_cents;
+check(await price('other',a)===270000,'regular tier percentage');check(await price('nimrod',a)===255000,'VIP tier percentage');
+await write('overrides',{scope:'tier',owner_id:'regular',rows:[{website_id:a,price_ils:2800}]});await write('overrides',{scope:'tier',owner_id:'vip',rows:[{website_id:a,price_ils:2670}]});
+check(await price('other',a)===280000,'fixed regular price ignores discount');check(await price('nimrod',a)===267000,'fixed VIP price ignores discount');
+const beforePersonal=await liveVersion();await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:2500}]});check(await liveVersion()===beforePersonal+1,'personal save immediately invalidates open client pricing');check(await price('nimrod',a)===250000,'personal wins fixed tier');check(await price('other',a)===280000,'personal cannot transfer to other accounts');
+await req('admin/pricing/nimrod','GET',undefined,'other',403);await req('admin/pricing/overrides','POST',{scope:'user',owner_id:'other',rows:[]},'nimrod',403);
+const publicCatalog=await req('catalog','GET',undefined,'nimrod');check(!JSON.stringify(publicCatalog).includes('cost_cents')&&!JSON.stringify(publicCatalog).includes('pricing_overrides'),'cost and other pricebooks hidden');
+await req('admin/websites/'+a,'PATCH',{is_on_sale:true,sale_price_ils:2600});check(await price('nimrod',a)===250000&&await price('other',a)===260000,'personal wins sale; others still receive promotion');
+await req('admin/websites/'+a,'PATCH',{sale_price_ils:2400});check(await price('nimrod',a)===250000,'explicit personal price wins even a cheaper promotion');
+const personalBook=await req('admin/pricing/nimrod');check(personalBook.websites.find(w=>w.id===a).price_cents===250000,'manager sees the same effective personal price');
+const saleCatalog=await req('catalog','GET',undefined,'nimrod');const personalSite=saleCatalog.websites.find(w=>w.id===a);check(personalSite.price_source==='personal'&&!personalSite.is_on_sale,'personal product cannot masquerade as a general sale');check(saleCatalog.pricing_version===await liveVersion(),'customer catalog carries its pricing version');
+await req('cart','POST',{website_id:a,topic:'personal-sale'},'nimrod',201);check((await req('cart','GET',undefined,'nimrod')).items[0].publication_price===250000,'cart honors personal above sale');check((await req('quote','POST',{},'nimrod')).subtotal===250000,'quote honors personal above sale');await database.prepare('DELETE FROM cart WHERE user_id=?').bind('nimrod').run();
+await req('admin/websites/'+a,'PATCH',{is_on_sale:false});
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:b,price_ils:600}]});
+const bulkMeta=await req('catalog?scope=admin');const aw=bulkMeta.websites.find(w=>w.id===a);check(aw.tier_regular_ils===2800&&aw.tier_vip_ils===2670,'main table contains tier columns');
+await req('admin/catalog-bulk','POST',{rows:[{id:b,expected_updated:bulkMeta.websites.find(w=>w.id===b).updated,values:{tier_vip_ils:800}}]});check(await price('nimrod',b)===60000,'bulk tier override does not replace personal');
+// Empty imports preserve, explicit removes reset.
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:''}]});check(await price('nimrod',a)===250000,'blank import leaves price');
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,action:'remove'}]});check(await price('nimrod',a)===267000,'remove falls back to fixed tier');
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:2500}]});
+const duplicate=await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:b,price_ils:650},{website_id:b,price_ils:660}]},400);check(await price('nimrod',b)===60000,'duplicate input changes nothing');
+const zero=await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:0}]},422);check(zero.warnings.length>0&&await price('nimrod',a)===250000,'zero requires explicit acknowledgment');
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:2029}]},422);await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:2500}]});
+const stale=await version();await write('membership',{user_id:'other',tier_id:'regular'});await req('admin/pricing/overrides','POST',{version:stale,scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:2600}]},'owner',409);check(await price('nimrod',a)===250000,'stale save changes nothing');
+await req('admin/websites/'+a,'PATCH',{cost_ils:2100});let alerts=(await req('admin/pricing')).alerts.filter(x=>x.website_id===a);check(alerts.length===3,'cost rise alerts each tier and personal independently');
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,action:'review'}]});alerts=(await req('admin/pricing')).alerts.filter(x=>x.website_id===a);check(alerts.length===2,'review closes only personal alert');
+await req('admin/websites/'+a,'PATCH',{cost_ils:2200});check((await req('admin/pricing')).alerts.filter(x=>x.website_id===a).length===3,'another cost increase reopens alert');
+await req('admin/websites/'+a,'PATCH',{price_ils:3200});check(await price('nimrod',a)===250000,'base change preserves personal fixed price');
+const missing=await req('admin/websites','POST',{name:'missing-cost',url:'https://missing-cost.example.com',category:'general',price_ils:100},'owner',422);check(missing.warnings.some(w=>w.includes('חסר מחיר עלות')),'missing cost is not zero');
+// Quote and checkout authority, including equal-total substitutions.
+await req('cart','POST',{website_id:a,topic:'price-test'},'nimrod',201);await req('cart','POST',{website_id:b,topic:'price-test'},'nimrod',201);
+let q=await req('quote','POST',{},'nimrod');check(q.subtotal===310000&&q.total===365800,'cart and VAT use authoritative personal prices');
+await req('checkout','POST',{payment:'invoice',phone:'0500000000',accepted:true,idempotency:'missing-token-123',expected_total:q.total},'nimrod',409);
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:2499},{website_id:b,price_ils:601}]});
+const q2=await req('quote','POST',{},'nimrod');check(q2.total===q.total&&q2.pricing_token!==q.pricing_token,'equal-total changes have different fingerprints');
+const updatedCart=await req('cart','GET',undefined,'nimrod');check(updatedCart.items.find(i=>i.website_id===a).publication_price===249900&&updatedCart.items.find(i=>i.website_id===b).publication_price===60100,'existing cart reprices immediately after admin edits');
+await req('checkout','POST',{payment:'invoice',phone:'0500000000',accepted:true,idempotency:'stale-token-123',expected_total:q.total,pricing_token:q.pricing_token},'nimrod',409);
+const order=await req('checkout','POST',{payment:'invoice',phone:'0500000000',accepted:true,idempotency:'correct-token-123',expected_total:q2.total,pricing_token:q2.pricing_token},'nimrod',201);
+await write('overrides',{scope:'user',owner_id:'nimrod',rows:[{website_id:a,price_ils:2400}]});const frozen=await req('orders/'+order.id,'GET',undefined,'nimrod');check(frozen.order.total===q2.total,'old orders retain original prices');check(frozen.articles.find(i=>i.website_id===a).publication_price===249900&&frozen.articles.find(i=>i.website_id===a).unit_price===249900,'old product snapshot retains its purchase price');
+await database.prepare('DELETE FROM cart WHERE user_id=?').bind('nimrod').run();
+const bundle=(await req('records/bundle','POST',{name:'fixed-pricing-bundle',website_ids:[a,b],price_ils:3500},'owner',201)).id;
+await req('cart/bundle','POST',{bundle_id:bundle,topic:'bundle'},'nimrod',201);let bq=await req('quote','POST',{},'nimrod');check(bq.subtotal===350000,'fixed bundle does not fall to personal sum');
+await req('admin/coupons','POST',{code:'FIXED10',percent:10},'owner');bq=await req('quote','POST',{coupon:'FIXED10'},'nimrod');check(bq.discount===0&&bq.subtotal===350000,'coupon never changes fixed bundle price');
+await req('cart/bundle','POST',{bundle_id:bundle,topic:'bundle'},'other',201);check((await req('quote','POST',{},'other')).subtotal===350000,'fixed bundle identical for regular and VIP');
+await write('tier',{id:'custom',name:'רמה נוספת',discount_percent:7,acknowledge:true});await write('membership',{user_id:'nimrod',tier_id:'custom'});check(await price('nimrod',a)===240000,'tier reassignment preserves personal');
+await write('delete-tier',{tier_id:'custom'},400);await write('delete-tier',{tier_id:'custom',transfer_to:'regular'});check((await req('admin/pricing/nimrod')).customer.tier_id==='regular','tier deletion transfers assigned customers');
+check((await req('admin/pricing/nimrod')).history.length>0,'personal history available');
+const count=await database.prepare('SELECT COUNT(*) AS n FROM pricing_overrides').first();check(count.n<10,'sparse prices do not duplicate full catalog');
+console.log('PRICING INTEGRATION PASSED:',checks,'checks');
+}finally{await mf.dispose();}

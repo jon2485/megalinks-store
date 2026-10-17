@@ -1,0 +1,38 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync,mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
+mkdirSync('.sites-runtime',{recursive:true});
+const result=await build({entryPoints:['app/customer-articles-admin.tsx'],bundle:true,platform:'node',format:'esm',jsx:'automatic',external:['react/jsx-runtime','react-dom','react-dom/server'],write:false,plugins:[{name:'fixtures',setup(b){
+ b.onResolve({filter:/^react$/},()=>({path:'react',namespace:'fixture'}));
+ b.onResolve({filter:/^\.\/workspace$/},()=>({path:'workspace',namespace:'fixture'}));
+ b.onResolve({filter:/^\//,namespace:'fixture'},a=>({path:a.path,external:true}));
+ b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'js',contents:a.path==='react'?'export * from "'+realpathSync('node_modules/react')+'/index.js";import R from "'+realpathSync('node_modules/react')+'/index.js";export default R;export function useState(initial){return globalThis.articleStates.shift()||[initial,()=>{}]}':'export {};'}));
+}}]});
+const file='.sites-runtime/customer-articles-ui.mjs';writeFileSync(file,result.outputFiles[0].text);const {default:View,customerArticleGroup,selectCustomerArticles}=await import(pathToFileURL(realpathSync(file)));
+const orders=[{id:'o',number:'#1050',created:'2026-10-13T08:00:00Z'},{id:'cancelled-order',status:'cancelled'}];
+const articles=['draft','writing','admin_review','review','revisions','approved','sent','published','cancelled','demo_completed'].map((status,i)=>({id:'a'+i,status,order_id:'o',website_name:'PCMag',website_url:'https://pcmag.com',title:'כתבה '+i,created:'2026-10-13T08:00:00Z',updated:'2026-10-13T08:00:00Z',published_url:status==='published'?'https://pcmag.com/article/test':''}));
+articles.push({...articles[0],id:'refund',publication_refunded:true},{...articles[0],id:'order-cancel',order_id:'cancelled-order'});
+assert.equal(selectCustomerArticles(articles,orders,'open','').length,5);
+assert.equal(selectCustomerArticles(articles,orders,'publication','').length,2);
+assert.equal(selectCustomerArticles(articles,orders,'published','').length,1);
+for(const a of articles.slice(-2))assert.equal(customerArticleGroup(a,orders.find(o=>o.id===a.order_id)),null);
+assert.equal(selectCustomerArticles(articles,orders,'open','1050').length,5);
+assert.equal(selectCustomerArticles(articles,orders,'open','pcmag.com').length,5);
+assert.equal(selectCustomerArticles(articles,orders,'open','כתבה 2').length,1);
+const routes=[],previews=[];const ctx={go:r=>routes.push(r)},props={ctx,articles,orders,preview:a=>previews.push(a.id)};
+const nodes=n=>!n||typeof n!=='object'?[]:[n,...[n.props?.children].flat(Infinity).flatMap(nodes)];
+globalThis.articleStates=[['open',()=>{}],['',()=>{}]];let tree=View(props),cards=nodes(tree).filter(n=>n.type==='article');assert.equal(cards.length,5);
+for(const card of cards){const buttons=nodes(card).filter(n=>typeof n.props?.onClick==='function');buttons[0].props.onClick();if(buttons[1])buttons[1].props.onClick();}
+assert(previews.includes('a0'));assert(routes.includes('admin-article/a2'));assert(routes.includes('admin-article/a0'));
+let selected;globalThis.articleStates=[['open',v=>selected=v],['',()=>{}]];tree=View(props);const groups=nodes(tree).filter(n=>n.type==='button'&&n.props['aria-pressed']!==undefined);assert.equal(groups.length,3);groups[1].props.onClick();assert.equal(selected,'publication');
+globalThis.articleStates=[['published',()=>{}],['',()=>{}]];tree=View(props);assert(nodes(tree).some(n=>n.type==='a'&&n.props.href==='https://pcmag.com/article/test'));
+globalThis.articleStates=[['open',()=>{}],['nonsense',()=>{}]];assert(renderToStaticMarkup(View(props)).includes('לא נמצאו כתבות'));
+const css=readFileSync('app/globals.css','utf8'),account=readFileSync('app/customer-account-admin.tsx','utf8'),billing=readFileSync('app/billing-workspace.tsx','utf8');
+assert(account.includes("['orders','הזמנות ותשלומים'],['articles','כתבות']"));assert(!account.includes("['payments','תשלומים']"));assert(account.includes("initialTab==='payments'?'orders':initialTab"));
+assert(billing.includes('className="billing-balance-actions"'));assert(css.includes('.billing-page .billing-balance-actions>button{width:100%;height:56px;min-height:56px'));
+assert(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));assert(css.includes('.customer-article-grid{grid-template-columns:minmax(0,1fr)}'));
+console.log('CUSTOMER ARTICLES UI PASSED: unified tabs, live status groups, refund exclusion, search, group selection, preview/editor/approval/publication links, responsive RTL and equal stacked wallet controls.');

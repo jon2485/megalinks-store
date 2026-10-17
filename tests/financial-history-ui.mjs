@@ -1,0 +1,48 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync,mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');mkdirSync('.sites-runtime',{recursive:true});
+async function compiled(entry,name,fixture=false){const r=await build({entryPoints:[entry],bundle:true,platform:'node',format:'esm',jsx:'automatic',external:['react/jsx-runtime','react-dom','react-dom/server'],write:false,plugins:fixture?[{name:'fixtures',setup(b){b.onResolve({filter:/^(react|\.\/workspace|@\/lib\/client|@\/lib\/office)$/},a=>({path:a.path,namespace:'fixture'}));b.onResolve({filter:/^\//,namespace:'fixture'},a=>({path:a.path,external:true}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'jsx',contents:a.path==='react'?'export * from "'+realpathSync('node_modules/react')+'/index.js";import R from "'+realpathSync('node_modules/react')+'/index.js";export default R;export function useState(initial){return globalThis.financialStates.shift()||[initial,()=>{}]}':a.path==='@/lib/client'?'export function useData(path){return {data:globalThis.financialFixture[path],loading:false}}export function api(){throw Error("No production writes")}export function download(){}export function csv(){}':'import React from "react";export function Badge({status,children}){return <span data-status={status}>{children}</span>}export function Heading(){return null}export function ErrorBox(){return null}export function Field({children}){return <label>{children}</label>}export function UploadField(){return null}export function exportSpreadsheet(name,rows){globalThis.financialExport={name,rows}}'}));}}]:[]});const file='.sites-runtime/'+name+'.mjs';writeFileSync(file,r.outputFiles[0].text);return import(pathToFileURL(realpathSync(file)));}
+const {orderHistoryGroup}=await compiled('lib/order-history.ts','history-groups');
+assert.equal(orderHistoryGroup({payment:'monthly',on_account:1,paid:0,monthly_closed:0}),'open');
+assert.equal(orderHistoryGroup({payment:'monthly',on_account:1,paid:0,monthly_closed:1}),'pending');
+assert.equal(orderHistoryGroup({payment:'monthly',on_account:1,paid:1,monthly_closed:1}),'closed');
+assert.equal(orderHistoryGroup({payment:'credits',paid:1,status:'in_progress'}),'closed','publication progress never prevents financial closure');
+assert.equal(orderHistoryGroup({paid:1,status:'cancelled'}),'closed','paid cancellation stays in financially closed history');
+const {AdminOrderDetails:FinancialOrderDetails,AdminFinancialHistory:CustomerOrdersView}=await compiled('app/customer-orders.tsx','financial-ui',true);
+const order={id:'o',number:'#1050',on_account:1,payment:'monthly',status:'on_account',paid:0,total:33040,subtotal:28000,discount:0,vat:5040,billing_month:'2026-10',created:'2026-10-13T10:00:00Z'};
+const articles=Array.from({length:30},(_,i)=>({id:'a'+i,order_id:'o',website_name:'PCMag',website_url:'https://pcmag.com',title:'מאמר '+i,status:i%2?'published':'sent',publication_price:22000,paid_net_amount:22000,publication_refunded:i===0,refund_reason:'בדיקת ביטול'}));
+const ctx={revision:0,user:{id:'buyer',role:'admin'},go(){throw Error('Financial history must not navigate to articles')},open(){}};
+globalThis.financialFixture={};const nodes=n=>!n||typeof n!=='object'?[]:[n,...[n.props?.children].flat(Infinity).flatMap(nodes)];
+let nextLimit;globalThis.financialStates=[['',()=>{}],[10,v=>nextLimit=typeof v==='function'?v(10):v]];
+let tree=FinancialOrderDetails({ctx,order,providedArticles:articles});let html=renderToStaticMarkup(tree);
+assert.equal((html.match(/class="financial-line-amount"/g)||[]).length,10);assert(html.includes('10 מתוך 30 פריטים מוצגים'));assert(html.includes('סה״כ לתשלום'));assert(html.includes('בוטל - הוסר מהחיוב'));assert(!html.includes('פורסמה'));assert(!html.includes('ממתינה לפרסום'));assert(!html.includes('צפייה'));assert(html.includes('31.10.2026'));assert(html.includes('dir="rtl"'));assert(html.includes('mock-month-summary'));assert(html.includes('mock-order-table-head'));assert(html.includes('כותרת הכתבה'));
+const clicks=nodes(tree).filter(n=>typeof n.props?.onClick==='function');clicks.at(-1).props.onClick();assert.equal(nextLimit,20);clicks[0].props.onClick();assert.equal(globalThis.financialExport.rows.filter(r=>r[0]==='PCMag').length,30,'Excel always includes all items, not the current page');
+globalThis.financialStates=[['',()=>{}],[10,()=>{}]];html=renderToStaticMarkup(FinancialOrderDetails({ctx,order:{...order,paid:1,total:50740,subtotal:43000,vat:7740,paid_refund_total:12980},providedArticles:articles}));for(const label of ['סכום ששולם במקור','זיכוי ליתרה','סכום לאחר זיכויים','377.60','mock-paid-summary','mock-paid-info','mock-order-actions','mock-closed-totals'])assert(html.includes(label),label);
+globalThis.financialFixture.orders={orders:[order,{...order,id:'paid-monthly',paid:1,monthly_closed:1},{...order,id:'paid-card',payment:'card',on_account:0,paid:1}]};let chosen;
+globalThis.financialStates=[['all',v=>chosen=v],['',()=>{}],['',()=>{}],['',()=>{}],[20,()=>{}]];tree=CustomerOrdersView({ctx});nodes(tree).find(n=>n.type==='button'&&String(n.props.children?.[0])==='הזמנות סגורות').props.onClick();assert.equal(chosen,'closed');
+const source=readFileSync('app/customer-orders.tsx','utf8');assert(!source.includes("ctx.go('article/"));assert(!source.includes('stages['));
+console.log('FINANCIAL HISTORY UI PASSED: open monthly/closed unpaid/paid grouping; paid monthly joins closed; publication status excluded; 30-item pagination/search/export; exact totals and Hebrew RTL.');
+
+// Exercise the actual list-to-detail wiring, including the client fetch path.
+globalThis.financialFixture['orders/o']={order:{...order,article_count:30},articles};
+globalThis.financialStates=[];
+html=renderToStaticMarkup(React.createElement(CustomerOrdersView,{ctx}));
+assert(html.includes('pcmag.com'),'first order loads the purchased domains through orders/:id');
+assert(html.includes('4 מתוך 30 פריטים מוצגים'),'the fetched detail has all 30 items, paginated');
+assert(html.includes('aria-expanded="true"'),'first order is expanded on initial render');
+assert(!html.includes('data-slot="accordion-content"'),'async detail is not clipped by an animated accordion container');
+let selected;globalThis.financialStates=[['all',()=>{}],['',()=>{}],['',()=>{}],['',v=>selected=v],[20,()=>{}]];
+tree=CustomerOrdersView({ctx,providedOrders:[{...order,article_count:30,item_preview:JSON.stringify([{id:'a',name:'PCMag',url:'https://pcmag.com'}])}]});
+html=renderToStaticMarkup(tree);assert(html.includes('pcmag.com'),'collapsed order still identifies purchased websites');
+nodes(tree).find(n=>n.props?.className==='financial-order-trigger').props.onClick();assert.equal(selected,'o','expanding opens this exact order');
+const manager={...ctx,user:{id:'owner',role:'admin'},open(dialog){globalThis.closeDialog=dialog}};
+globalThis.financialStates=[];tree=CustomerOrdersView({ctx:manager,customerId:'buyer',providedOrders:[{...order,user_id:'buyer',article_count:30}],providedArticles:articles});
+const details=nodes(tree).find(n=>n.props?.monthlyRow&&n.props?.order);assert(details,'expanded details are mounted');assert.equal(details.props.monthlyRow.user_id,'buyer');assert.equal(details.props.monthlyRow.amount,33040);
+globalThis.financialStates=[];html=renderToStaticMarkup(tree);assert(html.includes('סגירת חודש והוצאת סיכום חודשי לתשלום'),'admin closure is wired through the displayed order');
+globalThis.financialStates=[];html=renderToStaticMarkup(React.createElement(CustomerOrdersView,{ctx:{...ctx,user:{id:'buyer',role:'customer'}},providedOrders:[order],providedArticles:articles}));assert(!html.includes('סגירת חודש והוצאת'),'customer cannot close a month');
+console.log('ORDER DETAIL REGRESSIONS PASSED: API-loaded items, collapsed site preview, initial expansion, customer/admin parity and scoped monthly closure.');
+const history=await compiled('lib/order-history.ts','history-cancelled-label');assert.equal(history.financialOrderLabel({paid:1,status:'cancelled'}),'בוטלה');assert.equal(history.financialOrderLabel({paid:1,article_count:2,fully_refunded_count:2}),'בוטלה');assert.equal(history.financialOrderLabel({paid:1,article_count:2,fully_refunded_count:1}),'שולמה');console.log('Full cancellation overrides paid label; partial cancellation does not mislabel entire order.');

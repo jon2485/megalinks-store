@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync,mkdirSync,writeFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import React from 'react';
+import {renderToStaticMarkup} from 'react-dom/server';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json');
+const {build}=require('esbuild');
+const bundled=await build({entryPoints:['app/purchased-view.tsx'],bundle:true,platform:'node',format:'esm',jsx:'automatic',external:['react','react/jsx-runtime','react-dom','react-dom/server'],write:false,banner:{js:"import {createRequire as __createRequire} from 'node:module';const require=__createRequire(import.meta.url);"},plugins:[{name:'purchased-fixtures',setup(b){b.onResolve({filter:/^(\.\/workspace|@\/lib\/client)$/},args=>({path:args.path,namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},args=>({loader:'js',contents:args.path==='./workspace'?'export function Empty(){return null}export function ErrorBox(){return null}':'export function useData(){return {data:{articles:[]},loading:false}}'}));}}]});
+mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/purchased-ui-test.mjs',bundled.outputFiles[0].text);
+const {PurchaseRow}=await import(pathToFileURL(realpathSync('.sites-runtime/purchased-ui-test.mjs')));
+const ctx={go(){throw Error('Rendering must never navigate')},catalog:[]};
+const render=(status,extra={})=>renderToStaticMarkup(React.createElement(PurchaseRow,{ctx,article:{id:'a',number:'#1001',website_name:'אתר בדיקה',website_url:'https://example.com/section',website_logo:'/logo.png',title:'מאמר בדיקה',status,...extra}}));
+const draft=render('draft');assert(draft.includes('הוספת והמשך עריכת מאמר'));assert(draft.includes('יצירת תוכן AI'));assert(!draft.includes('הוספת מאמר בעצמי'));assert(draft.includes('https://example.com/section'));assert(draft.includes('/logo.png'));assert(draft.includes('#1001'));assert(!draft.includes('הקישור יופיע לאחר הפרסום'));
+for(const status of ['admin_review','approved','sent']){const markup=render(status);assert(markup.includes('צפייה בסטטוס'));for(const label of ['הוספת והמשך עריכת מאמר','יצירת תוכן AI','הוספת מאמר בעצמי'])assert(!markup.includes(label));}
+const writing=render('writing',{editorial:true,editorial_words:400});assert(writing.includes('מילוי הוראות לכותב התוכן'));assert(writing.includes('נרכשה כתיבה בידי כותב מקצועי'));assert(!writing.includes('הוספת והמשך עריכת מאמר'));assert(!writing.includes('הוספת מאמר בעצמי'));assert(writing.includes('400'));assert(!writing.includes('יצירת תוכן AI'));
+const published=render('published',{published_url:'https://example.com/posts/article',updated:'2026-10-06T07:00:00Z'});assert(published.includes('href="https://example.com/posts/article"'));assert(published.includes('קישור לכתבה'));assert(published.includes('<time'));assert(!published.includes('הוספת והמשך עריכת מאמר'));assert(!published.includes('צפייה בסטטוס'));
+const demo=render('published',{demo:true,published_url:'https://example.com/fake'});assert(demo.includes('הדגמה הושלמה'));assert(!demo.includes('href="https://example.com/fake"'));assert(!demo.includes('הוספת והמשך עריכת מאמר'));
+assert(render('revisions').includes('הכתבה הוחזרה לתיקון'));
+console.log('Publication actions preserved: draft, corrections, paid writing, approval, supplier, published and demo states passed.');

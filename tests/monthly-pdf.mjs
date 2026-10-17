@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {mkdirSync,writeFileSync,realpathSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {pathToFileURL} from 'node:url';
+const localRequire=createRequire(realpathSync('node_modules/wrangler')+'/package.json');
+const compiled=await localRequire('esbuild').build({entryPoints:['lib/statement-pdf.ts'],bundle:true,platform:'node',format:'esm',write:false});mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/statement-pdf-test.mjs',compiled.outputFiles[0].text);
+const {drawStatementPages,jpegPagesPdf}=await import(pathToFileURL(realpathSync('.sites-runtime/statement-pdf-test.mjs')));
+const require=createRequire(process.env.CODEX_PRIMARY_RUNTIME_NODE_MODULES+'/package.json'),{createCanvas,GlobalFonts,loadImage}=require('@napi-rs/canvas');
+GlobalFonts.registerFromPath('/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf','Arial');
+const items=Array.from({length:65},(_,i)=>({id:'a'+i,order_number:'#1050',name:'אתר בדיקה',url:i===1?'https://pcmag.com/a/very-long-example-path/for-readability':'https://thepulse.co.il',title:i===3?'מדריך ארוך לבחירת מחשב לעסק והיערכות לשירותי ענן עם אבטחת מידע ושמירה על פרטיות המשתמשים':'כתבה בנושא עסקים '+(i+1),net:i===4?0:12000,cancelled:i===4}));
+const summary={month:'2026-10',customer:{name:'אשר ויצמן',company:'Mega Links',email:'test@example.test'},closed_at:'2026-10-13T14:00:00Z',items,net:768000,vat:138240,total:906240};
+const pages=drawStatementPages(summary,()=>createCanvas(1240,1754));assert(pages.length>=3,'large order is paginated, never cropped');
+mkdirSync('.sites-runtime/pdf-qa',{recursive:true});pages.forEach((p,i)=>writeFileSync('.sites-runtime/pdf-qa/page-'+(i+1)+'.png',p.toBuffer('image/png')));
+const bytes=jpegPagesPdf(pages.map(p=>new Uint8Array(p.toBuffer('image/jpeg'))));assert(new TextDecoder().decode(bytes.slice(0,8)).startsWith('%PDF-1.4'));writeFileSync('.sites-runtime/pdf-qa/monthly-summary.pdf',bytes);
+console.log('PDF GENERATED FOR VISUAL QA:',pages.length,'pages, 65 products, Hebrew text, exact totals, cancellation and long titles.');
+
+const logo=await loadImage('public/brand/megalinks-logo.png');
+const orderSummary={...summary,document_type:'order',order_number:'#1050',order_date:'2026-10-13T10:00:00Z',vat_percent:18,items:items.map(x=>({...x,date:'2026-10-13T10:00:00Z'})),bank:{name:'בנק פאג״י - פועלי אגודת ישראל',branch:'174',account:'064314',beneficiary:'גרינטק - מגלינקס'}};
+const orderPages=drawStatementPages(orderSummary,()=>createCanvas(1240,1754),logo);assert(orderPages.length>=3);orderPages.forEach((p,i)=>writeFileSync('.sites-runtime/pdf-qa/order-page-'+(i+1)+'.png',p.toBuffer('image/png')));writeFileSync('.sites-runtime/pdf-qa/order-summary.pdf',jpegPagesPdf(orderPages.map(p=>new Uint8Array(p.toBuffer('image/jpeg')))));
+console.log('ORDER PDF QA:',orderPages.length,'pages with actual Mega Links logo, all sites, purchase dates, VAT and transfer instructions.');

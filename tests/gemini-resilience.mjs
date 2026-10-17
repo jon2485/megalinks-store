@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync} from 'node:fs';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
+globalThis.geminiWaits=[];
+const bundle=await build({stdin:{contents:`export * from './lib/gemini-request';export {articleGenerationStream} from './lib/article-generation';`,resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false,plugins:[{name:'isolated-runtime',setup(b){b.onResolve({filter:/^(\.\/server|cloudflare:workers)$/},a=>({path:a.path,namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({contents:a.path==='./server'?'export const one=()=>null;':'export const waitUntil=p=>globalThis.geminiWaits.push(p);',loader:'js'}));}}]});
+const {geminiRequest,GeminiRequestError,articleGenerationStream}=await import('data:text/javascript;base64,'+Buffer.from(bundle.outputFiles[0].text).toString('base64'));
+const key='SECRET_MUST_NEVER_LEAK',url='https://generativelanguage.googleapis.com/v1beta/models/gemini-test:generateContent',init={method:'POST',headers:{'x-goog-api-key':key},body:'private prompt'};
+let calls=0;const pauses=[],logs=[];
+const pause=async ms=>pauses.push(ms),report=d=>logs.push(d),success=()=>Response.json({candidates:[]});
+let res=await geminiRequest(url,init,async(u,i)=>{assert.equal(u,url);assert.equal(i,init);calls++;return calls===1?Response.json({error:{status:'UNAVAILABLE',message:key}},{status:503}):success();},pause,report);
+assert(res.ok);assert.equal(calls,2);assert.deepEqual(pauses,[1000]);assert.deepEqual(logs,[{http_status:503,provider_status:'UNAVAILABLE',attempt:1}]);assert(!JSON.stringify(logs).includes(key));
+for(const status of [400,401,403,404,429]){calls=0;await assert.rejects(geminiRequest(url,init,async()=>{calls++;return Response.json({error:{message:key,status:key}},{status});},pause,report),e=>e instanceof GeminiRequestError&&e.diagnostic.http_status===status&&!e.message.includes(key));assert.equal(calls,1,'configuration/quota failures must not retry');}
+for(const status of [408,500,502,503,504]){calls=0;await assert.rejects(geminiRequest(url,init,async()=>{calls++;return Response.json({error:{message:key,status:'INTERNAL'}},{status});},pause,report),e=>e instanceof GeminiRequestError&&e.diagnostic.attempt===2&&!e.message.includes(key));assert.equal(calls,2,'temporary failures retry once only');}
+calls=0;await assert.rejects(geminiRequest(url,init,async()=>{calls++;return new Response('not json '+key,{status:503,headers:{'retry-after':'60'}});},pause,report),GeminiRequestError);assert.equal(calls,1,'long Retry-After cannot exceed the job budget');
+calls=0;await assert.rejects(geminiRequest(url,init,async()=>{calls++;throw Error(key);},pause,report),e=>e.diagnostic.http_status===0&&!e.message.includes(key));assert.equal(calls,1,'unknown provider outcomes cannot be blindly resubmitted');assert(!JSON.stringify(logs).includes(key));
+let complete;const work=new Promise(resolve=>complete=resolve),stream=articleGenerationStream('job',()=>work,5),reader=stream.body.getReader(),decoder=new TextDecoder();
+assert.equal(JSON.parse(decoder.decode((await reader.read()).value)).status,'writing');assert.equal(JSON.parse(decoder.decode((await reader.read()).value)).status,'heartbeat');complete();let packets='';while(true){const r=await reader.read();if(r.done)break;packets+=decoder.decode(r.value);}assert(packets.includes('succeeded'));await Promise.all(globalThis.geminiWaits);
+let finish,finished=false;const disconnected=articleGenerationStream('disconnected',async()=>{await new Promise(resolve=>finish=resolve);finished=true;},5),disconnectedReader=disconnected.body.getReader();await disconnectedReader.read();await disconnectedReader.cancel();finish();await Promise.all(globalThis.geminiWaits);assert(finished,'reader cancellation must not itself cancel work');
+console.log('Gemini resilience passed: bounded transient retry, no auth/quota/network blind retry, Retry-After bounds, sanitized diagnostics, stream heartbeat, completion and disconnect grace. No live provider calls.');

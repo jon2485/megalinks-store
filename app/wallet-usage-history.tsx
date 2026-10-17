@@ -1,0 +1,17 @@
+'use client';
+import React,{useState} from 'react';
+import {History,Search,Download} from 'lucide-react';
+import {useData} from '@/lib/client';
+import {exportSpreadsheet} from '@/lib/office';
+import {money,when,type Row} from '@/lib/shared';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {type Ctx,ErrorBox} from './workspace';
+import SiteReference from './site-reference';
+import {OrderBreakdown} from './billing-workspace';
+export default function WalletUsageHistory({ctx}:{ctx:Ctx}){
+ const state=useData('credits',ctx.revision,true,5000),[search,setSearch]=useState(''),[month,setMonth]=useState(''),[page,setPage]=useState(0);
+ const all:Row[]=state.data?.usage_history||[];const rows=all.filter(r=>(!month||new Date(r.created).toLocaleDateString('sv-SE',{timeZone:'Asia/Jerusalem'}).slice(0,7)===month)&&[r.order_number,r.website_name,r.website_url,r.reason].some(v=>String(v||'').toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())));
+ const visible=rows.slice(page*20,page*20+20);
+ return <section dir="rtl" className="wallet-usage-history"><p>חיובים שבוצעו בפועל מהיתרה. ברכישה משולבת מוצג רק החלק ששולם מהיתרה. בהזמנה עם כמה אתרים, החיוב מחולק ביניהם לפי מחירם. זיכויים מופיעים בנפרד.</p><div className="wallet-usage-filters"><label className="wallet-usage-search"><Search size={19}/><Input aria-label="חיפוש שימוש ביתרה" placeholder="חיפוש אתר או מספר הזמנה" value={search} onChange={e=>{setSearch(e.target.value);setPage(0);}}/></label><Input type="month" aria-label="חודש השימוש ביתרה" value={month} onChange={e=>{setMonth(e.target.value);setPage(0);}}/></div><div className="wallet-usage-summary"><span><History size={20}/>{visible.length} שורות שימוש מוצגות{rows.length>visible.length&&<small> מתוך {rows.length}</small>}</span><strong>סה״כ שימושים ביתרה: <bdi>{money(rows.reduce((sum,r)=>sum+r.amount_cents,0))}</bdi></strong></div><ErrorBox error={state.error}/>{state.loading&&!state.data?<p role="status">טוען היסטוריית שימושים…</p>:!rows.length?<p className="wallet-usage-empty">{search||month?'לא נמצאו שימושים התואמים לחיפוש.':'עדיין לא בוצעו חיובים מהיתרה.'}</p>:<ul>{visible.map(r=><li key={r.id}><div className="wallet-usage-product">{r.website_url?<SiteReference name={r.website_name} url={r.website_url}/>:<strong>{r.reason||'התאמת יתרה'}</strong>}<dl><div><dt>תאריך השימוש:</dt><dd><time dateTime={r.created}>{when(r.created)}</time></dd></div><div><dt>מספר הזמנה:</dt><dd>{r.order_id?<Button variant="link" onClick={()=>ctx.open({kind:'order-details',title:'פרטי הזמנה '+r.order_number,render:()=> <OrderBreakdown ctx={ctx} id={r.order_id}/>})}><bdi>{r.order_number}</bdi></Button>:'התאמת יתרה ללא הזמנה'}</dd></div></dl></div><div className="wallet-usage-amount"><span>סכום שנוכה מהיתרה</span><strong><bdi>{money(r.amount_cents)}</bdi></strong></div></li>)}</ul>}<div className="wallet-usage-footer"><Button variant="outline" disabled={!rows.length} onClick={()=>exportSpreadsheet('wallet-usage.xlsx',[['תאריך שימוש','מספר הזמנה','שם אתר','קישור לאתר','סכום שנוכה מהיתרה (₪)'],...rows.map(r=>[when(r.created),r.order_number||'',r.website_name||r.reason||'',r.website_url||'',r.amount_cents/100])],'שימושים ביתרה')}><Download size={18}/>ייצוא לאקסל</Button>{rows.length>20&&<div><Button variant="outline" disabled={page===0} onClick={()=>setPage(page-1)}>הקודם</Button><span>עמוד {page+1} מתוך {Math.ceil(rows.length/20)}</span><Button variant="outline" disabled={(page+1)*20>=rows.length} onClick={()=>setPage(page+1)}>הבא</Button></div>}</div></section>;
+}

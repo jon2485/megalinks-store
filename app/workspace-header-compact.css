@@ -1,0 +1,15 @@
+/* Keep all existing navigation, account and cart controls. */
+.workspace-page-shell .workspace-site-header.workspace-site-header-compact{position:sticky;top:0;z-index:40;width:100%;margin:0;border-radius:0 0 19px 19px;box-shadow:0 5px 16px #0739571c}
+.workspace-site-header.workspace-site-header-compact .workspace-site-header-main{min-height:64px;gap:16px;padding:10px clamp(16px,2.2vw,28px)}
+.workspace-site-header.workspace-site-header-compact .workspace-site-brand{width:auto;max-width:166px}
+.workspace-site-header.workspace-site-header-compact .brand-logo-desktop{width:166px}
+.workspace-site-header.workspace-site-header-compact .workspace-top-navigation-trigger{min-height:44px;padding-block:6px!important}
+.workspace-site-header.workspace-site-header-compact .workspace-top-navigation-icon-badge{width:28px;height:28px}
+.workspace-site-header.workspace-site-header-compact .workspace-site-header-actions{gap:12px}
+.workspace-site-header.workspace-site-header-compact .workspace-site-cart{min-height:44px!important;padding-block:8px!important}
+.workspace-site-header.workspace-site-header-compact .workspace-mobile-header{min-height:60px;padding:8px 14px}
+.workspace-site-header.workspace-site-header-compact .brand-logo-mobile{width:clamp(134px,38vw,160px)}
+.workspace-site-header.workspace-site-header-compact .workspace-mobile-menu-button{width:44px!important;height:44px!important}
+.workspace-site-header.workspace-site-header-compact .workspace-mobile-cart{min-height:44px;height:44px!important}
+@media(max-width:1023px){.workspace-site-header.workspace-site-header-compact .workspace-mobile-header{grid-template-columns:44px minmax(0,1fr) auto}}
+@media(max-width:359px){.workspace-site-header.workspace-site-header-compact .workspace-mobile-header{padding-inline:10px;gap:6px}.workspace-site-header.workspace-site-header-compact .brand-logo-mobile{width:130px}}

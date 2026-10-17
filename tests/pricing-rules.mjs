@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';import {mkdirSync,realpathSync,writeFileSync} from 'node:fs';import {pathToFileURL} from 'node:url';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json');const {build}=require('esbuild');const r=await build({entryPoints:['lib/pricing-rules.ts'],bundle:true,platform:'node',format:'esm',write:false});mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/pricing-rules.mjs',r.outputFiles[0].text);const {customerPrice,minimumWarning}=await import(pathToFileURL(realpathSync('.sites-runtime/pricing-rules.mjs')));
+let checks=0;
+for(let base=1;base<500000;base+=997)for(const bps of [0,700,800,1000,1555,3333,10000]){
+ const site={price:base,is_on_sale:true,sale_price_cents:Math.floor(base*.8)},tier={discount_bps:bps};const normal=Math.round(base*(10000-bps)/10000);assert.equal(customerPrice(site,tier).price_cents,Math.min(normal,site.sale_price_cents));assert.equal(customerPrice(site,tier,base-1,base-2).customer_normal_price_cents,base-1);assert.equal(customerPrice(site,tier,base-1,base-2).price_cents,base-1);assert.equal(customerPrice(site,tier,undefined,base-2).customer_normal_price_cents,base-2);assert(Number.isSafeInteger(customerPrice(site,tier).price_cents));checks+=5;
+}
+assert(minimumWarning('x',0,0));assert(minimumWarning('x',3029,30));assert.equal(minimumWarning('x',3030,30),'');assert(minimumWarning('x',100000,null));assert.equal(customerPrice({price:300000,is_on_sale:true,sale_price_cents:200000,sale_ends:'2000-01-01'},{discount_bps:1000}).price_cents,270000);
+assert.equal(customerPrice({price:300000},{discount_bps:1000}).is_on_sale,false,'tier discounts must not put every site in the promotions tab');assert.equal(customerPrice({price:300000},{discount_bps:1000},250000).is_on_sale,false,'personal price is not a site-wide sale');
+for(const personal of [0,150000,250000,350000]){const result=customerPrice({price:300000,is_on_sale:true,sale_price_cents:100000},{discount_bps:9000},personal,120000);assert.equal(result.price_cents,personal);assert.equal(result.price_source,'personal');assert.equal(result.is_on_sale,false);assert.equal(result.sale_price_cents,undefined);checks+=4;}
+assert.equal(customerPrice({price:300000},{discount_bps:0}).price_source,'regular');
+console.log('SECOND INDEPENDENT PRICING PASS:',checks+7,'precedence, sale and integer rounding assertions');

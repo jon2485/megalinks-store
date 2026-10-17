@@ -1,0 +1,26 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync,writeFileSync,mkdirSync,readFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {unzipSync,strFromU8} from 'fflate';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
+const compiled=await build({entryPoints:['lib/rich-docx.ts'],bundle:true,platform:'node',format:'esm',write:false});
+mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/rich-docx-test.mjs',compiled.outputFiles[0].text);
+const {richArticleDocx}=await import(pathToFileURL(realpathSync('.sites-runtime/rich-docx-test.mjs')));
+const png=process.env.DOCX_QA_IMAGE?new Uint8Array(readFileSync(process.env.DOCX_QA_IMAGE)):Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+j2ioAAAAASUVORK5CYII=','base64'));
+const html='<h2 style="text-align:center">כותרת משנה</h2><p>טקסט <strong>מודגש</strong> ו<a href="https://example.com/one?a=1&amp;b=2">קישור ראשון</a></p><figure><img src="/api/files/image1" data-credit="צילום: בדיקה" alt="תמונת בדיקה"><figcaption>צילום: בדיקה</figcaption></figure><p style="direction:ltr;text-align:left">English <em>italic text</em> and <a href="https://example.com/two">second link</a>.</p><ul><li>פריט ראשון</li><li>פריט שני</li></ul><ol><li>מספור</li></ol><table><tr><th>שם</th><th>ערך</th></tr><tr><td>בדיקה</td><td>100</td></tr></table><h3>סיום</h3>';
+let loads=0;const bytes=await richArticleDocx('כותרת המאמר',html,{image_id:'image1',image_credit:'צילום: בדיקה',meta_description:'תיאור לדוגמה',client_notes:'הנחיות לספק'},async()=>{loads++;return {bytes:png,type:'image/png'};});
+writeFileSync('.sites-runtime/rich-export.docx',bytes);
+const files=unzipSync(bytes),doc=strFromU8(files['word/document.xml']),rels=strFromU8(files['word/_rels/document.xml.rels']);
+assert.equal(loads,1,'inline and gallery same image is not duplicated');
+assert(doc.includes('w:pStyle w:val="Heading2"'));assert(doc.includes('w:pStyle w:val="Heading3"'));
+assert(doc.includes('<w:b/>'));assert(doc.includes('<w:i/>'));assert(doc.includes('w:bidi w:val="1"'));assert(doc.includes('w:bidi w:val="0"'));
+assert(doc.includes('<w:hyperlink'));assert(rels.includes('https://example.com/one?a=1&amp;b=2'));assert(rels.includes('https://example.com/two'));
+assert(doc.indexOf('<w:drawing>')<doc.indexOf('English'),'image remains in its original position');
+assert(doc.indexOf('צילום: בדיקה')>doc.indexOf('<w:drawing>'));assert.equal(doc.match(/צילום: בדיקה/g).length,1);
+assert(!doc.includes('תיאור לדוגמה'));assert(!doc.includes('הנחיות לספק'));const caption=doc.match(/<w:p>[\s\S]*?<\/w:p>/g).find(p=>p.includes('צילום: בדיקה'));assert(caption.includes('<w:jc w:val="center"/>'),'credit is centered below its image');
+assert(doc.includes('<w:tbl>'));assert(doc.includes('<w:numPr>'));assert(files['word/styles.xml']);assert(files['word/numbering.xml']);assert(files['word/media/image1.png']);
+await assert.rejects(()=>richArticleDocx('t','<p><img src="/api/files/missing"></p>',{},async()=>{throw Error('Missing image');}),/Missing image/);
+console.log('Rich DOCX: headings, bold/italic, RTL/LTR, anchored links, image placement/credit/dedup, numbering, tables and missing-image failures passed.');
+
+const notesBundle=await build({entryPoints:['lib/supplier-mail-content.ts'],bundle:true,platform:'node',format:'esm',write:false});writeFileSync('.sites-runtime/supplier-mail-test.mjs',notesBundle.outputFiles[0].text);const {supplierPublicationNotes}=await import(pathToFileURL(realpathSync('.sites-runtime/supplier-mail-test.mjs')));const notes=supplierPublicationNotes({data:JSON.stringify({meta_description:'תיאור מטא',client_notes:'הנחיות פרסום',admin_notes:'הנחיות מנהל'})});assert(notes.includes('תיאור מטא'));assert(notes.includes('הנחיות פרסום'));assert(notes.includes('הנחיות מנהל'));assert.equal(supplierPublicationNotes({data:'{}'}),'');console.log('Supplier email receives metadata and publication notes separately from article DOCX');

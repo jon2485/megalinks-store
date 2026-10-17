@@ -1,0 +1,10 @@
+import {one,parse,assert,stmt} from './server';
+import {businessMonth} from './monthly';
+import type {Row} from './shared';
+// A payment report seals purchases, including reports saved before closure stamps existed.
+export const monthlyOrderClosedSql=(alias='o')=>`(COALESCE(json_extract(${alias}.data,'$.purchase_closed_at'),'')<>'' OR ${alias}.paid=1 OR EXISTS(SELECT 1 FROM monthly_charges settled_charge WHERE settled_charge.order_id=${alias}.id AND settled_charge.settled=1) OR EXISTS(SELECT 1 FROM records report WHERE report.id='payment-report:'||${alias}.id AND json_extract(report.data,'$.status') IN ('pending','approved')))`;
+export async function openMonthlyOrder(userId:string,demo=false){return parse(await one(`SELECT o.* FROM monthly_charges c JOIN orders o ON o.id=c.order_id WHERE c.user_id=? AND c.month=? AND c.demo=? AND c.settled=0 AND o.paid=0 AND o.status<>'cancelled' AND NOT ${monthlyOrderClosedSql()} AND NOT EXISTS(SELECT id FROM records WHERE id='monthly:'||c.month||':'||c.user_id||':'||c.demo) ORDER BY o.created LIMIT 1`,userId,businessMonth(),demo?1:0));}
+export async function lastClosedMonthlyOrder(userId:string,demo=false){return one(`SELECT o.id,o.number,o.paid,o.status,json_extract(o.data,'$.purchase_closed_at') AS purchase_closed_at FROM monthly_charges c JOIN orders o ON o.id=c.order_id WHERE c.user_id=? AND c.demo=? AND o.status<>'cancelled' AND ${monthlyOrderClosedSql()} ORDER BY o.updated DESC,o.created DESC LIMIT 1`,userId,demo?1:0);}
+export function financialGuard(user:Row){return stmt('UPDATE users SET credit_guard=CASE WHEN credit_guard=? THEN credit_guard+1 ELSE NULL END WHERE id=?',Number(user.credit_guard||0),user.id);}
+export function orderGuard(order:Row){return stmt('UPDATE orders SET idempotency=CASE WHEN updated=? AND paid=? AND total=? THEN idempotency ELSE NULL END WHERE id=?',order.updated,order.paid,order.total,order.id);}
+export function articleGuard(a:Row){return stmt('UPDATE articles SET version=CASE WHEN version=? THEN version+1 ELSE NULL END WHERE id=?',a.version,a.id);}

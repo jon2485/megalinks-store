@@ -1,0 +1,38 @@
+import {prepareOrderStatement,storedOrderPdf} from './order-statement';
+import {sendQueuedMail} from './mail';
+import {one,all,parse,stmt,db,assert,admin,owns,now,uid,audit} from './server';
+import {financialGuard,orderGuard} from './monthly-order';
+import {completeOrderPayment} from './split-payment';
+import type {Row} from './shared';
+export async function paymentReportStatus(order:Row){const report=parse(await one('SELECT * FROM records WHERE id=?','payment-report:'+order.id));return report?{...report,data:undefined}:null;}
+async function due(order:Row){const charge=await one('SELECT * FROM monthly_charges WHERE order_id=?',order.id);return {charge,amount:charge&&!charge.settled?Number(charge.amount):order.payment==='credits_card'?Number(order.card_amount):Number(order.total)};}
+export async function paymentReports(r:Request,p:string[],u:Row,body:(r:Request)=>Promise<Row>){
+ const manager=p[0]==='admin'&&p[1]==='payment-reports',customer=p[0]==='orders'&&p[2]==='payment-report';if(!manager&&!customer)return null;
+ if(manager)admin(u);
+ if(manager&&r.method==='GET')return {reports:(await all("SELECT r.*,o.number,o.paid,o.status AS order_status,u.name AS user_name,u.email FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=r.user_id WHERE r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND o.paid=0 AND o.status<>'cancelled' ORDER BY r.created")).map(parse)};
+ const raw=await one('SELECT * FROM orders WHERE id=?',customer?p[1]:p[2]);assert(raw,'ההזמנה לא נמצאה',404);if(customer)owns(u,raw);const order=parse(raw)!,prior=await paymentReportStatus(order);
+ if(customer&&r.method==='GET')return {report:prior};
+ assert(r.method==='POST','פעולה לא נתמכת',405);const b=await body(r),target=await one('SELECT * FROM users WHERE id=?',order.user_id);assert(target,'הלקוח לא נמצא',404);const balance=await due(order),stamp=now();
+ if(customer){
+  assert(b.confirmed_closure===true,'יש לאשר שההזמנה תיסגר לרכישות נוספות');
+  assert(u.id===order.user_id,'רק הלקוח יכול לשלוח דיווח תשלום',403);assert(!order.demo&&!order.paid&&!balance.charge?.settled&&order.status!=='cancelled','ההזמנה כבר שולמה או אינה זמינה לדיווח',409);
+  if(prior?.status==='pending'){if(prior.request_id===b.request_id)return {ok:true,report:prior,duplicate:true};assert(false,'כבר קיים דיווח שממתין לבדיקה',409);}
+  assert(['card','bank_transfer'].includes(b.payment_method),'בחרו אמצעי תשלום');const reference=String(b.reference||'').trim(),date=String(b.payment_date||''),inputAmount=Number(b.amount_ils)*100,amount=Math.round(inputAmount);assert(Number.isFinite(inputAmount)&&Math.abs(inputAmount-amount)<0.00001,'יש להזין סכום עד שתי ספרות אחרי הנקודה');
+  assert(reference.length>=3&&reference.length<=200,'יש להזין אסמכתא תקינה');assert(Number.isSafeInteger(amount)&&amount>0&&amount===balance.amount,'הסכום חייב להיות מלוא היתרה לתשלום. רעננו את ההזמנה אם הסכום השתנה',409);
+  assert(/^\d{4}-\d{2}-\d{2}$/.test(date)&&!isNaN(Date.parse(date))&&new Date(date).toISOString().slice(0,10)===date&&date<=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem'}).format(new Date()),'תאריך תשלום לא תקין');assert(/^[a-zA-Z0-9-]{10,100}$/.test(b.request_id||''),'מזהה בקשה לא תקין');
+  let proof:Row|null=null;if(b.proof_file_id){proof=await one('SELECT * FROM files WHERE id=?',String(b.proof_file_id));assert(proof&&proof.user_id===u.id,'אין הרשאה לקובץ האסמכתא',403);assert(['image/png','image/jpeg','image/webp','application/pdf'].includes(proof.type),'יש לצרף צילום מסך או PDF');}
+  const data={proof_file_id:proof?.id||'',order_id:order.id,status:'pending',payment_method:b.payment_method,reference,payment_date:date,amount_cents:amount,request_id:b.request_id,reported_at:stamp},id='payment-report:'+order.id;
+  const closing=await prepareOrderStatement(order.user_id,order.id,Number(order.total)-Number(order.paid_refund_total||0),u.id,new URL(r.url).origin);
+  await db().batch([financialGuard(target),...(closing.operations.length?closing.operations:[orderGuard(raw!)]),stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,created=excluded.created,updated=excluded.updated',id,'customer_payment_report',u.id,JSON.stringify(data),stamp,stamp),stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),u.id,order.id,'הלקוח דיווח על תשלום',JSON.stringify(data),stamp)]);
+  let pdf_status='ready';try{await storedOrderPdf(order.id,new URL(r.url).origin);}catch{pdf_status='pending';}const mail=await sendQueuedMail('email:order-statement:'+order.id);return {ok:true,report:{id,...data},summary:closing.summary,pdf_status,mail_status:mail?.status||'requested'};
+ }
+ assert(prior?.status==='pending','הדיווח כבר טופל או אינו קיים',409);assert(prior.request_id===b.request_id,'הדיווח השתנה; יש לרענן',409);assert(['approve','reject'].includes(b.decision),'בחרו פעולה');const status=b.decision==='approve'?'approved':'rejected',note=String(b.note||'').trim().slice(0,1500);
+ if(status==='rejected')assert(note,'יש להסביר ללקוח מדוע הדיווח נדחה');
+ const reportUpdate=stmt("UPDATE records SET data=json_set(data,'$.status',?,'$.decision_note',?,'$.handled_by',?,'$.handled_at',?),updated=? WHERE id=? AND json_extract(data,'$.status')='pending' AND json_extract(data,'$.request_id')=?",status,note,u.id,stamp,stamp,prior!.id,prior!.request_id);
+ const log=stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),u.id,order.id,status==='approved'?'דיווח תשלום אושר':'דיווח תשלום נדחה',JSON.stringify({request_id:prior!.request_id,amount:prior!.amount_cents,note}),stamp);
+ if(status==='rejected'){await db().batch([financialGuard(target),reportUpdate,log]);return {ok:true,status};}
+ assert(b.confirmed===true,'יש לאשר שבדקתם קבלת התשלום בפועל');assert(!order.paid&&!balance.charge?.settled&&order.status!=='cancelled','ההזמנה כבר שולמה או בוטלה. רעננו את התור',409);assert(prior!.amount_cents===balance.amount,'יתרת ההזמנה השתנתה מאז הדיווח; יש לדחות ולבקש דיווח מעודכן',409);
+ if(balance.charge){const c=balance.charge;assert(!c.demo,'לא מאשרים דיווח כספי בהדגמה');await db().batch([financialGuard(target),orderGuard(raw!),reportUpdate,log,stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)','monthly-report-paid:'+prior!.request_id,'monthly_payment',order.user_id,JSON.stringify({month:c.month,demo:false,payment_method:prior!.payment_method,reference:prior!.reference,payment_date:prior!.payment_date,amount:c.amount,order_ids:[order.id],recorded_by:u.id}),stamp,stamp),stmt("UPDATE orders SET paid=1,data=json_set(data,'$.paid_at',?,'$.payment_date',?,'$.settlement_payment_method',?),updated=? WHERE id=?",stamp,prior!.payment_date,prior!.payment_method,stamp,order.id),stmt('UPDATE monthly_charges SET settled=1 WHERE order_id=?',order.id),stmt('UPDATE credit_accounts SET balance=balance-? WHERE user_id=?',c.amount,order.user_id)]);}
+ else await completeOrderPayment(raw!,'reported-payment:'+prior!.request_id,{actor:u.id,payment_method:prior!.payment_method,reference:prior!.reference,payment_date:prior!.payment_date,amount_cents:prior!.amount_cents},[reportUpdate,log]);
+ return {ok:true,status};
+}
