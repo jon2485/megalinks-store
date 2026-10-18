@@ -138,3 +138,15 @@ Intro token mapping (runtime model B): `--catalog-ink` = #0a234c,
 `--catalog-copy` = #617184, `--catalog-surface` = #ffffff, owned by
 `app/catalog-experience.css`. Intro components consume these catalog-scoped tokens.
 The matching original global brand tokens are not changed.
+
+## Railway staging sign-in
+
+The staging gateway owns only its isolated sign-in document. Existing application
+UI, navigation and business permissions are unchanged. It mirrors the canonical
+navy `#071f4b`, background `#f7f8fa`, foreground `#172b32`, card `#ffffff`, cyan
+`#e8f8fb`, Arial fallback and 16px body baseline from this document. Labels and
+feedback are Hebrew RTL; email and password values are LTR. The single form uses
+48px controls, visible focus, masked password with a show/hide button, inline
+errors and a stable disabled submit state. No animation or external assets.
+It intentionally uses a standalone HTML document because the server must reject
+unauthenticated requests before serving the application or its static assets.
