@@ -1,0 +1,189 @@
+{
+  "checkedAt": "2026-10-18T17:17:04.510Z",
+  "sourceHead": "2014b0563828378bf064d903f052e4db22662add",
+  "applicationCommit": "d3f2701640dc9d250f78f4df4bfb9eed0e070e1e",
+  "preview": {
+    "managedLinux": true,
+    "controlBrowserAvailable": false,
+    "previewServerStarted": false,
+    "browserInstalled": false,
+    "browserTestsRun": false,
+    "browserTestsPassed": null,
+    "reactComponentFixturesAvailable": true,
+    "browserHarnessPrepared": false,
+    "localExecutionProfilePresent": false,
+    "required": "Enable a supported control-browser session and prepare an isolated real-component QA harness using approved preview supervision; alternatively run isolated QA with a reviewer outside this managed session.",
+    "policySource": "Sites SKILL.md Prepare and launch; references/preview/managed.md",
+    "scope": "No independent HTML mockup, no application auth/save implementation replaced."
+  },
+  "actualChecksThisTask": [
+    {
+      "type": "platform read",
+      "scope": "staging service only",
+      "passed": true,
+      "details": "Live config, latest deployments and domain were read with explicit project/environment/service IDs. No pending staged changes."
+    },
+    {
+      "type": "anonymous HTTP GET",
+      "browser": false,
+      "credentials": false,
+      "results": [
+        {
+          "path": "/",
+          "status": 303,
+          "location": "/signin-with-chatgpt?return_to=%2F"
+        },
+        {
+          "path": "/admin",
+          "status": 303,
+          "location": "/signin-with-chatgpt?return_to=%2Fadmin"
+        },
+        {
+          "path": "/api/me",
+          "status": 401
+        },
+        {
+          "path": "/api/catalog?scope=admin",
+          "status": 401
+        },
+        {
+          "path": "/healthz",
+          "status": 200
+        }
+      ],
+      "cacheControlAll": "private, no-store",
+      "writes": 0,
+      "limitations": "Not a login, role, session-expiry, asset or full security test."
+    },
+    {
+      "type": "real React isolated state/handler check",
+      "browser": false,
+      "scenario": "Open new navigation; select admin-orders; render same component with new view.",
+      "expandedBeforeSelection": true,
+      "expandedAfterRouteChange": true,
+      "apiWrites": 0,
+      "finding": "NEW-01: expanded disclosure persists across route change. No product fix made."
+    },
+    {
+      "type": "source comparison",
+      "passed": true,
+      "files": [
+        "components/ui/dialog.tsx",
+        "app/catalog-website-form.tsx",
+        "app/pricing-admin.tsx"
+      ],
+      "result": "Byte-identical to the pinned staging base; save logic and shared dialog code unchanged."
+    }
+  ],
+  "priorValidationNotRerun": {
+    "regressionScripts": 20,
+    "passed": 20,
+    "supplierPrivacyAssertions": 911,
+    "typecheck": "passed",
+    "build": "passed",
+    "strictStaticFindingsExisting": 71,
+    "strictStaticFindingsIntroduced": 0
+  },
+  "railway": {
+    "projectId": "4d90cd94-2461-4ede-88cc-c285aa68a74f",
+    "environment": {
+      "id": "1bae3915-f298-4ca6-b31d-aa79526f1eac",
+      "name": "staging "
+    },
+    "service": {
+      "id": "4eb5f337-7344-42b8-9f53-4bbc23c50436",
+      "name": "megalinks-web"
+    },
+    "config": {
+      "source": {
+        "repo": "jon2485/MEGALINKS-STORE",
+        "branch": "railway-staging-v172",
+        "commitSha": "0d470460f8c2b2aa77c0a11f20aaec73e56c9bdb"
+      },
+      "networking": {
+        "serviceDomains": {
+          "megalinks-staging-v172.up.railway.app": {
+            "port": 8080
+          }
+        }
+      },
+      "build": {
+        "builder": "RAILPACK",
+        "buildEnvironment": "V3"
+      },
+      "deploy": {
+        "startCommand": "node scripts/railway-staging-start.mjs",
+        "healthcheckPath": "/healthz",
+        "healthcheckTimeout": 60,
+        "useLegacyStacker": false,
+        "ipv6EgressEnabled": false,
+        "runtime": "V2",
+        "multiRegionConfig": {
+          "ams": {
+            "numReplicas": 1
+          }
+        }
+      },
+      "volumeMounts": {
+        "3735ab2e-6ade-4ce7-abe8-b3cf918a5c86": {
+          "mountPath": "/data"
+        }
+      }
+    },
+    "staged": null,
+    "variableValuesRead": false,
+    "productionEnvironmentRead": false,
+    "latestDeployment": {
+      "id": "8b91aa71-392a-4b2c-9810-5f7b94e6399b",
+      "status": "SUCCESS",
+      "createdAt": "2026-10-18T09:10:36.350Z",
+      "meta": {
+        "reason": "deploy",
+        "commitMessage": "Fix Railway staging static asset routing behind authenticated gateway",
+        "commitHash": "0d470460f8c2b2aa77c0a11f20aaec73e56c9bdb",
+        "branch": "railway-staging-v172"
+      }
+    },
+    "domains": {
+      "serviceDomains": [
+        {
+          "id": "09a1cdae-0ca3-4ce2-aa5f-8a06139e5b76",
+          "domain": "megalinks-staging-v172.up.railway.app",
+          "targetPort": 8080
+        }
+      ],
+      "customDomains": []
+    }
+  },
+  "branchesBefore": [
+    {
+      "name": "design/admin-tabler-v172",
+      "sha": "2014b0563828378bf064d903f052e4db22662add"
+    },
+    {
+      "name": "main",
+      "sha": "d757e6c32f853e729b6c2cffee42e5721acf5231"
+    },
+    {
+      "name": "railway-production-v172-prep",
+      "sha": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366"
+    },
+    {
+      "name": "railway-production-v172",
+      "sha": "6e007d1ad77090bfef5df16f97db6430ad846049"
+    },
+    {
+      "name": "railway-staging-v172",
+      "sha": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366"
+    },
+    {
+      "name": "restore/admin-ui-before-20261018",
+      "sha": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366"
+    }
+  ],
+  "changesThisTask": "Documentation only; no application, test-suite, dependency, auth, backend, API, database or infrastructure change.",
+  "liveBusinessWorkflowsVerified": false,
+  "visualAcceptancePassed": false,
+  "deploymentReady": false,
+  "deployPerformed": false
+}

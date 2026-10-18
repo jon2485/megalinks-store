@@ -1,5 +1,7 @@
 # Mega Links v172 — בדיקת השלמה ויישום ניהולי מוגבל
 
+עדכון בדיקות קבלה: [דוח מוכנות, היתכנות Preview ופערי UX קיימים/חדשים](./acceptance-readiness.md). בדיקות דפדפן לא בוצעו; Staging נבדקה בקריאה בלבד ונשארה בגרסה הקודמת.
+
 בוצע ב־18.10.2026. אין Deploy. אין שינוי בענפי main, Staging או Production.
 
 נקודת הבסיס המאומתת ב־GitHub: `railway-staging-v172` ב־`80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366`.
