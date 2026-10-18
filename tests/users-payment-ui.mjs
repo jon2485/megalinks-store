@@ -15,7 +15,9 @@ const {CustomerPaymentReport,AdminPaymentReports}=await load('payment-reports');
 globalThis.fixture={data:{report:{status:'pending',payment_method:'card',reference:'REF-123',amount_cents:25960}},loading:false};html=renderToStaticMarkup(React.createElement(CustomerPaymentReport,{ctx:customerCtx,order:{id:'o',user_id:'customer',paid:0,total:25960}}));assert(html.includes('ממתין לאישור מנהל'));assert(html.includes('REF-123'));assert(!html.includes('דיווח על תשלום שבוצע'));
 assert.equal(renderToStaticMarkup(React.createElement(CustomerPaymentReport,{ctx:customerCtx,order:{id:'o',user_id:'customer',paid:1}})),'');
 globalThis.fixture={data:{reports:[{id:'r',order_id:'o',user_name:'לקוח בדיקה',number:'#1001',payment_method:'bank_transfer',reference:'BANK-1',amount_cents:25960,payment_date:'2026-10-12'}]},loading:false};html=renderToStaticMarkup(React.createElement(AdminPaymentReports,{ctx}));for(const t of ['דיווחי תשלום לאישור','BANK-1','בדיקה ואישור'])assert(html.includes(t));
-assert(readFileSync('app/workspace.tsx','utf8').includes("initialTab={view.split('/')[2]==='payments'?'payments':'orders'}"));
+// Existing B1 routing accepts the original alias set; CustomerAccountAdmin still
+// owns normalization. This test must not require an obsolete two-route ternary.
+assert(readFileSync('app/workspace.tsx','utf8').includes("initialTab={['payments','monthly','articles','profile','history'].includes(view.split('/')[2])?view.split('/')[2]:'orders'}"));
 console.log('Users/payment UI passed: RTL cards, readable search, mobile actions, correct customer routes, settings dialog, unpaid/pending/paid distinction and admin review queue.');
 const {default:PriceEditor}=await load('personal-price-editor');html=renderToStaticMarkup(React.createElement(PriceEditor,{ctx,customer:user,site:{id:'site-a',name:'אתר בדיקה',url:'https://site.example.test',base_price:30000,tier_price:27000,price_cents:26000,cost_cents:18000,personal_price:26000},version:7,close(){}}));
 for(const t of ['מחיר מחירון רגיל','מחיר לפי רמת הלקוח','המחיר המוצג ללקוח כרגע','מחיר עלות','מחיר חדש ללקוח זה בלבד','לקוח בדיקה','חזרה למחיר לפי רמה'])assert(html.includes(t),t);

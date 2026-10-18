@@ -40,3 +40,27 @@ catalog projection; full live/personalized pricing remains API-owned. Public
 heading rendering must not depend on a browser request. Private routes are
 noindex and never included in the sitemap; indexing controls are not authorization.
 Unknown routes return 404 without breaking existing nested article/admin routes.
+
+## Administrative presentation extension
+
+This section records the existing owners; it does not change policy or activate
+dormant account tabs. See `docs/admin-design-v172/full-upgrade.md` for scope and
+verification limitations.
+
+| Capability | Canonical owner | Source of truth | Allowed presentation | Verification |
+|---|---|---|---|---|
+| Navigation/dirty | workspace.tsx go/navigate + existing popstate | Existing handlers; documented inherited popstate gap | AdminNavigation grouped details, real links, mobile disclosure | Navigation contract + fixture handlers; browser unverified |
+| Dashboard | AdminLobby / AdminLobbyPanel | Original API queues and local dirty guard | Queue/work-panel layout and scoped CSS | Exact call/event AST + lobby interaction tests |
+| Forms/prices/saves | CatalogWebsiteForm, CatalogPricingWorkspace, PersonalPriceEditor, ActionForm, original finance/account forms | Existing API payloads, versions, busy flags and errors | Admin-only field/dialog geometry and colors | Save contract, fixture actions; no live mutations |
+| Table selection/filter/paging | Each existing screen implementation | Existing local/API behavior | Scoped table density, overflow and status tones | Existing regression fixtures; browser unverified |
+| Select/Listbox | components/ui/select.tsx; original native controls | Existing Radix/select ownership | Admin-live portal colors/radius only; native geometry unchanged | Source equality; open-popup browser check unverified |
+| Date | Original native date fields | Existing type, value, onChange and domain date handling | Field styling only, OS popup remains native | Source equality; browser unverified |
+| Dialog/confirm | components/ui/dialog.tsx and original ctx.open | Existing Radix focus, dismissal, callback and busy locks | Live admin :has CSS scope; viewport-limited scroll | Shared component equality, fixture save/error tests; focus browser unverified |
+| Toast | Existing Sonner provider | Original success/error calls | Unchanged | Source equality |
+| Scrollbar | admin-design-v172.css | Admin-scoped tokens; document scroll for forms | Standard properties with WebKit/forced-color fallbacks | CSS contract; computed-style/browser unverified |
+| CRUD/auth/finance | Original React handlers and lib/server.ts | docs/security.md; docs/supplier-data-privacy.md; original server | Presentation only; no API or permission changes | Protected-source equality, isolated server tests; live financial E2E unverified |
+
+Permissions, amounts, retention, cancellation, settlement and save semantics are
+not redefined by this design. Existing aliases/B1, dormant exports/B2–B3, shared
+role surfaces/B5 and known dirty-signaling gaps stay as documented in the original
+completion review. No hardening claim is made for these inherited behaviors.

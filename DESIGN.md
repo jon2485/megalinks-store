@@ -177,7 +177,55 @@ dirty decision; closing this presentation disclosure does not save or discard da
 This slice styles the actual AdminOrderHistory and CatalogPricingWorkspace;
 filters, totals, exports, pagination, four pricing tabs and all mutations keep
 original implementations. Form dialogs and their save mechanisms stay untouched.
-No prototype save code or demo records are imported. Other admin screens remain
-at their existing content design behind the new navigation. No full rollout or
-deployment is authorized in this slice. Browser/assistive-technology verification
-and isolated live save/payment/Sheets checks remain pre-deployment gates.
+No prototype save code or demo records are imported. This paragraph describes the
+first, limited rollout; the subsequently authorized full presentation rollout is
+documented below. Browser/assistive-technology and live business-write workflows
+remain unverified rather than inferred from HTTP or fixture tests.
+
+## Full admin presentation rollout (2026-10-18)
+
+The user authorized all administrative screens, still on the design branch and
+protected Railway Staging only. Production, main and business data stay untouched.
+The rollback branch for the previously accepted slice is
+`restore/admin-ui-before-full-20261018` at `b3e62a8473a2f808144a802bafb0fadb622db8cc`.
+
+Extend the approved Tabler-inspired navy/cyan workspace through every existing
+admin screen. Use the current Hebrew Heebo/Arial fonts, 24–30px page headings,
+14–16px controls/body, 12–13px metadata, 8–10px corners, white surfaces, cool gray
+dividers and tabular monetary figures. Do not introduce new font downloads,
+gradients, metrics, graphs, activity feeds or demo data. The UI/UX Pro Max broad
+system query suggested a marketing/glass style; that mismatch was rejected. Its
+focused enterprise-minimalism guidance supports the already approved direction.
+
+The 232px sidebar has nine areas. Four grouped areas use native `details/summary`;
+the active area starts open and all 21 original destinations remain real links.
+The existing mobile disclosure and ctx.go dirty guard remain owners of navigation.
+Search now has a localized clear button with input focus restoration. Do not add
+route/history writes, permissions, save logic or new network calls to navigation.
+
+The dashboard keeps all nine real task queues and the exact AdminLobbyPanel.
+Above 1080px of content width, a 268px queue column sits beside the work panel;
+below it the queues form a 3/2-column grid above the panel. No task action, count,
+dirty guard, polling behavior or selection callback changes. The document owns
+the working panel's vertical scroll, including long embedded editor forms.
+
+The same admin-only CSS themes orders, payment review, topups, invoices, monthly
+accounts, customer permissions/account views, catalog/tier/customer prices and
+Sheets, suppliers/settlements, content/publication, promotions/bundles, service,
+settings/reports/audit and integration logs. Native table overflow remains local.
+Controls, labels, available/disabled states and confirmation/save handlers remain
+canonical to their original React components. No dormant view is enabled.
+
+Radix owns portals, focus, Escape, dismiss and busy locks. Portals are themed only
+under `body:has(.admin-design-v172)`, which requires the authenticated admin route
+class to be currently present. No persistent body flag or shared primitive change
+is introduced. Long dialogs get a viewport-bounded scroll area; fields remain
+16px on phones and all original form sections stay reachable. Essential actions
+are not hidden. Decorative support/hero waves and redundant table headings may
+be hidden in the documented compact layouts, never data or operations.
+
+All full-rollout runtime tokens belong to `app/admin-design-v172.css` (model B).
+Ink #071f4b, background #f4f6fa, surface #fff, muted #526579, line #d8e0e9,
+action #086b91, success #18735a, warning #8a5a0a, danger #ac304a.
+Focus #087ac8 stays visible. Reduced motion/forced colors are supported. The
+shared customer/supplier styles and top-level primitives remain byte-identical.

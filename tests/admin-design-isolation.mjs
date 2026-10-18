@@ -3,7 +3,7 @@ import {execFileSync} from 'node:child_process';
 import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),base='80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366';
-const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}),allowed=new Set(['app/admin-shell.tsx','app/workspace.tsx','DESIGN.md','tests/admin-entry-routing.mjs','tests/admin-shell-ui.mjs']);
+const git=(...args)=>execFileSync('git',args,{encoding:'utf8'}),allowed=new Set(['app/admin-shell.tsx','app/admin-lobby.tsx','app/workspace.tsx','DESIGN.md','UX-CONTRACT.md','tests/admin-entry-routing.mjs','tests/admin-shell-ui.mjs','tests/customer-articles-ui.mjs','tests/users-payment-ui.mjs']);
 const tracked=git('ls-tree','-r','-z',base).split('\0').filter(Boolean).map(row=>{const [metadata,file]=row.split('\t');return {file,sha:metadata.split(' ')[2]};});
 for(const {file,sha} of tracked){if(!allowed.has(file)){const actual=execFileSync('git',['hash-object','--stdin'],{encoding:'utf8',input:readFileSync(file)}).trim();assert.equal(actual,sha,'protected source changed: '+file);}}
 const original=git('show',base+':app/workspace.tsx'),current=readFileSync('app/workspace.tsx','utf8');
@@ -11,9 +11,9 @@ const stripped=current.replace("import './admin-design-v172.css';\n",'').replace
 assert.equal(stripped,original,'workspace may only add the guarded class, skip-link target and stylesheet import');
 const postcss=require(require.resolve('postcss',{paths:[require.resolve('@tailwindcss/postcss')]}));
 const css=readFileSync('app/admin-design-v172.css','utf8'),root=postcss.parse(css);let rules=0;
-root.walkRules(rule=>{rules++;for(const selector of rule.selectors)assert(selector.startsWith('.admin-design-v172'),'unscoped CSS: '+selector);});
+root.walkRules(rule=>{rules++;for(const selector of rule.selectors)assert(selector.startsWith('.admin-design-v172')||selector.startsWith('body:has(.admin-design-v172) '),'unscoped CSS: '+selector);});
 root.walkAtRules(rule=>assert(['media','container'].includes(rule.name),'unexpected global CSS at-rule '+rule.name));
-assert(!/transition\s*:\s*all|outline\s*:\s*none|\.catalog-website-dialog|\.catalog-supplier-dialog/.test(css),'no global motion/focus reset or editor dialog overrides');
+assert(!/transition\s*:\s*all|outline\s*:\s*none/.test(css),'no global motion/focus reset');
 assert(css.includes('@media(max-width:1100px)')&&css.includes('@container admin-v172'));
 assert(current.includes("adminMode&&user?.role==='admin'?' admin-design-v172':''"));
 const shell=readFileSync('app/admin-shell.tsx','utf8');assert(shell.includes('return <AdminLobby ctx={ctx}/>'),'dashboard remains original');assert(!/\b(api|pricingApi|fetch|pushState|replaceState)\(/.test(shell),'navigation cannot mutate or bypass workspace history');

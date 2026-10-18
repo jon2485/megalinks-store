@@ -1,0 +1,11 @@
+{
+  "status": "READY_FOR_STAGING",
+  "scope": "Staging only",
+  "deployed": false,
+  "candidateCommit": null,
+  "previousDeploymentId": "c514597a-277c-461a-9d12-826c2f725d31",
+  "restoreBranch": "restore/admin-ui-before-full-20261018",
+  "liveUrl": "https://megalinks-staging-v172.up.railway.app/admin",
+  "browserRun": false,
+  "liveBusinessWrites": 0
+}

@@ -16,7 +16,7 @@ for(const text of ['הזמנות וכספים','חשבוניות וקבלות','
 const detail=renderToStaticMarkup(React.createElement(AdminNavigation,{ctx,view:'admin-customer-account/customer-id'}));assert(detail.includes('חזרה ללקוחות והרשאות'));
 globalThis.adminFixture={data:{queues:[{id:'content',label:'כתבות לאישור',page:'admin-approvals',count:3,description:'בדיקת תוכן',oldest:'2026-10-01'},{id:'zero',count:0,label:'אין משימות'}],cancellations:[{id:'a',user_id:'customer',user_name:'לקוח בדיקה',website_name:'אתר בדיקה',title:'כותרת',updated:'2026-10-01'}],updated:'2026-10-12'},loading:false};
 const dashboard=renderToStaticMarkup(React.createElement(AdminControlCenter,{ctx}));
-for(const text of ['לובי הניהול','כתבות ותוכן','דיווחי תשלום','פניות שירות','מחירים וסנכרון','ביטולים וזיכויים','מסמכים וחיבורים','הטענות יתרה','פרסום וספקים','חשבונות חודשיים'])assert(dashboard.includes(text),text);assert(!dashboard.includes('אין משימות'));
+for(const text of ['מרכז הבקרה','תורי עבודה','כתבות ותוכן','דיווחי תשלום','פניות שירות','מחירים וסנכרון','ביטולים וזיכויים','מסמכים וחיבורים','הטענות יתרה','פרסום וספקים','חשבונות חודשיים'])assert(dashboard.includes(text),text);assert(!dashboard.includes('אין משימות'));
 globalThis.adminFixture={loading:true};assert(renderToStaticMarkup(React.createElement(AdminControlCenter,{ctx})).includes('role="status"'));
 globalThis.adminFixture={loading:false,error:'לא ניתן לטעון'};assert(renderToStaticMarkup(React.createElement(AdminControlCenter,{ctx})).includes('role="alert"'));
 const nav=readFileSync('lib/admin-navigation.ts','utf8'),workspace=readFileSync('app/workspace.tsx','utf8');
