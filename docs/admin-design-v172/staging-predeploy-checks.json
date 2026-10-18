@@ -1,0 +1,303 @@
+{
+  "date": "2026-10-18T17:29:39.107Z",
+  "passed": 22,
+  "total": 22,
+  "results": [
+    {
+      "file": "tests/admin-entry-routing.mjs",
+      "passed": true,
+      "stdout": "ADMIN ENTRY ROUTING PASSED: all 9 main categories open full routes; full pages exclude lobby cards; local task shortcuts remain embedded; RTL and nested page entries preserved.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-lobby-actions.mjs",
+      "passed": true,
+      "stdout": "LOBBY ACTIONS PASSED: nine RTL categories, embedded screen for every card, order details/all-reports/settings stay inside lobby, refresh, unsaved-edit guard and search-result navigation.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-lobby-panels.mjs",
+      "passed": true,
+      "stdout": "LOBBY PANELS PASSED: payment rows/proof/exact order/approval targets; opening does not approve; all nine working areas and nested customer/article routes resolve to the intended embedded components.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-shell-ui.mjs",
+      "passed": true,
+      "stdout": "Admin UI: 9 areas, all 21 legacy routes retained, nested sidebar links, account back-navigation, live queue tiles, cancellation links, accessible loading and error states passed.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-order-history.mjs",
+      "passed": true,
+      "stdout": "ADMIN ORDER HISTORY PASSED: confirmed-only totals and export; bank pending/reported/PDF-closed unpaid/demo excluded; payment-month groups; refunds reflected; outstanding orders in a separate view.\nCANCELLED ADMIN ORDER: one red cancelled badge, no paid label, matching export status.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-finance-ui.mjs",
+      "passed": true,
+      "stdout": "Finance admin screens render populated RTL lists, mobile-first layouts, request actions and bank settings.\nInvoice cancellation uses the same red cancelled status despite paid state or an attached invoice.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/monthly-admin-ui.mjs",
+      "passed": true,
+      "stdout": "Monthly UI passed: paid badge, full article details, payment evidence form, RTL, checkout-only monthly action.\nLobby monthly panel defaults to real unpaid accounts; standalone monthly defaults are preserved.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/pricing-admin-ui.mjs",
+      "passed": true,
+      "stdout": "PRICING ADMIN UI PASSED: tier controls, customer assignment, pricebook, minimums, imports, history and responsive layouts",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-design-navigation.mjs",
+      "passed": true,
+      "stdout": "ADMIN DESIGN NAVIGATION PASSED: 21 guarded targets, 9 areas, native modifiers, nested back routes, pricing aliases, search/reset/empty state, RTL; NEW-01 selection closes disclosure, restores visible toggle focus and preserves ctx.go guard.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-workspace-navigation-contract.mjs",
+      "passed": true,
+      "stdout": "WORKSPACE NAVIGATION CONTRACT PASSED: original dirty cancel/confirm, history push and popstate, nested pricebook and admin-article normalization. Known original popstate dirty-guard gap reproduced; no router code changed.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-orders-navigation-contract.mjs",
+      "passed": true,
+      "stdout": "ORDER INTERACTION CONTRACT PASSED: expansion, exact order/document callback, search/month filtering, filtered export, pending toggle and reset, existing RTL. Mocked data only.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-website-save-contract.mjs",
+      "passed": true,
+      "stdout": "WEBSITE SAVE CONTRACT PASSED: all 27 fields, tags/features/examples normalization, supplier/costs/list/sale prices, version/id/create guards, error recovery, busy/upload/no-data guards, logo FormData, create defaults, response rehydration. Mocked API only.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-pricing-save-contract.mjs",
+      "passed": true,
+      "stdout": "PRICING SAVE CONTRACT PASSED: website-tier blank/zero/version, admin-only catalog reads, tier create/edit/delete with confirmation and regular-tier protection, membership, personal update/remove/validation/conflict, 101-row import preview and versioned batches. Mocked API only.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-design-isolation.mjs",
+      "passed": true,
+      "stdout": "ADMIN ISOLATION PASSED: 371 original files byte-identical; workspace limited to 3 admin-guarded presentation additions; all 96 CSS rules scoped; backend, APIs, auth, pricing, orders, shared/customer/supplier components and dormant exports unchanged.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/catalog-workspace-actions.mjs",
+      "passed": true,
+      "stdout": "CATALOG WORKSPACE ACTIONS PASSED: four exclusive tabs, correct site edit, admin gate, RTL/LTR fields, versioned save, searchable supplier list, inline creation/selection, shared modal route and responsive card/table layout.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/pricing-redesign-actions.mjs",
+      "passed": true,
+      "stdout": "Redesign action checks passed: tabs, membership, personal route, review, modal save success/failure, RTL, accurate prices, favorite, order, admin editing and external links.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/personal-price-editor-actions.mjs",
+      "passed": true,
+      "stdout": "PERSONAL PRICE EDITOR PASSED: exact account/site/amount/version, success refresh, retained error modal, validation, explicit zero and removal fallback.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/customer-order-screen.mjs",
+      "passed": true,
+      "stdout": "CUSTOMER ORDER SCREEN PASSED: all rows collapsed; one mixed list; exact header; 30 linked products with purchase dates; summary below products; only open orders can report payments with proof.\nADMIN ORDER UI PASSED: same compact list, PDF action only, closure and unpaid state clearly separated.\nCANCELLED CUSTOMER ORDER: red cancelled badge and detail agree, no payment report action.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/payment-closure-actions.mjs",
+      "passed": true,
+      "stdout": "PAYMENT CLOSURE ACTIONS: warning before mutations, cancel preserves state, confirmation sends exact route/fields, double-click guard passed.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/supplier-privacy.mjs",
+      "passed": true,
+      "stdout": "SUPPLIER PRIVACY PASSED: 911 checks. Public/customer/agency/API/supplier paths, private canaries, nested/legacy data, administrator-only costs, activity, exports, files, supplier inbox and inventory-free email. Isolated fixtures only.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/railway-staging-gateway.mjs",
+      "passed": true,
+      "stdout": "STAGING GATEWAY PASSED: 37 checks",
+      "stderr": ""
+    },
+    {
+      "file": "tests/railway-staging-assets.mjs",
+      "passed": true,
+      "stdout": "STAGING ASSETS PASSED: 9 SSR-referenced JS/CSS files return real code with HTTP 200",
+      "stderr": ""
+    }
+  ],
+  "build": {
+    "passed": true,
+    "command": "node scripts/run-framework.mjs build"
+  },
+  "typecheck": {
+    "passed": true,
+    "command": "node node_modules/typescript/bin/tsc --noEmit --incremental false"
+  },
+  "eslint": [
+    {
+      "file": "app/admin-shell.tsx",
+      "errors": 0,
+      "warnings": 0
+    }
+  ],
+  "browserTestsRun": false,
+  "liveBefore": {
+    "phase": "before",
+    "checkedAt": "2026-10-18T17:31:04.616Z",
+    "browser": false,
+    "authenticated": true,
+    "anonymous": [
+      {
+        "path": "/",
+        "status": 303
+      },
+      {
+        "path": "/admin",
+        "status": 303
+      },
+      {
+        "path": "/api/me",
+        "status": 401
+      },
+      {
+        "path": "/api/catalog?scope=admin",
+        "status": 401
+      },
+      {
+        "path": "/healthz",
+        "status": 200
+      },
+      {
+        "path": "SSR-referenced asset",
+        "status": 303
+      }
+    ],
+    "pages": [
+      {
+        "path": "/admin",
+        "status": 200,
+        "htmlBytes": 22439
+      },
+      {
+        "path": "/admin-orders",
+        "status": 200,
+        "htmlBytes": 22537
+      },
+      {
+        "path": "/admin-websites",
+        "status": 200,
+        "htmlBytes": 22565
+      },
+      {
+        "path": "/admin-pricing",
+        "status": 200,
+        "htmlBytes": 22551
+      },
+      {
+        "path": "/admin-pricebooks",
+        "status": 200,
+        "htmlBytes": 22593
+      },
+      {
+        "path": "/admin-suppliers",
+        "status": 200,
+        "htmlBytes": 22579
+      },
+      {
+        "path": "/admin-supplier-finance",
+        "status": 200,
+        "htmlBytes": 22677
+      }
+    ],
+    "apis": [
+      {
+        "path": "/api/catalog?scope=admin",
+        "status": 200
+      },
+      {
+        "path": "/api/admin/pricing",
+        "status": 200
+      },
+      {
+        "path": "/api/orders?scope=all",
+        "status": 200
+      },
+      {
+        "path": "/api/admin/control-center",
+        "status": 200
+      }
+    ],
+    "assets": [
+      {
+        "path": "/_next/static/css/index.BGfkm5_K.css",
+        "status": 200,
+        "type": "text/css; charset=utf-8",
+        "bytes": 489572
+      },
+      {
+        "path": "/_next/static/css/workspace.C2qAbUoS.css",
+        "status": 200,
+        "type": "text/css; charset=utf-8",
+        "bytes": 58674
+      },
+      {
+        "path": "/_next/static/chunks/index-D3oRpNSE.js",
+        "status": 200,
+        "type": "text/javascript; charset=utf-8",
+        "bytes": 195304
+      },
+      {
+        "path": "/_next/static/chunks/rolldown-runtime-QTnfLwEv.js",
+        "status": 200,
+        "type": "text/javascript; charset=utf-8",
+        "bytes": 694
+      },
+      {
+        "path": "/_next/static/chunks/framework-JGc2HF7T.js",
+        "status": 200,
+        "type": "text/javascript; charset=utf-8",
+        "bytes": 190152
+      },
+      {
+        "path": "/_next/static/chunks/layout-segment-context-D7rM6Etd.js",
+        "status": 200,
+        "type": "text/javascript; charset=utf-8",
+        "bytes": 494
+      },
+      {
+        "path": "/_next/static/chunks/brand-loading-Bz1q9mfl.js",
+        "status": 200,
+        "type": "text/javascript; charset=utf-8",
+        "bytes": 1033
+      },
+      {
+        "path": "/_next/static/chunks/loading-state-CCvE401o.js",
+        "status": 200,
+        "type": "text/javascript; charset=utf-8",
+        "bytes": 191
+      },
+      {
+        "path": "/_next/static/chunks/workspace-BuoGDBpG.js",
+        "status": 200,
+        "type": "text/javascript; charset=utf-8",
+        "bytes": 802325
+      }
+    ],
+    "newAdminCss": false,
+    "newAdminJs": false,
+    "businessWrites": 0,
+    "passed": true
+  },
+  "businessWrites": 0
+}

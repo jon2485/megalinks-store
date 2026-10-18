@@ -169,6 +169,11 @@ guard. Deep routes and browser history handlers remain owned by workspace.tsx.
 The existing browser-popstate dirty-guard gap is documented, not silently fixed.
 The skip link targets the admin-only focusable content wrapper.
 
+NEW-01: ordinary destination selection closes the in-flow mobile navigation and
+returns focus to its toggle when that toggle is visible. Modified link activation
+keeps the current navigation/editor intact. The same ctx.go call still owns the
+dirty decision; closing this presentation disclosure does not save or discard data.
+
 This slice styles the actual AdminOrderHistory and CatalogPricingWorkspace;
 filters, totals, exports, pagination, four pricing tabs and all mutations keep
 original implementations. Form dialogs and their save mechanisms stay untouched.

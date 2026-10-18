@@ -18,6 +18,11 @@ export function AdminNavigation({ctx,view}:{ctx:Ctx;view:string}){
  const select=(event:React.MouseEvent<HTMLAnchorElement>,page:string)=>{
   if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;
   event.preventDefault();
+  if(expanded){
+   const toggle=event.currentTarget?.closest('.admin-v172-navigation')?.querySelector<HTMLButtonElement>('button[aria-controls="admin-v172-menu"]');
+   if(toggle?.getClientRects().length)toggle.focus();
+  }
+  setExpanded(false);
   setSearch('');
   ctx.go(page);
  };
