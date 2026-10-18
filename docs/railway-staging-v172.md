@@ -120,3 +120,18 @@ empty-cart validation; CSRF rejection; logout and replay rejection. Live setting
 confirm no external provider secrets. Full-project ESLint passed as well.
 Browser testing exposed the native-form Origin/referrer interaction described
 above; the corrective commit preserves strict Origin validation.
+
+## Static asset routing correction
+
+Runtime logs later exposed HTTP 404 for built JavaScript chunks although the
+HTML and authenticated APIs returned 200. This prevented client hydration.
+Commit `0d470460f8c2b2aa77c0a11f20aaec73e56c9bdb` changes only the Railway
+bootstrap to set `assets.run_worker_first=false`. Wrangler serves existing
+static assets before the vinext dynamic handler. The external Node gateway
+still authenticates **every** request, so this does not make assets public.
+
+`tests/railway-staging-assets.mjs` adds a regression check against the built
+Worker and asset directory, with migrations applied: every JS/CSS resource
+referenced by SSR must return 200, a code content type, and non-HTML content.
+The initial check verified nine entry resources. Live validation additionally
+follows JavaScript imports and rechecks anonymous asset/API rejection.
