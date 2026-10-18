@@ -25,8 +25,10 @@ if (!Array.isArray(config.d1_databases) || config.d1_databases.length !== 1) {
 if(config.d1_databases[0].database_id!=="00000000-0000-4000-8000-000000000000" ||
    config.d1_databases.some(b=>b.remote) || (config.r2_buckets||[]).some(b=>b.remote) ||
    config.services?.length)throw new Error("Remote bindings are forbidden in staging");
-// Invoke the Worker before every asset so all application routes use one boundary.
-if(config.assets)config.assets.run_worker_first=true;
+// The Node gateway authenticates every request, including static assets.
+// Let Wrangler serve built assets before the application Worker; vinext does
+// not resolve /_next/static/chunks through its dynamic route handler.
+if(config.assets)config.assets.run_worker_first=false;
 config.d1_databases[0].migrations_dir = resolve("drizzle");
 writeFileSync(configPath, JSON.stringify(config));
 // Wrangler does not automatically expose process.env to the Worker. Only these
