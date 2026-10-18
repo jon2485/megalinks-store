@@ -29,7 +29,7 @@ export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort
   function cookieSession(req){try{const cookie=(req.headers.cookie||'').split(';').map(s=>s.trim()).find(s=>s.startsWith(COOKIE+'='))?.slice(COOKIE.length+1);if(!cookie||cookie.length>200)return null;const [id,signature]=cookie.split('.');const expected=sign(id);if(!signature||signature.length!==expected.length||!timingSafeEqual(Buffer.from(signature),Buffer.from(expected)))return null;const session=sessions.get(sha(id));if(!session||session.expires<=Date.now())return null;const account=accounts.find(a=>a.id===session.id&&sha(a.hash)===session.version);return account?{account,key:sha(id)}:null;}catch{return null;}}
   const cookie=value=>`${COOKIE}=${value}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${value?TTL/1000:0}`;
   const server=http.createServer(async(req,res)=>{
-    const finish=(status,body,extra={})=>{res.writeHead(status,{'Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofollow, noarchive','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','Strict-Transport-Security':'max-age=31536000','Content-Type':'text/html; charset=utf-8',...extra});res.end(body);};
+    const finish=(status,body,extra={})=>{res.writeHead(status,{'Cache-Control':'private, no-store','X-Robots-Tag':'noindex, nofollow, noarchive','X-Content-Type-Options':'nosniff','Referrer-Policy':'same-origin','Strict-Transport-Security':'max-age=31536000','Content-Type':'text/html; charset=utf-8',...extra});res.end(body);};
     try{
       prune();const url=new URL(req.url,publicOrigin);
       if(url.origin!==publicOrigin)return finish(400,'Invalid request');

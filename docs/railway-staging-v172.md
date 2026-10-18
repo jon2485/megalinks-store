@@ -45,7 +45,10 @@ and may temporarily throttle all testers together. Request Origin is mandatory
 and must match the configured HTTPS origin on every unsafe method. All incoming
 identity/forwarded headers are stripped; only the verified account's identity is
 injected for the original application authorization checks. The session cookie
-is never passed to the Worker. All gateway responses use no-store and noindex.
+is never passed to the Worker. All gateway responses use no-store and noindex. The gateway login document uses
+Referrer-Policy: same-origin, so browsers retain the Origin header on native
+form POST navigation; no-referrer would produce a null Origin and fail CSRF.
+Proxied application responses retain no-referrer.
 
 Only `POSTFLOW_OWNER_EMAIL` and `SETTINGS_ENCRYPTION_KEY` are explicitly written
 to the Worker's private ignored `.dev.vars` file (mode 0600). Process environment
@@ -56,7 +59,7 @@ customer exports, live providers or Google Sheets access were copied.
 
 - `pnpm install --frozen-lockfile`, `pnpm build`, `pnpm exec tsc --noEmit`: pass.
 - ESLint on the three gateway/startup/test scripts: pass.
-- `node tests/railway-staging-gateway.mjs`: 36 checks, including spoofed identity,
+- `node tests/railway-staging-gateway.mjs`: 37 checks, including spoofed identity,
   all-route gating, CSRF, password rejection, tampering, restart persistence,
   logout revocation, rate limits and safe return URLs.
 - `node tests/integration.mjs`: 630 checks, 1186 catalog sites; authentication,
@@ -105,3 +108,15 @@ Do not paste passwords/keys into issues, commits or logs. Deliver login details
 privately, separately from this document. Deleting domains can close access
 without deleting volume data. A rollback must preserve the access gateway;
 never roll back to the ungated initial image while a domain exists.
+
+## Live checks, 2026-10-18
+
+Protected deployment `861d7dfb-dd87-442f-aa90-5d9956e8f4b3` succeeded, then
+the staging-only domain was created on port 8080. Fifteen external HTTP checks
+passed: unauthenticated routes/static files/supplier routes blocked; forged
+identity blocked; login and owner admin identity; 1186 live catalog records
+matched to source IDs/names/URLs/prices with private fields absent; admin settings;
+empty-cart validation; CSRF rejection; logout and replay rejection. Live settings
+confirm no external provider secrets. Full-project ESLint passed as well.
+Browser testing exposed the native-form Origin/referrer interaction described
+above; the corrective commit preserves strict Origin validation.

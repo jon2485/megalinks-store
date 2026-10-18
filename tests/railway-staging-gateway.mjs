@@ -19,7 +19,7 @@ try {
   for(const target of ['https://attacker.test','//attacker.test','/\\attacker.test','/signin-with-chatgpt','/callback'])check(safeReturn(target)==='/','no external or looping redirects');
   let r=await req('/api/me',{headers:{'oai-authenticated-user-email':accounts[0].email,'oai-authenticated-user-id':'fixture-owner'}});check(r.status===401,'spoofed identity blocked');check(forwarded===0,'unauthenticated requests never reach Worker');
   for(const p of ['/','/admin','/supplier/token','/_next/static/file.js']){r=await req(p);check(r.status===303,'all resources require auth');check(r.headers.get('cache-control').includes('no-store'),'private cache');check(r.headers.get('x-robots-tag').includes('noindex'),'no indexing');}
-  r=await req('/signin-with-chatgpt');const page=await r.text();check(r.status===200&&page.includes('dir="rtl"')&&page.includes('autocomplete="current-password"'),'RTL accessible login');
+  r=await req('/signin-with-chatgpt');const page=await r.text();check(r.status===200&&page.includes('dir="rtl"')&&page.includes('autocomplete="current-password"'),'RTL accessible login');check(r.headers.get('referrer-policy')==='same-origin','form navigation retains same-origin Origin for CSRF validation');
   r=await login('incorrect');check(r.status===401,'wrong password rejected');check(!r.headers.get('set-cookie'),'failure creates no session');
   r=await login(password,'https://attacker.test');check(r.status===403,'login CSRF rejected');
   r=await login();check(r.status===303,'successful credential login');const setCookie=r.headers.get('set-cookie');check(/HttpOnly.*Secure.*SameSite=Lax/.test(setCookie),'secure cookie flags');const cookie=setCookie.split(';')[0];
