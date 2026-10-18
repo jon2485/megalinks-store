@@ -1,0 +1,84 @@
+{
+  "date": "2026-10-18",
+  "applicationCommit": "d3f2701640dc9d250f78f4df4bfb9eed0e070e1e",
+  "baseline": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366",
+  "continuationScope": "Finish pending static review, normalize CSV line endings, update evidence. No application code changes, no deployment, no live data changes.",
+  "previouslyCompletedNotRepeated": {
+    "regressionScripts": {
+      "passed": 20,
+      "total": 20
+    },
+    "isolatedSupplierPrivacyAssertions": 911,
+    "typecheck": "passed",
+    "build": "passed",
+    "protectedOriginalFilesByteIdentical": 371,
+    "originalSourceControlRecordsVerified": 1002,
+    "unchangedSourceControlSnippets": 996,
+    "changedNavigationTemplates": 6
+  },
+  "additionalChecks": {
+    "premiumStatic": {
+      "command": "python <frontend-design-premium>/scripts/audit_project.py . --mode strict --no-write",
+      "exitCode": 2,
+      "current": {
+        "errors": 71,
+        "unresolved": 23,
+        "violations": 48
+      },
+      "baseline": {
+        "errors": 71,
+        "unresolved": 23,
+        "violations": 48
+      },
+      "introduced": 0,
+      "resolved": 0,
+      "comparison": "Multiset of ruleId, source file, message, category, severity; line offsets ignored.",
+      "globalPass": false,
+      "policy": "Retain original forms, native widgets and shared components; no backend/business changes to satisfy generic audit."
+    },
+    "adminNavigationESLint": {
+      "command": "node node_modules/eslint/bin/eslint.js app/admin-shell.tsx --format json",
+      "errors": 0,
+      "warnings": 0,
+      "passed": true
+    },
+    "csvFormat": {
+      "files": [
+        "action-preservation.csv",
+        "control-preservation.csv"
+      ],
+      "change": "CRLF to LF only; UTF-8 BOM, content, record count preserved.",
+      "lines": [
+        94,
+        1003
+      ]
+    },
+    "designMdLint": {
+      "command": "npm exec --offline --yes --package=@google/design.md -- designmd lint DESIGN.md",
+      "runToCompletion": false,
+      "result": "ENOTCACHED: official linter unavailable in the local cache. No package dependency or lockfile changed."
+    }
+  },
+  "manualReview": {
+    "applicationCodeChangedInContinuation": false,
+    "navigationSearch": "Search reset via selection/manual deletion retained. Dedicated app-owned accessible clear button is absent in both old and new navigation; retain as an explicit UX follow-up.",
+    "noFalseLinksOrNativeDialogsInNewNavigation": true,
+    "cssRemainsAdminScoped": true
+  },
+  "protectedRefsAtContinuationStart": {
+    "main": "d757e6c32f853e729b6c2cffee42e5721acf5231",
+    "railway-production-v172": "6e007d1ad77090bfef5df16f97db6430ad846049",
+    "railway-staging-v172": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366",
+    "restore/admin-ui-before-20261018": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366"
+  },
+  "unverified": [
+    "Desktop/mobile browser rendering, keyboard/focus/screen reader, zoom and native popup states.",
+    "Live staging persistence and reload for site fields, tiers, membership and personal pricing.",
+    "Live Google Sheets, order/document/PDF, payment/refund and supplier settlement end-to-end after this UI slice.",
+    "Existing dirty/popstate gap and forms without a dirty marker remain unchanged.",
+    "Independent 53-snippet identifiers were not supplied; the entire mapped 1,002-record superset was verified instead.",
+    "Current Railway staging environment binding and access-control recheck before any future deployment."
+  ],
+  "deploymentReadiness": "Candidate for further isolated QA; not cleared for deployment now. Browser/UX gaps and environment/access verification remain gates. Live end-to-end checks are required during the controlled staging acceptance phase.",
+  "deployPerformed": false
+}
