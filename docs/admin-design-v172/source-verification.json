@@ -1,0 +1,24 @@
+{
+  "base": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366",
+  "inventoryRecords": 1002,
+  "normalizedMatches": 1002,
+  "astMatches": 1002,
+  "businessActionGroups": 93,
+  "missing": [],
+  "unidentified53": "No separate 53-ID list supplied. Entire 1,002-record superset checked against pinned staging with normalized text and TypeScript JSX AST, including exact source line.",
+  "afterSlice": {
+    "unchangedControlSnippets": 996,
+    "replacedNavigationTemplates": [
+      "UI-0053",
+      "UI-0054",
+      "UI-0055",
+      "UI-0056",
+      "UI-0057",
+      "UI-0058"
+    ],
+    "navigationDestinations": 21,
+    "areas": 9,
+    "protectedOriginalFilesByteIdentical": 371,
+    "scopedCssRules": 96
+  }
+}

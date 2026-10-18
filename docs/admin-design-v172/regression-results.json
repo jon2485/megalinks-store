@@ -1,0 +1,164 @@
+{
+  "base": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366",
+  "date": "2026-10-18T13:26:44.942Z",
+  "kind": "isolated source/React handler/SSR checks; no live database writes",
+  "passed": 20,
+  "total": 20,
+  "results": [
+    {
+      "file": "tests/admin-entry-routing.mjs",
+      "passed": true,
+      "milliseconds": 336,
+      "stdout": "ADMIN ENTRY ROUTING PASSED: all 9 main categories open full routes; full pages exclude lobby cards; local task shortcuts remain embedded; RTL and nested page entries preserved.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-lobby-actions.mjs",
+      "passed": true,
+      "milliseconds": 438,
+      "stdout": "LOBBY ACTIONS PASSED: nine RTL categories, embedded screen for every card, order details/all-reports/settings stay inside lobby, refresh, unsaved-edit guard and search-result navigation.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-lobby-panels.mjs",
+      "passed": true,
+      "milliseconds": 193,
+      "stdout": "LOBBY PANELS PASSED: payment rows/proof/exact order/approval targets; opening does not approve; all nine working areas and nested customer/article routes resolve to the intended embedded components.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-shell-ui.mjs",
+      "passed": true,
+      "milliseconds": 322,
+      "stdout": "Admin UI: 9 areas, all 21 legacy routes retained, nested sidebar links, account back-navigation, live queue tiles, cancellation links, accessible loading and error states passed.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-order-history.mjs",
+      "passed": true,
+      "milliseconds": 660,
+      "stdout": "ADMIN ORDER HISTORY PASSED: confirmed-only totals and export; bank pending/reported/PDF-closed unpaid/demo excluded; payment-month groups; refunds reflected; outstanding orders in a separate view.\nCANCELLED ADMIN ORDER: one red cancelled badge, no paid label, matching export status.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-finance-ui.mjs",
+      "passed": true,
+      "milliseconds": 581,
+      "stdout": "Finance admin screens render populated RTL lists, mobile-first layouts, request actions and bank settings.\nInvoice cancellation uses the same red cancelled status despite paid state or an attached invoice.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/monthly-admin-ui.mjs",
+      "passed": true,
+      "milliseconds": 592,
+      "stdout": "Monthly UI passed: paid badge, full article details, payment evidence form, RTL, checkout-only monthly action.\nLobby monthly panel defaults to real unpaid accounts; standalone monthly defaults are preserved.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/pricing-admin-ui.mjs",
+      "passed": true,
+      "milliseconds": 979,
+      "stdout": "PRICING ADMIN UI PASSED: tier controls, customer assignment, pricebook, minimums, imports, history and responsive layouts",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-design-navigation.mjs",
+      "passed": true,
+      "milliseconds": 384,
+      "stdout": "ADMIN DESIGN NAVIGATION PASSED: 21 guarded targets, 9 areas, 5 native modifier cases, 3 nested back routes, 2 pricing aliases, search/reset/empty state, mobile disclosure and RTL.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-workspace-navigation-contract.mjs",
+      "passed": true,
+      "milliseconds": 536,
+      "stdout": "WORKSPACE NAVIGATION CONTRACT PASSED: original dirty cancel/confirm, history push and popstate, nested pricebook and admin-article normalization. Known original popstate dirty-guard gap reproduced; no router code changed.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-orders-navigation-contract.mjs",
+      "passed": true,
+      "milliseconds": 574,
+      "stdout": "ORDER INTERACTION CONTRACT PASSED: expansion, exact order/document callback, search/month filtering, filtered export, pending toggle and reset, existing RTL. Mocked data only.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-website-save-contract.mjs",
+      "passed": true,
+      "milliseconds": 526,
+      "stdout": "WEBSITE SAVE CONTRACT PASSED: all 27 fields, tags/features/examples normalization, supplier/costs/list/sale prices, version/id/create guards, error recovery, busy/upload/no-data guards, logo FormData, create defaults, response rehydration. Mocked API only.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-pricing-save-contract.mjs",
+      "passed": true,
+      "milliseconds": 1207,
+      "stdout": "PRICING SAVE CONTRACT PASSED: website-tier blank/zero/version, admin-only catalog reads, tier create/edit/delete with confirmation and regular-tier protection, membership, personal update/remove/validation/conflict, 101-row import preview and versioned batches. Mocked API only.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/admin-design-isolation.mjs",
+      "passed": true,
+      "milliseconds": 1698,
+      "stdout": "ADMIN ISOLATION PASSED: 371 original files byte-identical; workspace limited to 3 admin-guarded presentation additions; all 96 CSS rules scoped; backend, APIs, auth, pricing, orders, shared/customer/supplier components and dormant exports unchanged.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/catalog-workspace-actions.mjs",
+      "passed": true,
+      "milliseconds": 755,
+      "stdout": "CATALOG WORKSPACE ACTIONS PASSED: four exclusive tabs, correct site edit, admin gate, RTL/LTR fields, versioned save, searchable supplier list, inline creation/selection, shared modal route and responsive card/table layout.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/pricing-redesign-actions.mjs",
+      "passed": true,
+      "milliseconds": 831,
+      "stdout": "Redesign action checks passed: tabs, membership, personal route, review, modal save success/failure, RTL, accurate prices, favorite, order, admin editing and external links.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/personal-price-editor-actions.mjs",
+      "passed": true,
+      "milliseconds": 603,
+      "stdout": "PERSONAL PRICE EDITOR PASSED: exact account/site/amount/version, success refresh, retained error modal, validation, explicit zero and removal fallback.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/customer-order-screen.mjs",
+      "passed": true,
+      "milliseconds": 784,
+      "stdout": "CUSTOMER ORDER SCREEN PASSED: all rows collapsed; one mixed list; exact header; 30 linked products with purchase dates; summary below products; only open orders can report payments with proof.\nADMIN ORDER UI PASSED: same compact list, PDF action only, closure and unpaid state clearly separated.\nCANCELLED CUSTOMER ORDER: red cancelled badge and detail agree, no payment report action.",
+      "stderr": ""
+    },
+    {
+      "file": "tests/supplier-privacy.mjs",
+      "passed": true,
+      "stdout": "SUPPLIER PRIVACY PASSED: 911 checks. Public/customer/agency/API/supplier paths, private canaries, nested/legacy data, administrator-only costs, activity, exports, files, supplier inbox and inventory-free email. Isolated fixtures only.",
+      "stderr": "",
+      "firstAttempt": "Started before build artifacts existed; rerun after successful build."
+    },
+    {
+      "file": "tests/payment-closure-actions.mjs",
+      "passed": true,
+      "milliseconds": 590,
+      "stdout": "PAYMENT CLOSURE ACTIONS: warning before mutations, cancel preserves state, confirmation sends exact route/fields, double-click guard passed.",
+      "stderr": ""
+    }
+  ],
+  "typecheck": {
+    "command": "node node_modules/typescript/bin/tsc --noEmit --incremental false",
+    "passed": true
+  },
+  "build": {
+    "command": "node scripts/run-framework.mjs build",
+    "passed": true,
+    "notes": "Existing Vinext static route-classification limitation reported by tool; build exit 0."
+  },
+  "browserQA": {
+    "run": false,
+    "limitations": "No desktop/mobile browser, keyboard screen-reader, or visual approval performed in this task."
+  },
+  "liveStagingWrites": false,
+  "deploy": false
+}

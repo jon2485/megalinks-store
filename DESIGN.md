@@ -150,3 +150,29 @@ feedback are Hebrew RTL; email and password values are LTR. The single form uses
 errors and a stable disabled submit state. No animation or external assets.
 It intentionally uses a standalone HTML document because the server must reject
 unauthenticated requests before serving the application or its static assets.
+
+## Limited admin v172 design slice (2026-10-18)
+
+Approved direction: Tabler-inspired work navigation with Mega Links navy/cyan,
+white surfaces, Heebo/Arial, 16px baseline, restrained 8–12px corners and clear
+focus/hover states. Runtime ownership stays with CSS (model B).
+`app/admin-design-v172.css` owns only `.admin-design-v172` descendants. This class
+is emitted only for an authenticated administrator on an existing admin route.
+No global tokens, shared component styles, portals or customer/supplier pages change.
+
+The desktop layout has a 244px RTL sidebar, a 28px gutter and the existing React
+content. At 1100px the same navigation becomes an in-flow disclosure with a
+44px labeled toggle; no modal, overlay, gesture or duplicate focus trap is added.
+The search covers the existing 21 destinations in the same 9 admin areas.
+Navigation links delegate ordinary activation to the unchanged `ctx.go` dirty
+guard. Deep routes and browser history handlers remain owned by workspace.tsx.
+The existing browser-popstate dirty-guard gap is documented, not silently fixed.
+The skip link targets the admin-only focusable content wrapper.
+
+This slice styles the actual AdminOrderHistory and CatalogPricingWorkspace;
+filters, totals, exports, pagination, four pricing tabs and all mutations keep
+original implementations. Form dialogs and their save mechanisms stay untouched.
+No prototype save code or demo records are imported. Other admin screens remain
+at their existing content design behind the new navigation. No full rollout or
+deployment is authorized in this slice. Browser/assistive-technology verification
+and isolated live save/payment/Sheets checks remain pre-deployment gates.

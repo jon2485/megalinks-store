@@ -11,7 +11,7 @@ mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/admin
 const {AdminNavigation,AdminControlCenter}=await import(pathToFileURL(realpathSync('.sites-runtime/admin-shell-ui.mjs')));
 const ctx={revision:0,go(){throw Error('Render must not navigate')},refresh(){throw Error('Render must not mutate')}};
 const navigation=renderToStaticMarkup(React.createElement(AdminNavigation,{ctx,view:'admin-invoices'}));
-assert.equal((navigation.match(/<button/g)||[]).length,14,'9 areas plus 5 finance tabs');
+assert.equal((navigation.match(/href="\/admin/g)||[]).length,21,'all 21 routes remain directly reachable in the sidebar');
 for(const text of ['הזמנות וכספים','חשבוניות וקבלות','הטענות יתרה','חשבונות חודשיים','חיפוש כלי ניהול','aria-current="page"'])assert(navigation.includes(text),text);
 const detail=renderToStaticMarkup(React.createElement(AdminNavigation,{ctx,view:'admin-customer-account/customer-id'}));assert(detail.includes('חזרה ללקוחות והרשאות'));
 globalThis.adminFixture={data:{queues:[{id:'content',label:'כתבות לאישור',page:'admin-approvals',count:3,description:'בדיקת תוכן',oldest:'2026-10-01'},{id:'zero',count:0,label:'אין משימות'}],cancellations:[{id:'a',user_id:'customer',user_name:'לקוח בדיקה',website_name:'אתר בדיקה',title:'כותרת',updated:'2026-10-01'}],updated:'2026-10-12'},loading:false};
@@ -22,4 +22,4 @@ globalThis.adminFixture={loading:false,error:'לא ניתן לטעון'};assert(
 const nav=readFileSync('lib/admin-navigation.ts','utf8'),workspace=readFileSync('app/workspace.tsx','utf8');
 const existing=workspace.match(/export const navAdmin = (.*) as const;/)[1];
 for(const page of existing.matchAll(/\['(admin[^']*)'/g))assert(nav.includes("'"+page[1]+"'"),'Preserves route '+page[1]);
-console.log('Admin UI: 9 areas, all 21 legacy routes retained, contextual tabs, account back-navigation, live queue tiles, cancellation links, accessible loading and error states passed.');
+console.log('Admin UI: 9 areas, all 21 legacy routes retained, nested sidebar links, account back-navigation, live queue tiles, cancellation links, accessible loading and error states passed.');
