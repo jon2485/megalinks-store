@@ -1,11 +1,15 @@
 {
-  "checkedAt": "2026-10-18T17:36:14.368Z",
-  "candidateCommit": "fa4bdec59a93cc8f11db3fea246882466555999a",
-  "candidateTree": "9ba07f6f832f5fdd399b03a48d82dbc8cf217d38",
+  "checkedAt": "2026-10-18T18:29:20.221223+00:00",
+  "candidateCommit": "37204b0c81ab35f8b42d1e2989b674fcfad88ef1",
+  "candidateTree": "a92909b94dc8aca490a1ce2cc759f6515703e427",
   "branch": "design/admin-tabler-v172",
-  "status": "BLOCKED_BY_TOOL_APPROVAL",
-  "deploymentStarted": false,
-  "newDeploymentId": null,
+  "status": "SUCCESS",
+  "deploymentStarted": true,
+  "newDeploymentId": "c514597a-277c-461a-9d12-826c2f725d31",
+  "projectId": "4d90cd94-2461-4ede-88cc-c285aa68a74f",
+  "environmentId": "1bae3915-f298-4ca6-b31d-aa79526f1eac",
+  "serviceId": "4eb5f337-7344-42b8-9f53-4bbc23c50436",
+  "snapshotId": "a2180558-78e8-4525-bb7b-ce9f2528dc20",
   "availableChecks": {
     "regressionScriptsPassed": 22,
     "typecheckPassed": true,
@@ -17,82 +21,25 @@
     "liveBeforeAssets": 9,
     "browserRun": false
   },
-  "attemptedAction": "Railway accept-deploy for staging environment 1bae3915-f298-4ca6-b31d-aa79526f1eac only",
-  "toolResult": {
-    "content": [
-      {
-        "type": "text",
-        "text": "Cancelled — the user did not approve this action. No changes were made."
-      }
-    ],
-    "structuredContent": {
-      "error_code": "INVALID_ARGUMENT"
-    },
-    "isError": true
-  },
-  "pendingPatch": {
-    "project": {
-      "id": "4d90cd94-2461-4ede-88cc-c285aa68a74f",
-      "name": "MegaLinks"
-    },
-    "environment": {
-      "id": "1bae3915-f298-4ca6-b31d-aa79526f1eac",
-      "name": "staging "
-    },
-    "staged": {
-      "patchId": "e38683b9-4746-430b-87dc-64941ade2bd7",
-      "status": "STAGED",
-      "changeCount": 2,
-      "message": null,
-      "createdAt": "2026-10-18T17:35:00.042Z",
-      "updatedAt": "2026-10-18T17:35:00.042Z"
-    },
-    "destructive": false,
-    "resources": [
-      {
-        "kind": "service",
-        "id": "4eb5f337-7344-42b8-9f53-4bbc23c50436",
-        "name": "megalinks-web",
-        "action": "update",
-        "changes": [
-          {
-            "path": "services.4eb5f337-7344-42b8-9f53-4bbc23c50436.source.branch",
-            "displayName": "Branch",
-            "type": "updated",
-            "from": "railway-staging-v172",
-            "to": "design/admin-tabler-v172",
-            "destructive": false
-          },
-          {
-            "path": "services.4eb5f337-7344-42b8-9f53-4bbc23c50436.source.commitSha",
-            "displayName": "Commit Sha",
-            "type": "updated",
-            "from": "0d470460f8c2b2aa77c0a11f20aaec73e56c9bdb",
-            "to": "fa4bdec59a93cc8f11db3fea246882466555999a",
-            "destructive": false
-          }
-        ]
-      }
-    ],
-    "sharedVariables": [],
-    "privateNetworkDisabled": null
-  },
-  "observedLive": {
-    "source": {
-      "repo": "jon2485/MEGALINKS-STORE",
-      "branch": "railway-staging-v172",
-      "commitSha": "0d470460f8c2b2aa77c0a11f20aaec73e56c9bdb"
-    },
-    "deploymentId": "8b91aa71-392a-4b2c-9810-5f7b94e6399b",
-    "status": "SUCCESS"
-  },
+  "postDeploymentChecksPerformed": true,
+  "postDeploymentHttpChecksPassed": true,
+  "postDeploymentEvidence": "staging-postdeploy-checks.json",
+  "liveUrl": "https://megalinks-staging-v172.up.railway.app/admin",
+  "liveUrlContainsNewDesign": true,
   "authVariablesVolumesOrBusinessLogicChanged": false,
   "businessDataChanged": false,
+  "normalLoginLogoutOnly": true,
+  "browserRun": false,
+  "migrationLog": "No migrations to apply!",
+  "healthcheck": "SUCCESS; initial upstream warm-up 503 was followed by a successful healthcheck and HTTP 200",
+  "pendingPatch": null,
   "rollbackPerformed": false,
-  "rollbackReason": "No new deployment started; staging is already on the previous successful build.",
-  "postDeploymentChecksPerformed": false,
-  "nextAction": "Approve the prepared two-field staging source patch in Railway's native approval mechanism/dashboard; do not substitute another deployment path to bypass the blocked approval.",
-  "dashboard": "https://railway.com/project/4d90cd94-2461-4ede-88cc-c285aa68a74f/service/4eb5f337-7344-42b8-9f53-4bbc23c50436?environmentId=1bae3915-f298-4ca6-b31d-aa79526f1eac",
-  "liveUrl": "https://megalinks-staging-v172.up.railway.app/admin",
-  "liveUrlContainsNewDesign": false
+  "previousStagingDeployment": "8b91aa71-392a-4b2c-9810-5f7b94e6399b",
+  "codeRestoreBranch": "restore/admin-ui-before-20261018",
+  "codeRestoreCommit": "80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366",
+  "limitations": [
+    "No browser hydration, desktop/mobile visual or interaction QA in this environment.",
+    "No live business saves, payments, refunds, Sheets or PDF E2E performed."
+  ],
+  "approvalHistory": "Earlier accept-deploy native requests were cancelled. User subsequently applied the prepared Staging-only changes; deployment first observed BUILDING, then terminal SUCCESS. No alternate deployment path used."
 }

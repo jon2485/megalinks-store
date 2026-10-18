@@ -1,0 +1,147 @@
+{
+  "phase": "after",
+  "checkedAt": "2026-10-18T18:28:02.715Z",
+  "browser": false,
+  "authenticated": true,
+  "anonymous": [
+    {
+      "path": "/",
+      "status": 303
+    },
+    {
+      "path": "/admin",
+      "status": 303
+    },
+    {
+      "path": "/api/me",
+      "status": 401
+    },
+    {
+      "path": "/api/catalog?scope=admin",
+      "status": 401
+    },
+    {
+      "path": "/healthz",
+      "status": 200
+    },
+    {
+      "path": "SSR-referenced asset",
+      "status": 303
+    }
+  ],
+  "pages": [
+    {
+      "path": "/admin",
+      "status": 200,
+      "htmlBytes": 22439
+    },
+    {
+      "path": "/admin-orders",
+      "status": 200,
+      "htmlBytes": 22537
+    },
+    {
+      "path": "/admin-websites",
+      "status": 200,
+      "htmlBytes": 22565
+    },
+    {
+      "path": "/admin-pricing",
+      "status": 200,
+      "htmlBytes": 22551
+    },
+    {
+      "path": "/admin-pricebooks",
+      "status": 200,
+      "htmlBytes": 22593
+    },
+    {
+      "path": "/admin-suppliers",
+      "status": 200,
+      "htmlBytes": 22579
+    },
+    {
+      "path": "/admin-supplier-finance",
+      "status": 200,
+      "htmlBytes": 22677
+    }
+  ],
+  "apis": [
+    {
+      "path": "/api/catalog?scope=admin",
+      "status": 200
+    },
+    {
+      "path": "/api/admin/pricing",
+      "status": 200
+    },
+    {
+      "path": "/api/orders?scope=all",
+      "status": 200
+    },
+    {
+      "path": "/api/admin/control-center",
+      "status": 200
+    }
+  ],
+  "assets": [
+    {
+      "path": "/_next/static/css/index.BGfkm5_K.css",
+      "status": 200,
+      "type": "text/css; charset=utf-8",
+      "bytes": 489572
+    },
+    {
+      "path": "/_next/static/css/workspace.BZymPi6Z.css",
+      "status": 200,
+      "type": "text/css; charset=utf-8",
+      "bytes": 68980
+    },
+    {
+      "path": "/_next/static/chunks/index-v5NrsTFI.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 195304
+    },
+    {
+      "path": "/_next/static/chunks/rolldown-runtime-QTnfLwEv.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 694
+    },
+    {
+      "path": "/_next/static/chunks/framework-JGc2HF7T.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 190152
+    },
+    {
+      "path": "/_next/static/chunks/layout-segment-context-C1PG5O_l.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 494
+    },
+    {
+      "path": "/_next/static/chunks/brand-loading-Bz1q9mfl.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 1033
+    },
+    {
+      "path": "/_next/static/chunks/loading-state-CCvE401o.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 191
+    },
+    {
+      "path": "/_next/static/chunks/workspace-D1oBPOfz.js",
+      "status": 200,
+      "type": "text/javascript; charset=utf-8",
+      "bytes": 803302
+    }
+  ],
+  "newAdminCss": true,
+  "newAdminJs": true,
+  "businessWrites": 0,
+  "passed": true
+}
