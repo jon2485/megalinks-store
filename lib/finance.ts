@@ -52,7 +52,7 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   const ops=[];
   if(decision==='approved'){
    const reference='bank-transfer:'+await hash(text(row.reference).normalize('NFKC').toLowerCase());
-   const prior=await one('SELECT id FROM ledger WHERE reference=?',reference);assert(!prior,'אסמכתא זו כבר זוכתה. יש לבדוק את תנועות הארנק',409);
+   const prior=await one('SELECT id FROM ledger WHERE reference=?',reference);if(prior){const current=parse(await one('SELECT * FROM records WHERE id=?',row.id));if(current?.decision===decision)return output({ok:true,decision,duplicate:true});assert(false,'אסמכתא זו כבר זוכתה. יש לבדוק את תנועות הארנק',409);}
    ops.push(stmt(`INSERT INTO ledger(id,user_id,amount,reason,reference,created) SELECT ?,user_id,?,'הטענת יתרה בהעברה בנקאית',?,? FROM records WHERE ${pending}`,ledgerId,amount,reference,stamp,row.id));
    ops.push(stmt('UPDATE users SET credits=credits+? WHERE id=? AND EXISTS(SELECT id FROM ledger WHERE id=?)',amount,row.user_id,ledgerId));
   }

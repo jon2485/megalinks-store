@@ -1,4 +1,5 @@
 import vinext from "vinext";
+import {resolve} from "node:path";
 import { defineConfig, loadEnv } from "vite";
 import hostingConfig from "./.openai/hosting.json";
 import { readExecutionProfile } from "./scripts/execution-profile.mjs";
@@ -38,6 +39,7 @@ const localBindingConfig = {
 };
 
 export default defineConfig(async ({ command, mode }) => {
+  if(process.env.POSTFLOW_RUNTIME === "node")return {plugins:[vinext()],resolve:{alias:{"cloudflare:workers":resolve("runtime/node-env.mjs")}},ssr:{external:["node:sqlite"]}};
   // Use Miniflare's local Request.cf placeholder unless fetching is requested.
   process.env.CLOUDFLARE_CF_FETCH_ENABLED ??= "false";
   process.env.WRANGLER_SEND_METRICS ??= "false";

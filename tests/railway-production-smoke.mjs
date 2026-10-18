@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {randomBytes,scryptSync} from 'node:crypto';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {getRuntime} from '../runtime/node-env.mjs';
+import {createStagingGateway} from '../scripts/railway-staging-gateway.mjs';
+const directory=mkdtempSync('/tmp/ml-production-smoke-'),password=randomBytes(32).toString('base64url'),salt=randomBytes(16).toString('hex'),origin='https://production.example.test';
+Object.assign(process.env,{POSTFLOW_DATA_DIR:directory,POSTFLOW_OWNER_EMAIL:'owner@example.test',SETTINGS_ENCRYPTION_KEY:randomBytes(32).toString('base64'),VINEXT_TRUST_PROXY:'1',VINEXT_TRUSTED_HOSTS:'production.example.test'});
+const runtime=getRuntime();await runtime.migrate('drizzle');
+const {startProdServer}=await import('vinext/server/prod-server');const backend=await startProdServer({host:'127.0.0.1',port:0,outDir:new URL('../dist',import.meta.url).pathname});
+const gateway=createStagingGateway({accounts:[{id:'fixture-owner',email:'owner@example.test',salt,hash:scryptSync(password,salt,64,{N:32768,r:8,p:1,maxmem:67108864}).toString('hex')}],sessionSecret:randomBytes(32).toString('base64'),origin,upstreamPort:backend.port,stateDir:directory+'/auth',production:true});await new Promise(r=>gateway.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+gateway.address().port;
+const request=(path,options={})=>fetch(base+path,{redirect:'manual',...options});let checks=0;const check=(v,m)=>{assert(v,m);checks++;};
+try{let r=await request('/');check(r.status===303,'anonymous root protected');r=await request('/signin-with-chatgpt');const login=await r.text();check(login.includes('כניסה למגה לינקס')&&!login.includes('MEGA LINKS · STAGING'),'production branding');
+r=await request('/__staging/login',{method:'POST',headers:{Origin:origin},body:new URLSearchParams({email:'owner@example.test',password})});check(r.status===303,'actual credential login');const cookie=r.headers.get('set-cookie').split(';')[0];check(cookie.startsWith('__Host-megalinks_session='),'production cookie isolated');const headers={Cookie:cookie,Origin:origin,'Content-Type':'application/json'};
+r=await request('/api/me',{headers});check(r.status===200&&(await r.json()).user.role==='admin','owner admin role');r=await request('/api/catalog',{headers});check(r.status===200&&(await r.json()).websites.length===1186,'production catalog');
+r=await request('/api/quote',{method:'POST',headers,body:'{}'});check(r.status===400,'same-origin POST reaches empty-cart validation');r=await request('/api/me',{method:'PATCH',headers:{...headers,Origin:'https://attacker.test'},body:'{}'});check(r.status===403,'CSRF rejected');r=await request('/api/me',{method:'PATCH',headers,body:JSON.stringify({name:'x'.repeat(500001)})});check(r.status===413,'body limit before app');
+r=await request('/',{headers});check(r.status===200,'production SSR');const html=await r.text();const files=[...new Set([...html.matchAll(/(?:src|href)="([^"\s]+\.(?:js|css))"/g)].map(m=>m[1]).filter(p=>p.startsWith('/_next/')))];check(files.length>5,'SSR references built assets');for(const path of files){r=await request(path,{headers});check(r.status===200&&!((await r.text()).trimStart().startsWith('<')),'built asset serves code');}
+r=await request('/signout-with-chatgpt',{headers});check(r.status===303,'logout');r=await request('/api/me',{headers});check(r.status===401,'session revoked');console.log('PRODUCTION SMOKE PASSED:',checks,'checks with real Node server, SQLite and authenticated gateway');
+}finally{await new Promise(r=>gateway.close(r));await new Promise(r=>backend.server.close(r));runtime.close();rmSync(directory,{recursive:true,force:true});}

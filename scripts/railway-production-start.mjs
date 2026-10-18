@@ -1,0 +1,23 @@
+import {resolve} from 'node:path';
+import {mkdirSync,existsSync,readdirSync,unlinkSync} from 'node:fs';
+import {createStagingGateway} from './railway-staging-gateway.mjs';
+import {getRuntime,settleBackground} from '../runtime/node-env.mjs';
+if(process.env.POSTFLOW_DEPLOYMENT_ENV!=='production'||process.env.RAILWAY_PROJECT_ID!=='4d90cd94-2461-4ede-88cc-c285aa68a74f'||process.env.RAILWAY_ENVIRONMENT_ID!=='fbcf5115-6180-4951-8152-f7911d1dbaeb'||process.env.RAILWAY_SERVICE_ID!=='9afde236-60ca-48cf-a812-5b0eec0eb3da'||process.env.RAILWAY_VOLUME_MOUNT_PATH!=='/data')throw new Error('Production is restricted to its dedicated Railway service, environment and volume');
+if(process.env.POSTFLOW_DATA_DIR!=='/data/production')throw new Error('Production storage must not reference staging');
+if(Buffer.from(process.env.SETTINGS_ENCRYPTION_KEY||'','base64').length!==32)throw new Error('A dedicated 32-byte encryption key is required');
+const accounts=JSON.parse(process.env.POSTFLOW_PRODUCTION_ACCOUNTS||'[]'),owner=String(process.env.POSTFLOW_OWNER_EMAIL||'').trim().toLowerCase();
+if(!owner||!accounts.some(a=>a.email.toLowerCase()===owner))throw new Error('Production owner must be explicitly provisioned');
+const origin=process.env.POSTFLOW_PRODUCTION_ORIGIN;
+const gateway=createStagingGateway({accounts,sessionSecret:process.env.POSTFLOW_PRODUCTION_SESSION_KEY,origin,upstreamPort:8787,stateDir:'/data/production-auth',production:true});
+const runtime=getRuntime();mkdirSync('/data/production-backups',{recursive:true,mode:0o700});
+// A single SQLite snapshot includes both business records and stored file bodies.
+const snapshot=async()=>{await runtime.snapshot('/data/production-backups/'+new Date().toISOString().replaceAll(':','-')+'.sqlite');const files=readdirSync('/data/production-backups').filter(n=>n.endsWith('.sqlite')).sort();for(const name of files.slice(0,-7))unlinkSync('/data/production-backups/'+name);};
+if(readdirSync('/data/production-backups').length||existsSync(runtime.filename))await snapshot();
+await runtime.migrate(resolve('drizzle'));
+console.log('Production migrations verified:',(await runtime.db.prepare('SELECT COUNT(*) AS n FROM _railway_migrations').first()).n);
+process.env.VINEXT_TRUST_PROXY='1';process.env.VINEXT_TRUSTED_HOSTS=new URL(origin).host;
+const {startProdServer}=await import('vinext/server/prod-server');
+const backend=await startProdServer({port:8787,host:'127.0.0.1',outDir:resolve('dist')});
+gateway.listen(Number(process.env.PORT||8080),'0.0.0.0',()=>console.log('Production access gateway ready'));
+const timer=setInterval(()=>snapshot().catch(()=>console.error('Production backup failed')),6*60*60*1000);timer.unref();
+for(const signal of ['SIGTERM','SIGINT'])process.once(signal,()=>{gateway.close();backend.server.close();const deadline=setTimeout(()=>process.exit(1),10000);deadline.unref();settleBackground().then(snapshot).then(()=>process.exit(0)).catch(()=>process.exit(1));});

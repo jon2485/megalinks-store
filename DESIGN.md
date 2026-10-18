@@ -150,3 +150,10 @@ feedback are Hebrew RTL; email and password values are LTR. The single form uses
 errors and a stable disabled submit state. No animation or external assets.
 It intentionally uses a standalone HTML document because the server must reject
 unauthenticated requests before serving the application or its static assets.
+
+## Railway production sign-in
+
+The production gateway reuses the staging sign-in structure and brand tokens,
+with the title "כניסה למגה לינקס" and without staging labels. It retains RTL
+labels, LTR credentials, show/hide behavior, inline errors and 48px controls.
+No application screen was redesigned for the Node runtime adaptation.

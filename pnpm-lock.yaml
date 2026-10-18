@@ -38,6 +38,9 @@ importers:
       '@shadcn/react':
         specifier: ^0.3.0
         version: 0.3.0(@types/react@19.2.14)(react@19.2.8)
+      '@worker-tools/html-rewriter':
+        specifier: 0.1.0-pre.19
+        version: 0.1.0-pre.19
       bidi-js:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1964,6 +1967,12 @@ packages:
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
 
+  '@stardazed/streams-compression@1.0.0':
+    resolution: {integrity: sha512-SQCiwxdIVJ5xxUBYptN+fc+tJpSDbxQuJ0+3u2SmHjIzr6JIRZ28AVFtFnGy6x6j3UBlaLx73w9rC6UAFxnd1g==}
+
+  '@stardazed/zlib@1.0.1':
+    resolution: {integrity: sha512-MS6PCYiRNJ32c69+3NPyL+bu7LpiFDvMcBXnlhQnF8CKMG0R/xRVCCo422NPkQ0+Cox3xKpk5Lc1LfWFS4b3cw==}
+
   '@swc/helpers@0.5.23':
     resolution: {integrity: sha512-5lSsMOTXURePglDfvuAQUqkGek9Hg2kksOYay2m0+XR++b2NWYL/4sWyuvVBIs8oKnJaxkdi9whaL/sqN13afw==}
 
@@ -2369,6 +2378,12 @@ packages:
 
   '@webassemblyjs/wast-printer@1.14.1':
     resolution: {integrity: sha512-kPSSXE6De1XOR820C90RIo2ogvZG+c3KiHzqUoO/F34Y2shGzesfqv7o57xrxovZJH/MetF5UjroJ/R/3isoiw==}
+
+  '@worker-tools/html-rewriter@0.1.0-pre.19':
+    resolution: {integrity: sha512-IUbEZwvSdp8vtaB1LAZ/sBRJGNycd9a8cbkqO05rMEPm5MC59Sb+wiGCWaaRXrwQLDAyWeod4QC/q0TuSUI5EA==}
+
+  '@worker-tools/resolvable-promise@0.2.0-pre.6':
+    resolution: {integrity: sha512-+5RcuruCLB/P3FYYb376RgyImXaq9BBQoOskUbgPyNK3O0AXPakrXUj1EELv+lcnUSdFws/ufdrrWODLJyoTmg==}
 
   '@xtuc/ieee754@1.2.0':
     resolution: {integrity: sha512-DX8nKgqcGwsc0eJSqYt5lwP4DH5FlHnmuWWBRy7X0NcaGR0ZtuyeESgMwTYVEtxmsNGY+qit4QYT/MIYTOTPeA==}
@@ -6099,6 +6114,12 @@ snapshots:
 
   '@standard-schema/utils@0.3.0': {}
 
+  '@stardazed/streams-compression@1.0.0':
+    dependencies:
+      '@stardazed/zlib': 1.0.1
+
+  '@stardazed/zlib@1.0.1': {}
+
   '@swc/helpers@0.5.23':
     dependencies:
       tslib: 2.8.1
@@ -6300,7 +6321,7 @@ snapshots:
       debug: 4.4.3(supports-color@10.2.2)
       minimatch: 10.2.5
       semver: 7.8.5
-      tinyglobby: 0.2.16
+      tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -6496,6 +6517,13 @@ snapshots:
     dependencies:
       '@webassemblyjs/ast': 1.14.1
       '@xtuc/long': 4.2.2
+
+  '@worker-tools/html-rewriter@0.1.0-pre.19':
+    dependencies:
+      '@stardazed/streams-compression': 1.0.0
+      '@worker-tools/resolvable-promise': 0.2.0-pre.6
+
+  '@worker-tools/resolvable-promise@0.2.0-pre.6': {}
 
   '@xtuc/ieee754@1.2.0': {}
 
