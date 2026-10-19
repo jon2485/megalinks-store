@@ -19,7 +19,7 @@ export default function AdminLobby({ctx}:{ctx:Ctx}){
  const go=(target:string)=>guard(()=>{const g=lobbyGroupForPage(target);if(g)setSelected(g.id);setPage(target);setSearch('');});
  const localCtx:Ctx={...ctx,adminMode:true,go};
  const choose=(id:string)=>guard(()=>{const g=lobbyGroups.find(g=>g.id===id)!;setSelected(id);setPage(g.page);setSearch('');});
- const selectQueue=(id:string)=>{choose(id);setQueueOpen(false);if(queueToggle.current?.getClientRects().length)queueToggle.current.focus();};
+ const selectQueue=(id:string)=>guard(()=>{choose(id);setQueueOpen(false);if(queueToggle.current?.getClientRects().length)queueToggle.current.focus();});
  useEffect(()=>{if(queueOpen)queueList.current?.querySelector<HTMLButtonElement>('button[aria-pressed="true"]')?.focus();},[queueOpen]);
  useEffect(()=>{const timer=setTimeout(()=>setDebounced(search.trim()),250);return()=>clearTimeout(timer);},[search]);
  useEffect(()=>{const unsaved=(e:Event)=>{dirty.current=!!(e as CustomEvent).detail;};window.addEventListener('postflow:dirty',unsaved);return()=>{window.removeEventListener('postflow:dirty',unsaved);};},[]);

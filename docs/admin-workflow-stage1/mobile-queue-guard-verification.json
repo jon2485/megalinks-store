@@ -1,0 +1,141 @@
+{
+  "checkedAt": "2026-10-19T07:56:52.157670+00:00",
+  "branch": "design/admin-workflow-stage1-v172",
+  "parentCommit": "a12ed10ee207ca0a13c4c0c3862e7bda862a8817",
+  "productChange": "One line: selectQueue close/return-focus deferred through original guard",
+  "originalGuardChooseGoLocalCtxUnchanged": true,
+  "passedRegressionScripts": 14,
+  "regressions": [
+    {
+      "name": "admin-mobile-queue-guard",
+      "exitCode": 0,
+      "passed": true,
+      "output": "MOBILE QUEUE GUARD PASSED: pending/continue-edit preserves open selector, selected queue, panel and dirty state; approved exit closes after original decision and restores toggle focus; clean/same-queue transitions preserved; zero business writes. Handler fixture; browser focus/touch unverified.\n"
+    },
+    {
+      "name": "admin-workflow-stage1",
+      "exitCode": 0,
+      "passed": true,
+      "output": "STAGE 1 PASSED: 9 domains/3 headings, 9 queues/default/dirty guard, real counts vs non-overlapping presence, invalid/missing/stale states, no read-to-handled mutation, one shared 30s admin-only reader, SSR RTL/semantics and mobile CSS contracts. Browser layout/touch not tested.\n"
+    },
+    {
+      "name": "admin-entry-routing",
+      "exitCode": 0,
+      "passed": true,
+      "output": "ADMIN ENTRY ROUTING PASSED: all 9 main categories open full routes; full pages exclude lobby cards; local task shortcuts remain embedded; RTL and nested page entries preserved.\n"
+    },
+    {
+      "name": "admin-design-navigation",
+      "exitCode": 0,
+      "passed": true,
+      "output": "ADMIN DESIGN NAVIGATION PASSED: 21 guarded targets, 9 areas, native modifiers, nested back routes, pricing aliases, search/reset/empty state, RTL; NEW-01 selection closes disclosure, restores visible toggle focus and preserves ctx.go guard.\n"
+    },
+    {
+      "name": "admin-shell-ui",
+      "exitCode": 0,
+      "passed": true,
+      "output": "Admin UI: 9 areas, all 21 legacy routes retained, nested sidebar links, account back-navigation, live queue tiles, cancellation links, accessible loading and error states passed.\n"
+    },
+    {
+      "name": "admin-lobby-actions",
+      "exitCode": 0,
+      "passed": true,
+      "output": "LOBBY ACTIONS PASSED: nine RTL categories, embedded screen for every card, order details/all-reports/settings stay inside lobby, refresh, unsaved-edit guard and search-result navigation.\n"
+    },
+    {
+      "name": "admin-lobby-panels",
+      "exitCode": 0,
+      "passed": true,
+      "output": "LOBBY PANELS PASSED: payment rows/proof/exact order/approval targets; opening does not approve; all nine working areas and nested customer/article routes resolve to the intended embedded components.\n"
+    },
+    {
+      "name": "admin-full-design-preservation",
+      "exitCode": 0,
+      "passed": true,
+      "output": "FULL ADMIN PRESENTATION PASSED: unchanged business guard/navigation/search/count declarations and original effects, all 21 destinations, native groups, 400 scoped selectors and 32 live-admin portal selectors; only explicit mobile queue/menu disclosures hide navigation.\n"
+    },
+    {
+      "name": "admin-workspace-navigation-contract",
+      "exitCode": 0,
+      "passed": true,
+      "output": "WORKSPACE NAVIGATION CONTRACT PASSED: original dirty cancel/confirm, history push and popstate, nested pricebook and admin-article normalization. Known original popstate dirty-guard gap reproduced; no router code changed.\n"
+    },
+    {
+      "name": "admin-orders-navigation-contract",
+      "exitCode": 0,
+      "passed": true,
+      "output": "ORDER INTERACTION CONTRACT PASSED: expansion, exact order/document callback, search/month filtering, filtered export, pending toggle and reset, existing RTL. Mocked data only.\n"
+    },
+    {
+      "name": "admin-website-save-contract",
+      "exitCode": 0,
+      "passed": true,
+      "output": "WEBSITE SAVE CONTRACT PASSED: all 27 fields, tags/features/examples normalization, supplier/costs/list/sale prices, version/id/create guards, error recovery, busy/upload/no-data guards, logo FormData, create defaults, response rehydration. Mocked API only.\n"
+    },
+    {
+      "name": "admin-pricing-save-contract",
+      "exitCode": 0,
+      "passed": true,
+      "output": "PRICING SAVE CONTRACT PASSED: website-tier blank/zero/version, admin-only catalog reads, tier create/edit/delete with confirmation and regular-tier protection, membership, personal update/remove/validation/conflict, 101-row import preview and versioned batches. Mocked API only.\n"
+    },
+    {
+      "name": "admin-design-isolation",
+      "exitCode": 0,
+      "passed": true,
+      "output": "ADMIN ISOLATION PASSED: 366 original files byte-identical; workspace limited to guarded presentation and admin attention boundary; all 416 CSS rules scoped; backend, APIs, auth, pricing, orders, shared/customer/supplier components and dormant exports unchanged.\n"
+    },
+    {
+      "name": "admin-workflow-stage1-isolation",
+      "exitCode": 0,
+      "passed": true,
+      "output": "STAGE 1 ISOLATION PASSED: 391 current-base files byte-identical, including API/Auth/DB/business handlers, customer/supplier components and all 1,002/93 mapping rows. Allowed presentation changes are covered by handler/SSR tests.\n"
+    }
+  ],
+  "build": {
+    "exitCode": 0,
+    "completionMarker": true
+  },
+  "initialBuildNote": "Initial process returned 0 without completion marker; not accepted as complete. Fresh final run returned 0 with full Build complete marker.",
+  "typescriptExitCode": 0,
+  "targetedLintExitCode": 0,
+  "sourceCheck": "Against published Stage 1 tree bb7ae9106aaaec9481880fb49a6ad78bd5dd7e62, only app/admin-lobby.tsx differs among existing files. Attention reader, backend queue logic, panels and handled-state plan byte-identical. 1,002/93 map isolation tests rerun passed.",
+  "liveStagingAnonymousChecks": [
+    {
+      "path": "/healthz",
+      "status": 200,
+      "location": null
+    },
+    {
+      "path": "/admin",
+      "status": 303,
+      "location": "/signin-with-chatgpt?return_to=%2Fadmin"
+    },
+    {
+      "path": "/api/admin/control-center",
+      "status": 401,
+      "location": null
+    }
+  ],
+  "staging": {
+    "projectId": "4d90cd94-2461-4ede-88cc-c285aa68a74f",
+    "environmentId": "1bae3915-f298-4ca6-b31d-aa79526f1eac",
+    "serviceId": "4eb5f337-7344-42b8-9f53-4bbc23c50436",
+    "previousDeployment": "ab499476-325d-440a-9c63-b82607a70d1b",
+    "status": "SUCCESS",
+    "canRollback": true,
+    "canRedeploy": true,
+    "stagedChanges": null
+  },
+  "restore": {
+    "branch": "restore/admin-before-workflow-stage1-20261019",
+    "sha": "9dc747bbea5a8ec4736c536b1bbb6470d7dc1241",
+    "verifiedOnGitHub": true
+  },
+  "browserTestsPerformed": false,
+  "browserLimitation": "Supported control-browser absent. Real handlers/SSR with fixture refs tested, not browser touch/focus/RTL rendering. Prior visual limitations and inherited UX risks remain.",
+  "manualHandledPlan": "Unchanged for separate approval; no Backend/Database implementation.",
+  "noBusinessAuthSharedCustomerSupplierChanges": true,
+  "deployPerformed": false,
+  "railwayMutations": false,
+  "approvalRequested": "Final candidate commit on Stage 1 branch -> Staging environment/service IDs above only; no deploy until explicit user approval."
+}
