@@ -11,10 +11,10 @@ for(const [file,names] of [
  ['app/admin-order-history.tsx',['state','[unpaid,setUnpaid]','[month,setMonth]','[search,setSearch]','[expanded,setExpanded]','all','paid','pending','rows','groups','total','net','vat','toggle','exportOrders']],
  ['app/admin-lobby.tsx',['guard','go','choose','selectQueue','localCtx','lobbyCount','lobbyDescription','searchState','[selected,setSelected]','[page,setPage]','[debounced,setDebounced]']]
 ]){const before=declarations(original(file)),after=declarations(readFileSync(file,'utf8'));for(const name of names){assert(before[name],`${file}: ${name} exists in baseline`);assert.equal(after[name],before[name],`${file}: preserved ${name}`);}}
-// Existing API, polling, finance, price precedence, customer/supplier UI and maps are byte-identical.
-const allowed=new Set(['app/users-admin.tsx','app/admin-order-history.tsx','app/admin-lobby.tsx','app/admin-design-v172.css','DESIGN.md','UX-CONTRACT.md','tests/users-payment-ui.mjs','tests/admin-order-history.mjs','tests/admin-workflow-stage1.mjs','tests/admin-full-design-preservation.mjs']);
-let unchanged=0;
-for(const p of execFileSync('git',['ls-tree','-r','--name-only',base],{encoding:'utf8'}).trim().split('\n')){if(allowed.has(p))continue;assert.equal(readFileSync(p,'utf8'),original(p),'Protected original file '+p);unchanged++;}
+// The user subsequently approved all admin screens. The new isolation suite
+// verifies the explicit full-workbench scope and all protected shared owners.
+await import('./admin-complete-preservation.mjs');
+const unchanged='full-workbench isolation verified';
 const {default:Users}=await compile('app/users-admin.tsx','foundation-users',{stubs:{'./screens':'export function ActionForm(){return null}','./workspace':'import React from "react";export function Pick(){return null}export function Field({children}){return <label>{children}</label>}export function ErrorBox({error}){return error?<p role="alert">{error}</p>:null}'}});
 const people=[{id:'qa-1',role:'customer',name:'משתמש ראשון',email:'first@example.invalid',credits:30000},{id:'qa-2',role:'agency',name:'סוכנות ארוכת שם לבדיקת כיווניות',email:'long.account@example.invalid',monthly_balance:120000,credit_limit:200000,monthly_enabled:1,pending_payment_reports:2}];
 const h=reset({'admin/users':{data:{users:people}}});const routes=[],dialogs=[];const ctx={user:{role:'admin'},adminMode:true,revision:0,go:p=>routes.push(p),open:m=>dialogs.push(m)};let tree=render(Users,{ctx});

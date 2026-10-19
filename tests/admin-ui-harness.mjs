@@ -20,7 +20,7 @@ export async function compile(entry,name,{stubs={}}={}){
    export * from ${JSON.stringify(react)};export {default} from ${JSON.stringify(react)};
    export function useState(initial){const h=globalThis.adminHandlerHarness,i=h.cursor++;if(!(i in h.states))h.states[i]=typeof initial==='function'?initial():initial;return [h.states[i],v=>{h.states[i]=typeof v==='function'?v(h.states[i]):v}];}
    export function useRef(initial){const h=globalThis.adminHandlerHarness,i=h.refCursor++;return h.refs[i]??=( {current:initial} );}
-   export function useEffect(){};export function useMemo(fn){return fn()};export function useCallback(fn){return fn};export function useContext(context){return context._currentValue};
+   export function useId(){return 'fixture-id'};export function useEffect(){};export function useMemo(fn){return fn()};export function useCallback(fn){return fn};export function useContext(context){return context._currentValue};
   `:a.path==='@/lib/client'?`
    export function useData(path,revision,enabled=true){const h=globalThis.adminHandlerHarness;h.reads.push({path,enabled});return h.data[path]??{data:null,loading:false};}
    export async function pricingApi(path,method,body){return api(path,method,body)}

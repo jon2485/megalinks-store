@@ -1,0 +1,215 @@
+/* Approved full admin workbench. Runtime token owner (Model B).
+   Loaded after the legacy admin adapter; every rule requires a live admin route. */
+.admin-design-v172 {
+ --admin-v172-ink:#071f4b; --admin-v172-muted:#526579;
+ --admin-v172-line:#d8e0e9; --admin-v172-bg:#f4f6fa; --admin-v172-surface:#fff;
+ --admin-v172-accent:#e8f8fb; --admin-v172-blue:#086b91;
+ --admin-v172-radius:8px; --admin-v172-shadow:none;
+ --admin-notification:#25d366; --admin-notification-ink:#063b24;
+ --admin-sidebar-text:#e4edf9; --admin-sidebar-muted:#b3c5de;
+ --admin-sidebar-hover:#17365e; --admin-sidebar-line:#304967;
+ color:var(--admin-v172-ink);background:var(--admin-v172-bg);
+}
+.admin-design-v172 > .workspace-page-content > main {max-width:1920px;grid-template-columns:240px minmax(0,1fr);gap:28px;padding:24px 24px 48px;}
+.admin-design-v172 .admin-workspace-body {min-width:0;}
+.admin-design-v172 .admin-workspace-body :is(h1,.page-heading h1,.lobby-heading h1,.users-admin-heading h1) {font-size:26px!important;font-weight:700!important;line-height:1.45!important;}
+.admin-design-v172 .admin-workspace-body h2 {line-height:1.6;}
+.admin-design-v172 .admin-v172-navigation {top:96px;}
+.admin-design-v172 .admin-v172-menu {background:var(--admin-v172-ink);border-color:var(--admin-v172-ink);padding:0 12px 16px;border-radius:8px;max-height:calc(100dvh - 120px);color:var(--admin-sidebar-text);}
+.admin-design-v172 .admin-v172-brand {background:transparent;margin:0;padding:22px 10px 18px;border-radius:0;border-bottom:1px solid var(--admin-sidebar-line);}
+.admin-design-v172 .admin-v172-brand > span {font-size:18px;letter-spacing:.01em;color:#60dfed;}
+.admin-design-v172 .admin-v172-brand > strong {font-size:13px;font-weight:500;color:var(--admin-sidebar-muted);}
+.admin-design-v172 .admin-v172-search {background:#102f56;border-color:var(--admin-sidebar-line);margin:16px 0 8px;color:var(--admin-sidebar-text);}
+.admin-design-v172 .admin-v172-search :is(input,button) {color:var(--admin-sidebar-text);}
+.admin-design-v172 .admin-v172-search input::placeholder {color:var(--admin-sidebar-muted);opacity:1;}
+.admin-design-v172 .admin-v172-search button:hover {background:var(--admin-sidebar-hover);color:#fff;}
+.admin-design-v172 .admin-v172-menu-section + .admin-v172-menu-section {border-color:var(--admin-sidebar-line);margin-top:16px;padding-top:8px;}
+.admin-design-v172 .admin-v172-menu-section > h2 {color:var(--admin-sidebar-muted);font-size:12px!important;margin:16px 10px 6px;}
+.admin-design-v172 .admin-v172-area :is(.admin-v172-area-link,summary,li a),
+.admin-design-v172 :is(.admin-v172-results a,.admin-v172-back) {color:var(--admin-sidebar-text);border-radius:6px;font-size:14px;box-shadow:none;}
+.admin-design-v172 .admin-v172-area :is(.admin-v172-area-link,summary) {min-height:46px;font-weight:550;}
+.admin-design-v172 .admin-v172-area :is(.admin-v172-area-link,summary) > svg:first-child {color:var(--admin-sidebar-muted);}
+.admin-design-v172 .admin-v172-area ul {border-color:var(--admin-sidebar-line);}
+.admin-design-v172 .admin-v172-area :is(a,summary):hover,
+.admin-design-v172 :is(.admin-v172-results a,.admin-v172-back):hover {background:var(--admin-sidebar-hover);color:#fff;}
+.admin-design-v172 .admin-v172-area.is-active > :is(a,.admin-v172-group > summary),
+.admin-design-v172 .admin-v172-area a[aria-current=page] {background:#124963;color:#aff5ff;box-shadow:none;}
+.admin-design-v172 .admin-v172-area a[aria-current=page] {outline:1px solid #35899c;outline-offset:-1px;}
+.admin-design-v172 .admin-v172-area.is-active > .admin-v172-group > summary {background:#124963;color:#aff5ff;}
+.admin-design-v172 :is(.admin-v172-context,.admin-v172-results small) {color:var(--admin-sidebar-muted);border-color:var(--admin-sidebar-line);}
+.admin-design-v172 .admin-v172-attention-error {color:#ffe0aa;background:#503d20;border-radius:6px;}
+.admin-design-v172 .admin-v172-attention {min-height:24px;min-width:24px;border-radius:20px;background:var(--admin-notification);color:var(--admin-notification-ink);font-size:12px;font-weight:750;box-shadow:none;}
+.admin-design-v172 .admin-v172-attention.is-dot {width:11px;height:11px;min-width:11px;min-height:11px;background:var(--admin-notification);border:1px solid #c4f8d7;}
+.admin-design-v172 .admin-v172-attention.is-stale {background:#ffe2a5;color:#61420a;outline:1px dashed currentColor;}
+.admin-design-v172 .admin-section-tabs {display:flex;flex-wrap:wrap;gap:4px;margin:0 0 24px;border-bottom:1px solid var(--admin-v172-line);padding:0 0 8px;}
+.admin-design-v172 .admin-section-tabs a {display:flex;align-items:center;gap:8px;min-height:44px;padding:9px 14px;font-size:14px;border:1px solid transparent;border-radius:6px;color:var(--admin-v172-muted);font-weight:550;}
+.admin-design-v172 .admin-section-tabs a:hover {background:#e5edf4;color:var(--admin-v172-ink);}
+.admin-design-v172 .admin-section-tabs a[aria-current=page] {background:#fff;color:var(--admin-v172-ink);border-color:#a9c4d3;}
+/* A restrained shared control vocabulary, including all custom admin actions. */
+.admin-design-v172 :is(button,a,summary,[role=button]) {touch-action:manipulation;}
+.admin-design-v172 :is(button,a,summary,[role=button]):not(:disabled) {cursor:pointer;}
+.admin-design-v172 .admin-workspace-body :is(button,[data-slot=button]) {transition:background-color .15s,border-color .15s,color .15s;}
+.admin-design-v172 .admin-workspace-body :is([data-slot=button],.lobby-primary,.lobby-outline,.catalog-primary,.studio-orange,.studio-outline) {min-height:44px;border-radius:6px!important;font-size:14px!important;font-weight:600;box-shadow:none!important;transform:none;}
+.admin-design-v172 .admin-workspace-body :is([data-variant=default],.lobby-primary,.catalog-primary,.studio-orange) {background:var(--admin-v172-blue)!important;color:#fff!important;border:1px solid var(--admin-v172-blue)!important;}
+.admin-design-v172 .admin-workspace-body :is([data-variant=default],.lobby-primary,.catalog-primary,.studio-orange):hover:not(:disabled) {background:#075271!important;border-color:#075271!important;}
+.admin-design-v172 .admin-workspace-body :is([data-variant=outline],.lobby-outline,.studio-outline) {background:#fff!important;color:var(--admin-v172-ink)!important;border:1px solid #adbfce!important;}
+.admin-design-v172 .admin-workspace-body :is([data-variant=outline],.lobby-outline,.studio-outline):hover:not(:disabled) {background:#eaf3f8!important;border-color:#6b99b3!important;}
+.admin-design-v172 .admin-workspace-body [data-variant=ghost]:hover:not(:disabled) {background:#e8f0f6;color:var(--admin-v172-ink);}
+.admin-design-v172 .admin-workspace-body [data-variant=destructive] {background:#ac304a!important;color:#fff!important;border-color:#ac304a!important;}
+.admin-design-v172 .admin-workspace-body [data-variant=destructive]:hover:not(:disabled) {background:#85243a!important;}
+.admin-design-v172 .payment-report-decisions [data-variant=default] {background:#18735a!important;border-color:#18735a!important;}
+.admin-design-v172 .payment-report-decisions [data-variant=default]:hover:not(:disabled) {background:#105940!important;}
+.admin-design-v172 .admin-workspace-body button:is(.text-destructive,[class*="text-red-"],[class*="text-rose-"]) {color:#9e2942!important;background:#fff!important;border-color:#ddadb8!important;}
+.admin-design-v172 .admin-workspace-body button:is(.text-destructive,[class*="text-red-"],[class*="text-rose-"]):hover:not(:disabled) {background:#fcebf0!important;}
+.admin-design-v172 :is(button,a,summary,input,select,textarea,[role=combobox]):focus-visible {outline:3px solid var(--admin-v172-focus)!important;outline-offset:3px;}
+.admin-design-v172 :is(button,a,summary):active:not(:disabled) {filter:brightness(.94);}
+.admin-design-v172 :is(button,[data-slot=button]):is(:disabled,[aria-disabled=true],[aria-busy=true]) {opacity:.55;cursor:not-allowed;}
+.admin-design-v172 .admin-workspace-body textarea {resize:none;}
+.admin-design-v172 .admin-workspace-body :is(.panel,.table-wrap,.connection-card,[data-slot=card]) {box-shadow:none!important;border-radius:8px!important;}
+.admin-design-v172 .admin-workspace-body table tbody tr:hover {background:#f0f7fa;}
+.admin-design-v172 .admin-workspace-body table :is(td,th) {padding:12px 14px;}
+.admin-design-v172 .admin-workspace-body :is(.stat-grid,.admin-mega-stats,.account-stats,.catalog-summary) {gap:0;background:#fff;border:1px solid var(--admin-v172-line);border-radius:8px;overflow:clip;}
+.admin-design-v172 .admin-workspace-body :is(.stat,.admin-mega-stats > div,.account-stats > div,.catalog-summary > div,.catalog-summary > button) {border:0;border-inline-end:1px solid var(--admin-v172-line);border-radius:0;background:transparent;box-shadow:none;min-height:88px;padding:16px;}
+.admin-design-v172 .admin-workspace-body :is(.stat .value,.account-stats strong,.catalog-summary strong) {font-size:24px;}
+/* One list/detail owner reused by treatment, content and supplier screens. */
+.admin-design-v172 .admin-workbench {container:admin-workbench / inline-size;display:grid;grid-template-columns:minmax(220px,.85fr) minmax(0,1.5fr);gap:20px;align-items:start;min-width:0;}
+.admin-design-v172 :is(.admin-workbench-list,.admin-workbench-detail) {min-width:0;background:#fff;border:1px solid var(--admin-v172-line);border-radius:8px;overflow-wrap:anywhere;}
+.admin-design-v172 .admin-workbench-list > h2 {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0;padding:16px;font-size:14px!important;font-weight:650;border-bottom:1px solid var(--admin-v172-line);}
+.admin-design-v172 .admin-workbench-list > h2 span {color:var(--admin-v172-muted);font-weight:400;}
+.admin-design-v172 .admin-workbench-rows {max-block-size:42rem;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable;}
+.admin-design-v172 .admin-workbench-row {display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:88px;border:0;border-block-end:1px solid var(--admin-v172-line);padding:16px;text-align:start;background:#fff;box-shadow:none;border-radius:0;color:var(--admin-v172-ink);}
+.admin-design-v172 .admin-workbench-row:last-child {border-block-end:0;}
+.admin-design-v172 .admin-workbench-row:hover {background:#f0f7fa;}
+.admin-design-v172 .admin-workbench-row.is-selected {background:var(--admin-v172-accent);box-shadow:inset 0 0 0 1px #89c3d0;}
+.admin-design-v172 .admin-workbench-row-copy {display:grid;gap:5px;min-width:0;}
+.admin-design-v172 .admin-workbench-row-copy strong {font-size:15px;font-weight:650;}
+.admin-design-v172 .admin-workbench-row-copy > span {font-size:13px;color:var(--admin-v172-muted);}
+.admin-design-v172 .admin-workbench-row-end {display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.admin-design-v172 :is(.admin-workbench-pending,.admin-workbench-status) {display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:1.6;color:var(--admin-v172-muted);white-space:normal;}
+.admin-design-v172 .admin-workbench-pending {color:#12643e;font-weight:650;}
+.admin-design-v172 .admin-workbench-pending > i {flex:none;width:8px;height:8px;border-radius:50%;background:#158849;}
+.admin-design-v172 .admin-workbench-detail-heading {padding:20px;border-bottom:1px solid var(--admin-v172-line);}
+.admin-design-v172 .admin-workbench-detail-heading h2 {font-size:20px!important;font-weight:650;margin:0;}
+.admin-design-v172 .admin-workbench-detail-heading p {font-size:13px;color:var(--admin-v172-muted);margin-top:6px;}
+.admin-design-v172 .admin-workbench-detail-body {padding:20px;min-width:0;}
+.admin-design-v172 .admin-workbench-empty {font-size:14px;line-height:1.8;color:var(--admin-v172-muted);padding:20px;}
+.admin-design-v172 .admin-workbench-back {display:none;}
+.admin-design-v172 .admin-workbench-search {display:flex;align-items:center;gap:8px;min-width:0;flex:1;border:1px solid #adbfce;border-radius:6px;padding-inline:12px;background:#fff;}
+.admin-design-v172 .admin-workbench-search input {width:100%;min-width:0;min-height:44px;border:0;background:transparent;font:inherit;font-size:15px;}
+.admin-design-v172 .admin-workbench-search button {display:grid;place-items:center;width:40px;min-width:40px;min-height:44px;border:0;border-radius:5px;background:transparent;color:var(--admin-v172-muted);}
+.admin-design-v172 .admin-workbench-search button:hover {background:var(--admin-v172-accent);}
+/* Workspace: compact selectors and a real record preview, never an invented feed. */
+.admin-design-v172 .admin-foundation-desk .admin-v172-dashboard {grid-template-columns:minmax(0,1fr);}
+.admin-design-v172 .admin-foundation-desk .admin-v172-queue-column {grid-column:1;grid-row:1;padding:12px;}
+.admin-design-v172 .admin-foundation-desk .lobby-work-panel {grid-column:1;grid-row:2;}
+.admin-design-v172 .admin-foundation-desk .admin-v172-queue-list {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;}
+.admin-design-v172 .admin-foundation-desk .admin-v172-queue-list > section + section {margin:0;padding:0;border:0;}
+.admin-design-v172 .admin-foundation-desk .lobby-card {min-height:58px;align-items:center;}
+.admin-design-v172 .admin-foundation-desk .lobby-card-action {display:none;}
+.admin-design-v172 .admin-foundation-desk .lobby-card[data-pending=true] .lobby-card-count {background:#d9f8e4;color:#12643e;border:1px solid #9edab4;border-radius:16px;min-width:25px;min-height:25px;text-align:center;padding:2px 7px;font-size:13px;}
+.admin-design-v172 .admin-foundation-desk .lobby-card.selected {background:#e8f8fb;border-color:#85bfce;}
+.admin-design-v172 .admin-foundation-desk .lobby-panel-scroll {padding:16px;}
+.admin-design-v172 .admin-foundation-desk .lobby-work-panel {background:transparent;border:0;}
+.admin-design-v172 .admin-foundation-desk .lobby-work-heading {padding:16px 0;background:transparent;border-radius:0;}
+.admin-design-v172 .admin-foundation-desk .admin-payment-preview h3 {font-size:28px;margin:16px 0;font-variant-numeric:tabular-nums;}
+.admin-design-v172 .admin-payment-preview dl {display:grid;gap:12px;margin-block:16px 24px;}
+.admin-design-v172 .admin-payment-preview dl > div {display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--admin-v172-line);padding-block-end:10px;}
+.admin-design-v172 .admin-payment-preview dt {color:var(--admin-v172-muted);font-size:14px;}
+.admin-design-v172 .admin-payment-proof {display:inline-flex;min-height:44px;align-items:center;text-decoration:underline;margin-bottom:16px;color:var(--admin-v172-blue);}
+/* Suppliers and content use their own facts; no customer-order block in suppliers. */
+.admin-design-v172 :is(.admin-supplier-profile dl,.admin-content-facts) {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-bottom:20px;}
+.admin-design-v172 :is(.admin-supplier-profile dt,.admin-content-facts dt) {font-size:13px;color:var(--admin-v172-muted);margin-bottom:4px;}
+.admin-design-v172 :is(.admin-supplier-profile dd,.admin-content-facts dd) {font-size:14px;font-weight:550;}
+.admin-design-v172 .admin-supplier-notes {padding:12px;background:#f4f7fa;border-radius:6px;white-space:pre-wrap;margin-bottom:16px;}
+.admin-design-v172 .admin-suppliers-page .admin-workbench-detail-body > .panel {border:0!important;padding:20px 0 0!important;border-top:1px solid var(--admin-v172-line)!important;border-radius:0!important;}
+.admin-design-v172 .admin-suppliers-page .admin-workbench-detail-body .page-heading h1 {font-size:18px!important;}
+.admin-design-v172 .admin-content-meta {display:flex;align-items:center;gap:12px;margin-bottom:24px;color:var(--admin-v172-muted);font-size:13px;}
+.admin-design-v172 .admin-content-review-note {padding:16px;background:#f4f7fa;border:1px solid var(--admin-v172-line);border-radius:6px;font-size:14px;margin-bottom:20px;}
+.admin-design-v172 .admin-content-preview {padding:20px;border:1px solid var(--admin-v172-line);border-radius:6px;margin-bottom:20px;}
+.admin-design-v172 .admin-content-preview h3 {font-size:16px;font-weight:650;margin-bottom:12px;}
+.admin-design-v172 .admin-content-preview p {font-size:15px;line-height:1.9;max-width:72ch;}
+.admin-design-v172 .admin-customer-order-link {margin-top:24px;border:1px solid var(--admin-v172-line);border-radius:8px;background:#fff;}
+.admin-design-v172 .admin-customer-order-link > summary {padding:16px;font-size:14px;font-weight:650;min-height:48px;}
+.admin-design-v172 .admin-customer-order-link > summary:hover {background:var(--admin-v172-accent);}
+.admin-design-v172 .admin-customer-order-link > .panel {border:0!important;border-top:1px solid var(--admin-v172-line)!important;border-radius:0!important;margin:0;}
+.admin-design-v172 .admin-settlement-supplier {display:grid;gap:6px;font-size:14px;}
+.admin-design-v172 .admin-settlement-supplier select {min-width:180px;background:#fff;border:1px solid #adbfce;padding:8px 12px;}
+.admin-design-v172 .admin-settlements .settlement-amounts {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;padding:0;margin:0 0 24px;border:1px solid var(--admin-v172-line);border-radius:6px;overflow:clip;}
+.admin-design-v172 .admin-settlements .settlement-amounts > div {padding:16px 12px;border-inline-end:1px solid var(--admin-v172-line);background:#fff;}
+.admin-design-v172 .admin-settlements .settlement-amounts span {font-size:12px;color:var(--admin-v172-muted);}
+.admin-design-v172 .admin-settlements .settlement-amounts strong {font-size:22px;color:var(--admin-v172-ink);font-variant-numeric:tabular-nums;}
+.admin-design-v172 .admin-settlements .settlement-amounts .has-attention {background:#fff5df;}
+.admin-design-v172 .admin-settlements .settlement-amounts .has-attention strong {color:#855306;}
+.admin-design-v172 :is(.admin-settlement-publications,.admin-settlement-payment) h3 {font-size:16px;font-weight:650;margin-bottom:14px;}
+.admin-design-v172 .admin-settlement-publications a {display:inline-flex;align-items:center;gap:6px;min-height:44px;color:var(--admin-v172-blue);text-decoration:underline;}
+.admin-design-v172 .admin-settlement-payment {border-top:1px solid var(--admin-v172-line);padding-top:20px;margin-top:24px;}
+.admin-design-v172 .admin-settlement-payment > p {font-size:14px;color:var(--admin-v172-muted);margin-bottom:16px;}
+.admin-design-v172 .admin-settlements .settlement-pay {width:auto;margin-top:16px;}
+/* Adapt existing specialty screens to the same flat working surface. */
+.admin-design-v172 .admin-foundation-users .users-admin-layout {grid-template-columns:minmax(260px,.8fr) minmax(0,1.4fr);}
+.admin-design-v172 .admin-foundation-users .client-selected-panel > header {background:#fff!important;border-bottom:1px solid var(--admin-v172-line);color:var(--admin-v172-ink);}
+.admin-design-v172 .admin-foundation-users .client-action-grid button {background:#fff!important;color:var(--admin-v172-ink)!important;border:1px solid #adbfce!important;}
+.admin-design-v172 .admin-foundation-users .client-action-grid button:hover {background:#e8f8fb!important;border-color:#7ab7c8!important;}
+.admin-design-v172 .admin-foundation-users .client-report-badge {background:#d9f8e4!important;color:#12643e!important;border-color:#9edab4!important;}
+.admin-design-v172 .admin-promotions-page :is(.admin-azure-hero,.studio-hero),.admin-design-v172 .support-hero {background:transparent!important;color:var(--admin-v172-ink)!important;padding:0 0 20px!important;}
+.admin-design-v172 .admin-promotions-page .admin-azure-hero :is(h1,p,a),.admin-design-v172 .support-hero :is(h1,p) {color:var(--admin-v172-ink)!important;}
+.admin-design-v172 .admin-promotions-page .admin-azure-hero nav a {border:1px solid #adbfce;background:#fff;border-radius:6px;}
+.admin-design-v172 .admin-promotions-page .admin-azure-hero nav a:hover {background:var(--admin-v172-accent);}
+.admin-design-v172 .admin-promotions-page .admin-azure-hero > svg {display:none;}
+.admin-design-v172 .admin-promotions-page .admin-azure-hero > div > p:first-child {display:none;}
+.admin-design-v172 .admin-promotions-page > div {max-width:none;padding-inline:0;}
+.admin-design-v172 :is(.support-ticket-row,.admin-confirmed-order-row,.catalog-compact-row) {border-radius:0;}
+/* Portals stay app-owned and apply only while the admin surface is mounted. */
+body:has(.admin-design-v172) [data-slot=dialog-content] [data-slot=button] {border-radius:6px;min-height:44px;}
+body:has(.admin-design-v172) [data-slot=dialog-content] [data-variant=default] {background:#086b91;color:#fff;}
+body:has(.admin-design-v172) [data-slot=dialog-content] [data-variant=default]:hover:not(:disabled) {background:#075271;}
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(button,a,input,textarea,select):focus-visible {outline:3px solid #087ac8;outline-offset:3px;}
+@container admin-v172 (max-width:1080px) {
+ .admin-design-v172 .admin-foundation-desk .admin-v172-queue-column {display:none;grid-row:1;}
+ .admin-design-v172 .admin-foundation-desk .admin-v172-queue-column.is-expanded {display:block;}
+ .admin-design-v172 .admin-foundation-desk .lobby-work-panel {grid-row:2;}
+ .admin-design-v172 .admin-foundation-desk .admin-v172-queue-list {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@container admin-v172 (max-width:760px) {
+ .admin-design-v172 .admin-workbench {grid-template-columns:minmax(0,1fr);}
+ .admin-design-v172 .admin-workbench-detail {display:none;}
+ .admin-design-v172 .admin-workbench.is-detail-open .admin-workbench-detail {display:block;}
+ .admin-design-v172 .admin-workbench.is-detail-open .admin-workbench-list {display:none;}
+ .admin-design-v172 .admin-workbench-back {display:flex;align-items:center;gap:8px;min-height:48px;width:100%;padding:12px 16px;background:#fff;color:var(--admin-v172-ink);border-bottom:1px solid var(--admin-v172-line);font-size:14px;}
+ .admin-design-v172 .admin-workbench-back:hover {background:var(--admin-v172-accent);}
+ .admin-design-v172 .admin-workbench-detail-body {padding:16px;}
+ .admin-design-v172 .admin-settlements .settlement-amounts strong {font-size:18px;}
+}
+@container admin-foundation-users (max-width:799px) {
+ .admin-design-v172 .admin-foundation-users .users-admin-layout {grid-template-columns:minmax(0,1fr);}
+}
+@media(max-width:1100px) {
+ .admin-design-v172 > .workspace-page-content > main {grid-template-columns:minmax(0,1fr);padding:20px;gap:20px;}
+ .admin-design-v172 .admin-v172-mobile-heading {background:var(--admin-v172-ink);color:#fff;border-color:var(--admin-v172-ink);}
+ .admin-design-v172 .admin-v172-mobile-heading button {background:#17365e;color:#fff;border-color:#47617e;}
+ .admin-design-v172 .admin-v172-mobile-heading button:hover {background:#254b76;}
+ .admin-design-v172 .admin-v172-menu {max-height:65dvh;}
+}
+@media(max-width:600px) {
+ .admin-design-v172 > .workspace-page-content > main {padding:12px 12px calc(32px + env(safe-area-inset-bottom));}
+ .admin-design-v172 .admin-workspace-body :is(h1,.page-heading h1,.lobby-heading h1,.users-admin-heading h1) {font-size:24px!important;}
+ .admin-design-v172 .admin-section-tabs {gap:4px;margin-bottom:20px;}
+ .admin-design-v172 .admin-section-tabs a {padding:8px 10px;font-size:13px;}
+ .admin-design-v172 .admin-workbench-search input {font-size:16px;}
+ .admin-design-v172 .admin-foundation-desk .admin-v172-queue-list {grid-template-columns:minmax(0,1fr);}
+ .admin-design-v172 .admin-settlements .settlement-amounts {grid-template-columns:minmax(0,1fr);}
+ .admin-design-v172 .admin-settlements .settlement-amounts > div {display:flex;align-items:center;justify-content:space-between;gap:12px;border-inline-end:0;border-bottom:1px solid var(--admin-v172-line);}
+ .admin-design-v172 :is(.admin-supplier-profile dl,.admin-content-facts) {grid-template-columns:minmax(0,1fr);}
+}
+@media(prefers-reduced-motion:reduce) {
+ .admin-design-v172 :is(button,a,summary) {animation:none!important;transition:none!important;}
+}
+@media(forced-colors:active) {
+ .admin-design-v172 :is(.admin-v172-attention,.admin-workbench-pending) {color:CanvasText;background:Canvas;border:1px solid CanvasText;}
+ .admin-design-v172 :is(.admin-workbench-row.is-selected,.admin-section-tabs a[aria-current=page]) {outline:2px solid Highlight;}
+}
+@media print {
+ .admin-design-v172 :is(.admin-section-tabs,.admin-workbench-list,.admin-workbench-back) {display:none!important;}
+ .admin-design-v172 .admin-workbench {display:block;}
+ .admin-design-v172 .admin-workbench-detail {display:block!important;}
+}

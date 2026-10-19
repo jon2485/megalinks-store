@@ -38,7 +38,7 @@ export function AdminNavigation({ctx,view}:{ctx:Ctx;view:string}){
    </button>
   </div>
   <div id="admin-v172-menu" className={'admin-v172-menu'+(expanded?' is-expanded':'')}>
-   <div className="admin-v172-brand"><span translate="no" dir="ltr">MEGA LINKS</span><strong>סביבת הניהול</strong><small>תוכן. פרסום. שליטה.</small></div>
+   <div className="admin-v172-brand"><span translate="no" dir="ltr">MEGA LINKS</span><strong>סביבת הניהול</strong></div>
    <div className="admin-v172-search"><Search size={17} aria-hidden="true"/><input ref={searchInput} type="search" name="admin-navigation-search" autoComplete="off" aria-label="חיפוש כלי ניהול" placeholder="חיפוש מסכי ניהול…" value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button type="button" aria-label="ניקוי חיפוש כלי ניהול" onClick={()=>{setSearch('');searchInput.current?.focus();}}><X size={16} aria-hidden="true"/></button>}</div>
    {attention.error&&<p className="admin-v172-attention-error" role="status">חיוויי הטיפול לא עודכנו. מוצגים הנתונים האחרונים, אם קיימים.</p>}
    {search.trim()?<nav className="admin-v172-results" aria-label="תוצאות חיפוש כלי ניהול" aria-live="polite">
@@ -58,3 +58,9 @@ export function AdminNavigation({ctx,view}:{ctx:Ctx;view:string}){
 }
 
 export function AdminControlCenter({ctx}:{ctx:Ctx}){return <AdminLobby ctx={ctx}/>;}
+
+export function AdminSectionTabs({ctx,view}:{ctx:Ctx;view:string}){
+ const area=adminArea(view),attention=useAdminAttention(ctx);
+ if(!area||area.pages.length<2)return null;
+ return <nav className="admin-section-tabs" aria-label={'מסכים בתוך '+adminAreaLabel(area.id,area.label)}>{area.pages.map(([page,label])=><a key={page} href={'/'+page} aria-current={page===view?'page':undefined} onClick={event=>{if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();ctx.go(page);}}><span>{label}</span><AdminAttentionBadge pages={[page]} state={attention}/></a>)}</nav>;
+}
