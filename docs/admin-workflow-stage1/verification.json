@@ -1,0 +1,376 @@
+{
+  "checkedAt": "2026-10-19T07:45:09.183247+00:00",
+  "scope": "Stage 1 only; no deploy",
+  "branch": "design/admin-workflow-stage1-v172",
+  "restore": "restore/admin-before-workflow-stage1-20261019",
+  "baseCommit": "9dc747bbea5a8ec4736c536b1bbb6470d7dc1241",
+  "baseTree": "31184232e7fda89259494729efefc52a2a642904",
+  "productFilesChanged": [
+    "app/admin-attention.tsx",
+    "app/admin-design-v172.css",
+    "app/admin-lobby.tsx",
+    "app/admin-shell.tsx",
+    "app/workspace.tsx"
+  ],
+  "build": {
+    "exitCode": 0,
+    "warnings": [
+      "Existing chunk-size warning",
+      "Vinext unknown route classifications"
+    ]
+  },
+  "typecheckExitCode": 0,
+  "targetedEslintExitCode": 0,
+  "regressionScripts": [
+    {
+      "name": "admin-entry-routing",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "ADMIN ENTRY ROUTING PASSED: all 9 main categories open full routes; full pages exclude lobby cards; local task shortcuts remain embedded; RTL and nested page entries preserved.\n"
+    },
+    {
+      "name": "admin-lobby-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "LOBBY ACTIONS PASSED: nine RTL categories, embedded screen for every card, order details/all-reports/settings stay inside lobby, refresh, unsaved-edit guard and search-result navigation.\n"
+    },
+    {
+      "name": "admin-lobby-panels",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "LOBBY PANELS PASSED: payment rows/proof/exact order/approval targets; opening does not approve; all nine working areas and nested customer/article routes resolve to the intended embedded components.\n"
+    },
+    {
+      "name": "admin-shell-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Admin UI: 9 areas, all 21 legacy routes retained, nested sidebar links, account back-navigation, live queue tiles, cancellation links, accessible loading and error states passed.\n"
+    },
+    {
+      "name": "admin-order-history",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "ADMIN ORDER HISTORY PASSED: confirmed-only totals and export; bank pending/reported/PDF-closed unpaid/demo excluded; payment-month groups; refunds reflected; outstanding orders in a separate view.\nCANCELLED ADMIN ORDER: one red cancelled badge, no paid label, matching export status.\n"
+    },
+    {
+      "name": "admin-finance-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Finance admin screens render populated RTL lists, mobile-first layouts, request actions and bank settings.\nInvoice cancellation uses the same red cancelled status despite paid state or an attached invoice.\n"
+    },
+    {
+      "name": "monthly-admin-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Monthly UI passed: paid badge, full article details, payment evidence form, RTL, checkout-only monthly action.\nLobby monthly panel defaults to real unpaid accounts; standalone monthly defaults are preserved.\n"
+    },
+    {
+      "name": "admin-design-navigation",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "ADMIN DESIGN NAVIGATION PASSED: 21 guarded targets, 9 areas, native modifiers, nested back routes, pricing aliases, search/reset/empty state, RTL; NEW-01 selection closes disclosure, restores visible toggle focus and preserves ctx.go guard.\n"
+    },
+    {
+      "name": "pricing-admin-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PRICING ADMIN UI PASSED: tier controls, customer assignment, pricebook, minimums, imports, history and responsive layouts\n"
+    },
+    {
+      "name": "admin-workspace-navigation-contract",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "WORKSPACE NAVIGATION CONTRACT PASSED: original dirty cancel/confirm, history push and popstate, nested pricebook and admin-article normalization. Known original popstate dirty-guard gap reproduced; no router code changed.\n"
+    },
+    {
+      "name": "admin-website-save-contract",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "WEBSITE SAVE CONTRACT PASSED: all 27 fields, tags/features/examples normalization, supplier/costs/list/sale prices, version/id/create guards, error recovery, busy/upload/no-data guards, logo FormData, create defaults, response rehydration. Mocked API only.\n"
+    },
+    {
+      "name": "admin-orders-navigation-contract",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "ORDER INTERACTION CONTRACT PASSED: expansion, exact order/document callback, search/month filtering, filtered export, pending toggle and reset, existing RTL. Mocked data only.\n"
+    },
+    {
+      "name": "admin-pricing-save-contract",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PRICING SAVE CONTRACT PASSED: website-tier blank/zero/version, admin-only catalog reads, tier create/edit/delete with confirmation and regular-tier protection, membership, personal update/remove/validation/conflict, 101-row import preview and versioned batches. Mocked API only.\n"
+    },
+    {
+      "name": "admin-design-isolation",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "ADMIN ISOLATION PASSED: 366 original files byte-identical; workspace limited to guarded presentation and admin attention boundary; all 416 CSS rules scoped; backend, APIs, auth, pricing, orders, shared/customer/supplier components and dormant exports unchanged.\n"
+    },
+    {
+      "name": "admin-full-design-preservation",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "FULL ADMIN PRESENTATION PASSED: unchanged business guard/navigation/search/count declarations and original effects, all 21 destinations, native groups, 400 scoped selectors and 32 live-admin portal selectors; only explicit mobile queue/menu disclosures hide navigation.\n"
+    },
+    {
+      "name": "catalog-workspace-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "CATALOG WORKSPACE ACTIONS PASSED: four exclusive tabs, correct site edit, admin gate, RTL/LTR fields, versioned save, searchable supplier list, inline creation/selection, shared modal route and responsive card/table layout.\n"
+    },
+    {
+      "name": "pricing-redesign-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Redesign action checks passed: tabs, membership, personal route, review, modal save success/failure, RTL, accurate prices, favorite, order, admin editing and external links.\n"
+    },
+    {
+      "name": "personal-price-editor-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PERSONAL PRICE EDITOR PASSED: exact account/site/amount/version, success refresh, retained error modal, validation, explicit zero and removal fallback.\n"
+    },
+    {
+      "name": "customer-order-screen",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "CUSTOMER ORDER SCREEN PASSED: all rows collapsed; one mixed list; exact header; 30 linked products with purchase dates; summary below products; only open orders can report payments with proof.\nADMIN ORDER UI PASSED: same compact list, PDF action only, closure and unpaid state clearly separated.\nCANCELLED CUSTOMER ORDER: red cancelled badge and detail agree, no payment report action.\n"
+    },
+    {
+      "name": "payment-closure-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PAYMENT CLOSURE ACTIONS: warning before mutations, cancel preserves state, confirmation sends exact route/fields, double-click guard passed.\n"
+    },
+    {
+      "name": "customer-account-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Customer/account actions passed: search, add, edit, delete, publication navigation, profile save/error, signout target; removed initials/export and duplicate billing navigation.\n"
+    },
+    {
+      "name": "page-crash-regression",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PAGE CRASH REGRESSION PASSED: personal area opens without payment reminders; customer account opens with default and payment tabs.\n"
+    },
+    {
+      "name": "refund-supplier-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Refund and supplier UI: linked domains, accurate VAT/destination labels, demo separation, payment cards and accessible controls passed.\n"
+    },
+    {
+      "name": "customer-articles-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "CUSTOMER ARTICLES UI PASSED: existing account alias normalization retained; isolated article helper status groups, refund exclusion, search, preview/editor/approval/publication links, responsive RTL and stacked wallet controls. No dormant helper activated.\n"
+    },
+    {
+      "name": "users-payment-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Users/payment UI passed: RTL cards, readable search, mobile actions, correct customer routes, settings dialog, unpaid/pending/paid distinction and admin review queue.\nPersonal price editor passed: regular, tier, actual and cost prices, selected customer identity, edit and removal controls.\n"
+    },
+    {
+      "name": "financial-history-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "FINANCIAL HISTORY UI PASSED: open monthly/closed unpaid/paid grouping; paid monthly joins closed; publication status excluded; 30-item pagination/search/export; exact totals and Hebrew RTL.\nORDER DETAIL REGRESSIONS PASSED: API-loaded items, collapsed site preview, initial expansion, customer/admin parity and scoped monthly closure.\nFull cancellation overrides paid label; partial cancellation does not mislabel entire order.\n"
+    },
+    {
+      "name": "order-cancellation-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Cancellation UI passed: collapsed full cancellation, cancellation-details label, writing retained, paid-only partial refund label, legacy cancellations.\n"
+    },
+    {
+      "name": "payment-footer-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Payment footer UI passed: compact customer date/method, private manager details, actual confirmation dates, missing-date handling, automatic approval labels.\n"
+    },
+    {
+      "name": "order-display-consistency",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "ORDER DISPLAY CONSISTENCY PASSED: customer order list, wallet and breakdown agree after full refund; partial net/VAT remain correct; separate refund cards show linked product, order and cancellation date.\nWallet usage UI passed: approved labels, dynamic row count, exact sum, dates, linked websites/order numbers, export and empty state.\n"
+    },
+    {
+      "name": "payment-ui",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Payment UI passed: bank/card/split statuses, RTL, manager-only queue, confirmation form, paid and monthly readiness, no customer demo options.\n"
+    },
+    {
+      "name": "sheets-plan",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Sheets planner and Apps Script: diffs, price values, blank preservation, explicit clears, validation, duplicate IDs, additions, no deletions, periodic/edit triggers and credential handling passed.\n"
+    },
+    {
+      "name": "sheets-merge-properties",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "THREE-WAY MERGE PROPERTIES PASSED: 1728 base/site/sheet combinations, both conflict choices, zero prices, and calculated-column isolation.\n"
+    },
+    {
+      "name": "sheets-script-roundtrip",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "APPS SCRIPT ROUNDTRIP PASSED: 21 checks: precise cell patch, append, automatic ACK, history, changed-cell/changed-row/formula protection, formula-injection escaping and private header credentials. Google services were mocked.\n"
+    },
+    {
+      "name": "pricing-rules",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "SECOND INDEPENDENT PRICING PASS: 17593 precedence, sale and integer rounding assertions\n"
+    },
+    {
+      "name": "pricing-sync",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "LIVE PRICING SYNC PASSED: cross-session updates, no-store, visibility/focus, retries, overlap/unmount protection, separate pricing revision and preserved forms.\n"
+    },
+    {
+      "name": "bundle-pricing",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Bundle price display: original prices before all discounts, final price, cumulative savings, legacy coupon and rounding passed\n"
+    },
+    {
+      "name": "catalog-review-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "CATALOG REVIEW ACTIONS PASSED: exclusive tier configuration and customer membership; add/delete tier; pricebook return routes; derived prices; failed save retains form; invalid/ongoing logo uploads; supplier empty state and Escape; sync pause/history, code download/copy, token hide, conflict and warning gate, apply payload and server failure.\n"
+    },
+    {
+      "name": "editor-format",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Bold formatting: selected words only, normal Word styles overridden, toggle and cross-paragraph links preserved\nSelected typography preserves paragraph structure, original text and independent anchors\n"
+    },
+    {
+      "name": "gemini-form-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "GEMINI FORM ACTIONS PASSED: verified defaults and normalization; private key save/test; read-only model discovery; explicit model selection, unavailable-model guard, failed discovery and invalidation when credentials change.\n"
+    },
+    {
+      "name": "loading-state",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Loading request lifecycle checks passed: concurrent requests, duplicate cleanup, success, HTTP/network errors, background polling and SSR.\n"
+    },
+    {
+      "name": "studio-actions",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Real studio handlers: draft save, save-before-validation, inline results, error/retry, correct version submission and customer lock passed\nProfessional writing actual buttons passed: manager return/direct publishing, save-before-request, exact revision note and no-return choice, customer send-for-publication target.\nWRITER SUBMIT BUTTON PASSED: friendly validation without writes, save then send with correct version, waiting state and explicit success.\nAI STUDIO BUTTONS PASSED: early preparation notice, unlocked site navigation, protected editor, active status polling, continue-browsing destination and generated draft loaded on return.\n"
+    },
+    {
+      "name": "supplier-privacy",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "SUPPLIER PRIVACY PASSED: 911 checks. Public/customer/agency/API/supplier paths, private canaries, nested/legacy data, administrator-only costs, activity, exports, files, supplier inbox and inventory-free email. Isolated fixtures only.\n"
+    },
+    {
+      "name": "pricing-integration",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PRICING INTEGRATION PASSED: 149 checks\n"
+    },
+    {
+      "name": "customer-account",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PASS customer account and monthly finance: 250 checks\n"
+    },
+    {
+      "name": "payment-audit",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "PASS full payment audit: 120 checks\n"
+    },
+    {
+      "name": "sheets-sync-integration",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "Admin control center: admin-only access, read-only methods, paid-content eligibility, invoice/demo separation, legacy topups, closed support, and cancellation drilldown passed.\nSheets server: administrator access, private token, scoped source, staged receipt, automatic update, repeat delivery, price warning approval, stale snapshot rejection, invalid-row protection passed.\n"
+    },
+    {
+      "name": "railway-staging-assets",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "STAGING ASSETS PASSED: 9 SSR-referenced JS/CSS files return real code with HTTP 200\n"
+    },
+    {
+      "name": "railway-staging-gateway",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "STAGING GATEWAY PASSED: 37 checks\n"
+    },
+    {
+      "name": "admin-workflow-stage1",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "STAGE 1 PASSED: 9 domains/3 headings, 9 queues/default/dirty guard, real counts vs non-overlapping presence, invalid/missing/stale states, no read-to-handled mutation, one shared 30s admin-only reader, SSR RTL/semantics and mobile CSS contracts. Browser layout/touch not tested.\n"
+    },
+    {
+      "name": "admin-workflow-stage1-isolation",
+      "passed": true,
+      "exitCode": 0,
+      "evidence": "STAGE 1 ISOLATION PASSED: 391 current-base files byte-identical, including API/Auth/DB/business handlers, customer/supplier components and all 1,002/93 mapping rows. Allowed presentation changes are covered by handler/SSR tests.\n"
+    }
+  ],
+  "passedScripts": 50,
+  "initialFailuresResolved": {
+    "entryRoutingFixture": "Mocked new useContext/useData in isolated harness; original route assertions retained",
+    "serverTestTiming": "Initial run overlapped build and lacked generated RSC manifest. All affected tests passed after complete build and again against final artifact."
+  },
+  "sourceIsolation": {
+    "currentBaseUnchangedFiles": 391,
+    "legacyProtectedFiles": 366,
+    "controlMappings": 1002,
+    "actionGroups": 93,
+    "mappingFilesByteIdentical": true,
+    "businessBackendApiDbAuthCustomerSupplierUnchanged": true
+  },
+  "impeccable": {
+    "primaryFindings": 0,
+    "advisories": 220,
+    "mode": "Static scan; no hooks; no visual certification"
+  },
+  "premiumStrict": {
+    "exitCode": 2,
+    "summary": {
+      "errors": 71,
+      "total": 71,
+      "unresolved": 23,
+      "violations": 48,
+      "warnings": 0
+    },
+    "normalizedFindingsUnchanged": true,
+    "passed": false
+  },
+  "testEnvironment": "Handler fixtures; real React SSR shell/lobby with lazy business-panel stub; isolated Miniflare D1/R2 and mocked external services",
+  "browserPreview": {
+    "performed": false,
+    "reason": "Required control-browser unavailable. Applicable Sites guidance prohibits substitute browser/preview server.",
+    "missing": [
+      "Desktop/tablet/mobile rendered RTL",
+      "Touch, focus, zoom, overflow, dialogs",
+      "Live financial, Sheets, PDF and email E2E"
+    ]
+  },
+  "manualHandledImplemented": false,
+  "manualHandledBackendDatabaseApprovalRequired": true,
+  "knownRisks": [
+    "Inherited popstate dirty gap/incomplete dirty signaling",
+    "Inherited finance modal busy/close limitations",
+    "71 inherited Premium strict findings",
+    "Control-center read now runs on all admin pages; live load impact unmeasured"
+  ],
+  "liveBusinessWrites": false,
+  "deployPerformed": false
+}

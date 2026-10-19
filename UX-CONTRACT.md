@@ -64,3 +64,15 @@ Permissions, amounts, retention, cancellation, settlement and save semantics are
 not redefined by this design. Existing aliases/B1, dormant exports/B2–B3, shared
 role surfaces/B5 and known dirty-signaling gaps stay as documented in the original
 completion review. No hardening claim is made for these inherited behaviors.
+# Admin workflow Stage 1 contract — 2026-10-19
+
+| Capability | Owner and source | Stage 1 behavior | Evidence/limit |
+|---|---|---|---|
+| Sidebar grouping | admin-navigation.ts remains canonical; AdminNavigation owns presentation | Three headings, nine original domains, 21 original destinations and aliases; original select/ctx.go preserved | Route/dirty/source tests; browser back gap remains inherited |
+| Attention | Existing admin/control-center read API, admin-attention.tsx context | One enabled 30s read shared by lobby/sidebar; ctx.revision refresh; count for one queue, dot for heterogeneous queues; stale disclosure | Pure-function, role-boundary and real React SSR fixtures |
+| Treatment | AdminLobby original guard/go/choose/localCtx and AdminLobbyPanel | Payment reports by default; nine compact queues; real panel first; mobile disclosure with selected-row/toggle focus | Handler/SSR/CSS contracts; actual browser focus/touch pending |
+| Seen/handled | Existing server business status and explicit price review | Opening does not write; no generic checkbox, localStorage, new endpoint or schema | Existing handlers byte-identical; future generic resolution requires separate approval |
+
+Existing financial approval, top-up, refund, supplier, catalog and save owners remain
+unchanged. This stage cannot certify live end-to-end business workflows or mobile
+rendering. See docs/admin-workflow-stage1/README.md and handled-state-plan.md.

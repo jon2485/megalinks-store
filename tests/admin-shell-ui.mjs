@@ -10,13 +10,14 @@ const compiled=await build({entryPoints:['app/admin-shell.tsx'],bundle:true,plat
 mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/admin-shell-ui.mjs',compiled.outputFiles[0].text);
 const {AdminNavigation,AdminControlCenter}=await import(pathToFileURL(realpathSync('.sites-runtime/admin-shell-ui.mjs')));
 const ctx={revision:0,go(){throw Error('Render must not navigate')},refresh(){throw Error('Render must not mutate')}};
+globalThis.adminFixture={data:null,loading:false,error:''};
 const navigation=renderToStaticMarkup(React.createElement(AdminNavigation,{ctx,view:'admin-invoices'}));
 assert.equal((navigation.match(/href="\/admin/g)||[]).length,21,'all 21 routes remain directly reachable in the sidebar');
 for(const text of ['הזמנות וכספים','חשבוניות וקבלות','הטענות יתרה','חשבונות חודשיים','חיפוש כלי ניהול','aria-current="page"'])assert(navigation.includes(text),text);
-const detail=renderToStaticMarkup(React.createElement(AdminNavigation,{ctx,view:'admin-customer-account/customer-id'}));assert(detail.includes('חזרה ללקוחות והרשאות'));
+const detail=renderToStaticMarkup(React.createElement(AdminNavigation,{ctx,view:'admin-customer-account/customer-id'}));assert(detail.includes('חזרה למשתמשים והרשאות'));
 globalThis.adminFixture={data:{queues:[{id:'content',label:'כתבות לאישור',page:'admin-approvals',count:3,description:'בדיקת תוכן',oldest:'2026-10-01'},{id:'zero',count:0,label:'אין משימות'}],cancellations:[{id:'a',user_id:'customer',user_name:'לקוח בדיקה',website_name:'אתר בדיקה',title:'כותרת',updated:'2026-10-01'}],updated:'2026-10-12'},loading:false};
 const dashboard=renderToStaticMarkup(React.createElement(AdminControlCenter,{ctx}));
-for(const text of ['מרכז הבקרה','תורי עבודה','כתבות ותוכן','דיווחי תשלום','פניות שירות','מחירים וסנכרון','ביטולים וזיכויים','מסמכים וחיבורים','הטענות יתרה','פרסום וספקים','חשבונות חודשיים'])assert(dashboard.includes(text),text);assert(!dashboard.includes('אין משימות'));
+for(const text of ['מרכז העבודה','בחירת תור טיפול','כתבות ותוכן','דיווחי תשלום','פניות שירות','מחירים וסנכרון','ביטולים וזיכויים','מסמכים וחיבורים','הטענות יתרה','פרסום וספקים','חשבונות חודשיים'])assert(dashboard.includes(text),text);assert(!dashboard.includes('אין משימות'));
 globalThis.adminFixture={loading:true};assert(renderToStaticMarkup(React.createElement(AdminControlCenter,{ctx})).includes('role="status"'));
 globalThis.adminFixture={loading:false,error:'לא ניתן לטעון'};assert(renderToStaticMarkup(React.createElement(AdminControlCenter,{ctx})).includes('role="alert"'));
 const nav=readFileSync('lib/admin-navigation.ts','utf8'),workspace=readFileSync('app/workspace.tsx','utf8');

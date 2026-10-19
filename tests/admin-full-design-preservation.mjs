@@ -5,20 +5,24 @@ import ts from 'typescript';
 import {createRequire} from 'node:module';
 import {compile,reset,render,nodes,text} from './admin-ui-harness.mjs';
 
-const original=execFileSync('git',['show','80b1aac9be6ac5a0ce3f053ae9ed9be7d0c1b366:app/admin-lobby.tsx'],{encoding:'utf8'});
+const original=execFileSync('git',['show','31184232e7fda89259494729efefc52a2a642904:app/admin-lobby.tsx'],{encoding:'utf8'});
 const current=readFileSync('app/admin-lobby.tsx','utf8');
 function contracts(source){
  const ast=ts.createSourceFile('lobby.tsx',source,ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);
- const calls=[],props=[];
+ const business={},effects=[];
  function visit(node){
-  // Calls include hook initializers/effects, all navigation/guards and modal closures.
-  if(ts.isCallExpression(node))calls.push(node.getText(ast));
-  if(ts.isJsxAttribute(node)&&/^(on[A-Z]|value$|checked$|disabled$|ref$|id$|aria-controls$|aria-selected$)/.test(node.name.getText(ast)))props.push(node.getText(ast));
+  if(ts.isVariableDeclaration(node)&&['guard','go','choose','localCtx','searchState'].includes(node.name.getText(ast)))business[node.name.getText(ast)]=node.getText(ast);
+  if(ts.isFunctionDeclaration(node)&&node.name?.text==='lobbyCount')business.lobbyCount=node.getText(ast);
+  if(ts.isCallExpression(node)&&node.expression.getText(ast)==='useEffect')effects.push(node.getText(ast));
   ts.forEachChild(node,visit);
  }
- visit(ast);return {calls:calls.sort(),props:props.sort()};
+ visit(ast);return {business,effects};
 }
-assert.deepEqual(contracts(current),contracts(original),'Lobby requests, hooks, handler expressions, dirty guard, refs and selection props must be byte-identical AST contracts');
+const before=contracts(original),after=contracts(current);
+assert.deepEqual(after.business,before.business,'All original guard, local/global navigation, queue selection, count and record-search declarations remain byte-identical');
+for(const effect of before.effects)assert(after.effects.includes(effect),'Original debounce, dirty and panel effects retained');
+assert(current.includes("useState('payment_reports')")&&current.includes("useState('lobby-payment-reports')"));
+assert(current.includes('useAdminAttention(ctx)'));
 assert(current.includes('admin-v172-dashboard')&&current.includes('admin-v172-queue-column'));
 
 const {AdminNavigation}=await compile('app/admin-shell.tsx','admin-full-navigation',{stubs:{'./admin-lobby':'export default function Lobby(){return null}'}});
@@ -54,6 +58,6 @@ assert(!/pointer-events\s*:\s*none|visibility\s*:\s*hidden|transition\s*:\s*all/
 // Every display:none must have an explicit, non-business reason.
 ast.walkDecls('display',decl=>{if(decl.value==='none'){
  const selector=decl.parent.selector||'';
- assert(/admin-v172-mobile-heading|admin-v172-menu|admin-order-list-heading|catalog-compact-header|lobby-payment-heading|support-wave|studio-hero > svg|admin-v172-navigation|summary::-webkit-details-marker/.test(selector),'Unexpected hidden surface '+selector);
+ assert(/admin-v172-mobile-heading|admin-v172-menu|admin-order-list-heading|catalog-compact-header|lobby-payment-heading|support-wave|studio-hero > svg|admin-v172-navigation|summary::-webkit-details-marker|admin-v172-queue-toggle|admin-v172-queue-column/.test(selector),'Unexpected hidden surface '+selector);
 }});
-console.log(`FULL ADMIN PRESENTATION PASSED: identical lobby call/handler contracts, all 21 destinations, native groups/active route, localized search clear/focus, ${scoped} scoped selectors and ${portals} live-admin portal selectors; all screen families covered and no business-control hiding.`);
+console.log(`FULL ADMIN PRESENTATION PASSED: unchanged business guard/navigation/search/count declarations and original effects, all 21 destinations, native groups, ${scoped} scoped selectors and ${portals} live-admin portal selectors; only explicit mobile queue/menu disclosures hide navigation.`);

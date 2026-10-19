@@ -229,3 +229,27 @@ Ink #071f4b, background #f4f6fa, surface #fff, muted #526579, line #d8e0e9,
 action #086b91, success #18735a, warning #8a5a0a, danger #ac304a.
 Focus #087ac8 stays visible. Reduced motion/forced colors are supported. The
 shared customer/supplier styles and top-level primitives remain byte-identical.
+# Admin workflow Stage 1 — approved 2026-10-19
+
+Scope: admin-only presentation, based on `9dc747bbea5a8ec4736c536b1bbb6470d7dc1241`.
+Keep Mega Links Heebo/Arial, navy/turquoise, existing semantic queue tones and compact
+tables. The three sidebar headings are visual separators; nine domains and all 21
+destinations retain the canonical routes. The center is called מרכז העבודה.
+
+Operate: put the real treatment panel first in reading order; desktop places a
+240px compact queue column beside it. On narrow containers show the selected queue
+and a disclosure before the panel; the full selector is hidden until requested.
+The original nine queues and default payment-report panel remain. Composite queues
+show individual subcounts plus a presence label, never an invented combined total.
+Keep original dirty guards, embedded panel callbacks, record search and financial
+decisions. Opening a record does not resolve it.
+
+Sidebar attention is a small count only for a single reliable queue, otherwise a
+presence dot. Accessible text states the individual queue counts. Existing data is
+shared by sidebar/lobby with one enabled 30-second admin-only reader. Retain stale
+data with an explicit refresh error rather than implying it is current. No unread,
+revenue, urgency or activity metrics are invented. No hooks, animations or new fonts.
+
+Stage 1 static Impeccable scan has no primary findings; radius/type/color advisories
+remain evidence to review visually against this established brand. Browser layout,
+touch, zoom and focus QA are pending; static scans and SSR are not visual approval.
