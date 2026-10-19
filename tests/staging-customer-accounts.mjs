@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {appendStagingCustomers} from '../scripts/staging-customer-accounts.mjs';
+import {readFileSync} from 'node:fs';
+const owner='owner@example.invalid',base=[{id:'owner',email:owner,name:'Owner',salt:'original',hash:'unchanged'}];
+const extra={id:'staging-customer-fixture',email:'customer@example.invalid',name:'לקוח בדיקה',salt:'a'.repeat(32),hash:'b'.repeat(128)};
+const original=JSON.stringify(base);
+assert.deepEqual(appendStagingCustomers(base,[],owner),base);
+const result=appendStagingCustomers(base,[extra],owner);
+assert.equal(result[0],base[0]);assert.equal(JSON.stringify(base),original);assert.deepEqual(result[1],extra);
+for(const change of [{id:'owner'},{email:owner},{role:'admin'},{id:'staging-customer-bad\n'},{salt:'invalid'},{hash:'invalid'},{email:'invalid'}])assert.throws(()=>appendStagingCustomers(base,[{...extra,...change}],owner));
+assert.throws(()=>appendStagingCustomers(base,[extra,extra],owner));
+assert.equal(appendStagingCustomers(base,[{...extra,email:' CUSTOMER@example.invalid ',password:'must-not-retain'}],owner)[1].email,extra.email);
+assert(!('password' in appendStagingCustomers(base,[{...extra,password:'must-not-retain'}],owner)[1]));
+const boot=readFileSync('scripts/railway-staging-start.mjs','utf8');
+assert(boot.indexOf('Refusing to start outside')<boot.indexOf('const accounts='));
+assert(boot.includes('POSTFLOW_STAGING_ACCOUNTS')&&boot.includes('POSTFLOW_STAGING_CUSTOMER_ACCOUNTS'));
+console.log('Staging customers: preserve existing credentials, reject owner/admin/duplicate IDs and emails, validate hashes, strip unknown fields; existing staging environment guard retained.');

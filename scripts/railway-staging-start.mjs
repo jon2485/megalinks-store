@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
 import { resolve } from "node:path";
 import {createStagingGateway} from "./railway-staging-gateway.mjs";
+import {appendStagingCustomers} from "./staging-customer-accounts.mjs";
 
 if (process.env.POSTFLOW_DEPLOYMENT_ENV !== "staging") {
   throw new Error("This bootstrap is restricted to the Railway staging environment.");
@@ -13,7 +14,7 @@ if (process.env.RAILWAY_ENVIRONMENT_ID !== "1bae3915-f298-4ca6-b31d-aa79526f1eac
   throw new Error("Refusing to start outside the isolated staging environment and volume.");
 }
 const owner=String(process.env.POSTFLOW_OWNER_EMAIL||'').trim().toLowerCase();
-const accounts=JSON.parse(process.env.POSTFLOW_STAGING_ACCOUNTS||'[]');
+const accounts=appendStagingCustomers(JSON.parse(process.env.POSTFLOW_STAGING_ACCOUNTS||'[]'),JSON.parse(process.env.POSTFLOW_STAGING_CUSTOMER_ACCOUNTS||'[]'),owner);
 if(!owner || !accounts.some(a=>a.email.toLowerCase()===owner))throw new Error("Staging owner must be an explicitly provisioned account");
 const gateway=createStagingGateway({accounts,sessionSecret:process.env.POSTFLOW_STAGING_SESSION_KEY,
   origin:process.env.POSTFLOW_STAGING_ORIGIN,upstreamPort:8787,stateDir:'/data/staging-auth'});
