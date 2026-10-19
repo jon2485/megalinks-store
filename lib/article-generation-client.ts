@@ -17,22 +17,29 @@ export function startArticleGeneration(id:string):Promise<void>{
     const accepted=new Promise<void>((resolve,fail)=>{accept=resolve;reject=fail;});
     running.set(id,accepted);
     void(async()=>{
-        let started=false,finished=false;
+        let started=false,finished=false,timedOut=false;
+        const controller=new AbortController();
+        const acknowledgementTimer=setTimeout(()=>{
+            timedOut=true;controller.abort();if(running.get(id)===accepted)running.delete(id);
+            const error=new Error('לא התקבל אישור להתחלת הכתיבה בזמן. אפשר לבדוק את מצב המאמר ולנסות שוב.');
+            announce(id,{status:'failed',error:error.message});reject(error);
+        },30000);
         const packet=(value:any)=>{
-            if(value.status==='writing'){if(!started){started=true;announce(id,{status:'writing'});accept();}}
-            else if(value.status==='succeeded'){if(!started)throw new Error('לא התקבל אישור להתחלת הכנת המאמר.');finished=true;running.delete(id);announce(id,{status:'succeeded'});toast.success('מאמר ה־AI מוכן ונשמר במאמר שביקשת. אפשר לחזור ולערוך אותו.');}
+            if(timedOut)throw new Error('הבקשה כבר הסתיימה');
+            if(value.status==='writing'){if(!started){clearTimeout(acknowledgementTimer);started=true;announce(id,{status:'writing'});accept();}}
+            else if(value.status==='succeeded'){if(!started)throw new Error('לא התקבל אישור להתחלת הכנת המאמר.');finished=true;if(running.get(id)===accepted)running.delete(id);announce(id,{status:'succeeded'});toast.success('מאמר ה־AI מוכן ונשמר במאמר שביקשת. אפשר לחזור ולערוך אותו.');}
             else if(value.status==='failed'){finished=true;throw new Error(value.error||'הכנת המאמר נכשלה. אפשר לנסות שוב.');}
         };
         try{
-            const res=await fetch('/api/articles/'+encodeURIComponent(id)+'/generate?background=1',{method:'POST',cache:'no-store',headers:{'Content-Type':'application/json'},body:'{}'});
+            const res=await fetch('/api/articles/'+encodeURIComponent(id)+'/generate?background=1',{method:'POST',cache:'no-store',signal:controller.signal,headers:{'Content-Type':'application/json'},body:'{}'});
             if(!res.ok){const data:any=await res.json().catch(()=>({}));throw new Error(data.error||'לא ניתן להתחיל את הכנת המאמר.');}
             if(!res.body||!res.headers.get('content-type')?.includes('application/x-ndjson'))throw new Error('לא התקבל אישור להתחלת הכנת המאמר. רעננו ונסו שוב.');
             const reader=res.body.getReader(),decoder=new TextDecoder();let buffer='';
             try{while(true){const chunk=await reader.read();buffer+=decoder.decode(chunk.value,{stream:!chunk.done});let end;while((end=buffer.indexOf('\n'))>=0){const line=buffer.slice(0,end).trim();buffer=buffer.slice(end+1);if(line)packet(JSON.parse(line));}if(chunk.done)break;}if(buffer.trim())packet(JSON.parse(buffer));}
             finally{reader.releaseLock();}
             if(!finished)throw new Error('המעקב אחר ההכנה נותק. חזרו למאמר לבדיקת המצב.');
-        }catch(e){const error=e instanceof Error?e:new Error('הכנת המאמר נכשלה.');running.delete(id);announce(id,{status:'failed',error:error.message});if(!started)reject(error);else toast.error(error.message);}
-        finally{running.delete(id);}
+        }catch(e){if(timedOut)return;const error=e instanceof Error?e:new Error('הכנת המאמר נכשלה.');if(running.get(id)===accepted)running.delete(id);announce(id,{status:'failed',error:error.message});if(!started)reject(error);else toast.error(error.message);}
+        finally{clearTimeout(acknowledgementTimer);if(running.get(id)===accepted)running.delete(id);}
     })();
     return accepted;
 }

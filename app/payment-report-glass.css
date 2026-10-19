@@ -1,0 +1,41 @@
+/* Customer payment confirmation: the existing Radix dialog still owns focus,
+   dismissal and its accessible title. Only this confirmation gets glass styling. */
+.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){
+ --payment-glass-ink:#071f4b;--payment-glass-muted:#485b78;--payment-glass-accent:#007e88;
+ width:calc(100vw - 32px);max-width:500px;max-height:calc(100dvh - 32px);
+ border:1px solid #ffffffdb;border-radius:30px;background:rgba(244,248,252,.86);
+ -webkit-backdrop-filter:blur(26px) saturate(145%);backdrop-filter:blur(26px) saturate(145%);
+ box-shadow:inset 0 1px 0 #fff,0 20px 65px #102c4a24,0 3px 12px #102c4a0a;
+ color:var(--payment-glass-ink);font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+}
+.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-header]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]{
+ top:16px;left:16px;right:auto;width:40px;height:40px;display:grid;place-items:center;
+ background:#ffffff7a;border:1px solid #ffffffbf;border-radius:50%;opacity:1;color:var(--payment-glass-muted);cursor:pointer;
+ transition:background-color .16s ease,box-shadow .16s ease;
+}
+.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]:hover{background:#fff;box-shadow:0 2px 9px #102c4a16;}
+body:has(.payment-report-glass-confirm) [data-slot=dialog-overlay]{background:rgba(50,68,91,.16);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+.payment-report-form.payment-report-glass-confirm{gap:0;color:inherit;display:flex;flex-direction:column;min-height:0;overflow:hidden;font-weight:400;}
+.payment-glass-body{padding:28px 30px 0;overflow-y:auto;overscroll-behavior:contain;min-height:0;}
+.payment-glass-order{padding-inline-end:4px;padding-inline-start:44px;margin:0 0 24px!important;color:var(--payment-glass-muted);font-size:14px!important;font-weight:400!important;line-height:1.6;}
+.payment-report-glass-confirm .payment-glass-title{margin:0!important;text-align:center;color:var(--payment-glass-ink);font-size:30px!important;font-weight:600!important;line-height:1.45;letter-spacing:-.025em;outline:none;}
+.payment-glass-amount{display:grid;justify-items:center;gap:4px;margin:22px 0;padding:0 0 22px;border-bottom:1px solid #071f4b19;}
+.payment-glass-amount>span{font-size:14px;color:var(--payment-glass-muted);}
+.payment-glass-amount>strong{font-size:38px;font-weight:600;line-height:1.4;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.payment-glass-explanation{margin:0!important;font-size:16px!important;font-weight:400!important;line-height:1.85;color:var(--payment-glass-ink);}
+.payment-glass-note{margin:16px 0 4px!important;color:var(--payment-glass-muted);font-size:13px!important;font-weight:400!important;line-height:1.8;}
+.payment-glass-actions{display:grid;gap:5px;flex:0 0 auto;padding:22px 30px max(16px,env(safe-area-inset-bottom));}
+.payment-report-glass-confirm .payment-glass-actions button{height:auto;min-height:48px;border-radius:999px;font-family:inherit;white-space:normal;cursor:pointer;transition:background-color .16s ease,box-shadow .16s ease;}
+.payment-glass-actions .payment-glass-send{display:flex;gap:15px;background:linear-gradient(160deg,#008892,#00747e);border:1px solid #ffffff9c;color:white;font-size:17px;font-weight:600;padding:12px 20px;box-shadow:inset 0 1px 0 #ffffff64,0 5px 18px #007e8824;}
+.payment-glass-actions .payment-glass-send:hover{background:#006e78;box-shadow:inset 0 1px 0 #ffffff64,0 7px 20px #007e8838;}
+.payment-glass-actions .payment-glass-send:active{background:#005f69;box-shadow:inset 0 2px 5px #003b4326;}
+.payment-glass-actions .payment-glass-back{color:#006d77;background:transparent;font-size:15px;font-weight:500;}
+.payment-glass-actions .payment-glass-back:hover{background:#ffffff88;}
+.payment-glass-actions button:focus-visible,.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]:focus-visible{outline:3px solid #007e88;outline-offset:3px;}
+.payment-glass-actions button:disabled{opacity:.55;cursor:wait;box-shadow:none;}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){background:#f4f8fc;}}
+@media(max-width:480px){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:26px;}.payment-glass-body{padding:24px 22px 0;}.payment-glass-order{margin-bottom:22px!important;}.payment-report-glass-confirm .payment-glass-title{font-size:27px!important;}.payment-glass-amount>strong{font-size:34px;}.payment-glass-actions{padding-inline:22px;padding-top:18px;}.payment-glass-actions .payment-glass-send{font-size:16px;}}
+@media(prefers-reduced-transparency:reduce){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){background:#f4f8fc;-webkit-backdrop-filter:none;backdrop-filter:none;}body:has(.payment-report-glass-confirm) [data-slot=dialog-overlay]{background:#26364d5c;-webkit-backdrop-filter:none;backdrop-filter:none;}}
+@media(prefers-reduced-motion:reduce){.payment-report-dialog:has(.payment-report-glass-confirm),.payment-glass-actions button,.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]{animation:none!important;transition:none!important;}}
+@media(forced-colors:active){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;}.payment-glass-actions .payment-glass-send{background:ButtonFace;color:ButtonText;border:2px solid ButtonText;}}

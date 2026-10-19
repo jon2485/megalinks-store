@@ -1,10 +1,10 @@
 'use client';
 import { useEffect, useState } from 'react';
 import {beginPendingRequest} from './loading-state';
-export async function api(path: string, method = 'GET', body?: any, options?: {background?: boolean}) {
+export async function api(path: string, method = 'GET', body?: any, options?: {background?: boolean;signal?:AbortSignal}) {
     const finish = typeof window !== 'undefined' && !options?.background ? beginPendingRequest() : () => {};
     try {
-        const res = await fetch('/api/' + path, { method, cache:'no-store', headers: body instanceof FormData ? undefined : { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body) });
+        const res = await fetch('/api/' + path, { method, cache:'no-store', ...(options?.signal?{signal:options.signal}:{}), headers: body instanceof FormData ? undefined : { 'Content-Type': 'application/json' }, body: body === undefined ? undefined : body instanceof FormData ? body : JSON.stringify(body) });
         const data: any = await res.json().catch(() => ({ error: 'תשובת שרת לא תקינה' }));
         if (!res.ok) { const error=new Error(data.error || 'הפעולה נכשלה');Object.assign(error,{status:res.status,warnings:data.warnings});throw error; }
         return data;

@@ -33,3 +33,5 @@
 
 .simple-order-pdf{margin-top:12px;text-align:right;}.simple-order-pdf>button{display:inline-flex;gap:8px;align-items:center;justify-content:center;min-height:40px;height:auto;border:0;border-radius:9px;padding:9px 18px;background:linear-gradient(110deg,#00bad6,#0879ed);color:white;font-family:Heebo,Arial,sans-serif;font-size:15px;font-weight:750;white-space:normal;}
 .simple-order-status.is-cancelled{background:#ffe8ed;color:#b42338;}.order-cancelled-text{color:#b42338!important;font-weight:800!important;}
+
+.simple-order-status:is(.is-reported,.is-awaiting){background:#fff1cd;color:#704a00;}

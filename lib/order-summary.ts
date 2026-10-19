@@ -3,7 +3,8 @@ export function fullyCancelledOrderSql(alias='o'){return `(${alias}.status='canc
 // Derive cancellation from the actual components. This also covers earlier
 // refunds without rewriting historical orders or changing monthly grouping.
 export function orderSummarySql(alias='o'){
- return `${paymentDateSql(alias)},(SELECT c.month FROM monthly_charges c WHERE c.order_id=${alias}.id) AS billing_month,
+ return `(SELECT json_extract(pr.data,'$.status') FROM records pr WHERE pr.id='payment-report:'||${alias}.id AND pr.kind='customer_payment_report' AND pr.user_id=${alias}.user_id) AS payment_report_status,
+ (SELECT json_extract(pr.data,'$.reported_at') FROM records pr WHERE pr.id='payment-report:'||${alias}.id AND pr.kind='customer_payment_report' AND pr.user_id=${alias}.user_id) AS payment_reported_at,${paymentDateSql(alias)},(SELECT c.month FROM monthly_charges c WHERE c.order_id=${alias}.id) AS billing_month,
  EXISTS(SELECT 1 FROM monthly_charges c JOIN records r ON r.id='monthly:'||c.month||':'||c.user_id||':'||c.demo WHERE c.order_id=${alias}.id) AS monthly_closed,
  (SELECT r.created FROM monthly_charges c JOIN records r ON r.id='monthly:'||c.month||':'||c.user_id||':'||c.demo WHERE c.order_id=${alias}.id) AS monthly_closed_at,
  (SELECT json_group_array(json_object('id',a.id,'name',COALESCE(w.name,json_extract(a.data,'$.website_name'),'אתר שנרכש'),'url',COALESCE(w.url,json_extract(a.data,'$.website_url'),''))) FROM articles a LEFT JOIN websites w ON w.id=a.website_id WHERE a.order_id=${alias}.id) AS item_preview,

@@ -1,6 +1,7 @@
 @import "./admin-order-history.css";
 @import "./admin-lobby.css";
 @import "./payment-report-design.css";
+@import "./payment-report-glass.css";
 @import "./customer-order-screen.css";
 @import "tailwindcss";
 @import "tw-animate-css";
