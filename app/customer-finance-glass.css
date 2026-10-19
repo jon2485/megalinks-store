@@ -1,0 +1,145 @@
+/* Approved customer finance presentation. No admin/global component overrides. */
+.customer-finance-glass,[data-slot=dialog-content]:has(.customer-order-glass){
+ --customer-finance-ink:#071f4b;--customer-finance-muted:#485b78;--customer-finance-accent:#007e88;
+ --customer-finance-surface:rgba(244,248,252,.86);--customer-finance-line:#071f4b19;
+ color:var(--customer-finance-ink);font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+}
+[data-slot=dialog-content]:has(.customer-order-glass){
+ display:flex;flex-direction:column;gap:0;padding:0;width:calc(100vw - 32px);max-width:650px;max-height:calc(100dvh - 32px);
+ overflow:hidden;direction:rtl;text-align:right;border:1px solid #ffffffdb;border-radius:30px;background:var(--customer-finance-surface);
+ -webkit-backdrop-filter:blur(26px) saturate(145%);backdrop-filter:blur(26px) saturate(145%);
+ box-shadow:inset 0 1px 0 #fff,0 20px 65px #102c4a24;
+}
+[data-slot=dialog-content]:has(.customer-order-glass)>[data-slot=dialog-header]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
+[data-slot=dialog-content]:has(.customer-order-glass)>[data-slot=dialog-close]{top:16px;left:16px;right:auto;display:grid;place-items:center;width:44px;height:44px;border:1px solid #ffffffbf;border-radius:50%;background:#ffffff7a;color:var(--customer-finance-muted);opacity:1;cursor:pointer;}
+[data-slot=dialog-content]:has(.customer-order-glass)>[data-slot=dialog-close]:hover{background:white;box-shadow:0 2px 9px #102c4a16;}
+body:has(.customer-order-glass) [data-slot=dialog-overlay]{background:#32445b29;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+.customer-order-glass{display:flex;flex-direction:column;min-height:0;overflow:hidden;flex:1;}
+.customer-order-glass-heading{padding:26px 26px 18px;padding-inline-end:68px;flex-shrink:0;}
+[data-slot=dialog-content] .customer-order-glass-heading h2{margin:0!important;color:var(--customer-finance-ink)!important;font-size:26px!important;font-weight:600!important;line-height:1.45;}
+[data-slot=dialog-content] .customer-order-glass :is(p,dl,dt,dd,small,time){color:var(--customer-finance-muted)!important;font-size:14px!important;font-weight:400!important;line-height:1.8!important;}
+[data-slot=dialog-content] .customer-order-glass-heading p{margin:4px 0 9px;}
+.customer-finance-status{display:inline-flex;align-items:center;justify-content:center;padding:5px 13px;min-height:30px;border-radius:999px;font-size:13px;font-weight:500;line-height:1.5;}
+.customer-finance-status.is-paid{background:#cfeff0;color:#006470;}.customer-finance-status.is-cancelled{background:#fbe0e7;color:#a32343;}.customer-finance-status.is-pending{background:#fff0cc;color:#704a00;}
+.customer-order-glass-body{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 26px;}
+.customer-order-glass-facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:0!important;padding:18px 0;border-top:1px solid var(--customer-finance-line);border-bottom:1px solid var(--customer-finance-line);}
+.customer-order-glass-facts>div{min-width:0;}
+[data-slot=dialog-content] .customer-order-glass-facts dd{margin:4px 0 0;font-size:16px!important;font-weight:500!important;color:var(--customer-finance-ink)!important;overflow-wrap:anywhere;}
+.customer-order-glass-refund{display:flex;align-items:flex-start;gap:12px;margin:18px 0;padding:17px;border:1px solid #96d7dc80;border-radius:18px;background:#a9e1e440;color:var(--customer-finance-accent);}
+[data-slot=dialog-content] .customer-order-glass-refund h3{margin:0!important;color:var(--customer-finance-ink)!important;font-size:16px!important;font-weight:500!important;}
+.customer-order-glass-refund>svg{flex-shrink:0;margin-top:3px;}.customer-order-glass-refund strong{display:block;font-size:23px;font-weight:600;}
+[data-slot=dialog-content] .customer-order-glass-refund p{margin:5px 0 0;font-size:13px!important;}
+.customer-order-glass-items-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:20px 0 12px;}
+[data-slot=dialog-content] .customer-order-glass-items-heading h3{margin:0!important;font-size:20px!important;font-weight:600!important;color:var(--customer-finance-ink)!important;}
+.customer-order-glass-items-heading>span{font-size:13px;color:var(--customer-finance-muted);}
+.customer-order-glass-search{display:flex;align-items:center;gap:8px;min-height:48px;padding:0 12px;border:1px solid #ffffffd9;border-radius:16px;background:#ffffff80;color:var(--customer-finance-muted);}
+.customer-order-glass-search input{border:0;background:transparent;padding:8px 0;box-shadow:none;font-size:16px;min-width:0;}
+.customer-order-glass-search input:focus-visible{outline:none;box-shadow:none;}
+.customer-order-glass-search:focus-within{outline:3px solid var(--customer-finance-accent);outline-offset:2px;}
+.customer-order-glass-search button{flex-shrink:0;border-radius:50%;background:transparent;width:44px;height:44px;}
+.customer-order-glass-search button:hover{background:#d9eef0;}
+.customer-order-glass-items{display:grid;gap:12px;list-style:none;padding:0;margin:14px 0;}
+.customer-order-glass-items>li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:8px 14px;padding:16px;border:1px solid #ffffffd9;border-radius:18px;background:#ffffff70;}
+.customer-order-glass-item-site{min-width:0;}.customer-order-glass .site-reference{display:grid;gap:2px;min-width:0;}
+.customer-order-glass .site-reference strong{font-weight:500;font-size:16px;}.customer-order-glass .site-reference a{color:var(--customer-finance-accent);overflow-wrap:anywhere;text-decoration:underline;text-underline-offset:3px;font-size:14px;}
+[data-slot=dialog-content] .customer-order-glass-item-site p{margin:5px 0 0;color:var(--customer-finance-ink)!important;}
+[data-slot=dialog-content] .customer-order-glass-item-site time{display:block;margin:3px 0;font-size:12px!important;}
+.customer-order-glass-item-price{display:grid;justify-items:end;gap:1px;}.customer-order-glass-item-price strong{font-size:18px;font-weight:600;white-space:nowrap;}.customer-order-glass-item-price del{font-size:13px;color:var(--customer-finance-muted);}
+[data-slot=dialog-content] .customer-order-glass-item-price small{font-size:12px!important;}
+.customer-order-glass-cancellation{grid-column:1/-1;border-top:1px solid var(--customer-finance-line);padding-top:8px;}
+.customer-order-glass-cancellation summary{width:fit-content;min-height:44px;padding:10px 0;color:var(--customer-finance-accent);font-size:14px;cursor:pointer;border-radius:5px;}
+.customer-order-glass-cancellation summary:hover{text-decoration:underline;}
+.customer-order-glass-cancellation p{margin:0 0 5px;}
+[data-slot=dialog-content] .customer-order-glass .customer-finance-note{margin:12px 0;font-size:13px!important;}
+.customer-order-glass-totals{display:grid;gap:9px;padding:16px 0;margin:16px 0 0!important;border-top:1px solid var(--customer-finance-line);}
+.customer-order-glass-totals>div{display:flex;align-items:center;justify-content:space-between;gap:15px;}
+.customer-order-glass-totals dd{margin:0;white-space:nowrap;}
+[data-slot=dialog-content] .customer-order-glass-totals>div:last-child :is(dt,dd){font-size:18px!important;font-weight:600!important;color:var(--customer-finance-ink)!important;}
+.customer-order-glass-actions{display:flex;align-items:center;gap:10px;padding:18px 26px max(18px,env(safe-area-inset-bottom));flex-shrink:0;}
+.customer-order-glass-actions>*{flex:1;min-width:0;}
+.customer-order-glass-actions :is(a,button){display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;height:auto;padding:12px;border:1px solid #007e8866;border-radius:999px;background:#ffffff75;font-size:15px!important;font-weight:500!important;color:var(--customer-finance-ink);white-space:normal;text-align:center;cursor:pointer;}
+.customer-order-glass-actions a.customer-finance-primary{border:1px solid #ffffff9c;background:linear-gradient(160deg,#008892,#00747e);color:#fff;box-shadow:inset 0 1px 0 #ffffff64;}
+.customer-order-glass-actions :is(a,button):hover{background:#d9eef0;}.customer-order-glass-actions a.customer-finance-primary:hover{background:#006e78;}
+.customer-order-glass-actions :is(a,button):active{box-shadow:inset 0 2px 4px #003b4326;}
+.customer-order-glass :is(button,a,summary):focus-visible,[data-slot=dialog-content]:has(.customer-order-glass)>[data-slot=dialog-close]:focus-visible{outline:3px solid var(--customer-finance-accent);outline-offset:3px;}
+
+/* Balance page: preserve all existing readers, requests, exports and packages. */
+.wallet-transaction-icon{display:none;}
+.customer-finance-glass .wallet-transaction-icon{display:grid;place-items:center;flex-shrink:0;width:44px;height:44px;border:1px solid #c9e8eb;border-radius:50%;background:#e1f4f5;color:var(--customer-finance-accent);}
+.billing-page.customer-finance-glass{background:radial-gradient(ellipse at 15% 20%,#d6edf780,transparent 65%);border-radius:26px;}
+.customer-finance-glass .billing-hero h1{font-size:30px!important;font-weight:600!important;color:var(--customer-finance-ink)!important;}
+.customer-finance-glass .billing-hero p{font-size:15px!important;font-weight:400!important;color:var(--customer-finance-muted)!important;}
+.customer-finance-glass .billing-balance-card{border:1px solid #ffffffdb!important;border-radius:26px!important;background:var(--customer-finance-surface)!important;box-shadow:inset 0 1px 0 #fff,0 12px 36px #102c4a10!important;color:var(--customer-finance-ink)!important;-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);}
+.customer-finance-glass .billing-balance-card [data-slot=card-content]{padding:28px;gap:24px;}
+.customer-finance-glass .billing-balance-card p{color:var(--customer-finance-muted)!important;font-weight:400!important;line-height:1.8;}
+.customer-finance-glass .billing-balance-card p:first-child{color:var(--customer-finance-ink)!important;font-size:16px;}
+.customer-finance-glass .billing-balance-card strong{font-size:42px!important;font-weight:600!important;color:var(--customer-finance-ink)!important;line-height:1.35;}
+.customer-finance-glass .billing-balance-actions{display:grid;gap:10px;min-width:220px;}
+.customer-finance-glass .billing-balance-actions>button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;height:auto!important;padding:12px 20px;border:1px solid #ffffff9c;border-radius:999px;background:linear-gradient(160deg,#008892,#00747e);font-size:16px!important;font-weight:500!important;color:#fff!important;box-shadow:inset 0 1px 0 #ffffff64,0 5px 18px #007e881a;}
+.customer-finance-glass .billing-balance-actions>button:hover{background:#006e78;}
+.customer-finance-glass .billing-balance-actions>button.wallet-usage-open{background:#ffffffa6;border-color:#8c9fb94d;color:var(--customer-finance-ink)!important;box-shadow:inset 0 1px 0 #fff;}
+.customer-finance-glass .billing-balance-actions>button.wallet-usage-open:hover{background:#d9eef0;}
+.customer-finance-glass :is(.customer-finance-transactions,.customer-finance-topups){padding:22px;border:1px solid #ffffffdb;border-radius:24px;background:#f4f8fcb8;box-shadow:inset 0 1px 0 #fff;-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);}
+.customer-finance-glass :is(.customer-finance-transactions,.customer-finance-topups) h2{font-size:20px!important;font-weight:600!important;color:var(--customer-finance-ink)!important;}
+.customer-finance-glass .customer-finance-topups ul{display:grid;gap:10px;list-style:none;margin:0;padding:0;}
+.customer-finance-glass .customer-finance-topups li{padding:16px;border:1px solid #ffffffd9;border-radius:18px;background:#ffffff9c;}
+.customer-finance-glass .customer-finance-topups li:not([data-decision=approved]):not([data-decision=rejected]){background:#fff4d6bf;border-color:#edc56b;}
+.customer-finance-glass .customer-finance-topups li[data-decision=rejected]{background:#fff0f3bf;border-color:#edb8c5;}
+.customer-finance-glass .customer-finance-topups li strong{font-weight:600;font-size:20px;}
+.customer-finance-glass .customer-finance-topups :is(p,span){font-size:14px!important;font-weight:400!important;line-height:1.8!important;}
+.customer-finance-glass .customer-finance-pending-note{color:#704a00!important;}
+.customer-finance-glass .wallet-transaction-list{display:grid;gap:12px;margin:0;padding:0;list-style:none;}
+.customer-finance-glass .wallet-transaction-card{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:18px;border:1px solid #ffffffdb;border-radius:18px;background:#ffffffb0;box-shadow:none;}
+.customer-finance-glass .wallet-transaction-info{min-width:0;flex:1;}
+.customer-finance-glass .wallet-transaction-info h3{font-size:16px!important;font-weight:500!important;color:var(--customer-finance-ink)!important;margin:0 0 6px;}
+.customer-finance-glass .wallet-transaction-info :is(p,time,dt,dd){font-size:14px!important;font-weight:400!important;line-height:1.8!important;color:var(--customer-finance-muted)!important;}
+.customer-finance-glass .wallet-transaction-info dl{display:grid;gap:3px;margin:0;}
+.customer-finance-glass .wallet-transaction-info dl>div{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.customer-finance-glass .wallet-transaction-info dd{margin:0;min-width:0;}
+.customer-finance-glass .wallet-transaction-info .site-reference{max-width:100%;overflow-wrap:anywhere;}
+.customer-finance-glass .wallet-transaction-info button{font-size:14px;font-weight:500;min-height:44px;color:var(--customer-finance-accent);padding:6px;border-radius:8px;}
+.customer-finance-glass .wallet-transaction-info button:hover{background:#d9eef0;}
+.customer-finance-glass .wallet-transaction-amount{display:grid;justify-items:end;gap:4px;flex-shrink:0;}
+.customer-finance-glass .wallet-transaction-amount strong{font-size:22px!important;font-weight:600!important;color:var(--customer-finance-ink)!important;white-space:nowrap;}
+.customer-finance-glass .wallet-transaction-amount span{font-size:12px!important;font-weight:400!important;color:var(--customer-finance-muted)!important;}
+.customer-finance-glass .customer-finance-transactions>div:first-child>button{min-height:44px;padding:9px 13px;border-radius:999px;border:1px solid #8c9fb94d;background:#ffffff75;font-size:14px;font-weight:500;color:var(--customer-finance-ink);box-shadow:none;}
+.customer-finance-glass .customer-finance-transactions>div:first-child>button:hover{background:#d9eef0;}
+.customer-finance-glass .customer-finance-note{color:var(--customer-finance-muted);font-size:13px;line-height:1.8;margin:12px 0 0;}
+.customer-finance-glass :is(a,button):focus-visible{outline:3px solid var(--customer-finance-accent);outline-offset:3px;}
+.customer-finance-glass button:active{box-shadow:inset 0 2px 5px #003b4326;}
+.customer-finance-glass button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none;}
+@media(max-width:600px){
+ [data-slot=dialog-content]:has(.customer-order-glass){width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:26px;}
+ .customer-order-glass-heading{padding:24px 22px 16px;padding-inline-end:66px;}
+ [data-slot=dialog-content] .customer-order-glass-heading h2{font-size:23px!important;}
+ .customer-order-glass-body{padding-inline:22px;}
+ .customer-order-glass-facts{grid-template-columns:minmax(0,1fr);gap:10px;}
+ .customer-order-glass-facts>div{display:flex;justify-content:space-between;align-items:baseline;gap:12px;}
+ [data-slot=dialog-content] .customer-order-glass-facts dd{margin:0;}
+ .customer-order-glass-items>li{padding:13px;gap:8px;}
+ .customer-order-glass-item-price strong{font-size:16px;}
+ .customer-order-glass-actions{padding-inline:22px;flex-wrap:wrap;}
+ .customer-order-glass-actions>*{flex-basis:calc(50% - 5px);}
+ .customer-order-glass-actions>.customer-finance-note{flex-basis:100%;margin:0!important;}
+ .billing-page.customer-finance-glass{padding-inline:12px;}
+ .customer-finance-glass .billing-hero h1{font-size:26px!important;}
+ .customer-finance-glass .billing-balance-card [data-slot=card-content]{padding:22px;}
+ .customer-finance-glass .billing-balance-card strong{font-size:36px!important;}
+ .customer-finance-glass .billing-balance-actions{width:100%;min-width:0;}
+ .customer-finance-glass :is(.customer-finance-transactions,.customer-finance-topups){padding:16px;}
+ .customer-finance-glass .wallet-transaction-card{padding:14px;gap:12px;flex-wrap:wrap;}
+ .customer-finance-glass .wallet-transaction-info{flex-basis:calc(100% - 60px);}
+ .customer-finance-glass .wallet-transaction-amount{justify-items:start;}
+ .customer-finance-glass .wallet-transaction-amount strong{font-size:20px!important;}
+}
+@media(max-width:350px){.customer-order-glass-items>li{grid-template-columns:minmax(0,1fr);}.customer-order-glass-item-price{justify-items:start;}.customer-order-glass-actions>*{flex-basis:100%;}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){[data-slot=dialog-content]:has(.customer-order-glass),.customer-finance-glass .billing-balance-card{background:#f4f8fc!important;}}
+@media(prefers-reduced-transparency:reduce){
+ [data-slot=dialog-content]:has(.customer-order-glass),.customer-finance-glass :is(.billing-balance-card,.customer-finance-transactions,.customer-finance-topups){background:#f4f8fc!important;-webkit-backdrop-filter:none;backdrop-filter:none;}
+ body:has(.customer-order-glass) [data-slot=dialog-overlay]{background:#26364d5c;-webkit-backdrop-filter:none;backdrop-filter:none;}
+}
+@media(prefers-reduced-motion:reduce){[data-slot=dialog-content]:has(.customer-order-glass),.customer-order-glass :is(a,button),.customer-finance-glass :is(a,button){animation:none!important;transition:none!important;}}
+@media(forced-colors:active){
+ [data-slot=dialog-content]:has(.customer-order-glass),.customer-finance-glass :is(.billing-balance-card,.customer-finance-transactions,.customer-finance-topups,.wallet-transaction-card){background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;}
+ .customer-order-glass-actions :is(a,button),.customer-finance-glass .billing-balance-actions>button{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important;box-shadow:none;}
+}
