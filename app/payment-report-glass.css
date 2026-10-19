@@ -1,7 +1,8 @@
-/* Customer payment confirmation: the existing Radix dialog still owns focus,
-   dismissal and its accessible title. Only this confirmation gets glass styling. */
-.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){
+/* Approved customer glass surfaces. Existing Radix owns focus, dismissal and
+   accessible titles. Scope is payment entry/confirmation and catalog notes only. */
+[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes),.catalog-sort-dialog[data-slot=dialog-content]{
  --payment-glass-ink:#071f4b;--payment-glass-muted:#485b78;--payment-glass-accent:#007e88;
+ display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden;direction:rtl;text-align:right;
  width:calc(100vw - 32px);max-width:500px;max-height:calc(100dvh - 32px);
  border:1px solid #ffffffdb;border-radius:30px;background:rgba(244,248,252,.86);
  -webkit-backdrop-filter:blur(26px) saturate(145%);backdrop-filter:blur(26px) saturate(145%);
@@ -9,13 +10,13 @@
  color:var(--payment-glass-ink);font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
 }
 .payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-header]{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;}
-.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]{
- top:16px;left:16px;right:auto;width:40px;height:40px;display:grid;place-items:center;
+[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes)>[data-slot=dialog-close]{
+ top:16px;left:16px;right:auto;width:44px;height:44px;display:grid;place-items:center;
  background:#ffffff7a;border:1px solid #ffffffbf;border-radius:50%;opacity:1;color:var(--payment-glass-muted);cursor:pointer;
  transition:background-color .16s ease,box-shadow .16s ease;
 }
-.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]:hover{background:#fff;box-shadow:0 2px 9px #102c4a16;}
-body:has(.payment-report-glass-confirm) [data-slot=dialog-overlay]{background:rgba(50,68,91,.16);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes)>[data-slot=dialog-close]:hover{background:#fff;box-shadow:0 2px 9px #102c4a16;}
+body:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes,.catalog-sort-dialog) [data-slot=dialog-overlay]{background:rgba(50,68,91,.16);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
 .payment-report-form.payment-report-glass-confirm{gap:0;color:inherit;display:flex;flex-direction:column;min-height:0;overflow:hidden;font-weight:400;}
 .payment-glass-body{padding:28px 30px 0;overflow-y:auto;overscroll-behavior:contain;min-height:0;}
 .payment-glass-order{padding-inline-end:4px;padding-inline-start:44px;margin:0 0 24px!important;color:var(--payment-glass-muted);font-size:14px!important;font-weight:400!important;line-height:1.6;}
@@ -32,10 +33,73 @@ body:has(.payment-report-glass-confirm) [data-slot=dialog-overlay]{background:rg
 .payment-glass-actions .payment-glass-send:active{background:#005f69;box-shadow:inset 0 2px 5px #003b4326;}
 .payment-glass-actions .payment-glass-back{color:#006d77;background:transparent;font-size:15px;font-weight:500;}
 .payment-glass-actions .payment-glass-back:hover{background:#ffffff88;}
-.payment-glass-actions button:focus-visible,.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]:focus-visible{outline:3px solid #007e88;outline-offset:3px;}
+.payment-glass-actions button:focus-visible,[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes)>[data-slot=dialog-close]:focus-visible{outline:3px solid #007e88;outline-offset:3px;}
 .payment-glass-actions button:disabled{opacity:.55;cursor:wait;box-shadow:none;}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){background:#f4f8fc;}}
-@media(max-width:480px){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:26px;}.payment-glass-body{padding:24px 22px 0;}.payment-glass-order{margin-bottom:22px!important;}.payment-report-glass-confirm .payment-glass-title{font-size:27px!important;}.payment-glass-amount>strong{font-size:34px;}.payment-glass-actions{padding-inline:22px;padding-top:18px;}.payment-glass-actions .payment-glass-send{font-size:16px;}}
-@media(prefers-reduced-transparency:reduce){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){background:#f4f8fc;-webkit-backdrop-filter:none;backdrop-filter:none;}body:has(.payment-report-glass-confirm) [data-slot=dialog-overlay]{background:#26364d5c;-webkit-backdrop-filter:none;backdrop-filter:none;}}
-@media(prefers-reduced-motion:reduce){.payment-report-dialog:has(.payment-report-glass-confirm),.payment-glass-actions button,.payment-report-dialog:has(.payment-report-glass-confirm)>[data-slot=dialog-close]{animation:none!important;transition:none!important;}}
-@media(forced-colors:active){.payment-report-dialog[data-slot=dialog-content]:has(.payment-report-glass-confirm){background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;}.payment-glass-actions .payment-glass-send{background:ButtonFace;color:ButtonText;border:2px solid ButtonText;}}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes),.catalog-sort-dialog[data-slot=dialog-content]{background:#f4f8fc;}}
+@media(max-width:480px){[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes),.catalog-sort-dialog[data-slot=dialog-content]{width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:26px;}.payment-glass-body{padding:24px 22px 0;}.payment-glass-order{margin-bottom:22px!important;}.payment-report-glass-confirm .payment-glass-title{font-size:27px!important;}.payment-glass-amount>strong{font-size:34px;}.payment-glass-actions{padding-inline:22px;padding-top:18px;}.payment-glass-actions .payment-glass-send{font-size:16px;}}
+@media(prefers-reduced-transparency:reduce){[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes),.catalog-sort-dialog[data-slot=dialog-content]{background:#f4f8fc;-webkit-backdrop-filter:none;backdrop-filter:none;}body:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes,.catalog-sort-dialog) [data-slot=dialog-overlay]{background:#26364d5c;-webkit-backdrop-filter:none;backdrop-filter:none;}}
+@media(prefers-reduced-motion:reduce){[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes),.payment-glass-actions button,[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes)>[data-slot=dialog-close]{animation:none!important;transition:none!important;}}
+@media(forced-colors:active){[data-slot=dialog-content]:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-notes),.catalog-sort-dialog[data-slot=dialog-content]{background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;}.payment-glass-actions .payment-glass-send{background:ButtonFace;color:ButtonText;border:2px solid ButtonText;}}
+
+/* Payment entry and notes share the confirmation's existing glass tokens. */
+[data-slot=dialog-content]:has(.payment-report-glass-form,.catalog-site-notes)>[data-slot=dialog-header]{
+ padding:26px 26px 18px;padding-inline-end:66px;flex:0 0 auto;text-align:right;gap:5px;
+}
+[data-slot=dialog-content]:has(.payment-report-glass-form,.catalog-site-notes) [data-slot=dialog-title]{
+ padding:0!important;font-size:24px!important;font-weight:600!important;line-height:1.5;color:var(--payment-glass-ink)!important;
+}
+[data-slot=dialog-content]:has(.payment-report-glass-form,.catalog-site-notes) [data-slot=dialog-description]{
+ font-size:14px!important;font-weight:400!important;line-height:1.7!important;color:var(--payment-glass-muted)!important;overflow-wrap:anywhere;
+}
+.payment-report-form.payment-report-glass-form{gap:0;font-weight:400;color:var(--payment-glass-ink);}
+.payment-report-glass-form .payment-report-body{padding:0 26px 0;gap:18px;}
+.payment-report-glass-form .payment-report-amount{padding:8px 0 18px;text-align:center;border:0;border-bottom:1px solid #071f4b19;border-radius:0;background:transparent;}
+.payment-report-glass-form .payment-report-amount>span{font-size:14px;font-weight:400;color:var(--payment-glass-muted);}
+.payment-report-glass-form .payment-report-amount>strong{margin-top:4px;font-size:36px!important;font-weight:600;line-height:1.35;letter-spacing:-.03em;font-variant-numeric:tabular-nums;}
+.payment-report-glass-form .payment-method-buttons{gap:4px;padding:4px;border:1px solid #ffffffc9;border-radius:999px;background:#dbe5ec70;}
+.payment-report-glass-form .payment-method-buttons button{min-height:46px;padding:8px 10px;border:0;border-radius:999px;background:transparent;font-size:14px!important;font-weight:500!important;color:var(--payment-glass-muted);box-shadow:none;filter:none;cursor:pointer;transition:background-color .16s ease,box-shadow .16s ease;}
+.payment-report-glass-form .payment-method-buttons button[aria-pressed=true]{border:0;background:#ffffffdf;color:var(--payment-glass-accent);box-shadow:0 2px 6px #071f4b12;}
+.payment-report-glass-form .payment-method-buttons button:hover{background:#ffffffa6;filter:none;}
+.payment-report-glass-form .payment-method-buttons button:active{background:#d9eef0;}
+.payment-report-glass-form .payment-report-fields{gap:15px;grid-template-columns:minmax(0,1fr);}
+.payment-report-glass-form .field{gap:6px;font-size:14px!important;font-weight:500!important;color:var(--payment-glass-ink);}
+.payment-report-glass-form .field input{height:48px;min-height:48px;padding:10px 14px;border:1px solid #8c9fb94d;border-radius:14px;background:#ffffffad;font-size:16px!important;font-weight:400!important;color:var(--payment-glass-ink);box-shadow:inset 0 1px 0 #ffffffc4;}
+.payment-report-glass-form .field input:hover{border-color:#007e8880;}
+.payment-report-glass-form .field input:focus-visible,.payment-report-glass-form .payment-proof-upload input:focus-visible,.payment-report-glass-form .payment-method-buttons button:focus-visible{outline:3px solid var(--payment-glass-accent);outline-offset:2px;}
+.payment-report-glass-form .payment-proof-upload{grid-template-columns:minmax(0,1fr);gap:9px;padding:13px 14px;border:1px dashed #8c9fb98c;border-radius:16px;background:#ffffff52;font-size:14px;font-weight:400;}
+.payment-report-glass-form .payment-proof-upload input{font-size:13px;}
+.payment-report-glass-form .payment-proof-upload input::file-selector-button{min-height:44px;margin-inline-end:8px;padding:8px 13px;border:1px solid #007e8866;border-radius:999px;background:#ffffffd1;color:var(--payment-glass-accent);font-family:inherit;font-weight:500;cursor:pointer;}
+.payment-report-glass-form .payment-proof-upload input::file-selector-button:hover{background:#fff;}
+.payment-report-glass-form .payment-proof-upload input::file-selector-button:active{background:#d9eef0;}
+[data-slot=dialog-content] .payment-report-glass-form .payment-report-note{margin:0;padding:0;background:transparent;font-size:13px!important;font-weight:400!important;line-height:1.8!important;color:var(--payment-glass-muted)!important;}
+.payment-report-glass-form .payment-report-footer.payment-glass-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:5px;padding:18px 26px max(16px,env(safe-area-inset-bottom));border:0;background:transparent;}
+.payment-report-glass-form .payment-report-footer button{border:0;border-radius:999px;font-weight:500!important;}
+.payment-report-glass-form .payment-report-footer .payment-glass-send{min-height:48px;background:linear-gradient(160deg,#008892,#00747e);border:1px solid #ffffff9c;color:#fff;box-shadow:inset 0 1px 0 #ffffff64,0 5px 18px #007e8824;}
+.payment-report-glass-form .payment-report-footer .payment-glass-send:hover{background:#006e78;}
+.payment-report-glass-form .payment-report-footer .payment-glass-send:active{background:#005f69;}
+.payment-report-glass-form .payment-report-footer .payment-glass-back{background:transparent;color:#006d77;}
+.payment-report-glass-form .payment-report-footer .payment-glass-back:hover{background:#ffffff88;}
+.catalog-site-notes{display:flex;flex-direction:column;min-height:0;overflow:hidden;}
+.catalog-site-notes-copy{padding:5px 26px 0;overflow-y:auto;overscroll-behavior:contain;min-height:0;}
+[data-slot=dialog-content] .catalog-site-notes-copy p{position:relative;margin:0;padding:15px 18px 15px 0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px!important;font-weight:400!important;line-height:1.85!important;color:var(--payment-glass-ink)!important;}
+.catalog-site-notes-copy p::before{content:"";position:absolute;inset-inline-start:0;top:25px;width:6px;height:6px;border-radius:50%;background:var(--payment-glass-accent);}
+.catalog-site-notes-copy p+p{border-top:1px solid #071f4b12;}
+.catalog-site-notes .payment-glass-actions{padding-inline:26px;}
+.publication-catalog-card .catalog-site-notes-trigger{width:44px;height:44px;min-width:44px;border:1px solid #b7e2e5;border-radius:50%;background:#f0fbfbc9;color:#007e88;box-shadow:inset 0 1px 0 #fff;cursor:pointer;transition:background-color .16s ease,box-shadow .16s ease;}
+.publication-catalog-card .catalog-site-notes-trigger:hover{background:#d8f3f4;box-shadow:0 3px 10px #007e881c;}
+.publication-catalog-card .catalog-site-notes-trigger:active{background:#bce8ea;}
+.publication-catalog-card .catalog-site-notes-trigger:focus-visible{outline:3px solid #007e88;outline-offset:3px;}
+@media(max-width:480px){
+ [data-slot=dialog-content]:has(.payment-report-glass-form,.catalog-site-notes)>[data-slot=dialog-header]{padding:22px 22px 16px;padding-inline-end:66px;}
+ [data-slot=dialog-content]:has(.payment-report-glass-form,.catalog-site-notes) [data-slot=dialog-title]{font-size:21px!important;}
+ .payment-report-glass-form .payment-report-body{padding-inline:22px;gap:15px;}
+ .payment-report-glass-form .payment-report-amount>strong{font-size:32px!important;}
+ .payment-report-glass-form .payment-report-footer.payment-glass-actions{padding-inline:22px;}
+ .catalog-site-notes-copy{padding-inline:22px;}.catalog-site-notes .payment-glass-actions{padding-inline:22px;}
+}
+@media(prefers-reduced-motion:reduce){.publication-catalog-card .catalog-site-notes-trigger,.payment-report-glass-form .payment-method-buttons button{transition:none!important;}}
+@media(forced-colors:active){
+ .payment-report-glass-form .field input,.payment-report-glass-form .payment-proof-upload,.payment-report-glass-form .payment-method-buttons{background:Canvas;color:CanvasText;border:1px solid CanvasText;}
+ .payment-report-glass-form .payment-method-buttons button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-2px;color:Highlight;}
+ .payment-report-glass-form .payment-report-footer .payment-glass-send,.publication-catalog-card .catalog-site-notes-trigger{background:ButtonFace;color:ButtonText;border:2px solid ButtonText;box-shadow:none;}
+}
