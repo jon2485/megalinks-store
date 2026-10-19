@@ -1,0 +1,19 @@
+{
+  "baseline": {
+    "errors": 71,
+    "total": 71,
+    "unresolved": 23,
+    "violations": 48,
+    "warnings": 0
+  },
+  "current": {
+    "errors": 71,
+    "total": 71,
+    "unresolved": 23,
+    "violations": 48,
+    "warnings": 0
+  },
+  "newFindings": [],
+  "strictAuditPassed": false,
+  "reason": "Inherited full-project findings remain outside authorized three-screen presentation scope."
+}

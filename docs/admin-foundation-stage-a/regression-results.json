@@ -1,0 +1,147 @@
+[
+  {
+    "test": "admin-entry-routing",
+    "exitCode": 0,
+    "seconds": 4.68,
+    "output": "ADMIN ENTRY ROUTING PASSED: all 9 main categories open full routes; full pages exclude lobby cards; local task shortcuts remain embedded; RTL and nested page entries preserved."
+  },
+  {
+    "test": "admin-design-navigation",
+    "exitCode": 0,
+    "seconds": 4.57,
+    "output": "ADMIN DESIGN NAVIGATION PASSED: 21 guarded targets, 9 areas, native modifiers, nested back routes, pricing aliases, search/reset/empty state, RTL; NEW-01 selection closes disclosure, restores visible toggle focus and preserves ctx.go guard."
+  },
+  {
+    "test": "admin-shell-ui",
+    "exitCode": 0,
+    "seconds": 4.7,
+    "output": "Admin UI: 9 areas, all 21 legacy routes retained, nested sidebar links, account back-navigation, live queue tiles, cancellation links, accessible loading and error states passed."
+  },
+  {
+    "test": "admin-lobby-actions",
+    "exitCode": 0,
+    "seconds": 2.24,
+    "output": "LOBBY ACTIONS PASSED: nine RTL categories, embedded screen for every card, order details/all-reports/settings stay inside lobby, refresh, unsaved-edit guard and search-result navigation."
+  },
+  {
+    "test": "admin-lobby-panels",
+    "exitCode": 0,
+    "seconds": 0.53,
+    "output": "LOBBY PANELS PASSED: payment rows/proof/exact order/approval targets; opening does not approve; all nine working areas and nested customer/article routes resolve to the intended embedded components."
+  },
+  {
+    "test": "admin-mobile-queue-guard",
+    "exitCode": 0,
+    "seconds": 1.24,
+    "output": "MOBILE QUEUE GUARD PASSED: pending/continue-edit preserves open selector, selected queue, panel and dirty state; approved exit closes after original decision and restores toggle focus; clean/same-queue transitions preserved; zero business writes. Handler fixture; browser focus/touch unverified."
+  },
+  {
+    "test": "admin-workflow-stage1",
+    "exitCode": 0,
+    "seconds": 3.61,
+    "output": "STAGE 1 PASSED: 9 domains/3 headings, 9 queues/default/dirty guard, real counts vs non-overlapping presence, invalid/missing/stale states, no read-to-handled mutation, one shared 30s admin-only reader, SSR RTL/semantics and mobile CSS contracts. Browser layout/touch not tested."
+  },
+  {
+    "test": "admin-full-design-preservation",
+    "exitCode": 0,
+    "seconds": 6.96,
+    "output": "FULL ADMIN PRESENTATION PASSED: unchanged business guard/navigation/search/count declarations and original effects, all 21 destinations, native groups, 529 scoped selectors and 32 live-admin portal selectors; only explicit mobile queue/menu disclosures hide navigation."
+  },
+  {
+    "test": "admin-workspace-navigation-contract",
+    "exitCode": 0,
+    "seconds": 2.85,
+    "output": "WORKSPACE NAVIGATION CONTRACT PASSED: original dirty cancel/confirm, history push and popstate, nested pricebook and admin-article normalization. Known original popstate dirty-guard gap reproduced; no router code changed."
+  },
+  {
+    "test": "admin-orders-navigation-contract",
+    "exitCode": 0,
+    "seconds": 4.7,
+    "output": "ORDER INTERACTION CONTRACT PASSED: expansion, exact order/document callback, search/month filtering, filtered export, pending toggle and reset, existing RTL. Mocked data only."
+  },
+  {
+    "test": "admin-website-save-contract",
+    "exitCode": 0,
+    "seconds": 3.98,
+    "output": "WEBSITE SAVE CONTRACT PASSED: all 27 fields, tags/features/examples normalization, supplier/costs/list/sale prices, version/id/create guards, error recovery, busy/upload/no-data guards, logo FormData, create defaults, response rehydration. Mocked API only."
+  },
+  {
+    "test": "admin-pricing-save-contract",
+    "exitCode": 0,
+    "seconds": 2.56,
+    "output": "PRICING SAVE CONTRACT PASSED: website-tier blank/zero/version, admin-only catalog reads, tier create/edit/delete with confirmation and regular-tier protection, membership, personal update/remove/validation/conflict, 101-row import preview and versioned batches. Mocked API only."
+  },
+  {
+    "test": "admin-foundation-stage-a",
+    "exitCode": 0,
+    "seconds": 5.95,
+    "output": "FOUNDATION STAGE A PASSED: 402 protected files byte-identical; original finance/settings/role/save components and order/queue contracts retained; user selection, mobile back, focus target, role/search reset and empty/loading/error cases; no writes. Browser rendering not asserted."
+  },
+  {
+    "test": "users-payment-ui",
+    "exitCode": 0,
+    "seconds": 1.65,
+    "output": "Users/payment UI passed: RTL cards, readable search, mobile actions, correct customer routes, settings dialog, unpaid/pending/paid distinction and admin review queue.\nPersonal price editor passed: regular, tier, actual and cost prices, selected customer identity, edit and removal controls."
+  },
+  {
+    "test": "admin-order-history",
+    "exitCode": 0,
+    "seconds": 0.82,
+    "output": "ADMIN ORDER HISTORY PASSED: confirmed-only totals and export; bank pending/reported/PDF-closed unpaid/demo excluded; payment-month groups; refunds reflected; outstanding orders in a separate view.\nCANCELLED ADMIN ORDER: one red cancelled badge, no paid label, matching export status.",
+    "note": "Updated old test fixture to supply useRef for the presentation-only search focus ref; all finance assertions retained."
+  },
+  {
+    "test": "admin-finance-ui",
+    "exitCode": 0,
+    "seconds": 0.81,
+    "output": "Finance admin screens render populated RTL lists, mobile-first layouts, request actions and bank settings.\nInvoice cancellation uses the same red cancelled status despite paid state or an attached invoice."
+  },
+  {
+    "test": "customer-account-actions",
+    "exitCode": 0,
+    "seconds": 1.08,
+    "output": "Customer/account actions passed: search, add, edit, delete, publication navigation, profile save/error, signout target; removed initials/export and duplicate billing navigation."
+  },
+  {
+    "test": "customer-order-screen",
+    "exitCode": 0,
+    "seconds": 0.91,
+    "output": "CUSTOMER ORDER SCREEN PASSED: all rows collapsed; one mixed list; exact header; 30 linked products with purchase dates; summary below products; only open orders can report payments with proof.\nADMIN ORDER UI PASSED: same compact list, PDF action only, closure and unpaid state clearly separated.\nCANCELLED CUSTOMER ORDER: red cancelled badge and detail agree, no payment report action."
+  },
+  {
+    "test": "order-display-consistency",
+    "exitCode": 0,
+    "seconds": 2.51,
+    "output": "ORDER DISPLAY CONSISTENCY PASSED: customer order list, wallet and breakdown agree after full refund; partial net/VAT remain correct; separate refund cards show linked product, order and cancellation date.\nWallet usage UI passed: approved labels, dynamic row count, exact sum, dates, linked websites/order numbers, export and empty state."
+  },
+  {
+    "test": "monthly-admin-ui",
+    "exitCode": 0,
+    "seconds": 0.95,
+    "output": "Monthly UI passed: paid badge, full article details, payment evidence form, RTL, checkout-only monthly action.\nLobby monthly panel defaults to real unpaid accounts; standalone monthly defaults are preserved."
+  },
+  {
+    "test": "payment-closure-actions",
+    "exitCode": 0,
+    "seconds": 0.62,
+    "output": "PAYMENT CLOSURE ACTIONS: warning before mutations, cancel preserves state, confirmation sends exact route/fields, double-click guard passed."
+  },
+  {
+    "test": "payment-footer-ui",
+    "exitCode": 0,
+    "seconds": 0.26,
+    "output": "Payment footer UI passed: compact customer date/method, private manager details, actual confirmation dates, missing-date handling, automatic approval labels."
+  },
+  {
+    "test": "order-cancellation-ui",
+    "exitCode": 0,
+    "seconds": 0.84,
+    "output": "Cancellation UI passed: collapsed full cancellation, cancellation-details label, writing retained, paid-only partial refund label, legacy cancellations."
+  },
+  {
+    "test": "personal-price-editor-actions",
+    "exitCode": 0,
+    "seconds": 0.59,
+    "output": "PERSONAL PRICE EDITOR PASSED: exact account/site/amount/version, success refresh, retained error modal, validation, explicit zero and removal fallback."
+  }
+]

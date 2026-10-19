@@ -4,7 +4,7 @@ import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
-import {compile,reset,render,nodes,text,event} from './admin-ui-harness.mjs';
+import {compile,reset,render,nodes,text} from './admin-ui-harness.mjs';
 
 const {attentionForPages,AdminAttentionBoundary,AdminAttentionBadge,adminMenuSections,adminQueueSections}=await compile('app/admin-attention.tsx','attention-functions');
 const fixture={queues:[{id:'payment_reports',count:3,label:'דיווחי תשלום'},{id:'bank',count:2,label:'תשלומים במעקב'},{id:'cancellations',count:4,label:'ביטולים'},{id:'content',count:5,label:'כתבות'},{id:'prices',count:2,label:'שינויי מחיר'},{id:'pricing_review',count:8,label:'מחירים קבועים'},{id:'sync',count:1,label:'Sheets'},{id:'support',count:1,label:'פניות'},{id:'monthly',count:2,label:'חשבונות חודשיים'},{id:'supplier_due',count:3,label:'ספקים'},{id:'mail',count:2,label:'דיוור'},{id:'connections',count:1,label:'חיבורים'}]};
@@ -36,7 +36,8 @@ assert.equal(queueButtons(tree).filter(n=>n.props['aria-pressed']).length,1);
 assert.equal(queueButtons(tree).find(n=>n.props['aria-pressed']).props.id,'lobby-tab-payment_reports');
 assert.equal(nodes(tree).filter(n=>n.props.role==='tab'||n.props.role==='tablist').length,0,'Ordinary buttons do not claim an unimplemented tabs model');
 const mainChildren=nodes(tree).find(n=>n.props.className==='admin-v172-dashboard').props.children;
-assert.equal(mainChildren[0].props.id,'lobby-work-panel','Work precedes queue selector in source reading order');
+assert(mainChildren[0].props.className.startsWith('admin-v172-queue-column'),'Expanded selector follows its toggle before the work panel');
+assert.equal(mainChildren[1].props.id,'lobby-work-panel','Work follows queue selection in DOM and narrow layout');
 let menu=nodes(tree).find(n=>n.props['aria-controls']==='admin-v172-queues');
 menu.props.onClick();tree=render(Lobby,{ctx});assert(nodes(tree).find(n=>n.props['aria-controls']==='admin-v172-queues').props['aria-expanded']);
 queueButtons(tree).find(n=>n.props.id==='lobby-tab-content').props.onClick();

@@ -58,6 +58,7 @@ assert(!/pointer-events\s*:\s*none|visibility\s*:\s*hidden|transition\s*:\s*all/
 // Every display:none must have an explicit, non-business reason.
 ast.walkDecls('display',decl=>{if(decl.value==='none'){
  const selector=decl.parent.selector||'';
- assert(/admin-v172-mobile-heading|admin-v172-menu|admin-order-list-heading|catalog-compact-header|lobby-payment-heading|support-wave|studio-hero > svg|admin-v172-navigation|summary::-webkit-details-marker|admin-v172-queue-toggle|admin-v172-queue-column/.test(selector),'Unexpected hidden surface '+selector);
+ if(selector.includes('.admin-foundation-users'))assert(/client-selected-panel|admin-foundation-user-list|admin-foundation-users-back/.test(selector),'Only list/detail presentation may hide, not actions');
+ else assert(/admin-v172-mobile-heading|admin-v172-menu|admin-order-list-heading|catalog-compact-header|lobby-payment-heading|support-wave|studio-hero > svg|admin-v172-navigation|summary::-webkit-details-marker|admin-v172-queue-toggle|admin-v172-queue-column/.test(selector),'Unexpected hidden surface '+selector);
 }});
 console.log(`FULL ADMIN PRESENTATION PASSED: unchanged business guard/navigation/search/count declarations and original effects, all 21 destinations, native groups, ${scoped} scoped selectors and ${portals} live-admin portal selectors; only explicit mobile queue/menu disclosures hide navigation.`);

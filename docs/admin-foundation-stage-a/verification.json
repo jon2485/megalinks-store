@@ -1,0 +1,82 @@
+{
+  "checkedAt": "2026-10-19T09:37:24.194356+00:00",
+  "baseCommit": "b6406ff71730e112e6422db7352338e8e6cb4571",
+  "baseTree": "be3c6102174eaa5bfea74a8e6768f015ead64e87",
+  "branch": "design/admin-foundation-stage-a-20261019",
+  "restoreBranch": "restore/admin-before-foundation-20261019",
+  "commands": [
+    {
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--noEmit"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "app/users-admin.tsx",
+        "app/admin-lobby.tsx",
+        "app/admin-order-history.tsx",
+        "tests/admin-foundation-stage-a.mjs",
+        "tests/admin-order-history.mjs",
+        "tests/admin-workflow-stage1.mjs",
+        "tests/admin-full-design-preservation.mjs",
+        "tests/users-payment-ui.mjs"
+      ],
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "command": [
+        "node",
+        "tests/admin-foundation-stage-a.mjs"
+      ],
+      "exitCode": 0,
+      "output": "FOUNDATION STAGE A PASSED: 402 protected files byte-identical; original finance/settings/role/save components and order/queue contracts retained; user selection, mobile back, focus target, role/search reset and empty/loading/error cases; no writes. Browser rendering not asserted."
+    }
+  ],
+  "productionBuild": {
+    "command": "node scripts/run-framework.mjs build",
+    "exitCode": 0,
+    "completionMarker": true
+  },
+  "regressionScriptsPassed": 24,
+  "regressionScriptsTotal": 24,
+  "impeccable": {
+    "primaryFindings": 0,
+    "advisories": 263
+  },
+  "premiumStrict": {
+    "passed": false,
+    "inheritedFindings": 71,
+    "newFindings": 0
+  },
+  "designmdLint": {
+    "performed": false,
+    "reason": "Package not cached; offline npx returned ENOTCACHED"
+  },
+  "browser": {
+    "performed": false,
+    "reason": "Remote browser cannot reach local HTTP server; file URL rejected by policy; no circumvention attempted.",
+    "pendingViewportWidths": [
+      1440,
+      1280,
+      1100,
+      768,
+      390,
+      360
+    ],
+    "zoom200Verified": false,
+    "liveLoginVerified": false
+  },
+  "financialWrites": 0,
+  "backendAuthDatabaseEnvVolumeChanges": false,
+  "railwayMutations": false,
+  "deployPerformed": false,
+  "productionOrMainUpdated": false,
+  "scope": "Three Stage A root screens only; stop before Stage B and deployment."
+}

@@ -253,3 +253,30 @@ revenue, urgency or activity metrics are invented. No hooks, animations or new f
 Stage 1 static Impeccable scan has no primary findings; radius/type/color advisories
 remain evidence to review visually against this established brand. Browser layout,
 touch, zoom and focus QA are pending; static scans and SSR are not visual approval.
+
+## Admin foundation Stage A 2026-10-19
+
+This authorized extension starts at b6406ff and changes only AdminLobby,
+AdminOrderHistory and UsersAdmin. The existing navy/cyan Operate identity and
+runtime Model B tokens are retained. No new global token or shared primitive changes.
+The scoped `admin-foundation-*` variants live in admin-design-v172.css and consume
+`--admin-v172-ink/muted/line/surface/bg/accent/blue/focus` from that file.
+
+The signature is a stable list/detail working area: compact queue navigation next
+to real treatment, month-grouped orders with a quiet four-cell summary strip, and
+a bounded user list beside a wider account panel. Spacing uses 4/8/12/16/20px;
+headings are 26px (24px on phones), body/controls 14–16px, metadata 12–13px,
+and account totals 22px. Corners remain 5–10px, flat except existing overlays.
+No new animation, decorative metric, asset, font or brand color is introduced.
+
+The expanded mobile queue selector moves before the treatment panel in both DOM
+and visual order so it follows the toggle. Selected-queue context remains above
+both. All original guard decisions remain identical. Users below an 800px content
+width show list OR selected details with a visible back action; desktop shows
+both. User lists alone own a 38rem bounded scroller; detail forms retain natural
+document scrolling. No fixed viewport height is imposed on shared shells.
+
+This section supersedes earlier Stage 1 wording requiring work-panel-first DOM
+order, and full-rollout wording about duplicate mobile user actions. It does not
+supersede business, permission, data or save contracts. The CSS is implemented;
+visual rendering at required viewports and 200% zoom is not yet verified.

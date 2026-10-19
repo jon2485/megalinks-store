@@ -76,3 +76,25 @@ completion review. No hardening claim is made for these inherited behaviors.
 Existing financial approval, top-up, refund, supplier, catalog and save owners remain
 unchanged. This stage cannot certify live end-to-end business workflows or mobile
 rendering. See docs/admin-workflow-stage1/README.md and handled-state-plan.md.
+
+## Admin foundation Stage A
+
+Current scope is the three root workflows only, based on b6406ff. All original
+handlers, readers, mutations and domain transitions retain their previous owners.
+The 21 destinations, aliases, nine queues, default payment reports and real shared
+attention reader remain unchanged. No generic handled write is added.
+
+| Capability | Canonical owner | Stage A presentation | Verification |
+|---|---|---|---|
+| Queue navigation | Original AdminLobby guard/go/choose/selectQueue | The expanded selector follows its trigger before the real panel, matching DOM/focus order | Original dirty continuation/approval fixture, nine queue fixtures; browser focus unverified |
+| Order filtering/export/expansion | AdminOrderHistory original state and handlers | Compact summary, real responsive rows, expanded original CustomerOrderDetail; native month select remains OS-owned | Order interaction + finance suites; visual/native-popup checks pending |
+| User selection | UsersAdmin original selected/search/role and original ClientActions | One action set for the selected account; side-by-side at content width >=800px, list/detail below | New selection/back/search/filter fixtures and original account action/save suites |
+| User presentation focus | Local presentation refs and detailsOpen only | Selection focuses account heading; back returns to selected list button using one animation frame | Ref/handler fixture; actual browser focus pending |
+| Search clear | Existing local state, original dirty guard for lobby | Clear resets original query/selection/expansion and focuses the input | Fixtures; no new requests or search semantics |
+| Forms, financial actions, Toast, Date | Existing components and UX contract above | No form, modal, validation, native date, monetary or save changes | Original component source equality and regression fixtures |
+
+Search and lists intentionally retain existing in-memory state and dataset sizes;
+no new URL writes, pagination, ordering or automatic saves are authorized here.
+All existing customer/supplier/auth/API projections remain protected sources.
+The known workspace popstate dirty gap and financial-dialog close behavior are
+recorded as inherited risks, not repaired by this presentation extension.
