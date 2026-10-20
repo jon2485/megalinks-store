@@ -98,3 +98,17 @@ no new URL writes, pagination, ordering or automatic saves are authorized here.
 All existing customer/supplier/auth/API projections remain protected sources.
 The known workspace popstate dirty gap and financial-dialog close behavior are
 recorded as inherited risks, not repaired by this presentation extension.
+
+## Approved customer account presentation
+
+| Capability | Existing canonical owner | Presentation change |
+|---|---|---|
+| Account navigation | ClientHub / client-hub-navigation.ts / ctx.go | Slim horizontal navigation, existing six destinations; 3-by-2 on phones |
+| Article filters/search | PremiumPurchasedView; existing local states | Unified panel, original month/status filtering, explicit search clear returns input focus |
+| Article actions | PurchaseRow / ctx.go / writing-workflow.ts | Four-column rows, mobile cards; every original status/writing/published branch retained |
+| Orders/disclosure | CustomerOrderScreen / CustomerOrderDetail | Same initially collapsed rows and status logic, responsive presentation only |
+| Wallet and ledger | BillingWorkspace / CustomerTopups / WalletTransactions | White panels and customer-only empty states; readers, reservation notes and export unchanged |
+| Wallet modals and feedback | Existing ctx.open / shared Dialog / Sonner | Unchanged focus, save, failure and close behavior |
+
+No new API, lifecycle transition, payment handler, authorization decision or data
+projection is introduced. Changes are scoped to customer articles/orders/payments.

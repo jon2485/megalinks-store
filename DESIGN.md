@@ -280,3 +280,26 @@ This section supersedes earlier Stage 1 wording requiring work-panel-first DOM
 order, and full-rollout wording about duplicate mobile user actions. It does not
 supersede business, permission, data or save contracts. The CSS is implemented;
 visual rendering at required viewports and 200% zoom is not yet verified.
+
+## Approved customer account screens 2026-10-20
+
+The approved cart-style articles, orders and wallet mockups govern these three
+customer routes only. `app/approved-account.css` owns scoped runtime Model B
+tokens under `.client-hub.approved-account`: ink #09234b, muted #506581, blue
+#0571da, cyan #00a9df, line #dcebf7, ground #f1f9ff. Reuse Heebo and Lucide.
+The existing global header/footer retain their real navigation and identity.
+Account navigation becomes a slim horizontal strip with a blue underline, never
+a sidebar. White 16px panels have one soft downward shadow; headers use the
+existing checkout wave asset and a decorative document/link/bag/wallet image.
+Article rows align site, story, order and actions in four columns. Orders keep
+all rows initially collapsed and existing disclosure/payment behavior. Wallet
+keeps actual balances, reservation notes, top-up requests, usage history, ledger
+exports and packages. No illustrative records or mockup numbers are shipped.
+
+At <=760px the six navigation destinations form a readable 3-by-2 grid. Article
+rows become vertically arranged cards with site/order, story and action areas.
+Orders show number, date and status above a 38px chevron inside a larger button.
+Expanded product rows reflow without horizontal scrolling. Wallet actions stack
+at full width. Document scrolling, existing dialogs and keyboard focus remain.
+The matching desktop screenshots are a visual target, not permission to change
+financial states, add claims, or expose supplier information.
