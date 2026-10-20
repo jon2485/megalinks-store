@@ -1,0 +1,45 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync,mkdirSync,writeFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
+const realReact=realpathSync('node_modules/react/index.js');
+let values=[],index=0,effects=[],requests=[],routes=[],reads=[];
+globalThis.testHooks={state(v){const i=index++;if(!(i in values))values[i]=typeof v==='function'?v():v;return [values[i],v=>values[i]=typeof v==='function'?v(values[i]):v];},ref(v){const i=index++;return values[i]??(values[i]={current:v});},effect(fn){effects.push(fn);}};
+globalThis.sessionStorage={getItem(){return null},setItem(){},removeItem(){}};
+globalThis.testData=(path,revision)=>{reads.push({path,revision});return ({data:path==='cart'?{items:[{id:'item',name:'אתר',website_id:'site',quantity:1,price:10000,price_cents:10000,regular_price:10000,publication_price:10000,editorial_price:0}]}:{account:{enabled:1},order:null},loading:false});};
+globalThis.testApi=async(path,method,body)=>{requests.push({path,method,body});return path==='quote'?{total:11800,subtotal:10000,vat:1800,pricing_token:'verified-token'}:{id:'order',number:'#101',status:'on_account'};};
+const result=await build({stdin:{contents:"export {CartFlow} from './app/purchase-flow';export {default as EditorialAddon} from './app/cart-editorial-addon';export {default as CheckoutPaymentTiles} from './app/checkout-payment-tiles';",resolveDir:process.cwd(),loader:'tsx'},bundle:true,loader:{'.css':'empty'},platform:'node',format:'esm',jsx:'automatic',external:['react/jsx-runtime','react-dom','react-dom/server'],write:false,banner:{js:"import {createRequire as __cr} from 'node:module';const require=__cr(import.meta.url);"},plugins:[{name:'fixture',setup(b){b.onResolve({filter:/^react$/},()=>({path:'hooks',namespace:'fixture'}));b.onResolve({filter:/^react-real$/},()=>({path:realReact,external:true}));b.onResolve({filter:/^(\.\/workspace|@\/lib\/client)$/},a=>({path:a.path,namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'js',contents:a.path==='hooks'?"export * from 'react-real';export {default} from 'react-real';export const useState=v=>globalThis.testHooks.state(v);export const useRef=v=>globalThis.testHooks.ref(v);export const useEffect=fn=>globalThis.testHooks.effect(fn);":a.path==='@/lib/client'?'export const useData=(...args)=>globalThis.testData(...args);export const api=(...args)=>globalThis.testApi(...args);export function download(){}export function csv(){}export function decodeHtml(x){return x}export function pricingApi(){}':"export function Field(){}export function Pick(){}export function Empty(){}export function ErrorBox(){}export function Heading(){}export function UploadField(){}export function Badge(){}export function Stats(){}export function WebsiteForm(){}export const categories={};"}));}}]});
+
+mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/cart-checkout-actions.mjs',result.outputFiles[0].text);
+const {CartFlow,EditorialAddon,CheckoutPaymentTiles}=await import(pathToFileURL(realpathSync('.sites-runtime/cart-checkout-actions.mjs')));
+const nodes=n=>!n||typeof n!=='object'?[]:[n,...[n.props?.children].flat(Infinity).flatMap(nodes)];
+const label=n=>typeof n==='string'||typeof n==='number'?String(n):Array.isArray(n)?n.map(label).join(''):n?.props?label(n.props.children):'';
+const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve()};
+const reset=()=>{values=[];index=0;effects=[];requests=[];routes=[]};
+const action=(tree,text)=>{const n=nodes(tree).find(n=>typeof n.props?.onClick==='function'&&label(n).includes(text));assert(n,'missing action '+text);return n};
+let item={id:'item',name:'אתר',quantity:2,editorial:false,editorial_words:400},saves=[],dirty=[],failure=false,hold=null;
+const save=async body=>{saves.push(body);if(hold)await hold;if(failure)throw Error('שמירה נכשלה');Object.assign(item,body)};
+const renderAddon=()=>{index=0;return EditorialAddon({item,save,dirty:v=>dirty.push(v)})};
+reset();let tree=renderAddon();assert.equal(nodes(tree).find(n=>n.props?.['aria-expanded']!==undefined).props['aria-expanded'],false);
+action(tree,'הוספת כתיבה').props.onClick();tree=renderAddon();assert(label(tree).includes('400 מילים'));assert(label(tree).includes('600 מילים'));assert(!label(tree).includes('AI'));
+action(tree,'400 מילים').props.onClick();await flush();tree=renderAddon();assert.deepEqual(saves.at(-1),{editorial:true,editorial_words:400});assert.equal(dirty.at(-1),false);
+action(tree,'600 מילים').props.onClick();await flush();tree=renderAddon();assert.equal(item.editorial_words,600);
+action(tree,'בחירת כמות מילים').props.onClick();tree=renderAddon();let input=nodes(tree).find(n=>n.props?.id==='editorial-words-item');input.props.onChange({target:{value:'725'}});tree=renderAddon();assert.equal(dirty.at(-1),true);action(tree,'שמירת מספר מילים').props.onClick();await flush();tree=renderAddon();assert.equal(item.editorial_words,725);assert.equal(dirty.at(-1),false);
+for(const invalid of ['0','99','5001','120.5','']){nodes(tree).find(n=>n.props?.id==='editorial-words-item').props.onChange({target:{value:invalid}});tree=renderAddon();const before=saves.length;action(tree,'שמירת מספר מילים').props.onClick();await flush();tree=renderAddon();assert.equal(saves.length,before);assert(nodes(tree).some(n=>n.props?.role==='alert'));}
+// A failed preset must retain the last persisted selection and allow a retry.
+failure=true;const previous=item.editorial_words;action(tree,'600 מילים').props.onClick();await flush();tree=renderAddon();assert.equal(item.editorial_words,previous);assert(nodes(tree).some(n=>n.props?.role==='alert'&&label(n).includes('שמירה נכשלה')));failure=false;
+let release;hold=new Promise(r=>release=r);const before=saves.length;action(tree,'400 מילים').props.onClick();action(tree,'400 מילים').props.onClick();tree=renderAddon();assert.equal(saves.length,before+1);assert(action(tree,'600 מילים').props.disabled);release();await flush();hold=null;tree=renderAddon();assert.equal(item.editorial_words,400);assert(!action(tree,'600 מילים').props.disabled);
+action(tree,'הסרת שירות הכתיבה').props.onClick();await flush();assert.equal(item.editorial,false);
+// Existing cart handlers remain connected: remove, quantity, coupon and navigation.
+reset();const ctx={revision:0,user:{id:'fixture',name:'לקוח',phone:'0500000000',monthly_account:{enabled:0}},catalog:[],refresh(){},go:v=>routes.push(v),run:async(fn)=>fn()};
+const renderCart=(checkoutOnly=false)=>{index=0;effects=[];return CartFlow({ctx,checkoutOnly})};
+tree=renderCart();for(const e of effects)e();await flush();tree=renderCart();
+action(tree,'הוספת אתר נוסף').props.onClick();assert.equal(routes.at(-1),'catalog');action(tree,'לעמוד סיכום ותשלום').props.onClick();assert.equal(routes.at(-1),'checkout');
+await nodes(tree).find(n=>n.props?.['aria-label']==='הסרת אתר מהסל').props.onClick();assert(requests.some(r=>r.path==='cart/item'&&r.method==='DELETE'));
+await nodes(tree).find(n=>n.props?.id==='publication-quantity-item').props.onChange({target:{value:'3'}});assert(requests.some(r=>r.path==='cart/item'&&r.body?.quantity===3));
+nodes(tree).find(n=>n.props?.['aria-label']==='קופון').props.onChange({target:{value:'SAMPLE'}});tree=renderCart();action(tree,'החלה').props.onClick();await flush();assert(requests.some(r=>r.path==='quote'&&r.body?.coupon==='SAMPLE'));
+tree=renderCart(true);let tiles=nodes(tree).find(n=>n.type===CheckoutPaymentTiles);assert.deepEqual(Object.keys(tiles.props.options),['card','invoice','credits']);assert.equal(nodes(tree).filter(n=>n.props?.onCheckedChange).length,1,'only terms consent, no duplicate monthly checkbox');
+ctx.user.monthly_account.enabled=1;tree=renderCart(true);tiles=nodes(tree).find(n=>n.type===CheckoutPaymentTiles);assert.equal(tiles.props.options.monthly,'הוספה להתחשבנות החודשית');tiles.props.onChange('card');tree=renderCart(true);assert.equal(nodes(tree).find(n=>n.type===CheckoutPaymentTiles).props.value,'card');assert(label(tree).includes('משירות הסליקה'));
+let changed;const tileTree=CheckoutPaymentTiles({value:'invoice',onChange:v=>changed=v,options:tiles.props.options,disabled:true});assert.equal(tileTree.props.disabled,true);assert.equal(tileTree.props.dir,'rtl');tileTree.props.onValueChange('credits');assert.equal(changed,'credits');assert.equal(nodes(tileTree).filter(n=>n.props?.['data-selected']===true).length,1);
+console.log('CART/CHECKOUT ACTIONS PASSED: writing presets/custom validation/removal/error/retry/double-click, cart quantity/remove/coupon/navigation, payment gating/selection and preserved terms. All APIs are fixtures.');

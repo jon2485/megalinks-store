@@ -73,3 +73,6 @@
  .azure-catalog.catalog-approved-home .catalog-home-tools,.azure-catalog.catalog-approved-home .catalog-results-actions{width:min(100%,var(--catalog-desktop-tools-width))}
 }
 @media(prefers-reduced-motion:reduce){.azure-catalog.catalog-approved-home .catalog-hero-intro,.azure-catalog.catalog-approved-home .catalog-publication-scene,.azure-catalog.catalog-approved-home .catalog-home-illustration{animation:none}.azure-catalog.catalog-approved-home .catalog-home-cta[data-slot="button"]{transition:none;transform:none}.azure-catalog.catalog-approved-home .catalog-inline-search,.azure-catalog.catalog-approved-home .catalog-inline-search[data-open] .catalog-inline-search-input[data-slot="input"]{transition:none;transition-delay:0ms}.catalog-home-category-panel[data-state],.catalog-sort-dialog[data-slot="dialog-content"][data-state]{animation:none}}
+
+/* Approved artwork and background only. Catalog result cards are outside scope. */
+.azure-catalog.catalog-approved-home .azure-catalog-hero{background:#f5fbff url('/brand/checkout-waves.webp') center/cover no-repeat;}

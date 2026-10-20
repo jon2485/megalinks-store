@@ -1,0 +1,31 @@
+'use client';
+import React,{useRef,useState} from 'react';
+import {Plus,Minus,FileText} from 'lucide-react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {money,type Row} from '@/lib/shared';
+
+export default function EditorialAddon({item,save,dirty}:{item:Row;save:(b:Row)=>Promise<void>;dirty:(value:boolean)=>void}){
+ const [expanded,setExpanded]=useState(!!item.editorial),[words,setWords]=useState(String(item.editorial_words||400)),[custom,setCustom]=useState(!!item.editorial&&![400,600].includes(Number(item.editorial_words))),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const pending=useRef(false);
+ const update=async(enabled:boolean,count=Number(words))=>{
+  if(pending.current)return;
+  if(enabled&&(!Number.isInteger(count)||count<100||count>5000)){setError('בחרו בין 100 ל־5,000 מילים');return;}
+  pending.current=true;setBusy(true);setError('');
+  try{await save({editorial:enabled,editorial_words:enabled?count:Number(item.editorial_words||400)});if(enabled){setWords(String(count));setCustom(![400,600].includes(count));}dirty(false);}
+  catch(e){setError((e as Error).message);}finally{pending.current=false;setBusy(false);}
+ };
+ return <section className="cart-writing-addon" aria-label={'כתיבה מקצועית עבור '+item.name}>
+  <Button type="button" variant="ghost" className="cart-writing-toggle" aria-expanded={expanded} aria-controls={'cart-writing-'+item.id} onClick={()=>setExpanded(!expanded)}><span>{item.editorial?'שירות כתיבה מקצועית':'הוספת כתיבה לאתר זה (אופציונלי)'}</span>{expanded?<Minus size={18}/>:<Plus size={18}/>}</Button>
+  {expanded&&<div id={'cart-writing-'+item.id} className="cart-writing-panel">
+   <div className="cart-writing-options" role="group" aria-label="אפשרויות כתיבה מקצועית">
+    {[400,600].map(count=><Button key={count} type="button" variant="outline" disabled={busy} aria-pressed={!!item.editorial&&!custom&&Number(words)===count} onClick={()=>void update(true,count)}><FileText size={21}/><span>כתיבה מקצועית — {count} מילים</span><strong>{money(count*15)}</strong></Button>)}
+    <Button type="button" variant="outline" disabled={busy} aria-pressed={custom} onClick={()=>{setCustom(true);dirty(!item.editorial||Number(words)!==Number(item.editorial_words));}}><FileText size={21}/><span>בחירת כמות מילים</span><small>₪0.15 לכל מילה</small></Button>
+   </div>
+   {custom&&<div className="cart-writing-custom"><label htmlFor={'editorial-words-'+item.id}>מספר מילים במאמר</label><Input id={'editorial-words-'+item.id} type="number" dir="ltr" min={100} max={5000} step={1} value={words} disabled={busy} onChange={e=>{setWords(e.target.value);dirty(!item.editorial||Number(e.target.value)!==Number(item.editorial_words));}}/><span><bdi>{money((Number(words)||0)*15)}</bdi> למאמר</span><Button type="button" disabled={busy} onClick={()=>void update(true)}>{busy?'מעדכן…':'שמירת מספר מילים'}</Button></div>}
+   <p className="cart-writing-help">כתיבה בידי כותב מקצועי · תוספת לבחירה בלבד · ₪0.15 למילה · לפני מע״מ{item.quantity>1?` · הסכום יוכפל ב־${item.quantity} כתבות`:''}</p>
+   {item.editorial&&<Button type="button" variant="ghost" disabled={busy} className="cart-writing-remove" onClick={()=>void update(false)}>הסרת שירות הכתיבה</Button>}
+   {error&&<p role="alert" className="error-box">{error}</p>}
+  </div>}
+ </section>;
+}

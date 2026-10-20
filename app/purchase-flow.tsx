@@ -1,5 +1,8 @@
 'use client';
 import './cart-approved.css';
+import './cart-checkout-refresh.css';
+import EditorialAddon from './cart-editorial-addon';
+import CheckoutPaymentTiles from './checkout-payment-tiles';
 import {MonthlyCheckoutNotice} from './monthly-checkout-notice';
 import {BankTransferInstructions} from './payment-review';
 import React,{useEffect,useRef,useState} from 'react';
@@ -18,6 +21,8 @@ import PremiumPurchasedView from './purchased-view';
 import { WorkspaceAccountControls } from './workspace-account-controls';
 
 const cartButtonStyle = 'min-h-12 h-auto whitespace-normal rounded-full bg-teal-400 px-5 py-3 text-base font-bold text-slate-950 shadow-lg shadow-teal-500/20 transition-all hover:bg-teal-300 hover:shadow-teal-500/30 focus-visible:ring-teal-600';
+function CartCheckoutJourney({checkout}:{checkout:boolean}){return <ol className="cart-checkout-steps" aria-label="שלבי הרכישה">{['סל הפרסום','פרטי הזמנה ותשלום','אישור'].map((label,index)=><li key={label} aria-current={index===(checkout?1:0)?'step':undefined}><b>{index+1}</b><span>{label}</span></li>)}</ol>;}
+
 const cartCardStyle = 'cart-item-card min-w-0 gap-0 overflow-hidden rounded-2xl border-cyan-100 bg-white py-0 shadow-sm';
 
 export function PurchaseTopBar({ctx,cartCount,checkoutOnly=false,pageTitle}:{ctx:Ctx;cartCount:number;checkoutOnly?:boolean;pageTitle?:string}) {
@@ -30,33 +35,6 @@ export function PurchaseTopBar({ctx,cartCount,checkoutOnly=false,pageTitle}:{ctx
 export function Journey({step=1,premium=false}:{step?:number;premium?:boolean}) {
     if(premium)return <ol className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="שלבי הרכישה">{['בחירת אתר','סל ותשלום הדגמה','הכנת התוכן','אישור מנהל','טיפול הספק'].map((label,i)=><li key={label} aria-current={step===i+1?'step':undefined} className={'flex min-w-0 items-center gap-2 rounded-xl px-2 py-2.5 text-sm leading-snug '+(step===i+1?'bg-orange-50 font-semibold text-orange-900':'text-slate-500')}><b className={'grid size-7 shrink-0 place-items-center rounded-full text-xs '+(step===i+1?'bg-orange-400 text-slate-950':'bg-slate-100 text-slate-500')}>{i+1}</b>{label}</li>)}</ol>;
     return <ol className="journey" aria-label="שלבי הרכישה">{['בחירת אתר','סל ותשלום הדגמה','הכנת התוכן','אישור מנהל','טיפול הספק'].map((label,i)=><li key={label} aria-current={step===i+1?'step':undefined} className={step===i+1?'current':''}><b>{i+1}</b>{label}</li>)}</ol>;}
-function EditorialAddon({item,save,dirty}:{item:Row;save:(b:Row)=>Promise<void>;dirty:(value:boolean)=>void}) {
-    const [words,setWords]=useState(String(item.editorial_words||400)),[busy,setBusy]=useState(false),[error,setError]=useState('');
-    const pending=useRef(false);
-    const update=async(enabled:boolean)=>{
-        if(pending.current)return;
-        const wordCount=enabled?Number(words):Number(item.editorial_words||400);
-        if(enabled&&(!Number.isInteger(wordCount)||wordCount<100||wordCount>5000)){setError('בחרו בין 100 ל־5,000 מילים');return;}
-        pending.current=true;setBusy(true);setError('');
-        try{await save({editorial:enabled,editorial_words:wordCount});dirty(false);}
-        catch(e){setError((e as Error).message);}
-        finally{pending.current=false;setBusy(false);}
-    };
-    return <div className="cart-editorial reference-editorial" aria-label={'כתיבה מקצועית עבור '+item.name}>
-        <div className="reference-editorial-heading">
-            <Switch dir="ltr" className="reference-writing-switch" checked={!!item.editorial} disabled={busy} aria-label={'הוספת כתיבה בידי כותב מקצועי עבור '+item.name} onCheckedChange={enabled=>void update(enabled)}/>
-            <h3>כתיבה בידי כותב מקצועי</h3>
-        </div>
-        {item.editorial?<div className="reference-writing-controls">
-            <label htmlFor={'editorial-words-'+item.id}>מספר מילים במאמר</label>
-            <Input id={'editorial-words-'+item.id} aria-label={'מספר מילים במאמר עבור '+item.name} dir="ltr" type="number" min={100} max={5000} step={100} disabled={busy} value={words} onChange={e=>{setWords(e.target.value);dirty(Number(e.target.value)!==Number(item.editorial_words||400));}}/>
-            <div className="reference-writing-price"><bdi>{money((Number(words)||0)*15)}</bdi>{item.quantity>1&&<small>למאמר · {money((Number(words)||0)*15*item.quantity)} לכל {item.quantity} הכתבות</small>}</div>
-            <Button variant="outline" className="reference-save-words" disabled={busy} onClick={()=>update(true)}>{busy?'מעדכן…':'שמירת מספר מילים'}</Button>
-        </div>:<p className="reference-writing-hint">הוסיפו שירות כתיבה מקצועית למאמר שלכם</p>}
-        <small className="reference-writing-rate">תוספת לבחירה בלבד · 0.15 ₪ למילה · לפני מע״מ</small>
-        {error&&<div role="alert"><ErrorBox error={error}/></div>}
-    </div>;
-}
 export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean}) {
     const state=useData('cart',ctx.revision+(ctx.pricingRevision||0)),[quote,setQuote]=useState<Row|null>(null),[coupon,setCoupon]=useState(typeof window==='undefined'?'':new URLSearchParams(window.location.search).get('coupon')||''),[form,setForm]=useState<Row>({name:ctx.user?.name||'',invoice_name:ctx.user?.company||ctx.user?.name||'',phone:ctx.user?.phone||'',payment:'invoice',accepted:false}),[error,setError]=useState(''),[busy,setBusy]=useState(false),[drafts,setDrafts]=useState<Record<string,boolean>>({});
     const monthlyEnabled=!!ctx.user?.monthly_account?.enabled;
@@ -82,16 +60,16 @@ export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean
     useEffect(()=>{let live=true;setQuote(null);if(items.length)api('quote','POST',{coupon}).then(q=>live&&setQuote(q)).catch(e=>live&&setError(e.message));return()=>{live=false;};},[state.data]);
     const saveItem=async(id:string,b:Row)=>{setQuote(null);try{await api('cart/'+id,'PATCH',b);ctx.refresh();}catch(e){try{setQuote(await api('quote','POST',{coupon}));}catch{}throw e;}};
     const checkout=async()=>{if(lock.current)return;setError('');if(!form.invoice_name.trim()){setError('יש למלא שם לחשבונית');return;}const phone=String(form.phone||ctx.user?.phone||'').trim();if(!phone){setError('מלאו טלפון ליצירת קשר');document.getElementById('checkout-phone')?.focus();return;}if(!form.accepted){setError('אשרו את פרטי ההזמנה');return;}lock.current=true;setBusy(true);try{const result=await api('checkout','POST',{...form,phone,monthly_order_id:form.payment==='monthly'?monthlyOpen.data?.order?.id:undefined,coupon:quote?.coupon?.code||'',idempotency:idem.current,expected_total:quote?.total,pricing_token:quote?.pricing_token});try{sessionStorage.removeItem(billingDraftKey);}catch{}ctx.refresh();if(result.payment_required){toast.info('ההזמנה ממתינה לאישור התשלום באשראי');try{const link=await api('orders/'+result.id+'/payment-link','POST',{});window.location.assign(link.payment_url);}catch(e){toast.error((e as Error).message);ctx.go('wallet');}return;}if(form.payment==='invoice'){toast.success('הזמנה '+result.number+' ממתינה לאישור תשלום');ctx.go('wallet');return;}toast.success(form.payment==='credits'?'התשלום הושלם':form.payment==='monthly'?'הרכישה נוספה להתחשבנות החודשית '+result.number:'רכישת ההדגמה הושלמה — אפשר להתחיל להכין תוכן');ctx.go('purchased');}catch(e){setError((e as Error).message);if(form.payment==='monthly')try{const latest=await api('monthly-open','GET',undefined,{background:true});monthlyOpen.setData?.(latest);}catch{}if(items.length)try{setQuote(await api('quote','POST',{coupon}));}catch{}}finally{setBusy(false);lock.current=false;}};
-    return <div dir="rtl" className={"cart-reference cart-redesign cart-approved w-full min-w-0 bg-[#f3f7fb] text-right"+(" azure-cart"+(checkoutOnly?" azure-checkout":""))}>
+    return <div dir="rtl" className={"cart-reference cart-redesign cart-approved cart-checkout-refresh w-full min-w-0 bg-[#f3f7fb] text-right"+(" azure-cart"+(checkoutOnly?" azure-checkout":""))}>
         <section className="cart-hero relative isolate overflow-hidden bg-slate-900 px-4 pb-20 pt-9 sm:px-8" aria-label="סל הפרסום">
             <div className="mx-auto flex max-w-4xl flex-col items-center justify-center gap-5 text-center">
-                <div className="w-full text-center">{checkoutOnly&&<p dir="ltr" className="mb-2 text-center text-xs font-semibold tracking-[.18em] text-teal-300">MEGA LINKS · CHECKOUT</p>}<h1 className="!text-3xl font-bold !leading-tight text-white sm:!text-4xl">{checkoutOnly?'סיכום הזמנה ותשלום':<>סל הפרסום <span className="azure-title-accent">שלך</span></>}</h1><p className="cart-hero-copy mx-auto mt-3 max-w-xl text-lg leading-relaxed text-slate-200 sm:text-xl">{checkoutOnly?'בדקו את הפרסומים ושירותי הכתיבה שבחרתם והשלימו את הרכישה.':'האתרים שבחרתם, בדרך לפרסום הבא'}</p></div>
+                {!checkoutOnly&&<img className="cart-title-art" src="/brand/cart-publication.webp" width="440" height="330" alt="" aria-hidden="true"/>}<div className="w-full text-center"><h1 className="!text-3xl font-bold !leading-tight text-white sm:!text-4xl">{checkoutOnly?'פרטי הזמנה ותשלום':<>סל הפרסום <span className="azure-title-accent">שלך</span></>}</h1><p className="cart-hero-copy mx-auto mt-3 max-w-xl text-lg leading-relaxed text-slate-200 sm:text-xl">{checkoutOnly?'בדקו את הפרסומים ושירותי הכתיבה שבחרתם והשלימו את הרכישה.':'האתרים שבחרתם, בדרך לפרסום הבא'}</p></div>
                 <Button className="h-11 rounded-full bg-teal-400 px-5 text-sm font-bold text-slate-950 shadow-lg shadow-teal-500/20 hover:bg-teal-300" onClick={()=>ctx.go('catalog')}><Plus size={16}/>הוספת אתר נוסף</Button>
             </div>
             <svg aria-hidden="true" viewBox="0 0 1440 70" preserveAspectRatio="none" className="pointer-events-none absolute bottom-0 left-0 h-12 w-full"><path d="M0 0Q720 120 1440 0V70H0Z" fill="#f3f7fb"/></svg>
         </section>
         <div className="cart-body relative mx-auto flex w-full max-w-4xl min-w-0 flex-col gap-5 px-4 pb-10 sm:px-6">
-        <Card className="cart-journey relative -mt-7 gap-0 rounded-2xl border-0 bg-white px-3 py-3 shadow-sm"><Journey step={2} premium/></Card>
+        <Card className="cart-journey relative -mt-7 gap-0 rounded-2xl border-0 bg-white px-3 py-3 shadow-sm"><CartCheckoutJourney checkout={checkoutOnly}/></Card>
         <ErrorBox error={state.error}/>
         {state.loading&&!state.data?<p>טוען סל…</p>:!items.length?<Empty title="הסל ריק" action={<Button onClick={()=>ctx.go('catalog')}>בחירת אתר</Button>}/>:<>
             <div className="cart-items-column">{items.map(item=><Card key={item.id} className={cartCardStyle}>
@@ -117,13 +95,24 @@ export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean
                 {<EditorialAddon item={item} save={b=>saveItem(item.id,b)} dirty={v=>setDrafts(d=>({...d,[item.id]:v}))}/>}
             </Card>)}</div>
             {checkoutOnly&&<Card className="checkout-customer-card gap-4 rounded-2xl border-slate-200 bg-white shadow-sm">
-                <CardHeader><CardTitle className="text-lg text-[#071f4b]">פרטי המזמין</CardTitle></CardHeader>
+                <CardHeader><CardTitle className="text-lg text-[#071f4b]">פרטי חשבונית</CardTitle></CardHeader>
                 <CardContent><div className="form-grid">
                     <Field label="שם לחשבונית *"><Input value={form.invoice_name} onChange={e=>setForm({...form,invoice_name:e.target.value})}/></Field>
                     <Field label="שם מלא"><Input value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></Field>
                     <Field label="טלפון ליצירת קשר *"><Input id="checkout-phone" type="tel" dir="rtl" className="text-right" value={form.phone} onChange={e=>{const phone=e.target.value;setForm(current=>({...current,phone}));setError('');}}/></Field>
                 </div></CardContent>
             </Card>}
+                    {checkoutOnly&&<Card className="checkout-payment-card"><CardContent><div className="space-y-4">
+                        <fieldset className="checkout-payment-field"><legend>אמצעי תשלום</legend><CheckoutPaymentTiles disabled={busy} value={form.payment} onChange={payment=>setForm({...form,payment})} options={{card:'כרטיס אשראי',invoice:'העברה בנקאית - באישור תשלום',credits:'תשלום מהיתרה והשלמה באשראי',...(ctx.user?.monthly_account?.enabled?{monthly:'הוספה להתחשבנות החודשית'}:{})}}/></fieldset>
+                        {form.payment==='monthly'&&<div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-slate-800"><ErrorBox error={monthlyOpen.error}/>{monthlyOpen.loading?<p>טוען הזמנה חודשית פתוחה…</p>:<><MonthlyCheckoutNotice order={monthlyOpen.data?.order} closedOrder={monthlyOpen.data?.closed_order} account={monthlyOpen.data?.account||ctx.user?.monthly_account}/></>}</div>}
+                        {form.payment==='credits'&&quote&&<div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-slate-800"><p>מהיתרה: <b>{money(Math.min(quote.total,ctx.user?.credits_available??ctx.user?.credits??0))}</b></p><p>להשלמה באשראי: <b>{money(Math.max(0,quote.total-(ctx.user?.credits_available??ctx.user?.credits??0)))}</b></p><p className="mt-2">ההזמנה וחיוב היתרה יושלמו רק לאחר אישור מלוא התשלום.</p></div>}
+                        {form.payment==='invoice'&&quote&&<><BankTransferInstructions ctx={ctx} total={quote.total}/><Field label="אסמכתת העברה (רשות)"><Input value={form.bank_reference||''} onChange={e=>setForm({...form,bank_reference:e.target.value})} placeholder="אם כבר ביצעתם העברה"/></Field></>}
+                        {form.payment==='card'&&<p className="rounded-xl bg-cyan-50 p-4 text-sm leading-6">תועברו לתשלום מאובטח. ההזמנה תושלם רק לאחר אישור עסקה משירות הסליקה.</p>}
+                        <label className="checkbox-label"><Checkbox checked={form.accepted} onCheckedChange={accepted=>setForm({...form,accepted})}/><span>קראתי ואני מאשר/ת את <a href="/terms" target="_blank" className="underline">תנאי האתר</a> ואת פרטי ההזמנה.</span></label>
+                        {Object.values(drafts).some(Boolean)&&<p className="notice">יש לשמור את מספר המילים לפני הרכישה.</p>}
+                        <ErrorBox error={error}/>
+                        <Button className={'w-full '+cartButtonStyle} disabled={busy||state.loading||!billingLoaded||!quote||(form.payment==='monthly'&&(monthlyOpen.loading||!!monthlyOpen.error))||Object.values(drafts).some(Boolean)} onClick={checkout}><ShoppingCart size={18}/>{busy?'משלים רכישה…':form.payment==='monthly'?'הוספה להתחשבנות החודשית':form.payment==='invoice'?'יצירת הזמנה לאישור תשלום':'מעבר לתשלום'}</Button><Button type="button" variant="ghost" disabled={busy} onClick={()=>ctx.go('cart')}>חזרה לסל הפרסום</Button>
+                    </div></CardContent></Card>}
             <div className="cart-sidebar"><Card className="cart-summary gap-0 overflow-hidden rounded-2xl border-cyan-100 bg-white py-0 shadow-sm">
                 <CardHeader className="border-b border-cyan-100 bg-cyan-50 px-5 py-4 sm:px-6"><CardTitle className="flex items-center gap-2 text-lg text-slate-900"><ReceiptText size={20} className="text-teal-700"/>סיכום הרכישה</CardTitle></CardHeader>
                 <CardContent className="space-y-5 p-5 sm:p-6">
@@ -135,17 +124,7 @@ export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean
                     </dl>
                     <div className="reference-summary-total"><div><span>סה״כ לתשלום</span><small>כולל מע״מ</small></div><b aria-label={quote?money(quote.total):undefined}>{quote?<span className="reference-total-amount" dir="ltr"><span>{(Number(quote.total)/100).toLocaleString('he-IL',{minimumFractionDigits:2,maximumFractionDigits:2})}</span><span aria-hidden="true">₪</span></span>:'מחשב…'}</b></div>
                     <div className="reference-coupon flex gap-2 rounded-xl bg-slate-50 p-2"><Input className="h-11 min-w-0 flex-1 rounded-full border-slate-200 bg-white" aria-label="קופון" placeholder="קוד קופון" value={coupon} onChange={e=>setCoupon(e.target.value)}/><Button variant="outline" className="h-11 rounded-full border-slate-200 bg-white px-5 text-slate-700 hover:bg-slate-100" disabled={busy} onClick={()=>{setQuote(null);api('quote','POST',{coupon}).then(setQuote).catch(e=>setError(e.message));}}>החלה</Button></div>
-                    {checkoutOnly&&<div className="space-y-4 pt-2">
-                        <Field label="אופן השלמת ההזמנה"><Pick value={form.payment} onChange={payment=>setForm({...form,payment})} options={{card:'כרטיס אשראי',invoice:'העברה בנקאית - באישור תשלום',credits:'תשלום מהיתרה והשלמה באשראי',...(ctx.user?.monthly_account?.enabled?{monthly:'הוספה להתחשבנות החודשית'}:{})}}/></Field>
-                        {form.payment==='monthly'&&<div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-slate-800"><ErrorBox error={monthlyOpen.error}/>{monthlyOpen.loading?<p>טוען הזמנה חודשית פתוחה…</p>:<><MonthlyCheckoutNotice order={monthlyOpen.data?.order} closedOrder={monthlyOpen.data?.closed_order} account={monthlyOpen.data?.account||ctx.user?.monthly_account}/></>}</div>}
-                        {form.payment==='credits'&&quote&&<div className="rounded-xl border border-cyan-200 bg-cyan-50 p-4 text-sm text-slate-800"><p>מהיתרה: <b>{money(Math.min(quote.total,ctx.user?.credits_available??ctx.user?.credits??0))}</b></p><p>להשלמה באשראי: <b>{money(Math.max(0,quote.total-(ctx.user?.credits_available??ctx.user?.credits??0)))}</b></p><p className="mt-2">ההזמנה וחיוב היתרה יושלמו רק לאחר אישור מלוא התשלום.</p></div>}
-                        {form.payment==='invoice'&&quote&&<><BankTransferInstructions ctx={ctx} total={quote.total}/><Field label="אסמכתת העברה (רשות)"><Input value={form.bank_reference||''} onChange={e=>setForm({...form,bank_reference:e.target.value})} placeholder="אם כבר ביצעתם העברה"/></Field></>}
-                        {form.payment==='card'&&<p className="rounded-xl bg-cyan-50 p-4 text-sm leading-6">תועברו לתשלום מאובטח. ההזמנה תושלם רק לאחר אישור עסקה משירות הסליקה.</p>}
-                        <label className="checkbox-label"><Checkbox checked={form.accepted} onCheckedChange={accepted=>setForm({...form,accepted})}/><span>קראתי ואני מאשר/ת את <a href="/terms" target="_blank" className="underline">תנאי האתר</a> ואת פרטי ההזמנה.</span></label>
-                        {Object.values(drafts).some(Boolean)&&<p className="notice">יש לשמור את מספר המילים לפני הרכישה.</p>}
-                        <ErrorBox error={error}/>
-                        <Button className={'w-full '+cartButtonStyle} disabled={busy||state.loading||!billingLoaded||!quote||(form.payment==='monthly'&&(monthlyOpen.loading||!!monthlyOpen.error))||Object.values(drafts).some(Boolean)} onClick={checkout}><ShoppingCart size={18}/>{busy?'משלים רכישה…':form.payment==='monthly'?'הוספה להתחשבנות החודשית':form.payment==='invoice'?'יצירת הזמנה לאישור תשלום':'מעבר לתשלום'}</Button>
-                    </div>}
+
                 </CardContent>
             </Card>
             {!checkoutOnly&&<div className="cart-next-actions grid grid-cols-1 gap-3 sm:grid-cols-2">
