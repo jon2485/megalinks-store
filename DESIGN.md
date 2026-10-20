@@ -280,3 +280,22 @@ This section supersedes earlier Stage 1 wording requiring work-panel-first DOM
 order, and full-rollout wording about duplicate mobile user actions. It does not
 supersede business, permission, data or save contracts. The CSS is implemented;
 visual rendering at required viewports and 200% zoom is not yet verified.
+
+
+## Cart and checkout approved refinement — 2026-10-21
+The existing scoped `cart-checkout-refresh.css` remains the visual owner; keep
+Heebo, navy/cyan, original cart art and checkout waves. Desktop shell stays.
+Cart phone cards align the original logo/name/domain, actual list/current prices,
+discount, quantity and removal. Writing disclosure starts collapsed and reports
+any persisted selection; explicit actions remain owned by EditorialAddon.
+Checkout uses a read-only item summary (logo, name, quantity, line total), with
+cart edits reached through the existing back route. Phone follows invoice name
+in DOM order; desktop keeps the phone directly underneath invoice name.
+Payment tiles use three equal columns, or four when the existing monthly
+permission supplies the fourth option. On phones, descriptions outside the
+chosen-payment guidance are omitted from the tiles to retain readable labels.
+The final amount and all summary figures come from the existing quote/cart
+projection, in cents. Catalog confirmation stays in the existing purchase button
+for 2400ms after the canonical success event; its short icon transition respects
+reduced motion. This is presentation only and does not change payment transitions.
+Browser/real-device visual verification is pending when execution is unavailable.

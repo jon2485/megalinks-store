@@ -98,3 +98,17 @@ no new URL writes, pagination, ordering or automatic saves are authorized here.
 All existing customer/supplier/auth/API projections remain protected sources.
 The known workspace popstate dirty gap and financial-dialog close behavior are
 recorded as inherited risks, not repaired by this presentation extension.
+
+
+## Cart / checkout presentation — 2026-10-21
+| Capability | Canonical owner / evidence | Presentation |
+| --- | --- | --- |
+| Cart mutation, quantity, writing | CartFlow / EditorialAddon, existing cart API | Same explicit saves, quantity locks and errors; writing starts collapsed |
+| Quote and confirmation | Existing quote API and CartFlow checkout handler | Actual list/discount/writing/subtotal/VAT/total; no new price rules |
+| Payment eligibility | ctx.user.monthly_account.enabled + existing checkout API | Three/four equal tiles; no new permission decision |
+| Checkout item review | Existing cart/quote projection | Read-only summary; editing through cart route |
+| Phone/invoice | Existing Field/Input and billing draft | Phone directly below invoice, LTR phone value |
+| Added feedback | notifyCartAdded after successful cart POST, CartFeedbackButton | 2400ms label/check state; timer cleanup and reduced-motion path |
+Existing server financial state, request payloads, idempotency, invoice guidance,
+credit splits and monthly checks retain their owners. Source tests and build
+do not establish browser or real-device visual approval.
