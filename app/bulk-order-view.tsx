@@ -10,6 +10,7 @@ import { bulkHeaders, parseBulkSheet, bulkRowError, bulkCartPayload } from '@/li
 import { type Row, money } from '@/lib/shared';
 import { type Ctx, ErrorBox } from './workspace';
 import { toast } from 'sonner';
+import './approved-customer-glass.css';
 
 export default function BulkView({ ctx }: { ctx: Ctx }) {
     const customersState = useData('records/customer', ctx.revision);
@@ -40,7 +41,7 @@ export default function BulkView({ ctx }: { ctx: Ctx }) {
         } catch (e) { ctx.refresh(); setError(`${(e as Error).message} · ${added} שורות נוספו לסל. רק השורות שנותרו מוצגות כאן; אפשר לתקן ולנסות שוב.`); }
         finally { lock.current = false; setBusy(false); }
     };
-    return <div dir="rtl" className="mx-auto max-w-5xl space-y-5 text-right">
+    return <div dir="rtl" className={'mx-auto max-w-5xl space-y-5 text-right'+(!ctx.adminMode&&ctx.user?.role!=='admin'?' bulk-order-glass':'')}>
         <section className="rounded-3xl bg-gradient-to-l from-[#0b234b] to-[#14536a] p-5 text-white shadow-md sm:p-8">
             <div className="flex flex-wrap items-center justify-between gap-4"><div><div className="mb-3 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-sm font-semibold text-teal-100"><FileSpreadsheet size={17}/>הזמנה מתוך Excel</div><h1 className="!text-2xl font-bold !text-white sm:!text-3xl">הזמנה מרוכזת</h1><p className="mt-2 text-base leading-7 text-slate-100">ממלאים תבנית, בודקים את השורות ומוסיפים את כל הפרסומים לסל.</p></div><Button className="min-h-11 rounded-full bg-teal-300 px-5 font-bold text-slate-950 hover:bg-teal-200" onClick={() => exportSpreadsheet('megalinks-bulk-order-template.xlsx', [bulkHeaders])}><Download size={17}/>הורדת תבנית Excel</Button></div>
         </section>

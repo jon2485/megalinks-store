@@ -63,7 +63,7 @@ function BalanceTopUp({ctx,close}:{ctx:Ctx;close:()=>void}) {
             return api('wallet-topups','POST',{request_id:requestId.current,amount_cents:amountCents,reference:reference.trim(),proof_file_id:proofFile?.id||''});
         },'בקשת ההטענה נשלחה לאימות מנהל. היתרה טרם עודכנה.');close();}catch(err){setError(err instanceof Error?err.message:'שליחת הבקשה נכשלה');}finally{setBusy(false);}
     };
-    return <form onSubmit={submit} dir="rtl" className="min-w-0 space-y-5 text-right">
+    return <form onSubmit={submit} dir="rtl" className={'min-w-0 space-y-5 text-right'+(!ctx.adminMode&&ctx.user?.role!=='admin'?' customer-topup-glass':'')}>
         <Tabs dir="rtl" value={method} onValueChange={value=>{if(!busy){setMethod(value);setError('');}}}>
             <TabsList aria-label="אמצעי תשלום להטענת יתרה" className="grid w-full grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1.5 group-data-[orientation=horizontal]/tabs:h-auto">
                 <TabsTrigger disabled value="card" className="h-auto min-h-12 whitespace-normal rounded-lg px-2 py-3 font-semibold data-[state=active]:bg-white data-[state=active]:text-slate-900"><CreditCard size={17}/>אשראי - טרם זמין</TabsTrigger>

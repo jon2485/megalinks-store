@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./approved-hebrew-font.css";
 import "./admin-reviewed-controls.css";
 import "./customer-finance-glass.css";
 import BrandLoading from './brand-loading';
@@ -25,9 +26,7 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl">
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+        <link rel="preload" href="/brand/heebo-variable.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
       </head>
       <body className="antialiased">{children}<BrandLoading/></body>
     </html>

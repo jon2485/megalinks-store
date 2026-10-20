@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync,mkdirSync,writeFileSync,readFileSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild'),react=realpathSync('node_modules/react/index.js');
+let cells=[],cursor=0,effects=[],requests=[],routes=[],failAt=0,hold=null,sheet=[];
+globalThis.glassHooks={state(initial){const i=cursor++;if(!(i in cells))cells[i]=typeof initial==='function'?initial():initial;return[cells[i],v=>cells[i]=typeof v==='function'?v(cells[i]):v]},ref(v){const i=cursor++;return cells[i]??(cells[i]={current:v})},effect(fn){effects.push(fn)}};
+globalThis.glassApi=async(path,method,body)=>{requests.push({path,method,body});if(hold)await hold;if(requests.length===failAt)throw Error('תקלה לבדיקה');return{}};
+globalThis.glassSheet=()=>sheet;
+const r=await build({stdin:{contents:"export {default as Bulk} from './app/bulk-order-view';export {CartFeedbackButton,notifyCartAdded} from './app/cart-add-feedback';",resolveDir:process.cwd(),loader:'tsx'},bundle:true,platform:'node',format:'esm',jsx:'automatic',loader:{'.css':'empty'},external:[react,'react/jsx-runtime'],write:false,plugins:[{name:'fixtures',setup(b){b.onResolve({filter:/^(react|@\/lib\/client|@\/lib\/office|\.\/workspace)$/},a=>({path:a.path,namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'js',contents:a.path==='react'?`export * from ${JSON.stringify(react)};export {default} from ${JSON.stringify(react)};export const useState=v=>globalThis.glassHooks.state(v),useEffect=f=>globalThis.glassHooks.effect(f),useRef=v=>globalThis.glassHooks.ref(v);`:a.path==='@/lib/client'?'export const useData=()=>({data:{records:[]},loading:false}),api=(...a)=>globalThis.glassApi(...a);':a.path==='@/lib/office'?'export const readSpreadsheet=async()=>globalThis.glassSheet();export const exportSpreadsheet=(...args)=>{globalThis.glassExport=args};':'export function ErrorBox(){return null}'}));}}]});
+mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/customer-glass-actions.mjs',r.outputFiles[0].text);
+const {Bulk,CartFeedbackButton,notifyCartAdded}=await import(pathToFileURL(realpathSync('.sites-runtime/customer-glass-actions.mjs')));
+const nodes=n=>!n||typeof n!=='object'?[]:[n,...[n.props?.children].flat(Infinity).flatMap(nodes)];
+const text=n=>n==null||typeof n==='boolean'?'':typeof n==='string'||typeof n==='number'?String(n):[n.props?.children].flat(Infinity).map(text).join('');
+const action=(tree,t)=>{const n=nodes(tree).find(n=>n.props?.onClick&&text(n).includes(t));assert(n,'missing '+t);return n};
+const flush=async()=>{for(let i=0;i<8;i++)await Promise.resolve()};
+const reset=()=>{cells=[];cursor=0;effects=[];requests=[];routes=[];failAt=0;hold=null};
+// Successful cart confirmation is site-specific, repeatable, and cleaned up on unmount.
+reset();const target=new EventTarget();globalThis.window=target;globalThis.CustomEvent=class extends Event{constructor(t,o){super(t);this.detail=o.detail}};
+const originalSetTimeout=globalThis.setTimeout,originalClearTimeout=globalThis.clearTimeout;let timers=new Map(),timerId=0;
+globalThis.setTimeout=fn=>{timers.set(++timerId,fn);return timerId};globalThis.clearTimeout=id=>timers.delete(id);
+let opens=0;const renderFeedback=()=>{cursor=0;return CartFeedbackButton({websiteId:'site',enabled:true,onClick:()=>opens++,className:'existing',label:'הוספה לסל',icon:null})};
+let tree=renderFeedback();const cleanup=effects[0]();tree.props.onClick();assert.equal(opens,1);assert.equal(renderFeedback().props['data-added'],false,'opening order dialog never confirms addition');notifyCartAdded('different-site');assert.equal(renderFeedback().props['data-added'],false);notifyCartAdded('site');tree=renderFeedback();assert.equal(tree.props['data-added'],true);assert(text(tree).includes('נוסף לסל'));tree.props.onClick();assert.equal(opens,2,'repeat order still available');notifyCartAdded('site');assert.equal(timers.size,1,'repeat confirmation restarts timer');const expiry=timers.values().next().value;timers.clear();expiry();assert.equal(renderFeedback().props['data-added'],false);cleanup();assert.equal(timers.size,0);notifyCartAdded('site');assert.equal(renderFeedback().props['data-added'],false);
+globalThis.setTimeout=originalSetTimeout;globalThis.clearTimeout=originalClearTimeout;
+// Real bulk UI uses actual parser and payload builder; APIs/Excel IO are fixtures only.
+const ctx={revision:0,user:{role:'customer'},adminMode:false,catalog:[{id:'site',name:'אתר',url:'https://example.test',active:1}],refresh(){},go:p=>routes.push(p)};
+const renderBulk=()=>{cursor=0;return Bulk({ctx})};
+const upload=async rows=>{sheet=[['אתר','נושא הכתבה','כמות','מילים לכתיבה בתשלום'],...rows];tree=renderBulk();nodes(tree).find(n=>n.props?.type==='file').props.onChange({target:{files:[{}],value:'x'}});await flush();tree=renderBulk()};
+reset();tree=renderBulk();assert(tree.props.className.includes('bulk-order-glass'));action(tree,'הורדת תבנית Excel').props.onClick();assert.equal(globalThis.glassExport[0],'megalinks-bulk-order-template.xlsx');
+await upload([['אתר','נושא א','2','400']]);assert(text(tree).includes('2 כתבות'));await action(tree,'הוספת 2 כתבות לסל').props.onClick();assert.equal(requests.length,1);assert.equal(requests[0].body.quantity,2);assert.equal(requests[0].body.editorial_words,400);assert.deepEqual(routes,['cart']);
+reset();await upload([['אתר','ראשון','1',''],['אתר','שני','1','']]);failAt=2;await action(tree,'הוספת 2 כתבות לסל').props.onClick();tree=renderBulk();assert.equal(routes.length,0);assert.equal(nodes(tree).filter(n=>n.type==='article').length,1,'partial failure keeps only pending row');assert(nodes(tree).some(n=>n.props?.value==='שני'));assert(!nodes(tree).some(n=>n.props?.value==='ראשון'));failAt=0;await action(tree,'הוספת 1 כתבות לסל').props.onClick();assert.equal(requests.length,3,'retry does not duplicate successful row');assert.equal(requests.at(-1).body.topic,'שני');
+reset();await upload([['אתר','נושא','21','']]);assert(action(tree,'כתבות לסל').props.disabled);await action(tree,'כתבות לסל').props.onClick();assert.equal(requests.length,0,'invalid rows cannot be added');
+reset();await upload([['אתר','נושא','1','']]);let release;hold=new Promise(r=>release=r);const add=action(tree,'הוספת 1 כתבות לסל').props.onClick();action(tree,'הוספת 1 כתבות לסל').props.onClick();assert.equal(requests.length,1);release();await add;hold=null;
+reset();tree=Bulk({ctx:{...ctx,adminMode:true,user:{role:'admin'}}});assert(!tree.props.className.includes('bulk-order-glass'),'administrator bulk page keeps existing style');
+const source=readFileSync('app/workspace.tsx','utf8');assert(source.includes("await api('cart', 'POST', { ...form, website_id: site.id });\n    notifyCartAdded(site.id);"),'notification only follows successful cart API');
+console.log('CUSTOMER GLASS ACTIONS PASSED: success-only feedback/site isolation/reset/repeat/cleanup, bulk import/template/edit validation/partial-failure retry/double-click/customer scope. No live writes.');

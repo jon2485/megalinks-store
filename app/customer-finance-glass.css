@@ -1,5 +1,5 @@
 /* Approved customer finance presentation. No admin/global component overrides. */
-.customer-finance-glass,[data-slot=dialog-content]:has(.customer-order-glass){
+.customer-finance-glass,.customer-orders-glass,[data-slot=dialog-content]:has(.customer-order-glass,.customer-topup-glass,.customer-usage-glass){
  --customer-finance-ink:#071f4b;--customer-finance-muted:#485b78;--customer-finance-accent:#007e88;
  --customer-finance-surface:rgba(244,248,252,.86);--customer-finance-line:#071f4b19;
  color:var(--customer-finance-ink);font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
@@ -143,3 +143,120 @@ body:has(.customer-order-glass) [data-slot=dialog-overlay]{background:#32445b29;
  [data-slot=dialog-content]:has(.customer-order-glass),.customer-finance-glass :is(.billing-balance-card,.customer-finance-transactions,.customer-finance-topups,.wallet-transaction-card){background:Canvas!important;color:CanvasText!important;border:1px solid CanvasText!important;box-shadow:none!important;-webkit-backdrop-filter:none;backdrop-filter:none;}
  .customer-order-glass-actions :is(a,button),.customer-finance-glass .billing-balance-actions>button{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important;box-shadow:none;}
 }
+
+/* Approved extension: original customer accordion, top-up and usage history. */
+.simple-customer-orders.customer-orders-glass{padding:0;border:0;border-radius:0;background:transparent;font-family:Heebo,Arial,sans-serif!important;}
+.customer-orders-glass.simple-customer-orders>h2{font-size:30px!important;font-weight:600!important;}
+.customer-orders-glass .simple-order-list{gap:18px;}
+.customer-orders-glass .simple-order-card{border:1px solid #ffffffdb;border-radius:26px;background:rgba(244,248,252,.86);box-shadow:inset 0 1px 0 #fff,0 12px 36px #102c4a10;-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);}
+.simple-customer-orders.customer-orders-glass .simple-order-row{grid-template-columns:minmax(0,1fr) auto 24px;grid-template-areas:"number status chevron" "date status chevron";gap:3px 16px;padding:20px 24px;min-height:92px;background:#ffffff45;}
+.customer-orders-glass .simple-order-number{grid-area:number;justify-self:start;font-size:22px!important;font-weight:600!important;}
+.customer-orders-glass .simple-order-row time{grid-area:date;font-size:14px!important;font-weight:400!important;color:var(--customer-finance-muted);}
+.customer-orders-glass .simple-order-row>svg{grid-area:chevron;color:var(--customer-finance-ink);}
+.customer-orders-glass .simple-order-status{grid-area:status;justify-self:end;max-width:245px;white-space:normal;line-height:1.6;min-height:34px;border-radius:999px;font-size:14px!important;font-weight:500!important;text-align:center;}
+.customer-orders-glass .simple-order-status:is(.is-open,.is-closed){background:#cfeff0;color:#006470;}
+.customer-orders-glass .simple-order-status:is(.is-awaiting,.is-reported){background:#fff0cc;color:#704a00;}
+.customer-orders-glass .simple-order-status.is-cancelled{background:#fbe0e7;color:#a32343;}
+.customer-orders-glass .simple-order-row:hover{background:#ffffff9c!important;}
+.customer-orders-glass .simple-order-row:active{background:#d9eef0!important;}
+.customer-orders-glass .simple-order-row:focus-visible{outline:3px solid var(--customer-finance-accent);outline-offset:-4px;}
+.customer-orders-glass .simple-order-detail{padding:0 24px 24px;}
+.customer-orders-glass .simple-order-products{border:0;border-radius:18px;overflow:hidden;}
+.customer-orders-glass .simple-order-product-head{background:transparent;padding:15px 16px;font-size:14px!important;font-weight:500!important;color:var(--customer-finance-muted);}
+.customer-orders-glass .simple-order-products ul{display:grid;gap:10px;}
+.customer-orders-glass .simple-order-products li{border:1px solid #ffffffd9;border-radius:18px;background:#ffffff80;padding:16px;gap:14px;}
+.customer-orders-glass .simple-order-products li.is-cancelled{background:#fff3f680;}
+.customer-orders-glass .simple-order-products .site-reference:has(a)>strong{display:block;font-size:16px;font-weight:500;}
+.customer-orders-glass .simple-order-products .site-reference a{font-size:14px!important;font-weight:400!important;}
+.customer-orders-glass .simple-order-products li time{font-size:14px!important;font-weight:400!important;color:var(--customer-finance-muted);}
+.customer-orders-glass .simple-order-products li>strong{font-size:18px!important;font-weight:600!important;}
+.customer-orders-glass .simple-order-summary{border:0;border-top:1px solid var(--customer-finance-line);border-radius:0;margin-top:22px;background:transparent;}
+.customer-orders-glass .simple-order-summary h3{padding:18px 0 12px;background:transparent;font-size:21px!important;font-weight:600!important;}
+.customer-orders-glass .simple-order-summary dl{padding:12px 16px;border:1px solid #ffffffa6;border-radius:18px;background:#ffffff52;gap:6px;}
+.customer-orders-glass .simple-order-summary dl>div{padding:7px 0;gap:12px;}
+.customer-orders-glass .simple-order-summary :is(dt,dd){font-size:15px!important;font-weight:400!important;color:var(--customer-finance-ink);white-space:normal;}
+.customer-orders-glass .simple-order-summary dd{flex-shrink:0;max-width:65%;}
+.customer-orders-glass .simple-order-grand-total{border-top:1px solid var(--customer-finance-line);border-radius:0;background:transparent;padding-top:14px!important;}
+.customer-orders-glass .simple-order-grand-total :is(dt,dd){font-size:21px!important;font-weight:600!important;}
+.customer-orders-glass .simple-order-info{padding:10px 0;font-size:14px!important;font-weight:400;color:var(--customer-finance-muted);}
+.customer-orders-glass .simple-order-detail .compact-report .simple-report-button{width:100%;min-height:48px;padding:13px 20px;border:1px solid #ffffff9c;border-radius:999px;background:linear-gradient(160deg,#008892,#00747e);box-shadow:inset 0 1px 0 #ffffff64,0 5px 18px #007e881a;font-size:16px;font-weight:500;color:#fff;}
+.customer-orders-glass .simple-order-detail .compact-report .simple-report-button:hover{background:#006e78;}
+.customer-orders-glass .simple-order-detail .compact-report .simple-report-button:focus-visible{outline:3px solid var(--customer-finance-accent);outline-offset:3px;}
+.customer-orders-glass .simple-order-detail .compact-report p{font-size:14px;font-weight:400;color:var(--customer-finance-muted);line-height:1.8;}
+
+[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass){display:block;max-width:600px;width:calc(100vw - 32px);max-height:calc(100dvh - 32px);padding:0;overflow-y:auto;overscroll-behavior:contain;border:1px solid #ffffffdb;border-radius:30px;background:var(--customer-finance-surface);box-shadow:inset 0 1px 0 #fff,0 20px 65px #102c4a24;-webkit-backdrop-filter:blur(26px) saturate(145%);backdrop-filter:blur(26px) saturate(145%);direction:rtl;text-align:right;}
+[data-slot=dialog-content]:has(.customer-usage-glass){max-width:760px;}
+[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass)>[data-slot=dialog-header]{padding:26px 26px 20px;padding-inline-end:68px;gap:6px;text-align:right;}
+[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass) [data-slot=dialog-title]{padding:0!important;font-size:25px!important;font-weight:600!important;color:var(--customer-finance-ink)!important;line-height:1.5;}
+[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass) [data-slot=dialog-description]{font-size:14px!important;font-weight:400!important;line-height:1.8!important;color:var(--customer-finance-muted)!important;}
+[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass)>[data-slot=dialog-close]{top:16px;left:16px;right:auto;display:grid;place-items:center;width:44px;height:44px;border:1px solid #ffffffbf;border-radius:50%;background:#ffffff7a;color:var(--customer-finance-muted);opacity:1;cursor:pointer;}
+[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass)>[data-slot=dialog-close]:hover{background:#fff;}
+body:has(.customer-topup-glass,.customer-usage-glass) [data-slot=dialog-overlay]{background:#32445b29;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);}
+.customer-topup-glass,.wallet-usage-history.customer-usage-glass{padding:0 26px max(22px,env(safe-area-inset-bottom));color:var(--customer-finance-ink);font-family:inherit;}
+[data-slot=dialog-content] :is(.customer-topup-glass,.customer-usage-glass) :is(p,small,dt,dd){font-size:14px!important;font-weight:400!important;line-height:1.8!important;color:var(--customer-finance-muted)!important;}
+.customer-topup-glass [data-slot=tabs-list]{gap:4px;padding:4px;border:1px solid #ffffffc9;border-radius:999px;background:#dbe5ec70;}
+.customer-topup-glass [data-slot=tabs-trigger]{min-height:48px;padding:10px 12px;border:0;border-radius:999px;font-weight:500!important;font-size:14px!important;color:var(--customer-finance-muted);}
+.customer-topup-glass [data-slot=tabs-trigger][data-state=active]{background:#ffffffdf;color:var(--customer-finance-accent);box-shadow:0 2px 6px #071f4b12;}
+.customer-topup-glass [data-slot=tabs-trigger]:disabled{opacity:.5;cursor:not-allowed;}
+.customer-topup-glass>div.space-y-2{padding:16px;border:1px solid #ffffffd9;border-radius:18px;background:#ffffff70;}
+.customer-topup-glass>label{font-size:14px!important;font-weight:500!important;}
+.customer-topup-glass input:not([type=file]),.customer-usage-glass input{font-size:16px!important;font-weight:400!important;min-height:48px;height:auto;border:1px solid #8c9fb94d;border-radius:14px;background:#ffffffad;padding:10px 14px;color:var(--customer-finance-ink);box-shadow:inset 0 1px 0 #ffffffc4;max-width:100%;}
+.customer-topup-glass input:focus-visible,.customer-usage-glass input:focus-visible{outline:3px solid var(--customer-finance-accent);outline-offset:2px;}
+.customer-topup-glass label:has(input[type=file]){padding:15px;border:1px dashed #8c9fb98c;border-radius:18px;background:#ffffff52;}
+.customer-topup-glass input[type=file]{font-size:13px;min-width:0;max-width:100%;}
+.customer-topup-glass input[type=file]::file-selector-button{min-height:44px;border:1px solid #007e8866;border-radius:999px;background:#ffffffd1;color:var(--customer-finance-accent);font-family:inherit;font-weight:500;cursor:pointer;}
+.customer-topup-glass button[type=submit]{min-height:48px;border:1px solid #ffffff9c;border-radius:999px;padding:13px 20px;font-size:16px!important;font-weight:500!important;color:#fff;background:linear-gradient(160deg,#008892,#00747e);box-shadow:inset 0 1px 0 #ffffff64,0 5px 18px #007e8824;}
+.customer-topup-glass button[type=submit]:hover:not(:disabled){background:#006e78;}
+.customer-topup-glass button:disabled{opacity:.55;cursor:wait;}
+.customer-usage-glass .wallet-usage-filters{display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,.55fr);gap:12px;margin:18px 0;}
+.customer-usage-glass .wallet-usage-search{display:flex;gap:8px;align-items:center;min-width:0;border:1px solid #8c9fb94d;border-radius:14px;background:#ffffffad;padding-inline:12px;}
+.customer-usage-glass .wallet-usage-search input{border:0;background:transparent;padding-inline:0;box-shadow:none;}
+.customer-usage-glass .wallet-usage-summary{display:grid;gap:9px;padding:17px;border:1px solid #ffffffd9;border-radius:18px;background:#ffffff70;color:var(--customer-finance-ink);}
+.customer-usage-glass .wallet-usage-summary>span{display:flex;gap:8px;align-items:center;font-size:14px;font-weight:400;}
+.customer-usage-glass .wallet-usage-summary>strong{font-size:19px;font-weight:600;}
+.customer-usage-glass>ul{display:grid;gap:12px;list-style:none;margin:18px 0;padding:0;}
+.customer-usage-glass>ul>li{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:17px;border:1px solid #ffffffd9;border-radius:18px;background:#ffffff80;}
+.customer-usage-glass .wallet-usage-product{min-width:0;}
+.customer-usage-glass .site-reference{display:grid;gap:2px;min-width:0;}
+.customer-usage-glass .site-reference strong{font-size:16px;font-weight:500;}
+.customer-usage-glass .wallet-usage-product dl{display:grid;gap:3px;margin:9px 0 0;}
+.customer-usage-glass .wallet-usage-product dl>div{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;}
+.customer-usage-glass .wallet-usage-product dd{margin:0;}
+.customer-usage-glass .wallet-usage-product button{min-height:44px;padding:5px;border-radius:8px;color:var(--customer-finance-accent);font-weight:500!important;}
+.customer-usage-glass .wallet-usage-product button:hover{background:#d9eef0;}
+.customer-usage-glass .wallet-usage-amount{display:grid;justify-items:end;gap:4px;flex-shrink:0;}
+.customer-usage-glass .wallet-usage-amount>span{font-size:12px;color:var(--customer-finance-muted);}
+.customer-usage-glass .wallet-usage-amount>strong{font-size:20px;font-weight:600;white-space:nowrap;}
+.customer-usage-glass .wallet-usage-footer{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding-top:16px;border-top:1px solid var(--customer-finance-line);}
+.customer-usage-glass .wallet-usage-footer>div{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;}
+.customer-usage-glass .wallet-usage-footer button{min-height:44px;height:auto;border:1px solid #007e8866;border-radius:999px;padding:10px 15px;background:#ffffff9c;font-size:14px!important;font-weight:500!important;color:var(--customer-finance-ink);}
+.customer-usage-glass .wallet-usage-footer button:hover:not(:disabled){background:#d9eef0;}
+.customer-usage-glass .wallet-usage-footer button:disabled{opacity:.5;cursor:not-allowed;}
+:is(.customer-topup-glass,.customer-usage-glass) :is(button,a):focus-visible,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass)>[data-slot=dialog-close]:focus-visible{outline:3px solid var(--customer-finance-accent);outline-offset:3px;}
+@media(max-width:600px){
+ .customer-orders-glass.simple-customer-orders>h2{font-size:27px!important;}
+ .simple-customer-orders.customer-orders-glass .simple-order-row{padding:18px;gap:4px 10px;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr) 20px;}
+ .customer-orders-glass .simple-order-status{font-size:12px!important;padding:6px 10px;}
+ .customer-orders-glass .simple-order-number{font-size:20px!important;}
+ .customer-orders-glass .simple-order-detail{padding:0 18px 18px;}
+ .customer-orders-glass .simple-order-product-head{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);}
+ .customer-orders-glass .simple-order-products li{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"site price" "date price";gap:8px 12px;padding:15px;}
+ .customer-orders-glass .simple-order-site{grid-area:site;}
+ .customer-orders-glass .simple-order-products li time{grid-area:date;font-size:12px!important;}
+ .customer-orders-glass .simple-order-products li>strong{grid-area:price;font-size:18px!important;align-self:center;}
+ .customer-orders-glass .simple-order-summary :is(dt,dd){font-size:14px!important;}
+ .customer-orders-glass .simple-order-grand-total :is(dt,dd){font-size:18px!important;}
+ [data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass){width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:26px;}
+ [data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass)>[data-slot=dialog-header]{padding:24px 22px 18px;padding-inline-end:66px;}
+ [data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass) [data-slot=dialog-title]{font-size:22px!important;}
+ .customer-topup-glass,.wallet-usage-history.customer-usage-glass{padding-inline:22px;}
+ .customer-usage-glass .wallet-usage-filters{grid-template-columns:minmax(0,1fr);}
+ .customer-usage-glass>ul>li{flex-wrap:wrap;gap:12px;}
+ .customer-usage-glass .wallet-usage-product{flex-basis:100%;}
+ .customer-usage-glass .wallet-usage-amount{justify-items:start;}
+ .customer-usage-glass .wallet-usage-summary>strong{font-size:17px;}
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){.customer-orders-glass .simple-order-card,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass){background:#f4f8fc;}}
+@media(prefers-reduced-transparency:reduce){.customer-orders-glass .simple-order-card,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass){background:#f4f8fc;-webkit-backdrop-filter:none;backdrop-filter:none;}body:has(.customer-topup-glass,.customer-usage-glass) [data-slot=dialog-overlay]{background:#26364d5c;-webkit-backdrop-filter:none;backdrop-filter:none;}}
+@media(prefers-reduced-motion:reduce){.customer-orders-glass .simple-order-row>svg,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass),:is(.customer-topup-glass,.customer-usage-glass) button{animation:none!important;transition:none!important;}}
+@media(forced-colors:active){.customer-orders-glass .simple-order-card,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass){background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;}.customer-orders-glass .simple-order-detail .compact-report .simple-report-button,.customer-topup-glass button[type=submit]{background:ButtonFace;color:ButtonText;border:1px solid ButtonText;}}

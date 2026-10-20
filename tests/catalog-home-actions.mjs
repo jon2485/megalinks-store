@@ -87,7 +87,7 @@ tree = render(); assert.deepEqual(ids(tree), ['b'], 'favorites toggle preserved'
 nodes(tree).find(n => n.type === PublicationCard).props.onFavorite();
 assert.deepEqual(calls.at(-1), ['api', 'favorites', 'POST', { website_id: 'b', kind: 'favorite' }]);
 cursor = 0; const card = PublicationCard({ site: ctx.catalog[1], ctx, favorite: true, onFavorite() {} });
-label(card, 'הוספה לסל').props.onClick(); assert.equal(calls.at(-1)[1].kind, 'order'); assert.equal(calls.at(-1)[1].site.id, 'b');
+find(card, n => n.props?.label === 'הוספה לסל').props.onClick(); assert.equal(calls.at(-1)[1].kind, 'order'); assert.equal(calls.at(-1)[1].site.id, 'b');
 reset(); tree = render();
 globalThis.document = { getElementById: id => ({ scrollIntoView: options => calls.push(['scroll', id, options]) }) };
 globalThis.window = { matchMedia: () => ({ matches: false }) };
