@@ -112,7 +112,7 @@ export default function PremiumCatalog({ ctx, search, onSearch, loading = false 
             <div className="catalog-hero-composition">
                 <div className="catalog-hero-intro">
                     <h1 className="catalog-hero-title"><span>איפה נפרסם</span><span className="azure-title-accent">את הכתבה הבאה שלך?</span></h1>
-                    <p>חפשו לפי אתר או תחום, ובחרו היכן לפרסם.</p>
+                    <p>חפשו לפי אתר או תחום, סננו ובחרו היכן לפרסם.</p>
                     <Button className="catalog-home-cta" onClick={()=>document.getElementById('catalog-home-results')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>לצפייה בקטלוג<ArrowLeft size={18}/></Button>
                 </div>
                 <CatalogPublicationScene/>

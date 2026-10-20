@@ -28,7 +28,8 @@ function dom(markup) {
   assert.equal(parent,root);return all;
 }
 function simple(selector,el) {
-  if(!el||/[\\:+~]/.test(selector.replace(/\[[^\]]*\]/g,'')))return false;
+  if(/\[[^\]]*[~|^$*]=/.test(selector))return false;
+  if(!el||!selector||/[()\\:+~]/.test(selector.replace(/\[[^\]]*\]/g,'')))return false;
   const attrs=[...selector.matchAll(/\[([\w-]+)(?:=["']?([^\]"']+)["']?)?\]/g)];
   if(attrs.some(([,k,v])=>!(k in el.attrs)||(v!==undefined&&el.attrs[k]!==v)))return false;
   selector=selector.replace(/\[[^\]]*\]/g,'');
@@ -60,16 +61,23 @@ for(const search of ['', 'tech']) {
     if(width>=1024){
       assert.equal(row.width,actions.width,width+': search and all three actions end at the same edge');
       assert.match(row.width,/--catalog-desktop-tools-width/);
-      assert.equal(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-composition'),width)['max-width'],'1600px');
+      assert.equal(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-composition'),width)['max-width'],'1500px');
     }else if(width<=700){
       assert.equal(row.width,actions.width,width+': mobile search ends above bulk-order edge');
       assert.equal(row['max-width'],'510px');
+      const hero=resolve(nodes.find(n=>n.attrs.class==='azure-catalog-hero'),width);
+      assert(['transparent','0 0'].includes(hero.background),hero.background+width+': hero shares the catalog surface without a hard background edge');
+      const surface=resolve(nodes.find(n=>(n.attrs.class||'').includes('catalog-approved-home')),width);
+      assert.match(surface['background-image'],/checkout-waves/,width+': original wave asset continues behind the catalog');
+      const art=resolve(nodes.find(n=>n.attrs.class==='catalog-publication-scene'),width);
+      assert.equal(art['grid-row']??art['grid-area']?.split('/')[0],'1',width+': original artwork precedes title');
+      assert.match(nodes.find(n=>n.tag==='img'&&n.attrs.class==='catalog-home-illustration').attrs.src,/home-publication-20261020\.webp$/,width+': original illustration retained');
       const label=resolve(category===undefined?null:nodes.find(n=>n.tag==='span'&&n.parent===category),width);
       assert.equal(label['white-space'],'normal',width+': full category label can wrap');
       assert.equal(label['text-overflow'],'clip',width+': no ellipsis');
       if(width<=440){
-        assert.match(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-title'),width)['font-size'],/25px/);
-        assert.equal(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-composition'),width)['min-height'],'340px');
+        assert.match(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-title'),width)['font-size'],/27px/);
+        assert.equal(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-composition'),width)['min-height'],'0');
       }
     }else assert.equal(row.width,'100%',width+': existing tablet row preserved');
     assert.equal(button['margin-top']??button.margin,'0',width+': no legacy top margin');
@@ -86,4 +94,4 @@ for(const search of ['', 'tech']) {
     assert.equal(field.width,search?'100%':'52px',width+': search expands inside the reserved track');
   }
 }
-console.log('CATALOG HOME LAYOUT PASSED: actual Radix/Button markup and resolved CSS at 320–2560px, larger phone intro, complete category labels, aligned tools/actions, equal heights, no overlap, and open/closed search widths. CSS/SSR verification; no browser layout was run.');
+console.log('CATALOG HOME LAYOUT PASSED: actual Radix/Button markup and resolved CSS at 320–2560px, compact stacked phone intro, complete category labels, aligned tools/actions, equal heights, no overlap, and open/closed search widths. CSS/SSR verification; no browser layout was run.');
