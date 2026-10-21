@@ -1,0 +1,41 @@
+/* Approved mobile drawer: preserve existing brand header and Sheet behavior. */
+.workspace-mobile-drawer .workspace-mobile-drawer-links {
+  padding: 12px 16px 20px;
+  background: radial-gradient(ellipse at 0 100%, #def7fb 0, transparent 58%), linear-gradient(160deg, #fbfeff, #f1faff);
+  scrollbar-gutter: stable;
+}
+.workspace-mobile-drawer .workspace-mobile-drawer-group { padding: 16px 0 20px; border-color: #dcebf1; }
+.workspace-mobile-drawer .workspace-mobile-drawer-group h2 { padding: 0 8px; margin-bottom: 10px; color: #60758e; font-weight: 500!important; }
+.workspace-mobile-drawer .workspace-mobile-drawer-link {
+  min-height: 70px; gap: 10px; padding: 12px 10px; margin: 8px 0;
+  border: 1px solid #fff; border-radius: 16px;
+  background: linear-gradient(120deg, #ffffffdc, #f4fbffbf);
+  box-shadow: 0 4px 14px #103d6410, inset 0 1px 0 #fff;
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  font-family: Heebo, Arial, sans-serif; font-size: 17px; font-weight: 600;
+  color: #10294b; cursor: pointer;
+  transition: background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+.workspace-mobile-drawer .workspace-mobile-drawer-link.is-current { background: linear-gradient(110deg, #d2f7f4e6, #effdfce6); box-shadow: 0 4px 16px #00aeb515, inset 0 1px 0 #fff; }
+.workspace-mobile-drawer .mobile-glass-icon { flex: 0 0 38px; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 50%; background: #eaf4fa; color: #153655; }
+.workspace-mobile-drawer .is-current .mobile-glass-icon { color: #009b9b; background: #f6ffff; }
+.workspace-mobile-drawer .mobile-glass-copy { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 3px; text-align: right; overflow-wrap: anywhere; }
+.workspace-mobile-drawer .mobile-glass-copy small { font-size: 12px; font-weight: 400; line-height: 1.55; color: #526b87; }
+.workspace-mobile-drawer .mobile-glass-chevron { flex: 0 0 16px; color: #647b91; }
+.workspace-mobile-drawer .workspace-top-navigation-count { flex: 0 0 auto; min-width: 28px; }
+.workspace-mobile-drawer .workspace-mobile-drawer-bottom { background: #f3fbfce6; border-color: #dcebf1; padding: 8px 16px max(10px, env(safe-area-inset-bottom)); }
+.workspace-mobile-drawer .workspace-mobile-drawer-bottom .workspace-mobile-drawer-link { margin: 0; background: linear-gradient(110deg, #e7f9fbd9, #ffffffed); }
+.workspace-mobile-drawer .workspace-mobile-drawer-bottom .mobile-glass-icon { background: #d4f8fa; }
+.workspace-mobile-drawer .workspace-greeting-text { white-space: normal; overflow-wrap: anywhere; text-align: right; }
+@media (hover: hover) {
+  .workspace-mobile-drawer .workspace-mobile-drawer-link:hover { transform: translateY(-2px); background: #e1f7f9; box-shadow: 0 6px 18px #103d6420; }
+}
+.workspace-mobile-drawer .workspace-mobile-drawer-link:active { transform: scale(.985); background: #d8f2f5; }
+.workspace-mobile-drawer .workspace-mobile-drawer-link:focus-visible { outline: 2px solid #087f8c; outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) {
+  .workspace-mobile-drawer .workspace-mobile-drawer-link { transition: none; transform: none; }
+}
+@media (forced-colors: active) {
+  .workspace-mobile-drawer .workspace-mobile-drawer-link { border-color: ButtonText; }
+  .workspace-mobile-drawer .workspace-mobile-drawer-link.is-current { outline: 2px solid Highlight; }
+}
