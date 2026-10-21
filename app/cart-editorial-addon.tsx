@@ -17,7 +17,7 @@ export default function EditorialAddon({item,save,dirty}:{item:Row;save:(b:Row)=
   catch(e){setError((e as Error).message);}finally{pending.current=false;setBusy(false);}
  };
  return <section className="cart-writing-addon" aria-label={'כתיבה מקצועית עבור '+item.name}>
-  <Button type="button" variant="ghost" className="cart-writing-toggle" aria-expanded={expanded} aria-controls={'cart-writing-'+item.id} onClick={()=>setExpanded(!expanded)}><span>הוספת כתיבה לאתר זה (אופציונלי){!!item.editorial&&<small>נבחרו {item.editorial_words||400} מילים · {money(item.editorial_price??Number(item.editorial_words||400)*15)} לכל כתבה</small>}</span>{expanded?<Minus size={18}/>:<Plus size={18}/>}</Button>
+  <Button type="button" variant="ghost" className="cart-writing-toggle" aria-expanded={expanded} aria-controls={'cart-writing-'+item.id} onClick={()=>setExpanded(!expanded)}><span>הוספת שירותי כתיבה{!!item.editorial&&<small>נבחרו {item.editorial_words||400} מילים · {money(item.editorial_price??Number(item.editorial_words||400)*15)} לכל כתבה</small>}</span>{expanded?<Minus size={18}/>:<Plus size={18}/>}</Button>
   {expanded&&<div id={'cart-writing-'+item.id} className="cart-writing-panel">
    <div className="cart-writing-options" role="group" aria-label="אפשרויות כתיבה מקצועית">
     {[400,600].map(count=><Button key={count} type="button" variant="outline" disabled={busy} aria-pressed={!!item.editorial&&!custom&&Number(words)===count} onClick={()=>void update(true,count)}><FileText size={21}/><span>כתיבה מקצועית — {count} מילים</span><strong>{money(count*15)}</strong></Button>)}
