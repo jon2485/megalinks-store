@@ -1,0 +1,197 @@
+.purchase-order-column{display:contents}
+.approved-finance-subtitle{display:none}
+/* Approved 2026-10-20 customer account companions to the cart.
+   Scoped presentation only. Existing component handlers own every action. */
+.client-hub.approved-account{--account-ink:#09234b;--account-muted:#506581;--account-blue:#0571da;--account-cyan:#00a9df;--account-line:#dcebf7;--account-ground:#f1f9ff;--account-elevation:0 10px 30px #123b6810;max-width:1536px;margin:auto;padding:0 36px 56px;color:var(--account-ink);font-family:Heebo,Arial,sans-serif;min-width:0}
+.client-hub.approved-account .client-hub-heading{position:relative;isolation:isolate;display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:32px;min-height:176px;margin:0;padding:28px 12px}
+.client-hub.approved-account .client-hub-heading:before{content:"";position:absolute;inset:0 -36px;z-index:-1;background:#f1faff url('/brand/checkout-waves.webp') center/cover no-repeat;opacity:.65;pointer-events:none}
+.client-hub.approved-account .client-hub-heading h1{font-size:clamp(30px,3vw,44px)!important;line-height:1.3!important;font-weight:800!important;color:var(--account-ink)!important;margin:0}
+.client-hub.approved-account .client-hub-heading p{font-size:18px;line-height:1.65;margin:8px 0 0;color:var(--account-muted)}
+.client-hub.approved-account .client-hub-welcome{display:flex;flex-direction:row;gap:24px;align-items:center;flex-shrink:0}
+.client-hub.approved-account .client-hub-welcome>span{display:none}
+.client-hub.approved-account .approved-account-art{display:block;width:190px;height:140px;object-fit:contain}
+.client-hub.approved-account .client-hub-welcome button{border-radius:12px;min-height:48px;padding:12px 22px;background:#ff8615;color:white;box-shadow:0 4px 12px #f5822020;white-space:normal}
+.client-hub.approved-account .client-hub-tabs{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:0;margin:0 0 30px;padding:0;background:#fff;box-shadow:0 4px 18px #123b6806}
+.client-hub.approved-account .client-hub-tabs button{display:flex;flex-direction:row;gap:12px;min-height:72px;padding:14px 10px;border:0;border-bottom:3px solid transparent;border-radius:0;box-shadow:none;background:transparent;color:var(--account-ink);font-size:16px;font-weight:650;line-height:1.5}
+.client-hub.approved-account .client-hub-tabs button:hover{background:#f0f9ff;color:#006abd}
+.client-hub.approved-account .client-hub-tabs button[aria-current=page]{border-bottom-color:var(--account-blue);color:#0068d0;background:#f8fcff}
+.client-hub.approved-account :is(button,a){cursor:pointer}
+.client-hub.approved-account :is(button,a,input):focus-visible{outline:3px solid #0079cb;outline-offset:3px}
+.client-hub.approved-account button:disabled{cursor:not-allowed;opacity:.55}
+/* Articles: one panel, clear site/story/order/action columns. */
+.approved-articles-title,.approved-article-columns,.approved-order-columns,.approved-orders-caption{display:none}
+.client-hub.approved-account .purchased-atmosphere{padding:26px!important;border-radius:16px;background:white!important;box-shadow:var(--account-elevation);overflow:visible}
+.client-hub.approved-account .purchased-atmosphere:before,.client-hub.approved-account .purchased-atmosphere>div:before{display:none!important}
+.client-hub.approved-account .personal-modern-hero{padding:0!important;margin:0 0 18px;min-height:0;border:0}
+.client-hub.approved-account .personal-hero-inner{display:flex;flex-direction:row;align-items:center;justify-content:space-between;gap:20px;max-width:none;padding:0!important}
+.client-hub.approved-account .approved-articles-title{display:block;font-size:25px!important;font-weight:800!important;color:var(--account-ink)!important;margin:0}
+.client-hub.approved-account .purchased-search{position:relative;width:min(395px,52%);margin:0!important}
+.client-hub.approved-account .purchased-search input.purchased-search-input{height:48px!important;border:1px solid #c5d6e7!important;border-radius:9px!important;box-shadow:none!important;background:white!important;font-size:16px!important;font-weight:400!important;color:var(--account-ink)!important}
+.client-hub.approved-account .purchased-search input::placeholder{color:var(--account-muted)!important;font-weight:400!important}
+.client-hub.approved-account .purchased-search .purchased-search-icon{color:var(--account-muted)!important}
+.approved-search-clear{position:absolute;left:5px;top:2px;display:grid;place-items:center;width:44px;height:44px;background:transparent;border-radius:8px;color:#506581}
+.client-hub.approved-account .purchased-atmosphere>div{padding:0!important;max-width:none!important}
+.client-hub.approved-account [data-slot=tabs]{gap:20px}
+.client-hub.approved-account [data-slot=tabs-list]{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:10px;height:auto;background:none;border:0;padding:0;margin:0}
+.client-hub.approved-account .purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{flex:0 1 auto;display:flex!important;align-items:center!important;justify-content:center!important;gap:9px!important;min-height:46px!important;padding:8px 14px!important;border:1px solid #cfdeed!important;border-radius:9px!important;box-shadow:none!important;background:#fff!important;color:var(--account-ink)!important;font-size:14px!important;line-height:1.5}
+.client-hub.approved-account .purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger[data-state=active]{border:1px solid var(--account-blue)!important;background:#edf8ff!important;color:#0063c2!important;box-shadow:none!important}
+.client-hub.approved-account .purchased-stage-icon{display:none!important}
+.client-hub.approved-account .purchased-stage-copy{display:flex;flex-direction:row;align-items:center;gap:10px}
+.client-hub.approved-account .purchased-stage-desktop-label{display:inline}.client-hub.approved-account .purchased-stage-mobile-label{display:none}
+.client-hub.approved-account .purchased-stage-label{font-size:14px!important;color:inherit!important;line-height:1.5;font-weight:550}
+.client-hub.approved-account .purchased-stage-number{display:grid!important;place-items:center;height:26px!important;min-width:26px!important;padding:2px 6px!important;border-radius:50%!important;background:#edf2f8!important;color:var(--account-ink)!important;font-size:14px!important;font-weight:700!important;line-height:1!important}
+.client-hub.approved-account [data-state=active] .purchased-stage-number{background:var(--account-blue)!important;color:#fff!important}
+.client-hub.approved-account .personal-month-toolbar{margin:0;min-height:24px;font-size:14px;color:var(--account-muted)}
+.client-hub.approved-account .purchase-month-divider{display:flex;gap:12px;justify-content:flex-start;margin:18px 0 12px;color:var(--account-ink)}
+.client-hub.approved-account .purchase-month-divider h2{font-size:22px!important;font-weight:750!important;margin:0;white-space:normal}
+.client-hub.approved-account .purchase-month-divider>span{display:none}.client-hub.approved-account .purchase-month-divider small{color:var(--account-muted);font-size:14px}
+.client-hub.approved-account .approved-article-columns,.client-hub.approved-account .purchase-modern-content{display:grid;grid-template-columns:minmax(170px,1.05fr) minmax(230px,1.5fr) minmax(75px,.45fr) minmax(230px,1.2fr);gap:18px;align-items:center;direction:rtl}
+.client-hub.approved-account .approved-article-columns{padding:14px 18px;border-radius:10px 10px 0 0;background:#edf6fd;font-size:14px;font-weight:700}
+.client-hub.approved-account .approved-article-rows{gap:0;border:1px solid var(--account-line);border-top:0;border-radius:0 0 12px 12px;overflow:hidden}
+.client-hub.approved-account .purchase-modern-card{gap:0;padding:0!important;border:0!important;border-bottom:1px solid var(--account-line)!important;border-radius:0!important;background:#fff!important;box-shadow:none!important;margin:0}
+.client-hub.approved-account .purchase-modern-card:nth-child(even){background:#f8fcff!important}
+.client-hub.approved-account .purchase-modern-card:last-child{border-bottom:0!important}
+.client-hub.approved-account .purchase-modern-content{padding:22px 18px!important;min-height:130px}
+.client-hub.approved-account .purchase-modern-site{display:grid;grid-template-columns:54px minmax(0,1fr);grid-template-rows:auto auto;gap:3px 10px;grid-column:auto;grid-row:auto;border:0;padding:0;min-width:0}
+.client-hub.approved-account .purchase-modern-logo{grid-column:1;grid-row:1/3;width:54px;height:54px;background:transparent!important;border:0!important;border-radius:8px!important;padding:2px;box-shadow:none!important}
+.client-hub.approved-account .purchase-modern-logo img{width:100%;height:100%;object-fit:contain}
+.client-hub.approved-account .purchase-modern-site h3{grid-column:2;grid-row:1;align-self:end;font-size:15px!important;color:var(--account-ink)!important;font-weight:700;margin:0}
+.client-hub.approved-account .purchase-modern-site a{grid-column:2;grid-row:2;align-self:start;justify-self:start;max-width:100%;font-size:13px!important;color:#406384;overflow-wrap:anywhere;word-break:break-word}
+.client-hub.approved-account .purchase-modern-site a span{white-space:normal;overflow-wrap:anywhere}
+.client-hub.approved-account .purchase-modern-story{grid-column:auto;grid-row:auto;padding:0;min-width:0}
+.client-hub.approved-account .purchase-modern-story h4{font-size:17px!important;line-height:1.6!important;font-weight:750!important;color:var(--account-ink)!important;margin:0 0 6px;overflow-wrap:anywhere}
+.client-hub.approved-account .purchase-modern-story p{display:flex;gap:5px;align-items:flex-start;font-size:13px!important;line-height:1.65!important;color:var(--account-muted)!important;margin:6px 0 0}
+.client-hub.approved-account .purchase-modern-story p svg{flex-shrink:0;margin-top:3px}
+.client-hub.approved-account .purchase-modern-badges span{font-size:12px;border-radius:7px;padding:3px 9px}
+.client-hub.approved-account .purchase-order-column{display:block;min-width:0}.client-hub.approved-account .purchase-order-pill{display:inline-flex;gap:5px;align-items:center;grid-column:auto;grid-row:auto;padding:0;background:none;border:0;font-size:14px;color:var(--account-ink);white-space:nowrap}
+.client-hub.approved-account .purchase-order-pill svg{display:none}
+.client-hub.approved-account .purchase-modern-actions{display:block;min-width:0}
+.client-hub.approved-account .purchase-action-buttons{display:flex;flex-wrap:wrap;gap:9px;min-width:0}
+.client-hub.approved-account .purchase-secondary-actions{display:contents}
+.client-hub.approved-account .purchase-action-buttons :is(button,a){display:inline-flex;align-items:center;justify-content:center;gap:6px;flex:1;min-width:110px;width:auto!important;min-height:44px!important;height:auto!important;padding:10px!important;border:1px solid var(--account-blue)!important;border-radius:8px!important;background:var(--account-blue)!important;color:#fff!important;font-size:13px!important;font-weight:650!important;line-height:1.5;box-shadow:none!important;white-space:normal;overflow-wrap:break-word;text-align:center}
+.client-hub.approved-account .purchase-action-buttons [data-variant=outline]{background:white!important;color:#0068c9!important}
+.client-hub.approved-account .purchase-action-buttons :is(button,a):hover{filter:brightness(.94)}
+/* Orders: leave status and disclosure callbacks untouched. */
+.client-hub.approved-account .simple-customer-orders.customer-orders-glass{padding:26px;background:#fff!important;border:0!important;border-radius:16px;box-shadow:var(--account-elevation);backdrop-filter:none}
+.client-hub.approved-account .simple-customer-orders>h2{font-size:26px!important;font-weight:800!important;color:var(--account-ink);margin:0!important}
+.client-hub.approved-account .approved-orders-caption{display:block;font-size:16px;line-height:1.7;color:var(--account-muted);margin:2px 0 20px}
+.client-hub.approved-account .approved-order-columns,.client-hub.approved-account .simple-order-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(120px,1fr) minmax(200px,1.3fr) 44px;gap:20px;align-items:center;grid-template-areas:none}
+.client-hub.approved-account .approved-order-columns{padding:14px 20px;background:#edf6fd;border-radius:12px 12px 0 0;font-size:15px;font-weight:700}
+.client-hub.approved-account .simple-order-list{display:grid;gap:12px}
+.client-hub.approved-account .simple-order-card{background:#fff!important;border:1px solid var(--account-line)!important;border-radius:12px!important;box-shadow:0 4px 15px #123b6806;overflow:hidden}
+.client-hub.approved-account .simple-order-row{min-height:88px!important;padding:18px 20px!important;background:transparent!important;color:var(--account-ink);text-align:right}
+.client-hub.approved-account .simple-order-number{grid-column:1;grid-row:1;justify-self:start;font-size:20px!important;font-weight:750!important}
+.client-hub.approved-account .simple-order-row time{grid-column:2;grid-row:1;font-size:16px!important;font-weight:450!important;color:var(--account-muted)!important}
+.client-hub.approved-account .simple-order-status{grid-column:3;grid-row:1;justify-self:start;padding:8px 16px;min-height:34px;border-radius:999px;font-size:14px!important;font-weight:650!important;white-space:normal;line-height:1.6}
+.client-hub.approved-account .simple-order-status.is-closed{background:#e0f4f7;color:#006476}
+.client-hub.approved-account .simple-order-row>svg{grid-column:4;grid-row:1;justify-self:end;width:38px;height:38px;padding:9px;background:#edf7fe;border-radius:50%}
+.client-hub.approved-account .simple-order-detail{padding:8px 20px 20px}
+/* Wallet: same white checkout surfaces with real empty/data states. */
+.client-hub.approved-account .billing-page>div{max-width:none!important;gap:20px}
+.client-hub.approved-account .billing-hero{display:none}
+.client-hub.approved-account .billing-balance-card{border:0!important;border-radius:16px!important;background:#fff!important;box-shadow:var(--account-elevation)!important;backdrop-filter:none}
+.client-hub.approved-account .billing-balance-card [data-slot=card-content]{padding:28px 32px!important;gap:28px;min-height:170px;display:flex;align-items:center;justify-content:space-between}
+.client-hub.approved-account .billing-balance-card p{font-size:16px!important;color:var(--account-muted)!important;margin-top:4px;line-height:1.7}
+.client-hub.approved-account .billing-balance-card p:first-child{color:var(--account-ink)!important}
+.client-hub.approved-account .billing-balance-card strong{font-size:44px!important;font-weight:800!important;color:var(--account-ink)!important;margin-top:8px;line-height:1.2}
+.client-hub.approved-account .billing-balance-actions{display:grid;gap:10px;min-width:245px}
+.client-hub.approved-account .billing-balance-actions>button{min-height:48px!important;height:auto!important;padding:12px 20px!important;border-radius:12px!important;background:var(--account-blue)!important;color:white!important;font-weight:700!important;font-size:16px!important;border:1px solid var(--account-blue)!important;box-shadow:none!important}
+.client-hub.approved-account .billing-balance-actions>button.wallet-usage-open{background:white!important;color:#0068c9!important}
+.client-hub.approved-account :is(.customer-finance-topups,.customer-finance-transactions){padding:24px 28px;border:0!important;border-radius:16px!important;background:white!important;box-shadow:var(--account-elevation);backdrop-filter:none}
+.client-hub.approved-account :is(.customer-finance-topups,.customer-finance-transactions) h2{font-size:22px!important;font-weight:750!important;color:var(--account-ink)!important}
+.client-hub.approved-account .approved-finance-subtitle{display:block;margin:4px 0 0;color:var(--account-muted)!important;font-size:14px!important;line-height:1.7}
+.client-hub.approved-account .customer-finance-transactions>div>button{min-height:44px;height:auto;border:1px solid #c5dced!important;border-radius:10px;background:white!important;color:var(--account-ink)!important;padding:9px 14px}
+.account-empty-state{display:grid;justify-items:center;gap:7px;padding:20px 12px 24px;text-align:center;color:#09234b}
+.account-empty-state>span{display:grid;place-items:center;width:70px;height:64px;border-radius:20px;background:#edf8ff;color:#087cf0;margin-bottom:4px}
+.account-empty-state h3{font-size:16px!important;font-weight:700!important;line-height:1.6;margin:0!important;color:#09234b!important}
+.account-empty-state p{font-size:14px!important;line-height:1.8;margin:0!important;color:#506581!important}
+.client-hub.approved-account .customer-finance-note{font-size:13px!important;color:var(--account-muted)!important}
+@media(max-width:1100px){
+ .client-hub.approved-account{padding-inline:24px}.client-hub.approved-account .client-hub-heading:before{inset-inline:-24px}
+ .client-hub.approved-account .client-hub-tabs button{gap:7px;font-size:14px}.client-hub.approved-account .client-hub-tabs svg{width:21px}
+ .client-hub.approved-account .approved-article-columns,.client-hub.approved-account .purchase-modern-content{grid-template-columns:minmax(150px,.9fr) minmax(170px,1.3fr) 65px minmax(155px,1fr);gap:12px}
+ .client-hub.approved-account .purchase-action-buttons{flex-direction:column}.client-hub.approved-account .purchase-action-buttons :is(button,a){width:100%!important}
+}
+@media(max-width:760px){
+ .client-hub.approved-account{padding:0 14px 32px}
+ .client-hub.approved-account .client-hub-heading{min-height:180px;padding:22px 2px;gap:14px;align-items:flex-start}
+ .client-hub.approved-account .client-hub-heading:before{inset-inline:-14px}
+ .client-hub.approved-account .client-hub-heading>div:first-child{flex:1;min-width:0;padding-top:10px}
+ .client-hub.approved-account .client-hub-heading h1{font-size:29px!important;line-height:1.4!important}
+ .client-hub.approved-account .client-hub-heading p{font-size:15px;line-height:1.7;margin-top:6px}
+ .client-hub.approved-account .client-hub-welcome{flex-direction:column;gap:4px;width:128px;flex-shrink:0}
+ .client-hub.approved-account .approved-account-art{width:126px;height:106px}
+ .client-hub.approved-account .client-hub-welcome button{font-size:13px;min-height:44px;padding:9px 10px;gap:4px;width:100%;border-radius:9px}
+ .client-hub.approved-account .client-hub-tabs{grid-template-columns:repeat(3,minmax(0,1fr));margin-bottom:20px;border-radius:12px;overflow:hidden}
+ .client-hub.approved-account .client-hub-tabs button{min-height:68px;flex-direction:column;gap:5px;padding:9px 4px;font-size:13px;line-height:1.4}
+ .client-hub.approved-account .client-hub-tabs svg{width:20px;height:20px}
+ .client-hub.approved-account .purchased-atmosphere{padding:16px!important}
+ .client-hub.approved-account .personal-hero-inner{flex-direction:column;align-items:stretch;gap:12px}
+ .client-hub.approved-account .approved-articles-title{font-size:22px!important}
+ .client-hub.approved-account .purchased-search{width:100%}
+ .client-hub.approved-account [data-slot=tabs-list]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .client-hub.approved-account .purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{padding:9px 7px!important;min-height:48px!important}
+ .client-hub.approved-account .purchased-stage-copy{gap:6px}.client-hub.approved-account .purchased-stage-label{font-size:12px!important}
+ .client-hub.approved-account .purchased-stage-number{height:24px!important;min-width:24px!important;font-size:13px!important}
+ .client-hub.approved-account .approved-article-columns{display:none}
+ .client-hub.approved-account .purchase-month-divider{flex-wrap:wrap;gap:7px}.client-hub.approved-account .purchase-month-divider h2{font-size:19px!important}
+ .client-hub.approved-account .approved-article-rows{border:0;border-radius:0;gap:12px;overflow:visible}
+ .client-hub.approved-account .purchase-modern-card{border:1px solid var(--account-line)!important;border-radius:12px!important;background:#fbfdff!important}
+ .client-hub.approved-account .purchase-modern-content{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;padding:16px!important;min-height:0}
+ .client-hub.approved-account .purchase-modern-site{grid-column:1;grid-row:1;grid-template-columns:42px minmax(0,1fr);gap:3px 8px}
+ .client-hub.approved-account .purchase-modern-logo{width:42px;height:42px}
+ .client-hub.approved-account .purchase-modern-site h3{font-size:14px!important}.client-hub.approved-account .purchase-modern-site a{font-size:12px!important}
+ .client-hub.approved-account .purchase-order-column{grid-column:2;grid-row:1;align-self:start}.client-hub.approved-account .purchase-order-pill{padding:5px 7px;border-radius:7px;background:#edf5fd;font-size:12px}
+ .client-hub.approved-account .purchase-modern-story{grid-column:1/-1;grid-row:2}.client-hub.approved-account .purchase-modern-story h4{font-size:16px!important}
+ .client-hub.approved-account .purchase-modern-actions{grid-column:1/-1;grid-row:3}
+ .client-hub.approved-account .purchase-action-buttons{flex-direction:row}.client-hub.approved-account .purchase-action-buttons :is(button,a){flex:1;min-width:100px;min-height:46px!important;font-size:13px!important}
+ .client-hub.approved-account .simple-customer-orders.customer-orders-glass{padding:18px 14px}
+ .client-hub.approved-account .simple-customer-orders>h2{font-size:23px!important}.client-hub.approved-account .approved-orders-caption{font-size:14px;margin-bottom:16px}
+ .client-hub.approved-account .approved-order-columns{display:none}
+ .client-hub.approved-account .simple-order-row{grid-template-columns:minmax(0,1fr) 38px;grid-template-rows:auto auto auto;gap:6px 12px;padding:16px!important;min-height:110px!important}
+ .client-hub.approved-account .simple-order-number{grid-column:1;grid-row:1;font-size:19px!important}
+ .client-hub.approved-account .simple-order-row time{grid-column:1;grid-row:2;font-size:14px!important}
+ .client-hub.approved-account .simple-order-status{grid-column:1;grid-row:3;font-size:13px!important;padding:5px 11px}
+ .client-hub.approved-account .simple-order-row>svg{grid-column:2;grid-row:1/4;align-self:center}
+ .client-hub.approved-account .simple-order-detail{padding:6px 12px 18px}
+ .client-hub.approved-account .simple-order-product-head{display:none}
+ .client-hub.approved-account .simple-order-products li{grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px}
+ .client-hub.approved-account .simple-order-site{grid-column:1/-1}.client-hub.approved-account .simple-order-products li time{font-size:13px!important}.client-hub.approved-account .simple-order-products li>strong{font-size:15px!important;justify-self:end}
+ .client-hub.approved-account .simple-order-products .site-reference a{font-size:15px!important}.client-hub.approved-account .simple-order-summary :is(dt,dd){font-size:14px!important;white-space:normal}
+ .client-hub.approved-account .billing-balance-card [data-slot=card-content]{flex-direction:column;align-items:stretch;padding:22px!important;gap:22px}
+ .client-hub.approved-account .billing-balance-card strong{font-size:40px!important}
+ .client-hub.approved-account .billing-balance-actions{min-width:0;width:100%}
+ .client-hub.approved-account :is(.customer-finance-topups,.customer-finance-transactions){padding:20px 18px}
+ .client-hub.approved-account :is(.customer-finance-topups,.customer-finance-transactions) h2{font-size:20px!important}
+ .client-hub.approved-account .customer-finance-transactions>div:first-child{align-items:flex-start;gap:12px}
+ .client-hub.approved-account .customer-finance-transactions>div>button{font-size:13px;flex-shrink:0}
+ .account-empty-state{padding:24px 0}.account-empty-state p{font-size:14px!important}
+}
+@media(prefers-reduced-motion:reduce){.client-hub.approved-account *{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Reset inherited named areas before positioning compact order products. */
+@media(max-width:760px){
+ .client-hub.approved-account .simple-order-products li{grid-template-areas:none}
+ .client-hub.approved-account .simple-order-site{grid-area:auto;grid-column:1/-1;grid-row:1}
+ .client-hub.approved-account .simple-order-products li time{grid-area:auto;grid-column:1;grid-row:2}
+ .client-hub.approved-account .simple-order-products li>strong{grid-area:auto;grid-column:2;grid-row:2}
+}
+
+.approved-order-count,.approved-balance-art{display:none}
+.client-hub.approved-account .approved-order-count{display:inline}
+.client-hub.approved-account .approved-balance-art{display:grid;place-items:center;flex-shrink:0;width:100px;height:100px;border-radius:26px;background:#edf8ff;color:var(--account-blue)}
+.client-hub.approved-account .billing-balance-card [data-slot=card-content]>div:first-of-type{flex:1}
+@media(max-width:760px){
+ .client-hub.approved-account .billing-balance-card [data-slot=card-content]{position:relative}
+ .client-hub.approved-account .approved-balance-art{position:absolute;top:25px;left:22px;width:64px;height:64px;border-radius:18px}
+ .client-hub.approved-account .approved-balance-art svg{width:36px;height:36px}
+ .client-hub.approved-account .billing-balance-card [data-slot=card-content]>div:first-of-type{padding-inline-end:70px}
+}
+
+/* Final reference alignment: legacy rules must not stack compact status labels. */
+.client-hub.approved-account .purchased-stage-copy{flex-direction:row!important;align-items:center!important;gap:9px!important}
+.client-hub.approved-account .approved-articles-title{text-align:right!important}
+.client-hub.approved-account .purchase-action-buttons{flex-direction:row}
+.client-hub.approved-account .personal-month-toolbar:has(>span:only-child){display:none}
+.client-hub.approved-account .purchase-month-divider:before,.client-hub.approved-account .purchase-month-divider:after{display:none}
+@media(min-width:761px) and (max-width:1100px){.client-hub.approved-account .purchase-action-buttons{flex-direction:column}}
