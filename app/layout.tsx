@@ -5,6 +5,8 @@ import "./admin-reviewed-controls.css";
 import "./customer-finance-glass.css";
 import "./approved-account.css";
 import "./client-account-updates.css";
+import FloatingWhatsApp from './floating-whatsapp';
+import './floating-whatsapp.css';
 import BrandLoading from './brand-loading';
 import {SITE_URL,HOME_TITLE,HOME_DESCRIPTION,privateRobots} from '@/lib/seo';
 
@@ -30,7 +32,7 @@ export default function RootLayout({
       <head>
         <link rel="preload" href="/brand/heebo-variable.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
       </head>
-      <body className="antialiased">{children}<BrandLoading/></body>
+      <body className="antialiased">{children}<BrandLoading/><FloatingWhatsApp/></body>
     </html>
   );
 }
