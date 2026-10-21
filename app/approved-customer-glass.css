@@ -58,3 +58,13 @@
 @keyframes catalog-cart-added-label{from{opacity:.55}to{opacity:1}}
 @keyframes catalog-cart-added-icon{from{opacity:.5;transform:scale(.82)}to{opacity:1;transform:scale(1)}}
 @media(prefers-reduced-motion:reduce){.publication-card-actions .catalog-cart-feedback[data-added=true] :is(.catalog-cart-feedback-label,.catalog-cart-feedback-icon){animation:none;}}
+/* Keep the existing material; Radix owns collision placement and available height. */
+.catalog-category-glass.catalog-home-category-panel[data-slot=popover-content]{box-sizing:border-box;display:flex;flex-direction:column;max-width:min(calc(100vw - 32px),var(--radix-popover-content-available-width));max-height:min(680px,calc(100dvh - 32px),var(--radix-popover-content-available-height));min-height:0;overflow:hidden;animation:none!important;transform:none;}
+.catalog-category-glass.catalog-home-category-panel[data-slot=popover-content]>div:first-child,.catalog-category-glass.catalog-home-category-panel[data-slot=popover-content]>div:last-child{flex:0 0 auto;}
+.catalog-category-glass.catalog-home-category-panel[data-slot=popover-content]>div:nth-child(2){flex:1 1 auto;min-height:0;max-height:440px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding:4px 4px 14px;scroll-padding-block:6px;-webkit-overflow-scrolling:touch;}
+.catalog-category-glass.catalog-home-category-panel[data-slot=popover-content] label{min-width:0;}
+.catalog-category-glass.catalog-home-category-panel[data-slot=popover-content] label>span{white-space:normal;}
+.bundle-premium-purchase.catalog-cart-feedback[data-added=true]{background:#00776e!important;background-image:none!important;color:#fff!important;border-color:#00776e!important;opacity:1!important;box-shadow:0 5px 12px #00776e24;}
+.bundle-premium-purchase.catalog-cart-feedback[data-added=true] .catalog-cart-feedback-icon{animation:catalog-cart-added-icon 220ms cubic-bezier(.16,1,.3,1);}
+@media(prefers-reduced-motion:reduce){.bundle-premium-purchase.catalog-cart-feedback[data-added=true] .catalog-cart-feedback-icon{animation:none;}}
+@media(forced-colors:active){.bundle-premium-purchase.catalog-cart-feedback[data-added=true]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;}}

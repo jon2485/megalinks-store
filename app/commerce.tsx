@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Plus, Search, Gift, ShoppingCart, Pencil, X, Check, Globe, Tag, Wallet, Percent, Calendar, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { ActionForm } from './screens';
 import { Card, CardContent } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import {AdminWorkbench,AdminSearch} from './admin-workbench';
+import {CartFeedbackButton,notifyCartAdded,CART_ADDED_DURATION} from './cart-add-feedback';
 import { PublicationCard } from './catalog-view';
 
 function offerSearchMatches(query: string, values: unknown[]) {
@@ -36,21 +37,23 @@ const offerCardStyle = 'min-w-0 gap-0 overflow-hidden rounded-2xl border-orange-
 const offerButtonStyle = 'min-h-12 h-auto rounded-full bg-orange-400 px-5 py-3 text-base font-bold text-slate-950 shadow-lg shadow-orange-500/25 hover:bg-orange-300';
 function BundleCard({ bundle, ctx, managing = false, edit }: { bundle: Row; ctx: Ctx; managing?: boolean; edit?: () => void }) {
     const [busy, setBusy] = useState(false);
+    const mounted=useRef(true),adding=useRef(false),navigationTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
+    useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;if(navigationTimer.current)clearTimeout(navigationTimer.current);};},[]);
     const sites: Row[] = (bundle.website_ids || []).map((id: string) => ctx.catalog.find(site => site.id === id)).filter(Boolean);
     const { original, final: price, saving, percent } = bundlePricing(sites, bundle);
     const available = sites.length === bundle.website_ids?.length && sites.length > 0 && sites.every(site => site.active !== 0) && bundle.active !== false;
     const add = async () => {
         if (!ctx.user) { window.location.href = '/signin-with-chatgpt?return_to=/offers'; return; }
-        if (busy) return;
-        setBusy(true);
-        try { const result = await api('cart/bundle', 'POST', { bundle_id: bundle.id }); ctx.refresh(); ctx.go('cart'); if (result.coupon) window.history.replaceState({}, '', '/cart?coupon=' + encodeURIComponent(result.coupon)); toast.success('החבילה נוספה לסל'); } catch (e) { toast.error((e as Error).message); } finally { setBusy(false); }
+        if (adding.current || !available) return;
+        adding.current=true;setBusy(true);
+        try { const result = await api('cart/bundle', 'POST', { bundle_id: bundle.id }); ctx.refresh();if(!mounted.current)return;notifyCartAdded('bundle:'+bundle.id);toast.success('החבילה נוספה לסל');navigationTimer.current=setTimeout(()=>{ctx.go('cart');if(result.coupon)window.history.replaceState({},'', '/cart?coupon='+encodeURIComponent(result.coupon));},CART_ADDED_DURATION); } catch (e) { if(!mounted.current)return;adding.current=false;setBusy(false);toast.error((e as Error).message); }
     };
     const displayPrice = (cents: number) => new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(cents / 100);
     return <Card data-design="bundle-premium-v78" className={offerCardStyle + ' bundle-premium-card'}><CardContent className="bundle-premium-content">
         <div className="bundle-premium-heading"><h3>{bundle.name}</h3>{bundle.description && <p>{bundle.description}</p>}<span className="bundle-site-count"><Gift size={15}/>{sites.length} אתרים בחבילה</span>{managing && <span className={'bundle-admin-status ' + (bundle.active === false ? 'is-hidden' : '')}>{bundle.active === false ? 'מוסתרת' : 'פעילה'}</span>}</div>
         <div className="bundle-premium-sites">{sites.map(site => <div key={site.id} className="bundle-premium-site"><div className="bundle-premium-logo">{site.logo_url ? <img src={site.logo_url} alt={site.name} loading="lazy"/> : <Globe size={32}/>}</div><strong>{site.name}</strong><a href={site.url} target="_blank" rel="noreferrer" dir="ltr">{site.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a><span>כתבה אחת</span></div>)}</div>
         <div className="bundle-premium-pricing"><div className="bundle-price-grid">{saving > 0 ? <div className="bundle-discount-circle" aria-label={percent + ' אחוז הנחה'}>{percent}%</div> : <div aria-hidden="true"/>}<div className="bundle-regular-price"><span>מחיר רגיל</span><s>{displayPrice(original)}</s></div><div className="bundle-final-price"><span>מחיר סופי לחבילה</span><strong>{displayPrice(price)}</strong></div></div><p className="bundle-saving">חיסכון {displayPrice(saving)}</p><p className="bundle-tax-note">לכל החבילה · לפני מע״מ</p></div>
-        {managing ? <Button variant="outline" className="bundle-premium-edit" onClick={edit}><Pencil size={17}/>עריכת החבילה</Button> : <Button className="bundle-premium-purchase" disabled={!available || busy} onClick={add}><span>{busy ? 'מוסיף לסל…' : available ? 'הוספת החבילה לסל' : 'החבילה אינה זמינה'}</span><ShoppingCart size={20}/></Button>}
+        {managing ? <Button variant="outline" className="bundle-premium-edit" onClick={edit}><Pencil size={17}/>עריכת החבילה</Button> : <CartFeedbackButton websiteId={'bundle:'+bundle.id} className="bundle-premium-purchase" enabled={available} disabled={!available||busy} onClick={add} label={busy?'מוסיף לסל…':available?'הוספת החבילה לסל':'החבילה אינה זמינה'} icon={<ShoppingCart size={20}/>}/>}
     </CardContent></Card>;
 }
 function BundleForm({ ctx, row, close }: { ctx: Ctx; row?: Row; close: () => void }) {

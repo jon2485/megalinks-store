@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync,readFileSync,writeFileSync,mkdirSync} from 'node:fs';
+import {pathToFileURL} from 'node:url';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
+let state=[],index=0,effects=[],requests=[],events=[],routes=[],errors=[];
+globalThis.bundleHooks={state(v){const i=index++;if(!(i in state))state[i]=v;return[state[i],v=>state[i]=v]},ref(v){const i=index++;return state[i]??(state[i]={current:v})},effect(fn){effects.push(fn)}};
+globalThis.bundleApi=async(...args)=>{requests.push(args);return {coupon:'BUNDLE10'}};
+globalThis.bundleEvents=id=>events.push(id);globalThis.bundleErrors=e=>errors.push(e);
+const realReact=realpathSync('node_modules/react/index.js');
+const source=readFileSync('app/commerce.tsx','utf8').replace('function BundleCard(', 'export function BundleCard(');
+const result=await build({stdin:{contents:source,resolveDir:process.cwd()+'/app',loader:'tsx'},bundle:true,platform:'node',format:'esm',jsx:'automatic',write:false,external:['react/jsx-runtime'],loader:{'.css':'empty'},plugins:[{name:'bundle-fixtures',setup(b){b.onResolve({filter:/^react-real$/},()=>({path:realReact,external:true}));b.onResolve({filter:/^(react|sonner|@\/lib\/client|\.\/cart-add-feedback|\.\/workspace|\.\/screens|\.\/catalog-view)$/},a=>({path:a.path,namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'js',contents:a.path==='react'?"export * from 'react-real';export {default} from 'react-real';export const useState=v=>globalThis.bundleHooks.state(v),useRef=v=>globalThis.bundleHooks.ref(v),useEffect=fn=>globalThis.bundleHooks.effect(fn);":a.path==='sonner'?"export const toast={success(){},error:e=>globalThis.bundleErrors(e)};":a.path==='@/lib/client'?"export const api=(...a)=>globalThis.bundleApi(...a);export function pricingApi(){}export function useData(){}export function download(){}export function csv(){}":a.path==='./cart-add-feedback'?"export function CartFeedbackButton(){}export const notifyCartAdded=id=>globalThis.bundleEvents(id);export const CART_ADDED_DURATION=2400;":a.path==='./workspace'?"export function Heading(){}export function Pick(){}export function Badge(){}export function ErrorBox(){}export function WebsiteForm(){}":a.path==='./screens'?"export function ActionForm(){}":"export function PublicationCard(){}"}));}}]});
+mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/bundle-feedback-test.mjs',result.outputFiles[0].text);
+const {BundleCard}=await import(pathToFileURL(realpathSync('.sites-runtime/bundle-feedback-test.mjs')));
+const ctx={user:{id:'fixture'},catalog:[{id:'s',active:1,name:'אתר',url:'https://example.test',price_cents:10000}],refresh(){},go:v=>routes.push(v)};
+const props={ctx,bundle:{id:'b',website_ids:['s'],price_cents:9000}};
+const nodes=n=>!n||typeof n!=='object'?[]:[n,...[n.props?.children].flat(Infinity).flatMap(nodes)];
+const render=()=>{index=0;effects=[];return BundleCard(props)};
+const button=()=>nodes(render()).find(n=>n.props?.websiteId==='bundle:b');
+let timers=new Map(),serial=0;const realSet=setTimeout,realClear=clearTimeout;
+globalThis.setTimeout=(fn,delay)=>{const id=++serial;timers.set(id,{fn,delay});return id};globalThis.clearTimeout=id=>timers.delete(id);
+globalThis.window={history:{replaceState(...args){routes.push(args[2])}}};
+try{
+ render();const cleanup=effects[0]();
+ await Promise.all([button().props.onClick(),button().props.onClick()]);
+ assert.equal(requests.length,1,'rapid clicks add one bundle');assert.deepEqual(events,['bundle:b']);assert(button().props.disabled);
+ assert.deepEqual(routes,[],'stay on offer long enough to see success');
+ assert.equal([...timers.values()][0].delay,2400);[...timers.values()][0].fn();
+ assert.deepEqual(routes,['cart','/cart?coupon=BUNDLE10'],'existing coupon handoff preserved');cleanup();assert.equal(timers.size,0);
+ state=[];events=[];routes=[];requests=[];globalThis.bundleApi=async()=>{throw Error('fixture failure')};
+ await button().props.onClick();assert.equal(button().props.disabled,false);assert.equal(events.length,0);assert.equal(timers.size,0);assert(errors.includes('fixture failure'));
+ state=[];events=[];routes=[];requests=[];let resolvePost;globalThis.bundleApi=()=>new Promise(resolve=>resolvePost=resolve);render();const leave=effects[0]();const pending=button().props.onClick();leave();resolvePost({coupon:'BUNDLE10'});await pending;assert.equal(events.length,0,'no confirmation after leaving while POST is pending');assert.equal(timers.size,0,'pending response cannot schedule navigation after unmount');assert.deepEqual(routes,[]);
+ props.bundle.active=false;await button().props.onClick();assert.equal(events.length,0);
+ console.log('BUNDLE FEEDBACK PASS: successful POST only, shared confirmation control, duplicate protection, 2400ms visible confirmation, preserved coupon navigation, failure retry, unavailable guard and unmount cleanup.');
+}finally{globalThis.setTimeout=realSet;globalThis.clearTimeout=realClear;}
