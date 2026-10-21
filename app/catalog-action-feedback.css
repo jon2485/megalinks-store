@@ -1,0 +1,18 @@
+/* Catalog-only feedback; confirmation follows the successful cart POST. */
+.azure-catalog :is(button,a){transition:background-color 180ms,color 180ms,border-color 180ms,box-shadow 220ms,translate 220ms cubic-bezier(.16,1,.3,1)}
+.azure-catalog :is(button:not(:disabled),a){cursor:pointer}
+.azure-catalog :is(button,a):focus-visible{outline:3px solid #087e91;outline-offset:3px}
+.azure-catalog :is(button,a):active{translate:0 1px}
+.azure-catalog button:disabled{cursor:not-allowed;translate:none;box-shadow:none}
+.azure-catalog .publication-card-actions .catalog-cart-feedback{min-inline-size:0;position:relative;overflow:hidden}
+.azure-catalog .publication-card-actions .catalog-cart-feedback-label{text-align:center;min-width:0}
+.azure-catalog .publication-card-actions .catalog-cart-feedback[data-added=true]{background:#00776e!important;background-image:none!important;color:#fff!important;border-color:#00776e!important;box-shadow:0 5px 12px #00776e24}
+.azure-catalog .catalog-cart-feedback[data-added=true] .catalog-cart-feedback-icon{animation:catalog-added-check 220ms cubic-bezier(.16,1,.3,1)}
+@keyframes catalog-added-check{from{opacity:.5;scale:.75}to{opacity:1;scale:1}}
+@media(hover:hover) and (pointer:fine){
+ .azure-catalog :is(button,a):not(:disabled):not([aria-disabled=true]):not([role=checkbox]):not([role=switch]):hover{translate:0 -2px;filter:brightness(.96);box-shadow:0 6px 15px #0c51651f}
+ .azure-catalog .publication-card-actions .catalog-cart-feedback[data-added=true]:hover{background:#00665e!important}
+}
+@media(prefers-reduced-motion:reduce){.azure-catalog :is(button,a),.azure-catalog .catalog-cart-feedback *{transition:none!important;animation:none!important;translate:none!important}}
+@media(forced-colors:active){.azure-catalog .publication-card-actions .catalog-cart-feedback[data-added=true]{background:ButtonFace!important;color:ButtonText!important;border:1px solid ButtonText!important;box-shadow:none}}
+

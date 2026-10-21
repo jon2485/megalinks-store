@@ -23,6 +23,7 @@ import { CatalogPublicationScene } from './catalog-publication-scene';
 import './catalog-experience.css';
 import './approved-customer-glass.css';
 import {CartFeedbackButton} from './cart-add-feedback';
+import './catalog-action-feedback.css';
 
 export function CatalogTopBar({ ctx, cartCount }: { ctx: Ctx; cartCount: number }) {
     return <div className="workspace-premium-topbar">

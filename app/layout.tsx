@@ -4,6 +4,7 @@ import "./approved-hebrew-font.css";
 import "./admin-reviewed-controls.css";
 import "./customer-finance-glass.css";
 import "./approved-account.css";
+import "./client-account-updates.css";
 import BrandLoading from './brand-loading';
 import {SITE_URL,HOME_TITLE,HOME_DESCRIPTION,privateRobots} from '@/lib/seo';
 

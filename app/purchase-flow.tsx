@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Trash2, ShoppingCart, Plus, Minus, ChevronLeft, ChevronDown, Check, Pencil, ReceiptText } from 'lucide-react';
+import { Trash2, ShoppingCart, Plus, Minus, ChevronLeft, ChevronDown, Check, Pencil, ReceiptText, Download } from 'lucide-react';
+import {exportCart} from '@/lib/cart-export';
 import { api,useData } from '@/lib/client';
 import { Row,money } from '@/lib/shared';
 import { Ctx,Heading,Field,Badge,ErrorBox,Empty } from './workspace';
@@ -70,7 +71,7 @@ export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean
     const publicationCount=items.reduce((sum,item)=>sum+Number(item.quantity),0);
     const checkoutDisabled=busy||state.loading||!billingLoaded||!quote||(form.payment==='monthly'&&(monthlyOpen.loading||!!monthlyOpen.error))||Object.values(drafts).some(Boolean);
     const productList=<section className="cart-items-column" aria-label="הפרסומים שבחרת" data-expanded={showAllItems}>
-        <h2 className="cart-items-title">הפרסומים שבחרת ({publicationCount})</h2>
+        <div className="cart-items-toolbar"><h2 className="cart-items-title">הפרסומים שבחרת ({publicationCount})</h2><Button type="button" variant="outline" className="cart-export-button" disabled={busy||state.loading||!!state.error||!quote?.items?.length||Object.values(quantityBusy).some(Boolean)||Object.values(drafts).some(Boolean)} onClick={()=>{try{exportCart(quote!);toast.success('קובץ האקסל מוכן להורדה');}catch(e){toast.error((e as Error).message);}}}><Download size={17} aria-hidden="true"/>ייצוא לאקסל</Button></div>
         {items.map(item=><Card key={item.id} className={cartCardStyle}>
             <CardContent className="reference-product-content"><div className="reference-product-heading">
                 <div className="reference-product-brand">{item.logo_url&&<div className="reference-product-logo"><img src={item.logo_url} alt={'לוגו '+item.name} width={64} height={48}/></div>}<div className="reference-product-identity"><h2>{item.name}</h2><a dir="ltr" href={item.url} target="_blank" rel="noreferrer">{item.url?.replace(/^https?:\/\//,'').replace(/\/$/,'')}</a>{item.bundle_name&&<p className={item.bundle_applied?'text-teal-700':'text-orange-800'}>{item.bundle_applied?'חלק מחבילת '+item.bundle_name:'הטבת החבילה אינה חלה - נדרשים כל האתרים בכמות אחידה'}</p>}</div></div>

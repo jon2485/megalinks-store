@@ -136,7 +136,7 @@ export default function Workspace({ initialCatalog, initialView = 'catalog' }: {
     finally {
         busyLock.current = false;
     } };
-    const open = (modal: Row | null) => { if(modal?.kind==='order') { if(!user){window.location.href='/signin-with-chatgpt?return_to=/';return;} if(busyLock.current)return;busyLock.current=true;api('cart','POST',{website_id:modal.site.id,topic:'כתבה עבור '+modal.site.name,words:500,quantity:1},{background:true}).then(()=>api('me','GET',undefined,{background:true})).then(me.setData).catch(e=>toast.error((e as Error).message)).finally(()=>{busyLock.current=false;});return;}setModal(modal); };
+    const open = (modal: Row | null) => { if(modal?.kind==='order') { if(!user){window.location.href='/signin-with-chatgpt?return_to=/';return;} if(busyLock.current)return;busyLock.current=true;api('cart','POST',{website_id:modal.site.id,topic:'כתבה עבור '+modal.site.name,words:500,quantity:1},{background:true}).then(()=>{notifyCartAdded(modal.site.id);return api('me','GET',undefined,{background:true});}).then(me.setData).catch(e=>toast.error((e as Error).message)).finally(()=>{busyLock.current=false;});return;}setModal(modal); };
     const ctx: Ctx = { user, revision, pricingRevision, refresh, go, open, run, catalog, adminMode, pendingApprovals: (me.data?.counts?.approvals || 0)+(me.data?.counts?.payments||0) };
     const title = [...navClient, ...navAdmin].find(x => x[0] === view)?.[1] || secondaryTitles[view] || ({ cart: 'סל פרסום', checkout:'סיכום הזמנה ותשלום', bulk: 'הזמנה מרוכזת', profile: 'פרטי חשבון' } as Row)[view] || 'הכתבה שלי';
     useEffect(() => { const mc = (document as any).modelContext; if (!mc?.registerTool)
