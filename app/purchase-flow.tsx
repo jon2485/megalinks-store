@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Trash2, ShoppingCart, Plus, Minus, ChevronLeft, ChevronDown, Check, Pencil } from 'lucide-react';
+import { Trash2, ShoppingCart, Plus, Minus, ChevronLeft, ChevronDown, Check, Pencil, ReceiptText } from 'lucide-react';
 import { api,useData } from '@/lib/client';
 import { Row,money } from '@/lib/shared';
 import { Ctx,Heading,Field,Badge,ErrorBox,Empty } from './workspace';
@@ -84,7 +84,7 @@ export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean
     const checkoutItems=<section className="checkout-items-summary" aria-label="פריטי ההזמנה"><p className="checkout-item-count">{publicationCount} פרסומים</p>{pricedItems.map(item=><div className="checkout-item-summary" key={item.id}>{item.logo_url&&<img src={item.logo_url} alt={'לוגו '+item.name} width={44} height={44}/>}<div className="checkout-item-identity"><h3>{item.name}</h3><span>כמות: {item.quantity}</span></div><bdi dir="ltr" className="checkout-item-price">{money(item.price_cents*item.quantity)}</bdi></div>)}</section>;
     const summary=<aside className="cart-sidebar" aria-label="סיכום ההזמנה" data-expanded={summaryOpen}>
         {checkoutOnly&&<button type="button" className="checkout-summary-toggle" aria-expanded={summaryOpen} aria-controls="purchase-summary-details" onClick={()=>setSummaryOpen(!summaryOpen)}><span><strong>סיכום ההזמנה · {publicationCount} פרסומים</strong><bdi dir="ltr">{quote?money(quote.total):'מחשב…'}</bdi></span><ChevronDown size={20}/></button>}
-        <Card className="cart-summary" id="purchase-summary-details"><CardHeader><CardTitle>סיכום ההזמנה</CardTitle></CardHeader><CardContent>
+        <Card className="cart-summary" id="purchase-summary-details"><CardHeader><CardTitle>סיכום ההזמנה<ReceiptText size={26} aria-hidden="true"/></CardTitle></CardHeader><CardContent>
             {checkoutOnly&&checkoutItems}
             <dl className="purchase-breakdown">
                 <div><dt>פרסום באתרי מדיה</dt><dd><bdi dir="ltr">{money(publicationListTotal)}</bdi></dd></div>
