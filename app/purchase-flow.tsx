@@ -76,7 +76,7 @@ export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean
                             <div className="reference-price-current">
                                 <span>המחיר שלך</span>
                                 <div className="reference-price-amounts"><strong><bdi>{money(item.publication_price)}</bdi></strong>{item.regular_price>item.publication_price&&<s><bdi>{money(item.regular_price)}</bdi></s>}</div>
-                                <small className="reference-price-caption">{item.regular_price>item.publication_price&&<span className="reference-discount">{Math.round((1-item.publication_price/item.regular_price)*100)}% הנחה</span>}<span>לפני מע״מ</span></small>
+                                <small className="reference-price-caption">{item.regular_price>item.publication_price&&<span className="reference-discount"><bdi>{Math.round((1-item.publication_price/item.regular_price)*100)}%</bdi> הנחה</span>}<span>לפני מע״מ</span></small>
                             </div>
                         </div>
                         <div className="reference-product-tools">

@@ -299,3 +299,7 @@ projection, in cents. Catalog confirmation stays in the existing purchase button
 for 2400ms after the canonical success event; its short icon transition respects
 reduced motion. This is presentation only and does not change payment transitions.
 Browser/real-device visual verification is pending when execution is unavailable.
+Cart reference detail correction: the native quantity select removes inherited
+arrow/padding and centers both text alignment modes. List/current prices stack
+above a bold red discount at all widths. Custom writing uses a centered word
+stepper and the compact blue “שמירה” button; stepping only changes the draft.
