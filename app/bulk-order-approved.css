@@ -23,3 +23,5 @@
 @media(prefers-reduced-transparency:reduce){.bulk-instruction-route>li{backdrop-filter:none;-webkit-backdrop-filter:none;background:#e9f4ff}.bulk-instruction-route>li:nth-child(2){background:#def6f7}.bulk-instruction-route>li:nth-child(3){background:#ece7fa}}
 @media(forced-colors:active){.bulk-instruction-route>li,.bulk-instructions{background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none}.bulk-step-number{background:Highlight!important;color:HighlightText}.bulk-step-content p{color:CanvasText}}
 .bulk-order-approved textarea{font-size:16px;resize:none;caret-color:#0876bf}
+
+@media(min-width:800px){.bulk-instruction-route>li:first-child .bulk-step-content{display:grid;grid-template-columns:minmax(0,1fr) 240px;column-gap:24px;align-items:center}.bulk-instruction-route>li:first-child .bulk-step-content>:not(button){grid-column:1}.bulk-instruction-route>li:first-child .bulk-step-content>button{grid-column:2;grid-row:1/span 3;margin:0;min-height:48px;justify-content:center}}
