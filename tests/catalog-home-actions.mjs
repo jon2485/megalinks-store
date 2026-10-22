@@ -24,7 +24,7 @@ await build({
   external: [react, 'react/jsx-runtime'], plugins: [{ name: 'isolated-home-fixtures', setup(b) {
     b.onResolve({ filter: /^(react|@\/lib\/client|\.\/workspace|\.\/workspace-account-controls)$/ }, a => ({ path: a.path, namespace: 'fixture' }));
     b.onLoad({ filter: /.*/, namespace: 'fixture' }, a => ({ loader: 'js', contents:
-      a.path === 'react' ? `export * from ${JSON.stringify(react)};export {default} from ${JSON.stringify(react)};export const useState=v=>globalThis.homeHooks.state(v),useEffect=()=>{},useMemo=f=>f(),useRef=v=>({current:v});` :
+      a.path === 'react' ? `export * from ${JSON.stringify(react)};export {default} from ${JSON.stringify(react)};export const useState=v=>globalThis.homeHooks.state(v),useEffect=()=>{},useMemo=f=>f(),useRef=v=>({current:v}),useId=()=>"publication-notes-fixture";` :
       a.path === './workspace' ? `export const categories=${categorySource};` :
       a.path === './workspace-account-controls' ? 'export function WorkspaceAccountControls(){return null;}' :
       'export const useData=()=>({data:{favorites:[{kind:"favorite",website_id:"b"}]},loading:false});export const api=(...args)=>globalThis.homeApi(...args);export const csv=(rows,columns)=>({rows,columns});export const download=(...args)=>globalThis.homeDownload(...args);'

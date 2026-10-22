@@ -127,6 +127,8 @@ do not establish browser or real-device visual approval.
 | Navigation and dirty state | Existing postflow:dirty + editor beforeunload/popstate guard | Save remains in editor; list uses existing ctx.go; browser back while dirty restores editor and asks through app-owned dialog |
 | Feedback | Existing Sonner, inline error/status | Success only after API success; duplicate-save lock and disabled editing while saving; failure keeps draft; no implied autosave |
 | Public SEO | Server-rendered public routes, knowledge-seo and sitemap | Only published slugs; Article metadata/schema; admin and previews noindex; staging gateway still controls access |
+| Catalog notes | Existing shared Radix Popover; PublicationCard controlled open state | Only public notes/restrictions already supplied to the customer; Hebrew label, left chevron; visible pressed/open state; Escape/outside/close and focus restoration; viewport collision handling; disabled when no notes |
+| Knowledge hub | Existing knowledge API, KnowledgeHub and KnowledgeCard hub variant | Search, clear, filters, pagination, retry and article links keep their real actions; no preview records are published; stale requests cannot overwrite newer results |
 
 The business decision to publish is explicit and admin-owned. The API rejects
 publication without title, excerpt, substantial text, category and a cover with

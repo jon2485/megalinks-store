@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ExternalLink, ArrowLeft, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Clock, Download, ShoppingCart, Pencil, Globe, Heart, MessageSquareText, Plus, Search, SlidersHorizontal, Tag, Wallet, ListFilter, RotateCcw, X, Check, Newspaper, Monitor, BriefcaseBusiness, House, Plane, HeartPulse, Gamepad2, Utensils, LayoutGrid } from 'lucide-react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { ExternalLink, ArrowLeft, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Download, ShoppingCart, Pencil, Globe, Heart, MessageSquareText, Plus, Search, SlidersHorizontal, Tag, Wallet, ListFilter, RotateCcw, X, Check, Newspaper, Monitor, BriefcaseBusiness, House, Plane, HeartPulse, Gamepad2, Utensils, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,6 +24,7 @@ import './catalog-experience.css';
 import './approved-customer-glass.css';
 import {CartFeedbackButton} from './cart-add-feedback';
 import './catalog-action-feedback.css';
+import './catalog-product-glass.css';
 
 export function CatalogTopBar({ ctx, cartCount }: { ctx: Ctx; cartCount: number }) {
     return <div className="workspace-premium-topbar">
@@ -42,6 +43,9 @@ const tagStyle = 'rounded-full bg-slate-100 px-3 py-1.5 text-sm font-medium text
 
 export function PublicationCard({ site, ctx, favorite, onFavorite, managing = false, customAction,priceLabel }: { site: Row; ctx: Ctx; favorite: boolean; onFavorite: () => void; managing?: boolean;customAction?:{label:string;onClick:()=>void};priceLabel?:string }) {
     const [logoFailed, setLogoFailed] = useState(false);
+    const [notesOpen, setNotesOpen] = useState(false);
+    const notesTitleId = useId();
+    const notes = [site.public_notes, typeof site.publishing_restrictions === 'string' ? site.publishing_restrictions : site.publishing_restrictions ? JSON.stringify(site.publishing_restrictions) : '', site.customer_notes].filter(Boolean);
     const hasDiscount = Number(site.regular_price_cents) > Number(site.price_cents) && Number(site.price_cents) >= 0;
     const discountPercent = hasDiscount ? Math.floor((site.regular_price_cents - site.price_cents) / site.regular_price_cents * 1000) / 10 : 0;
     const domain = site.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
@@ -50,10 +54,21 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
         <div className="publication-card-top flex items-center justify-between gap-3 px-5 pt-5"><span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-600"><IsraelFlag/>ישראל</span>{!managing && <Button variant="ghost" size="icon" onClick={onFavorite} aria-label={(favorite ? 'הסרת ' : 'שמירת ') + site.name + ' במועדפים'} aria-pressed={favorite} className={'size-10 rounded-full border border-slate-200 bg-slate-50 '+(favorite?'text-rose-500':'text-slate-500 hover:text-rose-500')}><Heart size={23} fill={favorite?'currentColor':'none'}/></Button>}</div>
         <CardContent className="flex flex-1 flex-col px-5 pb-5 pt-5">
             <div className="publication-card-logo mx-auto flex h-28 w-full max-w-64 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm">{site.logo_url && !logoFailed ? <img src={site.logo_url} alt={site.name} loading="lazy" className="h-full w-full object-contain" onError={() => setLogoFailed(true)}/> : <span className="text-2xl font-bold text-slate-800">{site.name}</span>}</div>
-            <div className="mt-3 flex items-center justify-center gap-2"><h2 className="!text-2xl font-extrabold leading-snug text-slate-950">{site.name}</h2>{(site.public_notes || site.publishing_restrictions || site.customer_notes) && <Button size="icon" variant="ghost" className="catalog-site-notes-trigger shrink-0 rounded-full" title="הערות האתר" aria-haspopup="dialog" aria-label={'הערות האתר — ' + site.name} onClick={() => ctx.open({title: 'הערות האתר', description: site.name + ' · ' + site.url, render: (close:()=>void) => <section className="catalog-site-notes"><div className="catalog-site-notes-copy">{[site.public_notes,typeof site.publishing_restrictions === 'string' ? site.publishing_restrictions : site.publishing_restrictions ? JSON.stringify(site.publishing_restrictions) : '',site.customer_notes].filter(Boolean).map((note,index)=><p key={index}>{note}</p>)}</div><div className="payment-glass-actions"><Button className="payment-glass-send" onClick={close}>הבנתי</Button></div></section>})}><MessageSquareText size={22} aria-hidden="true"/></Button>}</div>
+            <div className="mt-3 flex items-center justify-center gap-2"><h2 className="!text-2xl font-extrabold leading-snug text-slate-950">{site.name}</h2></div>
             <a href={site.url} target="_blank" rel="noreferrer" dir="ltr" className="mt-1.5 block truncate text-center text-sm text-slate-500 underline-offset-4 hover:text-teal-700 hover:underline" title={site.url}><span>{domain}</span><ExternalLink className="ml-1 inline size-4"/></a>
             <div className="publication-card-tags mt-4 flex min-h-8 flex-wrap items-center justify-center gap-2"><span className={tagStyle}>{categories[site.category] || site.category}</span>{site.features?.includes('dofollow') && <span dir="ltr" className={tagStyle}>Dofollow</span>}{site.is_on_sale && <span className={tagStyle}>מבצע</span>}</div>
-            <dl className="publication-card-metrics mt-5 grid grid-cols-3 rounded-2xl border border-slate-200 bg-slate-50 py-3 text-center"><div className="border-l border-slate-200"><dd className="text-xl font-bold leading-tight text-slate-950">{site.dr ?? '—'}</dd><dt dir="ltr" className="mt-1 text-sm font-bold text-slate-500">DR</dt></div><div className="border-l border-slate-200"><dd className="text-xl font-bold leading-tight text-slate-950">{site.ur ?? '—'}</dd><dt dir="ltr" className="mt-1 text-sm font-bold text-slate-500">UR</dt></div><div><dd className="flex items-center justify-center gap-1 text-lg font-extrabold text-slate-950"><Clock size={18}/>{site.turnaround_days ?? '—'} ימים</dd><dt className="mt-1 text-sm font-bold text-slate-500">אספקה</dt></div></dl>
+            <div className="publication-card-metrics publication-card-glass-metrics" role="group" aria-label="מדדי האתר והערות לפרסום">
+                <dl><dd>{site.dr ?? '—'}</dd><dt dir="ltr">DR</dt></dl>
+                <dl><dd>{site.ur ?? '—'}</dd><dt dir="ltr">UR</dt></dl>
+                <Popover open={notesOpen} onOpenChange={setNotesOpen}>
+                    <PopoverTrigger asChild><button type="button" className="publication-notes-action" disabled={!notes.length} aria-label={'הערות לפרסום — ' + site.name} title={notes.length ? 'פתיחת הערות לפרסום' : 'לא פורסמו הערות לפרסום באתר זה'}><MessageSquareText className="publication-notes-icon" size={22} aria-hidden="true"/><span>הערות<br/>לפרסום</span><ChevronLeft className="publication-notes-chevron" size={17} aria-hidden="true"/></button></PopoverTrigger>
+                    <PopoverContent dir="rtl" side="top" align="end" sideOffset={10} collisionPadding={12} className="publication-notes-popover" aria-labelledby={notesTitleId}>
+                        <header><h3 id={notesTitleId}>הערות לפרסום</h3><button type="button" className="publication-notes-close" aria-label="סגירת הערות לפרסום" onClick={()=>setNotesOpen(false)}><X size={18} aria-hidden="true"/></button></header>
+                        <div className="publication-notes-copy">{notes.map((note,index)=><p key={index}>{note}</p>)}</div>
+                        <button type="button" className="publication-notes-done" onClick={()=>setNotesOpen(false)}>הבנתי</button>
+                    </PopoverContent>
+                </Popover>
+            </div>
             <div className="publication-card-pricing mt-5 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-teal-50 to-slate-50 px-3 py-6 text-center" aria-label="מחיר הפרסום">
                 {hasDiscount && <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-full border border-slate-300 bg-slate-100 px-3 py-1.5 text-slate-500"><span className="text-sm font-semibold">מחיר מחירון:</span><s className="text-lg font-semibold tabular-nums decoration-red-500 decoration-[2px]"><bdi>{money(site.regular_price_cents)}</bdi></s></div>}
                 <span className="text-lg font-bold text-[#14698b]">{priceLabel||(site.price_source==='personal'?'המחיר שלך':hasDiscount ? 'המחיר שלך' : 'מחיר לכתבה')}</span>

@@ -2,7 +2,8 @@ import type {Metadata} from 'next';
 import {adminAreas} from './admin-navigation';
 import {lobbyGroups} from './admin-lobby-config';
 
-export const SITE_URL = 'https://postflow-studio.elian-tetruashvili.chatgpt.site';
+export const SITE_URL = 'https://megalinks-staging-v172.up.railway.app';
+export const SOCIAL_IMAGE_PATH = '/brand/megalinks-social.png';
 export const SITE_NAME = 'MegaLinks';
 export const HOME_TITLE = 'MegaLinks — פרסום כתבות ותוכן באתרים';
 export const HOME_DESCRIPTION = 'בחרו אתרים לפרסום הכתבה הבאה שלכם עם MegaLinks. חפשו לפי תחום, השוו מחירים ונתוני אתרים, והזמינו פרסום כתבות ושירותי כתיבת תוכן במקום אחד.';
@@ -37,10 +38,10 @@ export function publicMetadata(path:'/'|'/terms'):Metadata {
     const title=path==='/'?HOME_TITLE:'תקנון ותנאי שימוש | MegaLinks';
     const description=path==='/'?HOME_DESCRIPTION:'תקנון ותנאי השימוש בשירותי MegaLinks לפרסום כתבות, כתיבת תוכן וניהול הזמנות.';
     const url=SITE_URL+path;
-    const image={url:SITE_URL+'/brand/loader-m.png',width:449,height:449,alt:'MegaLinks'};
+    const image={url:SITE_URL+SOCIAL_IMAGE_PATH,width:1200,height:630,alt:'MegaLinks — פרסום כתבות ותוכן באתרים'};
     return {title:{absolute:title},description,alternates:{canonical:url},robots:{index:true,follow:true},
         openGraph:{type:'website',locale:'he_IL',siteName:SITE_NAME,title,description,url,images:[image]},
-        twitter:{card:'summary',title,description,images:[image.url]}};
+        twitter:{card:'summary_large_image',title,description,images:[image.url]}};
 }
 export const websiteSchema = {'@context':'https://schema.org','@graph':[
     {'@type':'Organization','@id':SITE_URL+'/#organization',name:SITE_NAME,url:SITE_URL+'/',logo:SITE_URL+'/brand/loader-m.png'},

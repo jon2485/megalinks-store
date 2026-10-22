@@ -331,6 +331,23 @@ approved this editor-specific absence of a persistent admin sidebar; other admin
 screens retain theirs. Shared RichEditor owns editing, links and undo; its named
 `knowledge` variant supplies the compact toolbar and optional table insertion.
 The original order-article editor keeps its existing default variant.
+## Approved catalog glass and knowledge masthead — 2026-10-23
+
+The approved catalog reference is the final silver-blue metrics strip and matching
+category/Dofollow pills. `app/catalog-product-glass.css` owns their surface, edge,
+shadow, Heebo typography and state tokens. Preserve the product card, price panel,
+real DR/UR values, country, favorite and existing actions. Replace the displayed
+delivery cell with the publication-notes action; the original delivery data stays
+unchanged. The notes chevron sits to the left of the Hebrew label, and the speech
+bubble leads at the right. Its controlled Radix popover owns disclosure and focus.
+
+The public hub now follows the approved centered navy title and cyan-to-blue
+second line, without decorative illustrations. `knowledge-hub-approved.css` owns
+only `.knowledge-hub` layouts: search above wrapping categories, one featured
+article and a three-column desktop photo grid that becomes a single mobile column.
+It consumes the existing knowledge palette and Heebo font. Article reading and
+the administrative editor keep their established layout.
+
 ## Publication scheduling — 2026-10-22
 
 Preserve the approved navy/cyan/pale-glass UI. Place the customer calendar card

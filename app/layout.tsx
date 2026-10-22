@@ -8,13 +8,15 @@ import "./client-account-updates.css";
 import FloatingWhatsApp from './floating-whatsapp';
 import './floating-whatsapp.css';
 import BrandLoading from './brand-loading';
-import {SITE_URL,HOME_TITLE,HOME_DESCRIPTION,privateRobots} from '@/lib/seo';
+import {SITE_URL,HOME_TITLE,HOME_DESCRIPTION,privateRobots,publicMetadata} from '@/lib/seo';
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {default:HOME_TITLE,template:'%s | MegaLinks'},
   description: HOME_DESCRIPTION,
   applicationName: 'MegaLinks',
+  openGraph: publicMetadata('/').openGraph,
+  twitter: publicMetadata('/').twitter,
   robots: privateRobots,
   icons: {
     icon: {url:'/brand/loader-m.png',type:'image/png',sizes:'449x449'},
