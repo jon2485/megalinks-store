@@ -1,3 +1,5 @@
+import {releaseScheduledApprovals,futureArticleDate} from '@/lib/scheduled-approval';
+import {normalizeRequestedPublication} from '@/lib/publication-date';
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
 import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server';
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
@@ -125,7 +127,7 @@ async function normalizeBundle(input: Row, prior: Row = {}) {
 }
 async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: input.editorial === true, editorial_words: Math.max(100,Math.min(5000,Math.floor(Number(input.editorial_words)||400))), topic: maxText(input.topic, 500), brand: maxText(input.brand, 200), audience: maxText(input.audience, 500), style: maxText(input.style, 100), keywords: maxText(input.keywords, 300), target_url: httpUrl(input.target_url || ''), anchor: maxText(input.anchor, 200), target_url_2: httpUrl(input.target_url_2 || ''), anchor_2: maxText(input.anchor_2, 200), notes: maxText(input.notes, 6000), words: Math.max(300, Math.min(2500, Number(input.words) || 500)), content_type: input.content_type === 'upload' ? 'upload' : 'ai', scheduled: input.scheduled || '', customer_id: input.customer_id || '', image_id: input.image_id || '', document_id: input.document_id || '', pixel: !!input.pixel, shared: !!input.shared }; assert(d.topic, 'יש להזין נושא לכתבה'); if (w.single_link_only)
     assert(!d.target_url_2, 'באתר זה מותר קישור אחד בלבד'); if (d.scheduled) {
-    assert(!isNaN(Date.parse(d.scheduled)) && Date.parse(d.scheduled) > Date.now() - 86400000, 'מועד הפרסום אינו תקין');
+    try { d.scheduled=normalizeRequestedPublication(d.scheduled); } catch(e) { throw new ApiError(400,(e as Error).message); }
 } if (d.customer_id) {
     const c = owns(u, await one('SELECT * FROM records WHERE id=? AND kind=?', d.customer_id, 'customer'));
     assert(c.kind === 'customer', 'לקוח לא תקין');
@@ -142,6 +144,7 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);return response(await releaseScheduledApprovals(new URL(r.url).origin));}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
     const knowledgePublic=await knowledgePublicRoutes(r,p);if(knowledgePublic)return knowledgePublic;
     if(p[0]==='catalog-logo'&&p[1]&&method==='GET'){
@@ -189,7 +192,7 @@ async function handle(r: Request,access:ResponseAccess) {
         if(method==='GET'&&query.get('asset')==='word'){return new Response(await articleDocx(a) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename=article.docx'}});}
         if(method==='GET'&&['image','document','inline'].includes(query.get('asset')||'')){const data=JSON.parse(a.data);const fileId=query.get('asset')==='inline'?(await inlineImages(a.content)).find(i=>i.id===query.get('image'))?.id:query.get('asset')==='image'?(query.get('secondary')==='1'?data.secondary_image_id:data.image_id):data.document_id;assert(fileId,'לכתבה לא צורף קובץ',404);const f=await one('SELECT * FROM files WHERE id=?',fileId);assert(f,'הקובץ לא נמצא',404);const blob=await env.BUCKET?.get(f.key);assert(blob,'הקובץ לא נמצא',404);return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'",'Content-Disposition':['image','inline'].includes(query.get('asset')||'')?'inline':'attachment'}});}
         if (method === 'GET')
-            return response({ article: { id: a.id, title: a.title, content: await supplierContent(a.content,'/api/supplier/'+p[1]+'?asset=inline&image='), website_name: a.website_name,meta_description:JSON.parse(a.data).meta_description||'',client_notes:JSON.parse(a.data).client_notes||'',secondary_image:!!JSON.parse(a.data).secondary_image_id,secondary_image_credit:JSON.parse(a.data).secondary_image_credit||'',image_credit:JSON.parse(a.data).image_credit||'',image_credit_url:JSON.parse(a.data).image_credit_url||'',image:!!JSON.parse(a.data).image_id,document:!!JSON.parse(a.data).document_id,cancel_pending:!!JSON.parse(a.data).cancel_pending }, expires: token.expires });
+            return response({ article: { id: a.id, title: a.title, content: await supplierContent(a.content,'/api/supplier/'+p[1]+'?asset=inline&image='), website_name: a.website_name,scheduled:JSON.parse(a.data).scheduled||'',meta_description:JSON.parse(a.data).meta_description||'',client_notes:JSON.parse(a.data).client_notes||'',secondary_image:!!JSON.parse(a.data).secondary_image_id,secondary_image_credit:JSON.parse(a.data).secondary_image_credit||'',image_credit:JSON.parse(a.data).image_credit||'',image_credit_url:JSON.parse(a.data).image_credit_url||'',image:!!JSON.parse(a.data).image_id,document:!!JSON.parse(a.data).document_id,cancel_pending:!!JSON.parse(a.data).cancel_pending }, expires: token.expires });
         if (method === 'POST') {
             const b = await json(r);
             assert(!JSON.parse(a.data).cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409);
@@ -219,6 +222,7 @@ async function handle(r: Request,access:ResponseAccess) {
     else
         u = await actor();
     access.privileged=u.role==='admin';
+    if(u.role==='admin'&&method==='GET')await releaseScheduledApprovals(new URL(r.url).origin);
     const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
     const pricingResponse=await pricingRoutes(r,p,u,json);if(pricingResponse)return pricingResponse;
     const financeResponse=await financeRoutes(r,p,u,json);if(financeResponse)return financeResponse;
@@ -233,7 +237,7 @@ async function handle(r: Request,access:ResponseAccess) {
         if(method==='GET'&&query.get('asset')==='word')return new Response(await articleDocx(article) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename=article.docx'}});
         if (method==='GET' && query.get('inline')){const image=(await inlineImages(article.content)).find(i=>i.id===query.get('inline'));assert(image,'התמונה אינה חלק מהמשלוח',404);const f=await one('SELECT * FROM files WHERE id=?',image.id);assert(f,'התמונה לא נמצאה',404);const blob=await env.BUCKET?.get(f.key);assert(blob,'התמונה לא נמצאה',404);return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}});}
         if (method==='GET' && query.get('image')==='1') { const f=await one('SELECT * FROM files WHERE id=?',(query.get('secondary')==='1'?article.secondary_image_id:article.image_id)||''); assert(f,'תמונה לא נמצאה',404); const blob=await env.BUCKET?.get(f.key); assert(blob,'תמונה לא נמצאה',404); return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}}); }
-        if (method==='GET') return response({delivery:u.role==='admin'?job:supplierDelivery(job),article:{id:article.id,title:article.title,content:await supplierContent(article.content,'/api/supplier-inbox/'+encodeURIComponent(job.id)+'?inline='),image_id:article.image_id,image_credit:article.image_credit,image_credit_url:article.image_credit_url,secondary_image_id:article.secondary_image_id,secondary_image_credit:article.secondary_image_credit,meta_description:article.meta_description,client_notes:article.client_notes,status:article.status,cancel_pending:!!article.cancel_pending}});
+        if (method==='GET') return response({delivery:u.role==='admin'?job:supplierDelivery(job),article:{id:article.id,title:article.title,content:await supplierContent(article.content,'/api/supplier-inbox/'+encodeURIComponent(job.id)+'?inline='),image_id:article.image_id,image_credit:article.image_credit,image_credit_url:article.image_credit_url,secondary_image_id:article.secondary_image_id,secondary_image_credit:article.secondary_image_credit,meta_description:article.meta_description,client_notes:article.client_notes,scheduled:article.scheduled||'',status:article.status,cancel_pending:!!article.cancel_pending}});
         if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); const url=job.demo?'':httpUrl(b.url||''); assert(job.demo || url,'יש להזין קישור לפרסום'); if(!job.demo){const w=await website(article.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);}
             await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=? WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,now(),article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
             await stmt("UPDATE articles SET data=json_set(data,'$.published_month',?) WHERE id=?",businessMonth(),article.id).run();if(!job.demo)await articleMail({...article,published_url:url},'published',new URL(r.url).origin);await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
@@ -449,7 +453,7 @@ if (p[0] === 'cart') {
         if (method === 'PATCH') {
             if(u.role!=='admin'&&writingSubmitted(a))assert(['draft','review','revisions'].includes(a.status)&&writingCustomerEditor(a),'הכתבה בטיפול אצל עורך התוכן או כבר נשלחה לאישור',409);
             const b = await json(r);
-            assert(!['published', 'cancelled', 'sent','demo_completed'].includes(a.status), 'הכתבה סגורה לעריכה');
+            assert(!['published', 'cancelled', 'sent','demo_completed','scheduled'].includes(a.status), 'הכתבה סגורה לעריכה. כדי לשנות תזמון יש לבטל תחילה את השליחה המתוזמנת');
             assert(Number(b.version) === a.version, 'הכתבה עודכנה במקביל. טענו מחדש לפני שמירה', 409);
             const content = b.content_format === 'html' ? await sanitizeRichHtml(maxText(b.content,150000)) : contentHtml(maxText(b.content, 150000), JSON.parse(a.data));
             const embedded=await inlineImages(content);assert(embedded.length<=10,'אפשר לצרף עד 10 תמונות בתוך המאמר');
@@ -458,6 +462,7 @@ if (p[0] === 'cart') {
             // Drafts may be incomplete. articleChecks requires a title before submission.
             const priorData = JSON.parse(a.data);
             const data = { ...priorData, secondary_image_id:b.secondary_image_id===undefined?priorData.secondary_image_id||'':b.secondary_image_id, secondary_image_credit:b.secondary_image_credit===undefined?priorData.secondary_image_credit||'':maxText(b.secondary_image_credit,300), client_notes:b.client_notes===undefined?priorData.client_notes||'':maxText(b.client_notes,3000), ...(u.role==='admin'&&b.admin_notes!==undefined?{admin_notes:maxText(b.admin_notes,3000)}:{}), meta_description: b.meta_description===undefined?priorData.meta_description||'':maxText(b.meta_description, 350), image_id: b.image_id === undefined ? priorData.image_id || '' : b.image_id, image_credit: b.image_credit === undefined ? priorData.image_credit || '' : maxText(b.image_credit,300), image_credit_url: b.image_credit_url === undefined ? priorData.image_credit_url || '' : httpUrl(b.image_credit_url || '') };
+            if(b.scheduled!==undefined&&b.scheduled!==(priorData.scheduled||'')){try{data.scheduled=normalizeRequestedPublication(b.scheduled);}catch(e){throw new ApiError(400,(e as Error).message);}}
             if (data.image_id && data.image_id !== priorData.image_id) {
                 const credit=await one('SELECT data FROM activity WHERE resource=? AND action=? ORDER BY created DESC LIMIT 1',data.image_id,'נבחרה תמונה מ-Pexels');
                 if(credit) { const attribution=JSON.parse(credit.data); data.image_credit='צילום: '+attribution.photographer+' / Pexels'; data.image_credit_url=attribution.url; }
@@ -477,10 +482,11 @@ if (p[0] === 'cart') {
             await audit(u, a.id, 'תוכן נשמר', { version: a.version + 1 });
             return response({ version: a.version + 1 });
         }
+        if(p[2]==='unschedule'&&method==='POST'){const b=await json(r);assert(a.status==='scheduled','הכתבה אינה ממתינה לשליחה מתוזמנת',409);assert(b.version===a.version,'הכתבה עודכנה במקביל',409);const result=await stmt("UPDATE articles SET status=CASE WHEN json_extract(data,'$.scheduled_from_status') IN ('draft','review','revisions') THEN json_extract(data,'$.scheduled_from_status') ELSE 'draft' END,data=json_remove(data,'$.scheduled_submitted_at','$.scheduled_from_status'),version=version+1,updated=? WHERE id=? AND version=? AND status='scheduled'",now(),a.id,a.version).run();assert(result.meta.changes===1,'הכתבה עודכנה במקביל',409);await audit(u,a.id,'השליחה המתוזמנת בוטלה; הכתבה חזרה לטיוטה');return response({ok:true,version:a.version+1});}
         if(p[2]==='validate'&&method==='POST')return response(await articleChecks(a));
         if (p[2] === 'status' && method === 'POST') {
             const b = await json(r);
-            const next = b.status;
+            let next = b.status;
             if(u.role!=='admin'&&JSON.parse(a.data).editorial){assert(next==='admin_review'&&['draft','review','revisions'].includes(a.status)&&writingCustomerEditor(a),'הטקסט עדיין אינו זמין לשליחה; תיקונים שולחים דרך בקשת תיקונים',409);}
             assert(next !== 'cancelled', 'ביטול כתבה נעשה דרך ביטול ההזמנה כדי לשמור על תיעוד התשלום');
             assert((articleTransitions[a.status] || []).includes(next), 'מעבר הסטטוס אינו אפשרי');
@@ -492,9 +498,11 @@ if (p[0] === 'cart') {
             assert(b.version === a.version, 'הכתבה עודכנה במקביל', 409);
             if(next==='admin_review'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);}
             if(next==='revisions')assert(maxText(b.note,3000).trim(),'יש לפרט את הסיבה להחזרה לתיקון');
+            if(next==='approved')assert(!futureArticleDate(a),'טרם הגיע מועד הכתבה לאישור. הכתבה תיכנס לתור האישורים בתאריך שנבחר',409);
+            const statusData=JSON.parse(a.data);if(next==='admin_review'&&futureArticleDate(a)){next='scheduled';statusData.scheduled_submitted_at=now();statusData.scheduled_from_status=a.status;}
             const url = next === 'published' ? httpUrl(b.url || '') : a.published_url;
             if (next === 'published'){assert(url,'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);assert(!JSON.parse(order!.data).demo,'הדגמה אינה פרסום אמיתי');}
-            const result = await stmt('UPDATE articles SET status=?,published_url=?,version=version+1,updated=? WHERE id=? AND version=?', next, url, now(), a.id, a.version).run();
+            const result = await stmt('UPDATE articles SET status=?,published_url=?,data=?,version=version+1,updated=? WHERE id=? AND version=?', next, url, JSON.stringify(statusData), now(), a.id, a.version).run();
             assert(result.meta.changes, 'הכתבה עודכנה במקביל', 409);
             if(next==='admin_review'||next==='revisions'||next==='published')await articleMail({...a,version:a.version+1,published_url:url},next==='admin_review'?'submitted':next==='revisions'?'revisions':'published',new URL(r.url).origin,maxText(b.note,3000));
             if(next==='published')await stmt("UPDATE articles SET data=json_set(data,'$.published_month',?) WHERE id=?",businessMonth(),a.id).run();
@@ -505,12 +513,13 @@ if (p[0] === 'cart') {
             const remaining = await one("SELECT COUNT(*) AS n FROM articles WHERE order_id=? AND status NOT IN ('published','cancelled')", a.order_id);
             if (!remaining?.n)
                 await stmt("UPDATE orders SET status='completed',updated=? WHERE id=?", now(), a.order_id).run();
-            return response({ ok: true });
+            return response({ ok: true,status:next,scheduled:statusData.scheduled||'' });
         }
         if(p[2]==='remind'&&method==='POST'){admin(u);assert(a.status==='sent','הכתבה אינה ממתינה לספק');const d=JSON.parse(a.data);const original=parse(await one("SELECT * FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));assert(original,'לא נוצר מייל ספק',409);const result=await queueMail('reminder:'+a.id+':'+now().slice(0,10),a.user_id,{...original.data,subject:'תזכורת לפרסום: '+a.title});return response(result);}
         if (p[2] === 'dispatch' && method === 'POST') { admin(u); assert(a.status==='approved' || a.status==='sent','הכתבה טרם אושרה'); return response(await dispatchArticle(a,u,new URL(r.url).origin)); }
         if (p[2] === 'supplier-link' && method === 'POST') {
             admin(u);
+            assert(!futureArticleDate(a),'טרם הגיע מועד השליחה לאישור מנהל',409);
             assert(a.status === 'approved' || a.status === 'sent', 'הכתבה חייבת להיות מאושרת');
             assert(!JSON.parse((await one('SELECT data FROM orders WHERE id=?',a.order_id))!.data).demo,'להזמנת הדגמה משתמשים בפורטל הספק בלבד');
             const token = uid() + uid();
@@ -520,7 +529,7 @@ if (p[0] === 'cart') {
             return response({ url: new URL('/supplier/' + token, r.url).href, expires });
         }
         if (p[2] === 'generate' && method === 'POST') {
-            assert(!['published', 'sent', 'cancelled', 'approved','demo_completed'].includes(a.status), 'הכתבה סגורה ליצירה');
+            assert(!['published', 'sent', 'cancelled', 'approved','demo_completed','scheduled'].includes(a.status), 'הכתבה סגורה ליצירה');
             const o = await one('SELECT * FROM orders WHERE id=?', a.order_id);
             assert(o&&canWorkOrder(parse(o)!), 'יש להשלים רכישה לפני יצירת כתבה');
             assert(u.role==='admin'||!JSON.parse(a.data).editorial,'לכתבה זו נרכש שירות כתיבה מקצועי',403);

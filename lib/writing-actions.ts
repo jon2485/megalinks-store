@@ -4,6 +4,7 @@ import {writingSubmitted,writingCustomerEditor,writingData} from './writing-work
 import {articleChecks} from './checks';
 import {dispatchArticle} from './publication';
 import {writingReadyMail,writingRevisionMail} from './writing-mail';
+import {futureArticleDate} from './scheduled-approval';
 export async function writingAction(a:Row,u:Row,b:Row,origin:string,action:string){
  const data=writingData(a);assert(writingSubmitted(data),'הלקוח טרם שלח הנחיות לכותב',409);
  assert(Number(b.version)===a.version,'הכתבה עודכנה במקביל. טענו מחדש',409);
@@ -15,6 +16,7 @@ export async function writingAction(a:Row,u:Row,b:Row,origin:string,action:strin
   assert(b.action==='publish'?!!d.publish_without_review:!d.publish_without_review,'הפעולה אינה תואמת לבחירת הלקוח',409);
   if(b.action==='publish'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);}
   next=b.action==='publish'?'approved':'review';d.writing_completed_at=stamp;if(next==='review')d.writing_returned_at=stamp;
+  if(next==='approved'&&futureArticleDate(a)){next='scheduled';d.scheduled_submitted_at=stamp;d.scheduled_from_status='review';}
  }else{
   assert(u.role!=='supplier'&&u.id===a.user_id,'בקשת תיקונים זמינה ללקוח של הכתבה בלבד',403);
   assert(['draft','review','revisions'].includes(a.status)&&writingCustomerEditor(data),'המאמר אינו פתוח לבדיקה',409);
@@ -24,7 +26,7 @@ export async function writingAction(a:Row,u:Row,b:Row,origin:string,action:strin
  }
  const result=await stmt('UPDATE articles SET status=?,data=?,version=version+1,updated=? WHERE id=? AND version=?',next,JSON.stringify(d),stamp,a.id,a.version).run();assert(result.meta.changes,'הכתבה עודכנה במקביל',409);
  const updated={...a,data:JSON.stringify(d),status:next,version:a.version+1};
- await audit(u,a.id,next==='review'?'המאמר המוכן הוחזר ללקוח':next==='approved'?'כתיבה מקצועית אושרה לפרסום ללא החזרה':'הלקוח ביקש תיקונים מהכותב',{note:d.writing_revision_note||'',publish_without_review:!!d.publish_without_review});
+ await audit(u,a.id,next==='review'?'המאמר המוכן הוחזר ללקוח':next==='approved'?'כתיבה מקצועית אושרה לפרסום ללא החזרה':next==='scheduled'?'הכתבה המוכנה ממתינה למועד אישור המנהל':'הלקוח ביקש תיקונים מהכותב',{note:d.writing_revision_note||'',publish_without_review:!!d.publish_without_review});
  const mail=next==='review'?await writingReadyMail(updated,origin):next==='writing'?await writingRevisionMail(updated,origin):null;
  if(next==='approved')await dispatchArticle(updated,u,origin);
  await syncOrder(a.order_id);return {ok:true,status:next,mail_status:mail?.status||null};

@@ -2,6 +2,7 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { spawnSync, spawn } from "node:child_process";
 import { resolve } from "node:path";
+import {randomBytes} from 'node:crypto';
 import {createStagingGateway} from "./railway-staging-gateway.mjs";
 import {appendStagingCustomers} from "./staging-customer-accounts.mjs";
 
@@ -33,8 +34,10 @@ if(config.assets)config.assets.run_worker_first=false;
 config.d1_databases[0].migrations_dir = resolve("drizzle");
 writeFileSync(configPath, JSON.stringify(config));
 // Wrangler does not automatically expose process.env to the Worker. Only these
-// two required bindings cross the boundary; no live provider credentials do.
-const workerSecrets={POSTFLOW_OWNER_EMAIL:owner,SETTINGS_ENCRYPTION_KEY:process.env.SETTINGS_ENCRYPTION_KEY};
+// Only required runtime bindings cross the boundary; no live provider keys do.
+// This internal loopback key is ephemeral unless an existing automation key is configured.
+const automationKey=process.env.POSTFLOW_AUTOMATION_KEY||randomBytes(32).toString('hex');
+const workerSecrets={POSTFLOW_OWNER_EMAIL:owner,SETTINGS_ENCRYPTION_KEY:process.env.SETTINGS_ENCRYPTION_KEY,POSTFLOW_AUTOMATION_KEY:automationKey,POSTFLOW_STAGING_ORIGIN:process.env.POSTFLOW_STAGING_ORIGIN};
 if(Buffer.from(workerSecrets.SETTINGS_ENCRYPTION_KEY||'','base64').length!==32)throw new Error("A 32-byte encryption key is required");
 writeFileSync(resolve("dist/server/.dev.vars"),Object.entries(workerSecrets).map(([k,v])=>k+'='+JSON.stringify(v)).join('\n'),{mode:0o600});
 const executable = resolve("node_modules/wrangler/bin/wrangler.js");
@@ -50,9 +53,18 @@ const server = spawn(process.execPath, ["--import", resolve("scripts/sites-env.m
   "--ip", "127.0.0.1", "--port", "8787", "--host", new URL(process.env.POSTFLOW_STAGING_ORIGIN).hostname, "--upstream-protocol", "https", "--inspector-port", "0"],
   { env, stdio: "inherit" });
 gateway.listen(Number(process.env.PORT||8080),'0.0.0.0',()=>console.log('Staging access gateway ready'));
+let releasing=false;
+async function releaseDueArticles(){
+ if(releasing)return;releasing=true;
+ try{const result=await fetch('http://127.0.0.1:8787/api/maintenance/scheduled-articles',{method:'POST',headers:{authorization:'Bearer '+automationKey,host:new URL(process.env.POSTFLOW_STAGING_ORIGIN).host},signal:AbortSignal.timeout(15000)});if(!result.ok)console.warn('Scheduled article release deferred; next minute will retry.');}
+ catch{/* Worker may still be starting; next minute retries without losing durable submissions. */}
+ finally{releasing=false;}
+}
+const releaseTimer=setInterval(releaseDueArticles,60000);releaseTimer.unref();
+const firstRelease=setTimeout(releaseDueArticles,1500);firstRelease.unref();
 gateway.on('error',error=>{console.error('Staging gateway failed:',error.code);server.kill('SIGTERM');process.exitCode=1;});
 for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, () => {gateway.close();server.kill(signal);});
+  process.on(signal, () => {clearInterval(releaseTimer);clearTimeout(firstRelease);gateway.close();server.kill(signal);});
 }
 server.on("error", error => { console.error(error); process.exitCode = 1; });
-server.on("close", code => { gateway.close();process.exitCode = code ?? 1; });
+server.on("close", code => { clearInterval(releaseTimer);clearTimeout(firstRelease);gateway.close();process.exitCode = code ?? 1; });

@@ -42,5 +42,13 @@ try{
  post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,action:'unpublish'},'owner')).article;assert.equal(post.status,'draft');assert.equal((await json('/api/knowledge')).total,0);await request('/api/knowledge/'+post.slug,'GET',undefined,null,404);await request('/knowledge/'+post.slug,'GET',undefined,null,404);await request(media.url,'GET',undefined,null,404);
  assert(!(await (await request('/sitemap.xml')).text()).includes('/knowledge/'+post.slug));
  assert.equal((await json('/api/admin/knowledge/'+post.id,'GET',undefined,'owner')).article.title,'PRIVATE DRAFT NOT PUBLISHED');
- console.log('KNOWLEDGE PASS:',checks,'HTTP checks: admin boundaries, draft isolation, publication snapshots, CAS conflicts, unique stable slug, categories, sanitized rich text, verified images, private/public media, SSR article/hub, schema, filtering, pagination, sitemap and reversible unpublish. Isolated D1/R2 only.');
+ post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,publicationDate:'2099-11-01',action:'publish'},'owner')).article;assert.equal(post.status,'scheduled');assert.equal(post.publicationDate,'2099-11-01');
+ assert.equal((await json('/api/knowledge')).total,0);await request('/api/knowledge/'+post.slug,'GET',undefined,null,404);await request(media.url,'GET',undefined,null,404);
+ assert(!(await (await request('/sitemap.xml')).text()).includes('/knowledge/'+post.slug));
+ assert.equal((await json('/api/admin/knowledge?status=scheduled','GET',undefined,'owner')).total,1);assert.equal((await json('/api/admin/knowledge?status=published','GET',undefined,'owner')).total,0);
+ await request('/api/admin/knowledge/'+post.id,'PATCH',{...post,publicationDate:'2026-02-30',action:'publish'},'owner',400);
+ post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,publicationDate:'2026-10-01',action:'publish'},'owner')).article;assert.equal(post.status,'published');assert.equal(post.publishedAt,'2026-09-30T21:00:00.000Z');await request('/api/knowledge/'+post.slug);
+ post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,publicationDate:'2099-11-02',action:'save'},'owner')).article;assert.equal((await json('/api/knowledge/'+post.slug)).article.publicationDate,'2026-10-01');
+ post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,publicationDate:'',action:'publish'},'owner')).article;assert.equal(post.status,'published');await request(media.url);
+ console.log('KNOWLEDGE PASS:',checks,'HTTP checks: admin boundaries, draft isolation, publication snapshots, CAS conflicts, unique stable slug, categories, sanitized rich text, verified images, private/public media, SSR article/hub, schema, filtering, pagination, sitemap, reversible unpublish, scheduling, earlier/later dates and immediate publication. Isolated D1/R2 only.');
 }finally{await mf.dispose();}

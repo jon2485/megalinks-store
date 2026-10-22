@@ -331,3 +331,12 @@ approved this editor-specific absence of a persistent admin sidebar; other admin
 screens retain theirs. Shared RichEditor owns editing, links and undo; its named
 `knowledge` variant supplies the compact toolbar and optional table insertion.
 The original order-article editor keeps its existing default variant.
+## Publication scheduling — 2026-10-22
+
+Preserve the approved navy/cyan/pale-glass UI. Place the customer calendar card
+above the existing article save/send actions, and the blog picker in the editor's
+publication settings. Both use the same Hebrew, RTL, confirmable calendar dialog.
+No supplier dispatch before the chosen Israel day AND subsequent manager approval.
+The selected date remains readable in the locked scheduled state, with an explicit
+withdraw-and-edit action. Calendar table resets are scoped to this dialog to avoid
+altering existing tables or other screens.

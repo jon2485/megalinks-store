@@ -3,10 +3,12 @@ import {articleGuard} from './monthly-order';
 import {sendQueuedMail} from './mail';
 import {one,stmt,parse,db,now,assert,audit,uid,hash} from './server';
 import {Row} from './shared';
+import {futureArticleDate} from './scheduled-approval';
 export function supplierSequenceLabel(sequence:number,total:number|null){return total===null?`כתבה מספר ${sequence}`:`כתבה ${sequence} מתוך ${total}`;}
 // Allocate a number, consume capacity and create the portal/email jobs in one
 // transaction. The article is the idempotency key; reminders never allocate.
 export async function dispatchArticle(article:Row,actor:Row,origin:string){
+ assert(!futureArticleDate(article),'טרם הגיע מועד הכתבה לאישור ולמסירה לספק',409);
  assert(!article.cancel_pending&&!article.publication_refunded&&article.status!=='cancelled','הכתבה בביטול ואינה זמינה לפרסום',409);
  const id='publication:'+article.id;
  let job=await one('SELECT * FROM jobs WHERE id=?',id);

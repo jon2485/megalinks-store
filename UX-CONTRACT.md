@@ -132,5 +132,31 @@ The business decision to publish is explicit and admin-owned. The API rejects
 publication without title, excerpt, substantial text, category and a cover with
 alt text. Slugs are editable before first save and then locked to preserve links.
 Categories can be created without leaving the editor; tags are plain labels.
-The editor preview is transient and is not a public preview URL. No deletion,
-scheduled publication, automatic publication or AI generation is implied.
+The editor preview is transient and is not a public preview URL. No deletion
+or AI generation is implied. The approved scheduling extension below adds
+explicit date-based publication.
+
+### Publication dates — approved 2026-10-22
+
+The blog editor owns a Hebrew calendar with free earlier/later selection.
+Saving a draft never changes the published snapshot. Explicit publication with
+a future date schedules the snapshot; public pages, search, media and sitemap
+exclude it until that day starts in Asia/Jerusalem. Clearing the date and
+publishing makes it available immediately. Moving an already published article
+to a future day explicitly makes it unavailable until that day.
+
+Customer publication scheduling is a separate approval workflow: submitting a
+future-dated article creates `scheduled`, not `admin_review` or a supplier job.
+At the start of the chosen Israel day the durable queue releases it into
+`admin_review`. Only a later explicit manager approval can dispatch the supplier.
+The Railway staging bootstrap polls every minute and retries after restarts;
+admin reads also release due entries. Unpaid, cancelled, refunded or pending
+cancellation articles do not advance. Completing professional writing cannot
+bypass the future-date hold. Withdrawing a scheduled submission uses version
+checking and restores editing; changing the date requires submitting again.
+
+The shared calendar is the sole date-picker owner: Hebrew locale, RTL weekday
+order, editable day.month.year field, explicit confirm/cancel, field-level error,
+keyboard dismissal, and scrollable mobile dialog. Customer dates cannot be past;
+blog administrators can backdate. Scoped calendar table resets prevent legacy
+table padding from clipping dates. Dates and numbers use bidi isolation.

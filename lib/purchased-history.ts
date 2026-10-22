@@ -44,7 +44,7 @@ export function purchaseStage(article: Row): PurchaseStage | 'demo-completed' | 
     if (article.status === 'cancelled') return null;
     if (article.status === 'demo_completed' || (article.status === 'published' && article.demo)) return 'demo-completed';
     if (article.status === 'published') return 'published';
-    if (article.status === 'admin_review') return 'approval';
+    if (['admin_review', 'scheduled'].includes(article.status)) return 'approval';
     if (['approved', 'sent'].includes(article.status)) return 'publication';
     return 'editing';
 }
