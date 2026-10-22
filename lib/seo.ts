@@ -6,7 +6,7 @@ export const SITE_URL = 'https://postflow-studio.elian-tetruashvili.chatgpt.site
 export const SITE_NAME = 'MegaLinks';
 export const HOME_TITLE = 'MegaLinks — פרסום כתבות ותוכן באתרים';
 export const HOME_DESCRIPTION = 'בחרו אתרים לפרסום הכתבה הבאה שלכם עם MegaLinks. חפשו לפי תחום, השוו מחירים ונתוני אתרים, והזמינו פרסום כתבות ושירותי כתיבת תוכן במקום אחד.';
-export const INDEXABLE_PATHS = ['/', '/terms'] as const;
+export const INDEXABLE_PATHS = ['/', '/terms', '/knowledge'] as const;
 const privateRoots = new Set([
     ...adminAreas.flatMap(area=>area.pages.map(([page])=>page)),
     ...lobbyGroups.flatMap(group=>[group.page,...group.tabs.map(([page])=>page)]),
@@ -14,7 +14,7 @@ const privateRoots = new Set([
     'orders','articles','links','dashboard','strategies','wallet','monthly','customers',
     'profile','files','support','api','notifications','supplier-workspace','supplier-finance',
 ]);
-const nestedRoots = new Set(['article','admin-article','admin-pricebook','admin-customer-account','lobby-order','supplier']);
+const nestedRoots = new Set(['article','admin-article','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge']);
 const hubTabs = new Set(['articles','orders','payments','customers','profile','files','support','api','notifications','monthly']);
 
 export function isWorkspacePath(parts:string[]) {
@@ -26,7 +26,7 @@ export function isWorkspacePath(parts:string[]) {
     if(parts.length!==2||!parts[1]||parts[1].length>200)return false;
     return parts[0]==='purchased'?hubTabs.has(parts[1]):nestedRoots.has(parts[0]);
 }
-export function isIndexablePath(path:string){return INDEXABLE_PATHS.some(p=>p===path);}
+export function isIndexablePath(path:string){return INDEXABLE_PATHS.some(p=>p===path)||/^\/knowledge\/[^/]+$/.test(path);}
 export function clientPageSeo(view:string) {
     const path=view==='catalog'?'/':view==='terms'?'/terms':null;
     if(path){const metadata=publicMetadata(path);return {title:(metadata.title as {absolute:string}).absolute,description:metadata.description!,canonical:SITE_URL+path,robots:'index, follow'};}

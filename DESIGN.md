@@ -303,3 +303,31 @@ Cart reference detail correction: the native quantity select removes inherited
 arrow/padding and centers both text alignment modes. List/current prices stack
 above a bold red discount at all widths. Custom writing uses a centered word
 stepper and the compact blue “שמירה” button; stepping only changes the draft.
+
+## Approved knowledge hub and editorial workspace — 2026-10-22
+
+The three approved mockups extend the existing identity, not the cart or other
+administrative surfaces: public `/knowledge`, public `/knowledge/[slug]`, and
+the authenticated `admin-knowledge` list/editor. Runtime model B remains canonical.
+`app/knowledge.css` owns `--knowledge-ink` #071f4b, copy #425574, blue #087af7,
+cyan #00bed4, line #cfe5ef, ice #effaff and translucent white surfaces. These
+map to public cards, article contents/callouts and editorial panels through the
+same scoped variables. Heebo is the existing local font; no font change or CDN.
+
+The public signature is a pale cyan wave masthead above a featured article and
+two-column compact article grid. Use editorial photography, 13–16px card copy,
+18px reading text and bold navy titles. Article copy remains calm white, with
+restrained glass reserved for the contents panel and callouts. The real existing
+brand logo and header remain canonical rather than copying generated logo drift.
+Desktop article contents sit at left; phones put compact contents above the
+article. Related cards stack at phone widths. No mock claims or sample articles
+are automatically published.
+
+The admin editor uses a wide RTL writing column at right and a 330px metadata
+column at left, 12px panel corners, 42–44px actions, a sticky toolbar and explicit
+draft/preview/publish actions. Below 650px it becomes a single column, retains
+all fields and tools, and keeps bottom actions in document flow. The screenshot
+approved this editor-specific absence of a persistent admin sidebar; other admin
+screens retain theirs. Shared RichEditor owns editing, links and undo; its named
+`knowledge` variant supplies the compact toolbar and optional table insertion.
+The original order-article editor keeps its existing default variant.

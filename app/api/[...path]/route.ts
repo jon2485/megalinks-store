@@ -1,4 +1,5 @@
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
+import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server';
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
 import {claimAiBudget,safeFailure} from '@/lib/security';
 import {customerArticleData,customerActivity,customerSharedRecord,supplierDelivery,protectCustomerResponse} from '@/lib/customer-privacy';
@@ -142,6 +143,7 @@ async function handle(r: Request,access:ResponseAccess) {
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
+    const knowledgePublic=await knowledgePublicRoutes(r,p);if(knowledgePublic)return knowledgePublic;
     if(p[0]==='catalog-logo'&&p[1]&&method==='GET'){
         assert(/^[\da-f-]{36}$/i.test(p[1]),'לוגו לא נמצא',404);const image=await env.BUCKET?.get('public/catalog-logos/'+p[1]);assert(image,'לוגו לא נמצא',404);
         return new Response(image.body,{headers:{'Content-Type':image.httpMetadata?.contentType||'image/png','X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'",'Cache-Control':'public, max-age=86400'}});
@@ -217,6 +219,7 @@ async function handle(r: Request,access:ResponseAccess) {
     else
         u = await actor();
     access.privileged=u.role==='admin';
+    const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
     const pricingResponse=await pricingRoutes(r,p,u,json);if(pricingResponse)return pricingResponse;
     const financeResponse=await financeRoutes(r,p,u,json);if(financeResponse)return financeResponse;
     const accountResponse=await accountManagementRoutes(r,p,u);if(accountResponse)return accountResponse;

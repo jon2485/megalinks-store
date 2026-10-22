@@ -112,3 +112,25 @@ recorded as inherited risks, not repaired by this presentation extension.
 Existing server financial state, request payloads, idempotency, invoice guidance,
 credit splits and monthly checks retain their owners. Source tests and build
 do not establish browser or real-device visual approval.
+
+## Knowledge publishing — approved 2026-10-22
+
+| Capability | Owner | Contract / evidence |
+|---|---|---|
+| CRUD and permissions | knowledge-server.ts; existing actor/admin; drizzle/0006_knowledge.sql | Only admins read drafts/upload/write; public reads project only published snapshots; no new customer permissions |
+| Draft vs publication | knowledge_posts draft/published/version | Manual explicit save; saving a published article leaves its published snapshot unchanged; publish replaces the snapshot; unpublish preserves draft and requires app-owned confirmation |
+| Conflict recovery | Server version compare-and-swap | Reject stale writes with 409 and preserve entered UI content; never overwrite another editor silently |
+| List/search | Public KnowledgeHub and admin KnowledgeList | 24 per page, explicit submit/clear, public URL query restoration, abort/sequence guard for stale public reads |
+| Editing | Existing RichEditor and knowledge variant | Native paragraph select deliberately retains OS-owned popup; existing formatting/link dialogs/selection/history; no new provider or external editor dependency |
+| Images | knowledge_media + existing R2 binding | Admin-only uploads of verified JPEG/PNG/WebP up to 8MB; public media only when referenced by a published post; captions and alt text; no general private-file exposure |
+| Fields/checkbox/dialog | Shared Input/Textarea/Checkbox/Dialog | Visible containing labels, resize-none textareas, native file picker, Radix focus/Escape/return; no browser prompt/confirm |
+| Navigation and dirty state | Existing postflow:dirty + editor beforeunload/popstate guard | Save remains in editor; list uses existing ctx.go; browser back while dirty restores editor and asks through app-owned dialog |
+| Feedback | Existing Sonner, inline error/status | Success only after API success; duplicate-save lock and disabled editing while saving; failure keeps draft; no implied autosave |
+| Public SEO | Server-rendered public routes, knowledge-seo and sitemap | Only published slugs; Article metadata/schema; admin and previews noindex; staging gateway still controls access |
+
+The business decision to publish is explicit and admin-owned. The API rejects
+publication without title, excerpt, substantial text, category and a cover with
+alt text. Slugs are editable before first save and then locked to preserve links.
+Categories can be created without leaving the editor; tags are plain labels.
+The editor preview is transient and is not a public preview URL. No deletion,
+scheduled publication, automatic publication or AI generation is implied.

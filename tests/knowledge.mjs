@@ -1,0 +1,46 @@
+import assert from 'node:assert/strict';
+import {readFileSync,readdirSync,realpathSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{Miniflare}=require('miniflare');
+const mf=new Miniflare({modules:[{type:'ESModule',path:'dist/server/index.js'},...readdirSync('dist/server',{recursive:true}).filter(p=>/\.(m?js)$/.test(p)&&p!=='index.js').map(p=>({type:'ESModule',path:'dist/server/'+p}))],compatibilityDate:'2026-05-15',compatibilityFlags:['nodejs_compat'],d1Databases:['DB'],r2Buckets:['BUCKET'],bindings:{POSTFLOW_OWNER_EMAIL:'owner@example.test'},assets:{directory:'dist/client',binding:'ASSETS',routerConfig:{has_user_worker:true,invoke_user_worker_ahead_of_assets:true}},cf:false});
+let checks=0;
+const db=await mf.getD1Database('DB');
+try{
+ for(const file of readdirSync('drizzle').filter(f=>f.endsWith('.sql')).sort())for(const sql of readFileSync('drizzle/'+file,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean))await db.prepare(sql).run();
+ async function request(path,method='GET',body,user=null,status=200){const headers={};if(user){headers['oai-authenticated-user-id']=user;headers['oai-authenticated-user-email']=user+'@example.test';}let payload;if(body instanceof FormData){const req=new Request('https://knowledge.test'+path,{method,headers,body});headers['Content-Type']=req.headers.get('content-type');payload=await req.arrayBuffer();}else if(body!==undefined){headers['Content-Type']='application/json';payload=JSON.stringify(body);}const res=await mf.dispatchFetch('https://knowledge.test'+path,{method,headers,body:payload});assert.equal(res.status,status,path+' '+method+' '+await res.clone().text().then(s=>s.slice(0,200)));checks++;return res;}
+ const json=async(...args)=>(await request(...args)).json();
+ assert.equal((await json('/api/knowledge')).articles.length,0);
+ await request('/api/admin/knowledge','GET',undefined,null,401);
+ await request('/api/admin/knowledge','GET',undefined,'customer',403);
+ let cats=(await json('/api/admin/knowledge/categories','GET',undefined,'owner')).categories;assert.equal(cats.length,3);
+ const category=(await json('/api/admin/knowledge/categories','POST',{name:'בדיקת קטגוריה'},'owner',201)).category;
+ const same=(await json('/api/admin/knowledge/categories','POST',{name:'בדיקת קטגוריה'},'owner',201)).category;assert.equal(same.id,category.id);
+ await request('/api/admin/knowledge/categories','POST',{name:'גניבה'},'customer',403);
+ const content='<h2>מתחילים במטרה</h2><p>לפני שבוחרים אתר לפרסום כדאי לבדוק היטב את קהל היעד ואת מטרת הפרסום כדי להתאים את התוכן לצרכים של העסק.</p><script>window.BAD=1</script><img src="/api/files/private-id" onerror="alert(1)"><a href="javascript:alert(1)">bad</a><p style="color:#087af7;position:fixed" onclick="alert(1)">טקסט כחול</p>';
+ const initial={title:'איך בוחרים אתר לפרסום?',slug:'choose-publication-site',excerpt:'מדריך לבחירת אתר לפרסום שמתאים לקהל היעד ולמטרות העסק.',content,cover:'/brand/knowledge/publication.webp',coverAlt:'מחשב נייד עם כתבה',author:'צוות MegaLinks',categories:[category.id],tags:['פרסום'],featured:true,seoTitle:'',seoDescription:'',action:'save'};
+ let post=(await json('/api/admin/knowledge','POST',initial,'owner',201)).article;assert.equal(post.version,1);assert(!post.content.includes('script'));assert(!post.content.includes('onerror'));assert(!post.content.includes('onclick'));assert(!post.content.includes('javascript:'));assert(!post.content.includes('private-id'));assert(!post.content.includes('position:'));assert(post.content.includes('color:#087af7'));
+ assert.equal((await json('/api/knowledge')).total,0);await request('/api/knowledge/'+post.slug,'GET',undefined,null,404);
+ await request('/api/admin/knowledge/'+post.id,'GET',undefined,'customer',403);
+ await request('/api/admin/knowledge','POST',initial,'owner',409);
+ await request('/api/admin/knowledge/'+post.id,'PATCH',{...post,action:'publish',coverAlt:''},'owner',400);
+ const form=new FormData();form.append('file',new File([Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl6WU8AAAAASUVORK5CYII=','base64'))],'image.png',{type:'image/png'}));
+ const media=await json('/api/admin/knowledge/media','POST',form,'owner',201);await request(media.url,'GET',undefined,null,404);await request(media.url,'GET',undefined,'owner',200);
+ const fake=new FormData();fake.append('file',new File(['<script>x</script>'],'fake.png',{type:'image/png'}));await request('/api/admin/knowledge/media','POST',fake,'owner',400);
+ const svg=new FormData();svg.append('file',new File(['<svg/>'],'bad.svg',{type:'image/svg+xml'}));await request('/api/admin/knowledge/media','POST',svg,'owner',400);
+ post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,cover:media.url,content:post.content+'<figure><img src="'+media.url+'" alt="תיאור תמונה"><figcaption>קרדיט לדוגמה</figcaption></figure>',action:'publish'},'owner')).article;assert.equal(post.status,'published');assert.equal(post.version,2);
+ const live=(await json('/api/knowledge/'+post.slug)).article;assert(live.content.includes(media.url));assert(!('draft' in live));assert.equal(live.title,post.title);
+ assert.equal((await json('/api/knowledge?q='+encodeURIComponent('בוחרים'))).total,1);assert.equal((await json('/api/knowledge?category=no-such-category')).total,0);assert.equal((await json('/api/knowledge?category='+category.id)).total,1);assert.equal((await json('/api/knowledge?page=2')).articles.length,0);
+ await request(media.url,'GET',undefined,null,200);
+ const stale={...post};post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,title:'PRIVATE DRAFT NOT PUBLISHED',action:'save'},'owner')).article;
+ assert.equal((await json('/api/knowledge/'+post.slug)).article.title,live.title);assert(!(await (await request('/knowledge/'+post.slug)).text()).includes('PRIVATE DRAFT NOT PUBLISHED'));
+ await request('/api/admin/knowledge/'+post.id,'PATCH',{...stale,title:'stale overwrite',action:'save'},'owner',409);
+ await request('/api/admin/knowledge/'+post.id,'PATCH',{...post,slug:'changed-slug',action:'save'},'owner',400);
+ await request('/api/admin/knowledge/'+post.id,'PATCH',{...post,action:'publish'},'customer',403);
+ const publicPage=await request('/knowledge/'+post.slug);const html=await publicPage.text();assert(html.includes('איך בוחרים אתר לפרסום?'));assert(html.includes('application/ld+json'));assert(html.includes('section-1'));assert(!publicPage.headers.get('x-robots-tag')?.includes('noindex'));
+ const hub=await (await request('/knowledge')).text();assert(hub.includes('מדריכים וידע'));assert(hub.includes(live.title));
+ const sitemap=await (await request('/sitemap.xml')).text();assert(sitemap.includes('/knowledge/'+post.slug));
+ post=(await json('/api/admin/knowledge/'+post.id,'PATCH',{...post,action:'unpublish'},'owner')).article;assert.equal(post.status,'draft');assert.equal((await json('/api/knowledge')).total,0);await request('/api/knowledge/'+post.slug,'GET',undefined,null,404);await request('/knowledge/'+post.slug,'GET',undefined,null,404);await request(media.url,'GET',undefined,null,404);
+ assert(!(await (await request('/sitemap.xml')).text()).includes('/knowledge/'+post.slug));
+ assert.equal((await json('/api/admin/knowledge/'+post.id,'GET',undefined,'owner')).article.title,'PRIVATE DRAFT NOT PUBLISHED');
+ console.log('KNOWLEDGE PASS:',checks,'HTTP checks: admin boundaries, draft isolation, publication snapshots, CAS conflicts, unique stable slug, categories, sanitized rich text, verified images, private/public media, SSR article/hub, schema, filtering, pagination, sitemap and reversible unpublish. Isolated D1/R2 only.');
+}finally{await mf.dispose();}

@@ -9,7 +9,7 @@ export default function WorkspaceFooter({ go, adminMode = false }: { go: (page: 
                 <div className="megalinks-footer-brand"><BrandLogo light className="megalinks-footer-logo"/></div>
                 <nav className="megalinks-footer-pages megalinks-footer-group" aria-labelledby="footer-pages-title">
                     <h2 id="footer-pages-title">עמודי האתר</h2>
-                    <div className="megalinks-footer-link-list">{[['catalog', 'קטלוג אתרים'], ['offers', 'מבצעים וחבילות'], ['purchased', 'אזור אישי']].map(([page, label]) => <a key={page} href={page==='catalog'?'/':'/'+page} onClick={event=>{if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();go(page);}}>{label}</a>)}</div>
+                    <div className="megalinks-footer-link-list">{[['catalog', 'קטלוג אתרים'], ['offers', 'מבצעים וחבילות'], ['knowledge','מדריכים וידע'], ['purchased', 'אזור אישי']].map(([page, label]) => <a key={page} href={page==='catalog'?'/':'/'+page} onClick={event=>{if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();go(page);}}>{label}</a>)}</div>
                 </nav>
                 <section className="megalinks-footer-contact megalinks-footer-group" aria-labelledby="footer-contact-title">
                     <h2 id="footer-contact-title">יצירת קשר ותמיכה</h2>

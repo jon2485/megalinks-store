@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useState} from 'react';
-import {Globe,FileText,Wallet,LayoutDashboard,Settings,ShoppingCart,LifeBuoy,Code2,Building2,ShieldCheck,Menu,X,ChevronLeft} from 'lucide-react';
+import {Globe,FileText,Wallet,LayoutDashboard,Settings,ShoppingCart,LifeBuoy,Code2,Building2,ShieldCheck,Menu,X,ChevronLeft,BookOpen} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Sheet,SheetTrigger,SheetContent,SheetTitle,SheetDescription,SheetClose} from '@/components/ui/sheet';
 import {NavigationMenu,NavigationMenuList,NavigationMenuItem,NavigationMenuTrigger,NavigationMenuContent,NavigationMenuLink} from '@/components/ui/navigation-menu';
@@ -18,6 +18,7 @@ const mobileDescriptions:Record<string,string>={catalog:'כל האתרים לפ�
 type Group={id:string;label:string;icon:React.ElementType;items:Entry[]};
 export function navigationGroups(ctx:Ctx):Group[]{
  if(ctx.adminMode&&ctx.user?.role==='admin')return [
+  {id:'knowledge-admin',label:'מדריכים וידע',icon:BookOpen,items:[['admin-knowledge','מדריכים וידע',BookOpen]]},
   {id:'work',label:'סביבת הניהול',icon:LayoutDashboard,items:adminAreas.map(a=>[a.id,a.label,navAdmin.find(n=>n[0]===a.id)?.[2]||Settings] as Entry)},
   {id:'account',label:'סביבת הלקוח',icon:Globe,items:[['catalog','מעבר לקטלוג הלקוח',Globe],['purchased','אזור הלקוח',FileText]]}
  ];
@@ -25,10 +26,11 @@ export function navigationGroups(ctx:Ctx):Group[]{
  if(ctx.user?.role==='admin')account.push(['admin','מעבר לניהול המערכת',ShieldCheck]);
  const work:Entry[]=navClient.filter(([page])=>page==='purchased').map(([page,label,Icon])=>[page,label,Icon]);
  if(ctx.user?.role==='supplier')work.push(['supplier-workspace','פורטל ספקים',Building2]);
- return [{id:'sites',label:'אתרים ומבצעים',icon:Globe,items:[...navClient.slice(0,2)]},{id:'work',label:'אזור אישי',icon:FileText,items:work},...(account.length?[{id:'account',label:'ניהול',icon:ShieldCheck,items:account}]:[])];
+ return [{id:'sites',label:'אתרים ומבצעים',icon:Globe,items:[...navClient.slice(0,2)]},{id:'knowledge',label:'מדריכים וידע',icon:BookOpen,items:[['knowledge','מדריכים וידע',BookOpen]]},{id:'work',label:'אזור אישי',icon:FileText,items:work},...(account.length?[{id:'account',label:'ניהול',icon:ShieldCheck,items:account}]:[])];
 }
 export function activeNavigation(page:string,view:string){
  if(page===view)return true;
+ if(page==='admin-knowledge')return view.startsWith('admin-knowledge/');
  if(page.startsWith('admin')&&adminArea(view)?.id===page)return true;
  if(page==='purchased')return view.startsWith('purchased/')||['orders','articles','links','bulk','files'].includes(view)||view.startsWith('article/');
  if(page==='admin-articles')return view.startsWith('admin-article/');

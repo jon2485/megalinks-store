@@ -33,7 +33,7 @@ try {
  check(/<meta[^>]*name="description"[^>]*content="[^"]+"/.test(home.text),'description in initial HTML');
  check(home.text.includes('rel="canonical"')&&home.text.includes(SITE_URL+'/'),'canonical');
  check(!/<meta[^>]*name="robots"[^>]*content="[^"]*noindex/.test(home.text),'homepage meta indexing allowed');
- check(home.text.includes('איפה נפרסם את')&&home.text.includes('הכתבה הבאה שלכם?'),'public heading before JavaScript');
+ check(home.text.includes('איפה נפרסם')&&home.text.includes('את הכתבה הבאה שלך?'),'approved public heading before JavaScript');
  check(home.text.includes('אתר ציבורי לבדיקת SEO')&&home.text.includes('https://seo-public.example.test'),'database catalog row before JavaScript');
  check(!home.text.includes('catalog-title-letter'),'letter pulse fully reverted');
  check(!home.text.includes('catalog-illustration-shadow'),'added shadow remains removed');
@@ -43,7 +43,7 @@ try {
  check(home.text.includes('property="og:title"')&&home.text.includes('name="twitter:card"'),'share metadata');
  check(home.text.includes('href="/terms"'),'crawlable legal link');
  const robots=await get('/robots.txt');check(robots.response.status===200,'robots HTTP 200');check(robots.text.includes('Sitemap: '+SITE_URL+'/sitemap.xml'),'robots sitemap');check(!robots.text.includes('Disallow: /\n'),'public crawling not blocked');check(robots.text.includes('Allow: /api/catalog$'),'catalog rendering endpoint crawlable');
- const sitemap=await get('/sitemap.xml');check(sitemap.response.status===200,'sitemap HTTP 200');check(sitemap.response.headers.get('content-type')?.includes('xml'),'XML content type');check((sitemap.text.match(/<loc>/g)||[]).length===2,'only two indexable public URLs');check(!/admin|supplier|purchased|api\//.test(sitemap.text),'no private URLs in sitemap');
+ const sitemap=await get('/sitemap.xml');check(sitemap.response.status===200,'sitemap HTTP 200');check(sitemap.response.headers.get('content-type')?.includes('xml'),'XML content type');check((sitemap.text.match(/<loc>/g)||[]).length===3,'home, terms and knowledge hub are public; unpublished articles are omitted');check(!/admin|supplier|purchased|api\//.test(sitemap.text),'no private URLs in sitemap');
  const terms=await get('/terms');check(terms.response.status===200&&terms.text.includes(SITE_URL+'/terms'),'public legal canonical');check(!terms.response.headers.get('x-robots-tag')?.includes('noindex'),'legal page indexable');
  for(const path of ['/cart','/purchased/orders','/admin','/supplier/private-token']){const p=await get(path);check(p.response.headers.get('x-robots-tag')?.includes('noindex'),path+' HTTP noindex');check(p.response.headers.get('cache-control')?.includes('no-store'),path+' no private HTML caching');check(!p.text.includes(canary),path+' no supplier leakage');}
  const alias=await get('/catalog');check([301,308].includes(alias.response.status),'catalog alias permanent redirect');check(alias.response.headers.get('location')==='/'||alias.response.headers.get('location')===SITE_URL+'/','catalog redirect destination');
