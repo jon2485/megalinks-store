@@ -16,6 +16,7 @@ import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
+import {adminUpdates} from '@/lib/admin-updates';
 import {adminLobbySearch} from '@/lib/admin-lobby-search';
 import {sheetsAdmin,receiveSheets} from '@/lib/sheets-sync';
 import {paymentEvidenceRows,orderPaymentEvidence} from '@/lib/payment-evidence';
@@ -724,6 +725,10 @@ if (p[0] === 'cart') {
             const articles=await all("SELECT a.*,o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id WHERE a.user_id=? AND json_extract(a.data,'$.customer_id')=? ORDER BY a.updated DESC",customer.user_id,customer.id);
             return response({articles:articles.map(a=>customerArticle(a,u))});
         }
+        if (method === 'GET' && p[2] && kind==='ticket') {
+            const record=owns(u,await one("SELECT r.*,u.name AS user_name FROM records r LEFT JOIN users u ON u.id=r.user_id WHERE r.id=? AND r.kind='ticket'",p[2]));
+            return response({record:parse(record)});
+        }
         if (method === 'GET') {
             const global = adminKinds.includes(kind);
             if (global && !['bundle', 'package', 'announcement'].includes(kind))
@@ -798,7 +803,7 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
-        if(p[1]==='control-center'){if(method==='POST'&&p[2]==='prices'&&p[3])return response(await reviewPriceChange(p[3],u));assert(method==='GET','פעולה לא נתמכת',405);if(p[2]==='search')return response(await adminLobbySearch(query.get('q')||''));if(p[2]==='prices')return response({prices:(await all("SELECT a.*,w.name AS website_name,w.url AS website_url FROM activity a LEFT JOIN websites w ON w.id=a.resource WHERE json_type(a.data,'$.before_price') IS NOT NULL AND COALESCE(json_extract(a.data,'$.after_price'),json_extract(a.data,'$.price'))<>json_extract(a.data,'$.before_price') AND NOT EXISTS(SELECT 1 FROM records r WHERE r.id='price-reviewed:'||a.id) ORDER BY a.created DESC")).map(parse)});return response(await adminControlCenter());}
+        if(p[1]==='control-center'){if(method==='POST'&&p[2]==='prices'&&p[3])return response(await reviewPriceChange(p[3],u));assert(method==='GET','פעולה לא נתמכת',405);if(p[2]==='updates')return response(await adminUpdates(query));if(p[2]==='search')return response(await adminLobbySearch(query.get('q')||''));if(p[2]==='prices')return response({prices:(await all("SELECT a.*,w.name AS website_name,w.url AS website_url FROM activity a LEFT JOIN websites w ON w.id=a.resource WHERE json_type(a.data,'$.before_price') IS NOT NULL AND COALESCE(json_extract(a.data,'$.after_price'),json_extract(a.data,'$.price'))<>json_extract(a.data,'$.before_price') AND NOT EXISTS(SELECT 1 FROM records r WHERE r.id='price-reviewed:'||a.id) ORDER BY a.created DESC")).map(parse)});return response(await adminControlCenter());}
         if(p[1]==='sheets')return response(await sheetsAdmin(r,p,u,json));
         if (p[1] === 'users') {
             if (method === 'GET')

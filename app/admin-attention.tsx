@@ -3,6 +3,7 @@ import React,{createContext,useContext} from 'react';
 import {useData} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
+import {adminPageQueues} from '@/lib/admin-attention';
 
 type AttentionState=ReturnType<typeof useData>;
 const AttentionContext=createContext<AttentionState|null>(null);
@@ -34,15 +35,7 @@ export function useAdminAttention(ctx:Ctx){
  return shared??local;
 }
 
-const pageQueues:Record<string,readonly string[]>={
- 'admin-orders':['bank','cancellations'],
- 'admin-payment-reports':['payment_reports'],'admin-invoices':['invoices'],
- 'admin-topups':['topups'],'admin-monthly':['monthly'],
- 'admin-approvals':['content'],'admin-articles':['writing','publication'],
- 'admin-publication':['tracking','delivery'],'admin-support':['support'],
- 'admin-websites':['prices','pricing_review','sync'],'admin-pricing':['pricing_review'],
- 'admin-supplier-finance':['supplier_due'],'admin-notifications':['mail'],'admin-jobs':['connections'],
-};
+const pageQueues=adminPageQueues;
 export function attentionForPages(pages:readonly string[],data:Row|null|undefined){
  const queues:Row[]=Array.isArray(data?.queues)?data.queues:[];
  const ids=new Set(pages.includes('admin')?queues.map(q=>q.id):pages.flatMap(p=>pageQueues[p]??[]));
@@ -53,12 +46,14 @@ export function attentionForPages(pages:readonly string[],data:Row|null|undefine
  const count=pages.length===1&&(pageQueues[pages[0]]?.length===1)&&pending.length===1&&!email?pending[0].count:null;
  return {pending:pending.length>0||email,count,label};
 }
-export function AdminAttentionBadge({pages,state}:{pages:readonly string[];state:AttentionState}){
+export function AdminAttentionBadge({pages,state,scope}:{pages:readonly string[];state:AttentionState;scope?:string}){
  const item=attentionForPages(pages,state.data);
- if(!item.pending)return null;
+ const exact=state.data?.attention_counts?.[scope||pages[0]];
+ const count=Number.isSafeInteger(exact)&&exact>=0?exact:item.count;
+ if(count===0||(!item.pending&&!(count&&count>0)))return null;
  const stale=!!state.error;
- return <span className={'admin-v172-attention'+(item.count===null?' is-dot':'')+(stale?' is-stale':'')}>
-  <span aria-hidden="true">{item.count===null?'':item.count.toLocaleString('he-IL')}</span>
-  <span className="admin-v172-visually-hidden">{stale?'נתוני הטיפול האחרונים; הרענון נכשל. ':''}ממתין לטיפול — {item.label}</span>
+ return <span className={'admin-v172-attention'+(count===null?' is-dot':'')+(stale?' is-stale':'')} title={count===1?'פריט אחד דורש טיפול':count?`${count} פריטים דורשים טיפול`:item.label}>
+  <span aria-hidden="true">{count===null?'':count.toLocaleString('he-IL')}</span>
+  <span className="admin-v172-visually-hidden">{stale?'נתוני הטיפול האחרונים; הרענון נכשל. ':''}{count===1?'פריט אחד דורש טיפול. ':count?count+' פריטים דורשים טיפול. ':''}</span>
  </span>;
 }

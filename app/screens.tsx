@@ -65,9 +65,9 @@ finally {
     checkoutLock.current = false; setBusy(false);
 } }}>{busy ? <LoaderCircle className="animate-spin" size={16}/> : <CheckCircle2 size={16}/>}{unverified.length ? 'שליחת בקשת הזמנה' : 'יצירת הזמנה'}</Button><p className="muted small text-center mt-4">ללא חיוב כרטיס אוטומטי</p></div></aside></div>}</Loading></>; }
 export function OrdersView({ ctx,initialUnpaid=false }: { ctx: Ctx;initialUnpaid?:boolean }) { return ctx.adminMode ? <AdminOrdersView ctx={ctx} initialUnpaid={initialUnpaid}/> : <CustomerOrdersView ctx={ctx}/>; }
-function AdminOrdersView({ctx,initialUnpaid=false}:{ctx:Ctx;initialUnpaid?:boolean}){return <AdminOrderHistory ctx={ctx} initialUnpaid={initialUnpaid} openOrder={o=>ctx.open({kind:'bulk',title:'הזמנה '+o.number,description:'פעולות הזמנה ומסמכי תשלום',render:(close:()=>void)=><OrderDetails ctx={ctx} id={o.id} close={close}/>})}/>;}
+function AdminOrdersView({ctx,initialUnpaid=false}:{ctx:Ctx;initialUnpaid?:boolean}){return <AdminOrderHistory ctx={ctx} initialUnpaid={initialUnpaid} openOrder={o=>ctx.go('admin-order/'+o.id)}/>;}
 
-function OrderDetails({ ctx, id, close }: {
+export function OrderDetails({ ctx, id, close }: {
     ctx: Ctx;
     id: string;
     close: () => void;
@@ -181,7 +181,7 @@ function SupportStatusBadge({ ticket }: { ticket: Row }) {
     const Icon = status === 'resolved' ? CheckCircle2 : status === 'answered' ? MessageCircle : Clock;
     return <span className={'support-status support-status-' + status}><Icon size={15}/>{supportStatusLabels[status]}</span>;
 }
-function SupportTicketForm({ ctx, row, admin, close }: { ctx: Ctx; row?: Row; admin: boolean; close: () => void }) {
+export function SupportTicketForm({ ctx, row, admin, close,onDirtyChange }: { ctx: Ctx; row?: Row; admin: boolean; close: () => void;onDirtyChange?:(value:boolean)=>void }) {
     const [name, setName] = useState(row?.name || ''), [message, setMessage] = useState(row?.message || ''), [orderNumber, setOrderNumber] = useState(row?.order_number || ''), [reply, setReply] = useState(row?.reply || '');
     const [status, setStatus] = useState<SupportStatus>(supportStatus(row || {}));
     const [busy, setBusy] = useState(false), [error, setError] = useState('');
@@ -194,15 +194,16 @@ function SupportTicketForm({ ctx, row, admin, close }: { ctx: Ctx; row?: Row; ad
         lock.current = true; setBusy(true);
         try {
             await ctx.run(() => api('records/ticket' + (row ? '/' + row.id : ''), row ? 'PATCH' : 'POST', { name: name.trim(), message: message.trim(), order_number: orderNumber.trim(), ...(admin && row ? { reply: reply.trim(), status } : {}) }), row ? 'הפנייה עודכנה' : 'הפנייה נשלחה לצוות');
+            onDirtyChange?.(false);
             close();
         } catch (e) { setError((e as Error).message); } finally { lock.current = false; setBusy(false); }
     };
-    return <form className="support-ticket-form" onSubmit={save}>
+    return <form noValidate className="support-ticket-form" onSubmit={save} onChangeCapture={()=>onDirtyChange?.(true)}>
         {row && <SupportStatusBadge ticket={row}/>}
         <Field label="נושא הפנייה"><Input required maxLength={200} placeholder="הכניסו נושא לפנייה" value={name} onChange={e => setName(e.target.value)}/></Field>
         <Field label="פרטי הפנייה"><Textarea required maxLength={10000} placeholder="פרטו את הפנייה שלכם כאן…" value={message} onChange={e => setMessage(e.target.value)}/></Field>
         <Field label="מספר הזמנה (לא חובה)"><Input maxLength={100} placeholder="#1001" value={orderNumber} onChange={e => setOrderNumber(e.target.value)}/></Field>
-        {admin && row ? <><Field label="תשובת הצוות"><Textarea maxLength={10000} value={reply} onChange={e => setReply(e.target.value)} placeholder="כתבו את התשובה שתוצג ללקוח"/></Field><Field label="סטטוס הפנייה"><Pick value={status} onChange={v => setStatus(v as SupportStatus)} options={supportStatusLabels}/></Field></> : row?.reply && <div className="support-team-reply"><h3><MessageCircle size={19}/>תשובת הצוות</h3><p>{row.reply}</p></div>}
+        {admin && row ? <><Field label="תשובת הצוות"><Textarea maxLength={10000} value={reply} onChange={e => setReply(e.target.value)} placeholder="כתבו את התשובה שתוצג ללקוח"/></Field><Field label="סטטוס הפנייה"><Pick value={status} onChange={v => {setStatus(v as SupportStatus);onDirtyChange?.(true);}} options={supportStatusLabels}/></Field></> : row?.reply && <div className="support-team-reply"><h3><MessageCircle size={19}/>תשובת הצוות</h3><p>{row.reply}</p></div>}
         <ErrorBox error={error}/><div className="support-form-actions"><Button type="submit" disabled={busy}>{busy ? <LoaderCircle size={18} className="animate-spin"/> : <Send size={18}/>} {row ? 'שמירת הפנייה' : 'שליחת פנייה'}</Button><Button type="button" variant="outline" disabled={busy} onClick={close}>ביטול</Button></div>
     </form>;
 }

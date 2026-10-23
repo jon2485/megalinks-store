@@ -357,3 +357,40 @@ No supplier dispatch before the chosen Israel day AND subsequent manager approva
 The selected date remains readable in the locked scheduled state, with an explicit
 withdraw-and-edit action. Calendar table resets are scoped to this dialog to avoid
 altering existing tables or other screens.
+
+
+## Approved administrative glass system — 2026-10-23
+
+The owner approved the work-center, orders and mobile navigation mockups.
+This section supersedes the earlier flat/dark-sidebar administrative presentation
+only. Customer and supplier screens retain their existing visual ownership.
+The register is Operate: real records and explicit actions lead the page.
+
+Runtime owner is `app/admin-approved-glass.css` (model B), loaded after the
+legacy adapters. Tokens: ink `#0b274d`, muted `#546b85`, line `#d6e5f0`,
+background `#f1f7fc`, action `#0872d5`, focus `#006fc6`. Heebo remains the
+self-hosted display/body/data face; tabular numerals and bidi isolation preserve
+Hebrew reading. The navy logo header is shared by every administrative route.
+Silver-blue translucent surfaces use one elevation and a restrained inner
+highlight. Body text stays opaque for contrast. Controls are at least 44px high,
+with hover, focus, pressed, disabled and busy feedback.
+
+Desktop uses the complete grouped navigation rail and an airy work surface.
+The first work-center section is an operational update feed with pagination,
+filter/search and exact-record actions. Existing treatment queues remain below
+in an explicit disclosure; none of their actions is removed. Existing orders,
+financial summaries, exports and dialogs retain their calculations and handlers.
+All other administrative screens consume this same surface/control adapter.
+
+Below 768px only, a detached 5-item frosted pill provides work center, orders,
+articles, customers and support. Its translucent active capsule slides between
+the equal targets using logical RTL order. It reserves safe-area space and
+never replaces the complete menu. The header always exposes “כל אזורי הניהול”;
+its accessible Sheet shares the exact same canonical navigation list, including
+prices, suppliers, settings, reports and logs. Reduced motion removes movement;
+reduced transparency uses an opaque fallback; forced colors retains selection.
+
+Badges display server-counted distinct actionable records, never queue sums.
+Zero hides the badge. Stale data remains explicitly marked, not reset to zero.
+The menu includes the pre-existing pricing aliases as explicit destinations.
+No mockup records, invented statistics or preview amounts are shipped.

@@ -162,3 +162,27 @@ order, editable day.month.year field, explicit confirm/cancel, field-level error
 keyboard dismissal, and scrollable mobile dialog. Customer dates cannot be past;
 blog administrators can backdate. Scoped calendar table resets prevent legacy
 table padding from clipping dates. Dates and numbers use bidi isolation.
+
+
+## Approved admin work center and complete navigation — 2026-10-23
+
+This approved extension replaces presentation, not financial or publication
+policy. Canonical owners remain existing API authorization, finance, record
+forms, publication handlers, Radix Sheet/Dialog and Sonner.
+
+| Capability | Canonical owner | Contract |
+|---|---|---|
+| Full navigation | lib/admin-navigation.ts, AdminMenuContent | Original domains, pages and aliases remain reachable; header menu on every route, desktop rail; knowledge editor included |
+| Phone quick navigation | AdminMobileDock | Five destinations, current-page semantics, sliding transparent indicator; no desktop dock; full menu retains every other option |
+| Work-center updates | admin-updates.ts and AdminUpdateFeed | Admin-only read, 20/page, stable date/id sorting, literal search, action/info filters, bounded page and empty/error/retry states |
+| Exact record | admin-order/:id, admin-article/:id, admin-support/:id | Payment opens that order and its pending report/receipt; article opens that editor; support opens that ticket |
+| Attention | admin-control-center + admin-attention | Distinct actionable identities across overlapping queues; zero hidden; existing resolved states remove counts after refresh; read never marks handled |
+| Forms and payments | Original OrderDetails, ReportReview, SupportTicketForm and APIs | Existing validation, optimistic versions, confirmation and duplicate guards; no auto approval or supplier dispatch |
+| List return | admin-view-state in-memory map | Feed query/filter/page and scroll survive internal record navigation; no customer query saved to persistent browser storage |
+| Existing screens | Existing list/detail components + scoped CSS | Filters, exports, totals, statuses, dialogs, edits and deletions retain existing owners and remain reachable on mobile |
+
+Source: docs/security.md, docs/supplier-data-privacy.md, existing payment-reports,
+order-finance, order-summary and API admin/owns guards. New ticket GET is owner
+or admin only; other customers cannot read it. New nested pages are private and
+noindex, and do not bypass server authorization. Domain values in the mockups are
+illustrative; production always shows actual API values.
