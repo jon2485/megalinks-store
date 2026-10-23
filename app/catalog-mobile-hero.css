@@ -1,0 +1,136 @@
+/* Mobile-only hero approved 2026-10-23. Original brand assets and desktop stay owned
+   by catalog-experience.css. The document remains the only page scroll owner. */
+.azure-catalog.catalog-approved-home .catalog-mobile-scroll[data-slot=button] {
+ display:none;
+}
+
+@media (max-width:700px) {
+ .azure-catalog.catalog-approved-home .azure-catalog-hero {
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  min-height:calc(100vh - var(--catalog-mobile-hero-top,62px));
+  min-height:calc(100svh - var(--catalog-mobile-hero-top,62px));
+  padding:clamp(16px,3svh,28px) 16px max(18px,env(safe-area-inset-bottom));
+  gap:clamp(16px,3svh,28px);
+  background:#f5fbff url('/brand/checkout-waves.webp') center/cover no-repeat;
+ }
+ .azure-catalog.catalog-approved-home .catalog-hero-composition {
+  flex:1;
+  width:100%;
+  min-height:0;
+  max-width:440px;
+  grid-template-columns:minmax(0,1fr);
+  align-content:center;
+  gap:clamp(14px,2.5svh,24px);
+  text-align:center;
+ }
+ .azure-catalog.catalog-approved-home .catalog-home-illustration {
+  width:100%;
+  height:clamp(180px,38svh,320px);
+  max-width:420px;
+  margin-inline:auto;
+  object-fit:contain;
+ }
+ .azure-catalog.catalog-approved-home .catalog-hero-title {
+  font-size:clamp(27px,7.5vw,34px)!important;
+  line-height:1.24!important;
+ }
+ .azure-catalog.catalog-approved-home .catalog-hero-intro>p {
+  max-width:360px;
+  margin:14px auto 0;
+  font-size:16px!important;
+  line-height:1.65;
+ }
+ .azure-catalog.catalog-approved-home .catalog-home-cta[data-slot=button] {
+  width:min(100%,282px);
+  min-height:60px;
+  margin-top:22px;
+  padding:14px 24px;
+  gap:16px;
+  border:1px solid #ffffff60;
+  border-radius:20px;
+  background:linear-gradient(110deg,#00868e,#0078df);
+  color:#fff;
+  font-size:20px!important;
+  font-weight:700!important;
+  line-height:1.4;
+  box-shadow:inset 0 1px 0 #ffffff35,0 10px 24px #049fba24;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:transform 180ms ease,box-shadow 180ms ease;
+ }
+ .azure-catalog.catalog-approved-home .catalog-home-cta svg {
+  width:22px;
+  height:22px;
+  flex-shrink:0;
+ }
+ .azure-catalog.catalog-approved-home .catalog-home-cta:hover {
+  background:linear-gradient(110deg,#00868e,#0078df);
+  transform:translateY(-2px);
+  box-shadow:inset 0 1px 0 #ffffff55,0 14px 30px #049fba30;
+ }
+ .azure-catalog.catalog-approved-home .catalog-home-cta:active {
+  transform:translateY(1px);
+  box-shadow:inset 0 1px 0 #ffffff35,0 4px 12px #049fba24;
+ }
+ .azure-catalog.catalog-approved-home .catalog-mobile-scroll[data-slot=button] {
+  flex:none;
+  display:grid;
+  place-items:center;
+  align-self:center;
+  width:44px;
+  height:44px;
+  min-height:44px;
+  padding:0;
+  margin:0;
+  border:1px solid #d6e5f0;
+  border-radius:50%;
+  background:#ffffffc9;
+  color:var(--catalog-ink);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  box-shadow:inset 0 1px 0 #fff,0 4px 14px #0739570a;
+  cursor:pointer;
+  touch-action:manipulation;
+  transition:transform 180ms ease,box-shadow 180ms ease;
+ }
+ .azure-catalog.catalog-approved-home .catalog-mobile-scroll:hover {
+  transform:translateY(2px);
+  box-shadow:inset 0 1px 0 #fff,0 7px 18px #07395717;
+ }
+ .azure-catalog.catalog-approved-home .catalog-mobile-scroll:active {transform:translateY(3px) scale(.96);}
+ .azure-catalog.catalog-approved-home .catalog-mobile-scroll:focus-visible {
+  outline:3px solid #159ef3;
+  outline-offset:4px;
+ }
+ .azure-catalog.catalog-approved-home .catalog-home-results {
+  scroll-margin-top:var(--catalog-hero-scroll-offset,86px);
+ }
+}
+
+/* Short phones / larger text keep natural document flow; nothing is cropped. */
+@media (max-width:700px) and (max-height:650px) {
+ .azure-catalog.catalog-approved-home .azure-catalog-hero {padding-block:14px 18px;gap:14px;}
+ .azure-catalog.catalog-approved-home .catalog-home-illustration {height:clamp(140px,31svh,200px);}
+ .azure-catalog.catalog-approved-home .catalog-hero-composition {gap:12px;}
+ .azure-catalog.catalog-approved-home .catalog-hero-intro>p {margin-top:10px;}
+ .azure-catalog.catalog-approved-home .catalog-home-cta[data-slot=button] {margin-top:16px;min-height:54px;}
+}
+@media (max-width:700px) and (prefers-reduced-motion:reduce) {
+ .azure-catalog.catalog-approved-home .catalog-home-cta[data-slot=button],
+ .azure-catalog.catalog-approved-home .catalog-mobile-scroll[data-slot=button] {
+  transition:none;
+  transform:none;
+ }
+}
+@media (max-width:700px) and (prefers-reduced-transparency:reduce) {
+ .azure-catalog.catalog-approved-home .catalog-mobile-scroll[data-slot=button] {
+  background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none;
+ }
+}
+@media (forced-colors:active) {
+ .azure-catalog.catalog-approved-home .catalog-mobile-scroll[data-slot=button] {
+  color:ButtonText;background:ButtonFace;border-color:ButtonText;box-shadow:none;
+ }
+}

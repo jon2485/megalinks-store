@@ -15,7 +15,7 @@ await build({ entryPoints:['app/catalog-view.tsx'], outfile:'.sites-runtime/cata
   b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'js',contents:a.path==='./workspace'?`export const categories=${categorySource};`:a.path==='./workspace-account-controls'?'export function WorkspaceAccountControls(){return null;}':'export const useData=()=>({data:{favorites:[]},loading:false});export const api=async()=>({});export const csv=()=>"";export function download(){};'}));
 }}] });
 const {default:Catalog} = require(realpathSync('.sites-runtime/catalog-home-layout.cjs'));
-const files = process.argv.includes('--built') ? [...new Set(['dist/server/.vite/manifest.json','dist/client/.vite/manifest.json'].flatMap(f=>Object.values(JSON.parse(readFileSync(f,'utf8'))).flatMap(e=>e.css||[])))].map(f=>'dist/client/'+f) : ['app/globals.css','app/catalog-filter-dialog.css','app/catalog-experience.css'];
+const files = process.argv.includes('--built') ? [...new Set(['dist/server/.vite/manifest.json','dist/client/.vite/manifest.json'].flatMap(f=>Object.values(JSON.parse(readFileSync(f,'utf8'))).flatMap(e=>e.css||[])))].map(f=>'dist/client/'+f) : ['app/globals.css','app/catalog-filter-dialog.css','app/catalog-experience.css','app/catalog-mobile-hero.css'];
 const sheet = postcss.parse(files.map(f=>readFileSync(f,'utf8')).join('\n'));
 function dom(markup) {
   const all=[],root={tag:'root',attrs:{},parent:null};let parent=root;
@@ -66,7 +66,9 @@ for(const search of ['', 'tech']) {
       assert.equal(row.width,actions.width,width+': mobile search ends above bulk-order edge');
       assert.equal(row['max-width'],'510px');
       const hero=resolve(nodes.find(n=>n.attrs.class==='azure-catalog-hero'),width);
-      assert(['transparent','0 0'].includes(hero.background),hero.background+width+': hero shares the catalog surface without a hard background edge');
+      assert.match(hero.background,/checkout-waves/,width+': full-height hero retains the original wave asset');
+      assert.match(hero['min-height'],/100svh.*--catalog-mobile-hero-top/,width+': first viewport is reserved without hiding catalog controls');
+      assert.equal(resolve(nodes.find(n=>(n.attrs.class||'').split(/\s+/).includes('catalog-mobile-scroll')),width).display,'grid',width+': accessible down-arrow is available on phones');
       const surface=resolve(nodes.find(n=>(n.attrs.class||'').includes('catalog-approved-home')),width);
       assert.match(surface['background-image'],/checkout-waves/,width+': original wave asset continues behind the catalog');
       const art=resolve(nodes.find(n=>n.attrs.class==='catalog-publication-scene'),width);
@@ -80,6 +82,7 @@ for(const search of ['', 'tech']) {
         assert.equal(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-composition'),width)['min-height'],'0');
       }
     }else assert.equal(row.width,'100%',width+': existing tablet row preserved');
+    if(width>700)assert.equal(resolve(nodes.find(n=>(n.attrs.class||'').split(/\s+/).includes('catalog-mobile-scroll')),width).display,'none',width+': no new desktop control');
     assert.equal(button['margin-top']??button.margin,'0',width+': no legacy top margin');
     assert.equal(button['min-width'],'0',width+': no legacy minimum width');
     assert.equal(button.width,'100%',width+': button fits its own track');

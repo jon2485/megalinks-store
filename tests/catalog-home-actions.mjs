@@ -24,7 +24,7 @@ await build({
   external: [react, 'react/jsx-runtime'], plugins: [{ name: 'isolated-home-fixtures', setup(b) {
     b.onResolve({ filter: /^(react|@\/lib\/client|\.\/workspace|\.\/workspace-account-controls)$/ }, a => ({ path: a.path, namespace: 'fixture' }));
     b.onLoad({ filter: /.*/, namespace: 'fixture' }, a => ({ loader: 'js', contents:
-      a.path === 'react' ? `export * from ${JSON.stringify(react)};export {default} from ${JSON.stringify(react)};export const useState=v=>globalThis.homeHooks.state(v),useEffect=()=>{},useMemo=f=>f(),useRef=v=>({current:v}),useId=()=>"publication-notes-fixture";` :
+      a.path === 'react' ? `export * from ${JSON.stringify(react)};export {default} from ${JSON.stringify(react)};export const useState=v=>globalThis.homeHooks.state(v),useEffect=f=>globalThis.homeEffects?.push(f),useMemo=f=>f(),useRef=v=>globalThis.homeRefs?.(v)||({current:v}),useId=()=>"publication-notes-fixture";` :
       a.path === './workspace' ? `export const categories=${categorySource};` :
       a.path === './workspace-account-controls' ? 'export function WorkspaceAccountControls(){return null;}' :
       'export const useData=()=>({data:{favorites:[{kind:"favorite",website_id:"b"}]},loading:false});export const api=(...args)=>globalThis.homeApi(...args);export const csv=(rows,columns)=>({rows,columns});export const download=(...args)=>globalThis.homeDownload(...args);'
@@ -89,10 +89,44 @@ assert.deepEqual(calls.at(-1), ['api', 'favorites', 'POST', { website_id: 'b', k
 cursor = 0; const card = PublicationCard({ site: ctx.catalog[1], ctx, favorite: true, onFavorite() {} });
 find(card, n => n.props?.label === 'הוספה לסל').props.onClick(); assert.equal(calls.at(-1)[1].kind, 'order'); assert.equal(calls.at(-1)[1].site.id, 'b');
 reset(); tree = render();
-globalThis.document = { getElementById: id => ({ scrollIntoView: options => calls.push(['scroll', id, options]) }) };
+globalThis.document = { getElementById: id => ({ focus: options => calls.push(['focus', id, options]), scrollIntoView: options => calls.push(['scroll', id, options]) }) };
 globalThis.window = { matchMedia: () => ({ matches: false }) };
 label(tree, 'לצפייה בקטלוג').props.onClick();
 assert.deepEqual(calls.at(-1), ['scroll', 'catalog-home-results', { behavior: 'smooth', block: 'start' }]);
+assert.deepEqual(calls.at(-2), ['focus', 'catalog-home-results', { preventScroll: true }], 'keyboard continues in the catalog without a premature jump');
+const down = find(tree, n => n.props?.['aria-label'] === 'גלילה לקטלוג האתרים');
+assert.equal(down.props['aria-controls'], 'catalog-home-results');
+assert.equal(down.props.onClick, label(tree, 'לצפייה בקטלוג').props.onClick, 'both controls share the exact same scroll owner');
+down.props.onClick();
+assert.deepEqual(calls.at(-1), ['scroll', 'catalog-home-results', { behavior: 'smooth', block: 'start' }]);
 window.matchMedia = () => ({ matches: true }); label(tree, 'לצפייה בקטלוג').props.onClick();
 assert.equal(calls.at(-1)[2].behavior, 'auto', 'reduced-motion honored');
+down.props.onClick(); assert.equal(calls.at(-1)[2].behavior, 'auto', 'arrow also honors reduced motion');
+globalThis.document.getElementById = () => null;
+assert.doesNotThrow(() => down.props.onClick(), 'a detached catalog target is harmless');
+// Run the real viewport effect against isolated geometry. Mobile browser chrome
+// and scrolling cannot change the hero's document offset or leave live listeners.
+reset(); const heroValues = {}, resultValues = {}, listeners = new Map();
+let headerHeight = 62, mobile = true, observer;
+const header = {getBoundingClientRect: () => ({height: headerHeight})};
+const hero = {style:{setProperty:(k,v)=>heroValues[k]=v},getBoundingClientRect:()=>({top:62-window.scrollY}),closest:()=>({querySelector:()=>header})};
+const results = {style:{setProperty:(k,v)=>resultValues[k]=v}};
+globalThis.window = {scrollY:0,matchMedia:()=>({matches:mobile}),addEventListener:(k,v)=>listeners.set(k,v),removeEventListener:k=>listeners.delete(k)};
+globalThis.ResizeObserver = class {constructor(fn){this.fn=fn;observer=this;}observe(target){this.target=target;}disconnect(){this.disconnected=true;}};
+globalThis.homeEffects = []; let refIndex=0;
+globalThis.homeRefs = v => ({current:refIndex++===0?hero:refIndex===2?results:v});
+render(); const cleanup=globalThis.homeEffects[0]();
+assert.equal(heroValues['--catalog-mobile-hero-top'],'62px');
+assert.equal(resultValues['--catalog-hero-scroll-offset'],'78px');
+window.scrollY=380;listeners.get('resize')();
+assert.equal(heroValues['--catalog-mobile-hero-top'],'62px','scrolling keeps first-screen sizing stable');
+headerHeight=78;observer.fn();
+assert.equal(resultValues['--catalog-hero-scroll-offset'],'94px','destination clears a resized sticky header');
+mobile=false;headerHeight=120;observer.fn();
+assert.equal(resultValues['--catalog-hero-scroll-offset'],'94px','desktop does not acquire mobile geometry');
+cleanup();assert.equal(listeners.size,0);assert.equal(observer.disconnected,true);
+mobile=true;globalThis.ResizeObserver=undefined;
+const fallbackCleanup=globalThis.homeEffects[0]();fallbackCleanup();
+assert.equal(listeners.size,0,'resize fallback without ResizeObserver cleans up');
+delete globalThis.homeEffects;delete globalThis.homeRefs;
 console.log('CATALOG HOME ACTIONS PASSED: real search/clear, all 18 categories/apply/all, filters/reset/sorting, filtered public export, bulk route, favorites, original order dialog and accessible CTA scrolling. Isolated fixtures, no live writes.');

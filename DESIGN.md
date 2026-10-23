@@ -394,3 +394,22 @@ Badges display server-counted distinct actionable records, never queue sums.
 Zero hides the badge. Stale data remains explicitly marked, not reset to zero.
 The menu includes the pre-existing pricing aliases as explicit destinations.
 No mockup records, invented statistics or preview amounts are shipped.
+
+## Mobile catalog first viewport — approved 2026-10-23
+
+Only phones at viewport widths up to 700px adopt the approved full-height hero.
+`app/catalog-mobile-hero.css`, loaded after existing catalog styles, owns this
+variant. Desktop/tablet retain their existing composition and controls. The
+original Heebo face, navy heading, cyan/blue accent, checkout-waves background,
+home-publication-20261020 illustration and existing header remain in use.
+
+The first viewport contains artwork, the unchanged Hebrew headline/copy, the
+refined turquoise/blue “לצפייה בקטלוג” button and a 44px glass down-arrow.
+The document still scrolls naturally. A min-height based on 100svh minus the
+measured hero document offset reserves the first screen; content may grow on
+short screens or with enlarged text. Nothing is clipped or hidden. Header
+measurement accounts for font/header resizing and scroll-margin keeps the
+catalog destination below the sticky header. Both buttons share native smooth
+scroll and focus the existing catalog region without an intermediate jump.
+Reduced motion uses immediate scrolling and removes button movement. The arrow
+is hidden above 700px. Catalog filters, purchases, prices and exports are unchanged.

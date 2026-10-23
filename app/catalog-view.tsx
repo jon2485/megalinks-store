@@ -25,6 +25,7 @@ import './approved-customer-glass.css';
 import {CartFeedbackButton} from './cart-add-feedback';
 import './catalog-action-feedback.css';
 import './catalog-product-glass.css';
+import './catalog-mobile-hero.css';
 
 export function CatalogTopBar({ ctx, cartCount }: { ctx: Ctx; cartCount: number }) {
     return <div className="workspace-premium-topbar">
@@ -82,6 +83,31 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
 }
 
 export default function PremiumCatalog({ ctx, search, onSearch, loading = false }: { ctx: Ctx; search: string; onSearch: (value: string) => void; loading?: boolean }) {
+    const heroRef = useRef<HTMLElement>(null);
+    const resultsRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const hero = heroRef.current;
+        if (!hero) return;
+        const header = hero.closest('.workspace-page-shell')?.querySelector<HTMLElement>('.workspace-site-header');
+        const measure = () => {
+            if (!window.matchMedia('(max-width: 700px)').matches) return;
+            // Stable small viewport: collapsing mobile browser chrome must not move the CTA.
+            const top = Math.max(0, hero.getBoundingClientRect().top + window.scrollY);
+            hero.style.setProperty('--catalog-mobile-hero-top', `${Math.ceil(top)}px`);
+            resultsRef.current?.style.setProperty('--catalog-hero-scroll-offset', `${Math.ceil(header?.getBoundingClientRect().height ?? 62) + 16}px`);
+        };
+        measure();
+        const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+        if (header) observer?.observe(header);
+        window.addEventListener('resize', measure);
+        return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
+    }, []);
+    const scrollToCatalog = () => {
+        const results = document.getElementById('catalog-home-results');
+        if (!results) return;
+        results.focus({ preventScroll: true });
+        results.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    };
     const searchRef = useRef<HTMLInputElement>(null);
     const searchTriggerRef = useRef<HTMLButtonElement>(null);
     const [searchOpen, setSearchOpen] = useState(Boolean(search));
@@ -125,17 +151,18 @@ export default function PremiumCatalog({ ctx, search, onSearch, loading = false 
         setCorrection(''); setCorrecting('');
     };
     return <div dir="rtl" className="azure-catalog catalog-approved-home min-w-0 text-right">
-        <section className="azure-catalog-hero" aria-label="חיפוש אתרים לפרסום">
+        <section ref={heroRef} className="azure-catalog-hero" aria-label="חיפוש אתרים לפרסום">
             <div className="catalog-hero-composition">
                 <div className="catalog-hero-intro">
                     <h1 className="catalog-hero-title"><span>איפה נפרסם</span><span className="azure-title-accent">את הכתבה הבאה שלך?</span></h1>
                     <p>חפשו לפי אתר או תחום, סננו ובחרו היכן לפרסם.</p>
-                    <Button className="catalog-home-cta" onClick={()=>document.getElementById('catalog-home-results')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'})}>לצפייה בקטלוג<ArrowLeft size={18}/></Button>
+                    <Button type="button" className="catalog-home-cta" aria-controls="catalog-home-results" onClick={scrollToCatalog}>לצפייה בקטלוג<ArrowLeft size={18} aria-hidden="true"/></Button>
                 </div>
                 <CatalogPublicationScene/>
             </div>
+            <Button type="button" variant="ghost" className="catalog-mobile-scroll" aria-label="גלילה לקטלוג האתרים" aria-controls="catalog-home-results" onClick={scrollToCatalog}><ChevronDown size={21} aria-hidden="true"/></Button>
         </section>
-        <div id="catalog-home-results" className="catalog-home-results relative mx-auto max-w-[1760px] px-4 pb-10 sm:px-8 lg:px-10">
+        <div ref={resultsRef} id="catalog-home-results" tabIndex={-1} role="region" aria-label="קטלוג אתרים לפרסום" className="catalog-home-results relative mx-auto max-w-[1760px] px-4 pb-10 sm:px-8 lg:px-10">
             <div className="catalog-results-toolbar">
                 <div className="catalog-results-heading"><h2 className="!text-xl font-bold text-slate-800">אתרים לפרסום</h2></div>
                 <div className="catalog-home-tools">
