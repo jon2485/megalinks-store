@@ -1,9 +1,10 @@
-import {all,one} from './server';
+import {all,one,stmt,parse,hash,now,assert,audit} from './server';
+import type {Row} from './shared';
 import {fullyCancelledOrderSql} from './order-summary';
 import {adminUnionCtes} from './admin-sql';
 
-// Read-only operational feed. Existing approval/payment/publication handlers own writes.
-export async function adminUpdates(query:URLSearchParams){
+// Source events remain read-only; manual handling is separate metadata.
+export function adminUpdatesCte(){
  const allowed=`NOT ${fullyCancelledOrderSql()} AND (o.paid=1 OR COALESCE(json_extract(o.data,'$.demo'),0)=1 OR COALESCE(json_extract(o.data,'$.on_account'),0)=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1))`;
  const articleBase='articles a JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id LEFT JOIN websites w ON w.id=a.website_id';
  const branches=[
@@ -17,15 +18,41 @@ export async function adminUpdates(query:URLSearchParams){
   `SELECT 'delivery:'||j.id,'delivery',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(a.title,''),'כתבה ללא כותרת'),j.updated,NULL,'תקלה בשליחת כתבה','דורש בדיקה','פתיחת הכתבה','admin-article/'||a.id,1 FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id LEFT JOIN websites w ON w.id=a.website_id WHERE j.kind='supplier_publication' AND j.status IN ('failed','blocked')`,
  ];
  const feed=adminUnionCtes('feed',branches);
+ return feed;
+}
+const snapshotFields=['id','kind','resource_id','number','user_name','website_name','detail','happened_at','amount','title','status','action','page','needs_action'] as const;
+const sameEvent=(alias='feed')=>`json_extract(h.data,'$.snapshot.id')=${alias}.id AND json_extract(h.data,'$.snapshot.happened_at')=${alias}.happened_at AND json_extract(h.data,'$.snapshot.status')=${alias}.status AND json_extract(h.data,'$.snapshot.detail')=${alias}.detail AND json_extract(h.data,'$.snapshot.amount') IS ${alias}.amount`;
+const eventVersion=(row:Row)=>hash(JSON.stringify([row.id,row.happened_at,row.status,row.detail,row.amount]));
+export async function handleAdminUpdate(user:Row,body:Row){
+ assert(typeof body.id==='string'&&body.id.length<500&&typeof body.version==='string','התראה לא תקינה');
+ const cte=adminUpdatesCte(),row=await one(`WITH ${cte} SELECT * FROM feed WHERE id=?`,body.id);
+ assert(row,'ההתראה השתנתה או כבר אינה זמינה. יש לרענן',409);assert(await eventVersion(row)===body.version,'ההתראה התעדכנה. יש לרענן לפני הסימון',409);
+ const id='admin-update-handled:'+body.version,stamp=now(),snapshot=Object.fromEntries(snapshotFields.map(k=>[k,row[k]]));
+ const result=await stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',id,'admin_update_handled',user.id,JSON.stringify({snapshot,handled_at:stamp,handled_by:user.id,version:body.version}),stamp,stamp).run();
+ if(result.meta.changes)await audit(user,id,'התראה סומנה כטופלה',{event_id:row.id});
+ return {ok:true,history_id:id};
+}
+export async function reopenAdminUpdate(user:Row,body:Row){
+ const raw=await one("SELECT * FROM records WHERE id=? AND kind='admin_update_handled'",String(body.history_id||''));assert(raw,'ההתראה כבר הוחזרה לטיפול',409);
+ const h=parse(raw)!,row=await one(`WITH ${adminUpdatesCte()} SELECT * FROM feed WHERE id=?`,h.snapshot.id);
+ assert(row&&await eventVersion(row)===h.version,'האירוע המקורי השתנה. ההתראה נשארה בהיסטוריה',409);
+ await stmt("DELETE FROM records WHERE id=? AND kind='admin_update_handled'",raw.id).run();await audit(user,raw.id,'התראה הוחזרה לטיפול',{event_id:row.id});return {ok:true};
+}
+export async function adminUpdates(query:URLSearchParams){
+ const source=adminUpdatesCte(),state=query.get('state')||'all';assert(['open','handled','all'].includes(state),'מצב התראות לא תקין');
+ const archived=`history AS (SELECT ${snapshotFields.map(k=>"json_extract(h.data,'$.snapshot."+k+"') AS "+k).join(',')},h.id AS history_id,json_extract(h.data,'$.handled_at') AS handled_at,COALESCE(u.name,'מנהל') AS handled_by_name FROM records h LEFT JOIN users u ON u.id=h.user_id WHERE h.kind='admin_update_handled')`;
+ const open=`SELECT * FROM feed WHERE NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`;
+ const cte=state==='handled'?`${source},${archived},selected AS (SELECT * FROM history)`:source+`,selected AS (${state==='open'?open:'SELECT * FROM feed'})`;
  const filter=['action','info'].includes(query.get('filter')||'')?query.get('filter')!:'all';
  const q=(query.get('q')||'').trim().slice(0,120),requested=Math.max(1,Math.min(100000,Math.trunc(Number(query.get('page')))||1)),size=20;
  const where=`WHERE (?='all' OR needs_action=?) AND (?='' OR (title||' '||user_name||' '||number||' '||website_name||' '||detail) LIKE ? ESCAPE '\\')`;
  const args=[filter,filter==='action'?1:0,q,'%'+q.replace(/[\\%_]/g,c=>'\\'+c)+'%'];
- const total=await one(`WITH ${feed} SELECT COUNT(*) AS total FROM feed ${where}`,...args);
- const page=Math.min(requested,Math.max(1,Math.ceil(Number(total?.total||0)/size)));
- const [updates,counts]=await Promise.all([
-  all(`WITH ${feed} SELECT * FROM feed ${where} ORDER BY happened_at DESC,id LIMIT ? OFFSET ?`,...args,size,(page-1)*size),
-  one(`WITH ${feed} SELECT COUNT(*) AS total,COALESCE(SUM(needs_action),0) AS action,COALESCE(SUM(CASE WHEN needs_action=0 THEN 1 ELSE 0 END),0) AS info FROM feed`),
+ const total=await one(`WITH ${cte} SELECT COUNT(*) AS total FROM selected ${where}`,...args),page=Math.min(requested,Math.max(1,Math.ceil(Number(total?.total||0)/size)));
+ const [rows,counts,handled]=await Promise.all([
+  all(`WITH ${cte} SELECT * FROM selected ${where} ORDER BY ${state==='handled'?'handled_at':'happened_at'} DESC,id LIMIT ? OFFSET ?`,...args,size,(page-1)*size),
+  one(`WITH ${source},available AS (${open}) SELECT COUNT(*) AS total,COALESCE(SUM(needs_action),0) AS action,COALESCE(SUM(CASE WHEN needs_action=0 THEN 1 ELSE 0 END),0) AS info FROM available`),
+  one("SELECT COUNT(*) AS n FROM records WHERE kind='admin_update_handled'")
  ]);
- return {updates,total:Number(total?.total||0),page,page_size:size,counts};
+ const updates=await Promise.all(rows.map(async row=>({...row,version:await eventVersion(row),...(state==='handled'?{can_reopen:!!await one(`WITH ${source} SELECT 1 FROM feed WHERE id=? AND happened_at=? AND status=? AND detail=? AND amount IS ?`,row.id,row.happened_at,row.status,row.detail,row.amount)}:{})})));
+ return {updates,total:Number(total?.total||0),page,page_size:size,state,filters:{q,filter},requested_page:requested,counts:{...counts,open:Number(counts?.total||0),handled:Number(handled?.n||0)}};
 }

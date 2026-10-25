@@ -1,6 +1,6 @@
 export const adminAreas = [
  {id:'admin',label:'מרכז העבודה',description:'כל מה שממתין לטיפול, במקום אחד.',pages:[['admin','עדכונים ומשימות']]},
- {id:'admin-orders',label:'הזמנות וכספים',description:'הזמנות, דיווחי תשלום, יתרות וחשבונות חודשיים.',pages:[['admin-orders','הזמנות'],['admin-payment-reports','דיווחי תשלום'],['admin-invoices','חשבוניות וקבלות'],['admin-topups','הטענות יתרה'],['admin-monthly','חשבונות חודשיים']]},
+ {id:'admin-orders',label:'הזמנות וכספים',description:'הזמנות, דיווחי תשלום, יתרות וחשבונות חודשיים.',pages:[['admin-orders','הזמנות'],['admin-month-close','סגירת חודש'],['admin-payment-reports','דיווחי תשלום'],['admin-invoices','חשבוניות וקבלות'],['admin-topups','הטענות יתרה'],['admin-monthly','חשבונות חודשיים']]},
  {id:'admin-approvals',label:'תוכן ופרסום',description:'בדיקה, כתיבה, אישור ומעקב עד לפרסום.',pages:[['admin-approvals','ממתינים לאישור'],['admin-articles','כל הכתבות'],['admin-publication','תור פרסום'],['admin-instructions','הנחיות כתיבה'],['admin-knowledge','מדריכים וידע']]},
  {id:'admin-users',label:'לקוחות והרשאות',description:'תיקי לקוח, הרשאות ומסגרות אשראי.',pages:[['admin-users','לקוחות והרשאות']]},
  {id:'admin-websites',label:'קטלוג ותמחור',description:'אתרים, סנכרון Google Sheets ומחירים ללקוחות.',pages:[['admin-websites','אתרים וסנכרון'],['admin-pricing','רמות והנחות'],['admin-pricebooks','מחירונים אישיים']]},

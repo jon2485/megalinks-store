@@ -1,5 +1,63 @@
 # Catalog interaction contract
 
+## Administrative guide workflows — approved 2026-10-25
+
+This is the current scoped contract for work-center notifications, administrative
+orders and the separate `/admin-month-close` report. It supersedes earlier
+no-generic-handling, unchanged-pagination and presentation-only statements for
+these explicitly authorized additions. Existing authorization, payment approval,
+publication, refund and supplier-settlement owners remain authoritative. The
+visual owner is `app/admin-guide-workspace.css`; composition and verification
+limits are recorded in `.impeccable/surfaces/admin-guide-workspace.md`.
+
+| Capability | Canonical owner | Current contract |
+|---|---|---|
+| Notification handling | `lib/admin-updates.ts`; admin-only control-center updates API; `AdminUpdateFeed` | Open/handled views use persisted `admin_update_handled` records with event snapshot, actor, timestamp and exact event version. Mark is idempotent; stale versions return 409. Reopen is offered only while that exact source event still exists unchanged. Changed events appear open while the earlier snapshot stays in history. |
+| Exact-record action | Existing `ctx.go` and order/article/support routes | Opening an event reaches its real record and performs no handling or financial/publication approval. Marking handled changes notification metadata only; the underlying payment report, money and publication state stay with their original handlers. |
+| Order categories | `lib/admin-order-buckets.ts`; SQL classification in `lib/admin-order-data.ts` | Three primary choices are mutually exclusive. Unpaid monthly/on-account orders remain monthly-open despite purchase closure, monthly PDF closure or pending/rejected reports. Confirmed paid/settled orders are closed; ordinary unpaid orders are in process. Fully cancelled orders and demos are in the separate archive. |
+| List and return state | `AdminOrderHistory`, `AdminUpdateFeed`, `lib/admin-view-state.ts` | Notifications and orders use server pagination at 20 records/page. Search text applies on explicit submit; clear applies an empty query and restores input focus. Category/select changes apply directly. Query/filter/page/scroll, plus order expansion, survive internal record navigation in transient memory. |
+| Native Select/Date | Native `select` and `input[type=date]` in the three guide components | Existing deliberate native variants remain: CSS owns closed fields and focus styling; the OS owns popup geometry. No authored popup, new picker dependency or popup-level styling is claimed. |
+| Report range and export | `AdminMonthClose`; `lib/admin-month-server.ts`; `lib/admin-date-range.ts`; GET `admin/month-close` | From/to and payment/order date basis are drafts until “הצגת סיכום”. Invalid dates/ranges keep the prior applied range and expose field errors. Responses must match the applied range/basis before rendering/export. Export uses that applied range, never unsaved dates. The report is read-only and does not close purchases or settle a monthly account. |
+| Report data and workbook | `lib/admin-month-report.ts`; `lib/admin-report-workbook.ts`; existing effective-order amounts | The report reads the complete selected dataset, shows 20 orders/page locally and exports every selected record without a page cap. Excel has one row per client, all their selected order numbers/contact details, numeric amounts and totals. The order-list export also uses every committed bucket/month/query filter across all pages. |
+
+The current workspace `go()` owns path-only navigation. Sensitive customer search
+queries remain in the transient `adminViewState` map, not browser storage,
+analytics or page URLs. This is internal return-state restoration, not a promise
+of restoration after reload or in a new tab. Response/filter/requested-page checks
+prevent an earlier result being shown as the newly selected dataset. Export locks
+prevent duplicate downloads; failed requests keep recoverable error feedback.
+
+Closed-order filtering uses confirmed payment dates; other order categories use
+order dates, with an explicit unknown-date group. The report offers payment date
+by default or order date explicitly. Israel calendar-day boundaries are computed
+with `Asia/Jerusalem`, including DST. Paid orders without a recorded payment date
+are flagged and excluded from payment-date ranges rather than silently assigned
+their creation date. Order-date reports may list unpaid orders, which contribute
+no confirmed income.
+
+Report net/VAT/gross income comes from confirmed order amounts after recorded
+refunds; wallet top-ups are not separately added as revenue. Direct costs are
+immutable purchase snapshots before VAT, including recorded writing costs. An
+unrecorded cost, ambiguous legacy zero or missing writing cost remains missing;
+affected cost/profit totals are null and visibly incomplete. A recorded explicit
+zero is valid. Refunds reduce income without erasing a recorded supplier cost.
+Calculated profit excludes unrecorded business expenses and is not a claim of
+supplier cash paid, full business profit or a tax return.
+
+Implementation-owner-reported validation passed: production build, typecheck,
+scoped ESLint, order/report integration including 1,005-row filtered export and
+legacy settlement method, notification persistence/version handling, order and
+guide UI handlers, existing glass/cart checks and 919 supplier-privacy checks.
+The original payment-report suite still stops at an inherited retired lobby-route
+assertion after 97 checks; only a temporary copy adapted to the existing exact
+route passed all 122. No full pass of the unchanged suite is claimed. The global
+strict audit reports 75 findings without ownership configuration; a temporary
+explicit declaration of the existing native Select/Date variants leaves zero in
+the five guide modules and 48 legacy findings globally. No audit waiver manifest
+is added and no whole-application compliance is claimed. Browser capture is blocked by cloud Chrome's
+`ERR_CONNECTION_REFUSED` against the local port 7777 server; screenshot fidelity,
+native popups, real focus/touch/zoom and live financial E2E remain unverified.
+
 ## Approved editorial administration — 2026-10-24
 
 The current admin presentation supersedes earlier presentation-only caveats below

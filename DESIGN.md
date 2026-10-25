@@ -156,6 +156,20 @@ live in `.impeccable/surfaces/admin-editorial.md`.
 - Hebrew RTL with existing Heebo, original record content and explicit actions.
 - The approved mobile update feed and five-destination pill dock remain familiar.
 
+### Administrative guide surfaces — approved 2026-10-25
+
+The work-center notifications, orders and separate month-summary page now use the
+approved framed guide composition. This is a scoped extension of the Editorial
+Desk: the existing navy header, complete menu, five-item mobile dock, Heebo and
+navy/cyan identity remain the shared system. `app/admin-guide-workspace.css` owns
+only `.admin-design-v172 .admin-guide` and the three components that opt into it;
+it supersedes earlier feed/order composition guidance for those surfaces only.
+Runtime CSS remains canonical (model B). The frontmatter and sidecar's incumbent
+system tokens are preserved; local guide values and composition are recorded in
+`.impeccable/surfaces/admin-guide-workspace.md`. The approved workflow additions
+and financial boundaries are recorded in UX-CONTRACT.md, rather than inferred
+from the visual references.
+
 ## Colors
 
 Navy anchors titles/actions; cyan surfaces and borders provide catalog depth.
@@ -172,12 +186,17 @@ normative mirror of the runtime values. `--admin-v172-ink`, `muted`, `line`,
 `blue` and `focus` are resolved by the editorial admin owner; fields, outline
 controls, selected tabs and table headers use its repeated literal values.
 Existing status colors continue to communicate their original domain states.
-The shared navy header and preserved mobile feed/dock remain owned by the
+The shared navy header and mobile dock remain owned by the
 approved-glass layer.
 
 **The Scope Rule.** Administrative editorial tokens apply only to authenticated
 administration and its currently mounted portals; never replace customer,
 supplier or public catalog brand tokens with them.
+
+The guide owner aliases `--guide-ink/copy/line/blue` to inherited
+`--admin-v172-ink/muted/line/blue`, with fallback values only when an inherited
+property is absent. Its local ice, selected, focus and status treatments remain
+scoped to these three surfaces; they do not redefine the shared palette.
 
 ## Typography
 
@@ -193,6 +212,11 @@ to the phone role below 768px. Fields remain 16px on phones; Hebrew labels wrap,
 and existing LTR domains,
 emails, identifiers and monetary bidi isolation remain intact. Tables use readable
 15px values with 13px headings, rather than compressing the complete workspace.
+
+Guide surfaces retain Heebo/Arial, RTL and tabular numerals. Their scoped page
+title is `clamp(30px, 3.2vw, 44px)` and becomes 30px at 760px and below. Inputs
+remain 16px; action labels are 15px, metadata/hints 13–14px and prominent record
+amounts 18–22px. Identifiers, domains and money keep bidi isolation.
 
 ## Layout
 
@@ -246,8 +270,19 @@ and all original fields.
 Opted-in administrative tables retain their real table elements and handlers.
 On phones, source header text supplies visible cell labels in vertically stacked
 record cards; action cells remain reachable. Tables outside the administrative
-context retain their existing presentation. The original work-center mobile feed
-and five-item dock retain their established composition.
+context retain their existing presentation. The five-item dock retains its
+established composition.
+
+Guide surfaces use a centered stage capped at 1180px inside the existing shell;
+at 1360px and above, notifications cap at 980px and orders at 1020px. Notifications
+place open/handled choices and filters before framed records. Orders place three
+full-width category choices before filters and expandable records, with a visible
+link to the separate month-summary page. That page places the range form, summary
+lines and expandable order list in separate frames. At 760px and below, filters
+reflow into two columns, report date-basis selection spans the row, and the report
+list exposes its extra values in record details. Below 391px, notification actions
+stack and the month-summary link spans its heading row. The document retains
+scroll ownership and the existing shell reserves dock space.
 
 ## Elevation & Depth
 
@@ -264,8 +299,13 @@ White work panels use one quiet ambient shadow, mirrored in the sidecar from
 `public/brand/checkout-waves.webp` beneath a translucent white wash. Decorative
 legacy hero waves are suppressed inside the work surface to keep the page calm.
 Hover gives actions a small shadow; pressed actions shift by 1px. Existing
-reduced-motion rules remove movement and transitions. Header/menu/dock depth and
-the liked mobile feed stay owned by the approved-glass layer.
+reduced-motion rules remove movement and transitions. Header/menu/dock depth
+stays owned by the approved-glass layer.
+
+Guide record frames use a local quiet shadow (`0 4px 16px #18426104`) with pale
+borders and opaque white surfaces. Their heading uses the local
+`public/brand/admin-guide-waves.svg` backdrop. These scoped treatments do not
+change the global elevation vocabulary.
 
 ## Shapes
 
@@ -280,6 +320,10 @@ blue boundaries. These scoped values supersede older administrative glass radii
 for work panels and forms. They do not flatten the preserved fully rounded mobile
 dock, status pills or header menu trigger. Long text and Hebrew labels wrap within
 their container instead of clipping operations.
+
+Guide notification/order/report frames use 14px corners; their controls retain
+8px corners and status pills retain their rounded silhouette. These are local
+surface variants, not a replacement for the editorial 12px panel primitive.
 
 ## Components
 
@@ -338,6 +382,26 @@ Animation shells own entrance transforms; original inner-card hover styling stay
 The sidecar provides standalone administrative button, field, panel, navigation,
 selected-tab, table and summary-strip samples. These are documentation previews,
 not replacements for React components or business handlers.
+
+### Administrative guide components
+
+- **Actions and fields:** local guide actions and visible-label fields have a
+  46px minimum height. Focus uses a visible containing outline; busy/disabled,
+  loading, empty, error/retry and selected states remain attached to real actions.
+- **Native controls:** single-select and date input fields deliberately retain
+  native semantics and OS-owned popup geometry. Guide CSS owns their closed field
+  styling only; it does not introduce a custom picker or style a native popup.
+- **Records:** notifications pair an exact-record link with explicit handling;
+  orders expose report details and original order/payment actions. Monthly report
+  rows use native `details/summary`, with extra facts retained in phone disclosure.
+- **Summary:** five aligned rows distinguish net income, VAT, gross income,
+  recorded direct cost and calculated profit. Cyan highlights profit; missing
+  costs use explicit warning copy and incomplete values, rather than visual zeroes.
+
+Source and handler checks support these implementations. Browser captures remain
+blocked by the cloud browser's `ERR_CONNECTION_REFUSED` when reaching the local
+server at port 7777; visual fidelity, actual popup/focus/touch behavior and zoom
+remain unverified. The surface brief records the evidence boundary.
 
 ## Do's and Don'ts
 

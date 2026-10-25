@@ -5,10 +5,9 @@ export type HistoryGroup=keyof typeof historyGroups;
 export function historyMonthLabel(month:string){return /^\d{4}-(0[1-9]|1[0-2])$/.test(month)?new Intl.DateTimeFormat('he-IL',{month:'long',year:'numeric'}).format(new Date(month+'-15T12:00:00Z')):month;}
 export function orderHistoryGroup(o:Row):HistoryGroup{
  if(o.demo)return 'demo';
- if(o.paid||o.settled||o.payment_settled)return 'closed';
- if(o.status==='cancelled')return 'cancelled';
- if((o.on_account||o.payment==='monthly')&&!o.monthly_closed)return 'open';
  if(orderCancellation(o)==='full')return 'cancelled';
+ if(o.paid||o.settled||o.payment_settled)return 'closed';
+ if(o.on_account||o.payment==='monthly'||o.billing_month)return 'open';
  return 'pending';
 }
 export function financialOrderLabel(o:Row){if(orderCancellation(o)==='full')return 'בוטלה';const group=orderHistoryGroup(o);return group==='closed'?'שולמה':group==='open'?'חשבון חודשי פתוח':group==='demo'?'הדגמה - ללא חיוב':group==='cancelled'?'בוטלה':o.monthly_closed?'חודש נסגר - ממתינה לתשלום':'ממתינה לתשלום';}

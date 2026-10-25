@@ -16,7 +16,11 @@ import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
-import {adminUpdates} from '@/lib/admin-updates';
+import {adminUpdates,handleAdminUpdate,reopenAdminUpdate} from '@/lib/admin-updates';
+import {adminOrders} from '@/lib/admin-order-data';
+import {adminMonthReport} from '@/lib/admin-month-server';
+import {framedWorkbook,monthReportWorkbook} from '@/lib/admin-report-workbook';
+import {adminOrderBuckets} from '@/lib/admin-order-buckets';
 import {adminLobbySearch} from '@/lib/admin-lobby-search';
 import {sheetsAdmin,receiveSheets} from '@/lib/sheets-sync';
 import {paymentEvidenceRows,orderPaymentEvidence} from '@/lib/payment-evidence';
@@ -803,7 +807,19 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
-        if(p[1]==='control-center'){if(method==='POST'&&p[2]==='prices'&&p[3])return response(await reviewPriceChange(p[3],u));assert(method==='GET','פעולה לא נתמכת',405);if(p[2]==='updates')return response(await adminUpdates(query));if(p[2]==='search')return response(await adminLobbySearch(query.get('q')||''));if(p[2]==='prices')return response({prices:(await all("SELECT a.*,w.name AS website_name,w.url AS website_url FROM activity a LEFT JOIN websites w ON w.id=a.resource WHERE json_type(a.data,'$.before_price') IS NOT NULL AND COALESCE(json_extract(a.data,'$.after_price'),json_extract(a.data,'$.price'))<>json_extract(a.data,'$.before_price') AND NOT EXISTS(SELECT 1 FROM records r WHERE r.id='price-reviewed:'||a.id) ORDER BY a.created DESC")).map(parse)});return response(await adminControlCenter());}
+        if(p[1]==='orders'){
+            assert(method==='GET','פעולה לא נתמכת',405);const exported=query.get('export')==='1',result=await adminOrders(query,exported);
+            if(!exported)return response(result);
+            const rows=[['מספר הזמנה','שם הלקוח','דוא״ל','טלפון','תאריך הזמנה','תאריך תשלום','סוג הזמנה','אופן תשלום','לפני מע״מ','מע״מ','כולל מע״מ','מצב דיווח','תאריך דיווח','סכום שדווח','אסמכתא'],...result.orders.map(o=>[o.number,o.user_name||o.name,o.user_email,o.user_phone,o.created,o.paid_date||o.payment_date||o.paid_at||'',adminOrderBuckets[result.filters.bucket],o.payment_label,o.amounts.net/100,o.amounts.vat/100,o.amounts.total/100,({pending:'ממתין לאישור',approved:'אושר',rejected:'נדחה'} as Record<string,string>)[o.payment_report?.status]||'טרם נשלח דיווח',o.payment_report?.reported_at||'',o.payment_report?o.payment_report.amount_cents/100:'',o.payment_report?.reference||''])];
+            const bytes=framedWorkbook(rows,'הזמנות מסוננות',[22,30,36,22,28,28,30,28,23,22,23,24,28,23,30],[8,9,10,13],result.orders.length);
+            return new Response(bytes as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="orders-'+result.filters.bucket+'-'+(result.filters.month||'all')+'.xlsx"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
+        }
+        if(p[1]==='month-close'){
+            assert(method==='GET','פעולה לא נתמכת',405);const result=await adminMonthReport(query);if(query.get('export')!=='1')return response(result);
+            return new Response(monthReportWorkbook(result) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="monthly-summary-'+result.from+'-'+result.to+'.xlsx"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
+        }
+
+        if(p[1]==='control-center'){if(p[2]==='updates'&&method==='POST'){assert(p.length===3||(p.length===4&&p[3]==='reopen'),'כתובת לא נמצאה',404);const body=await json(r);return response(p[3]==='reopen'?await reopenAdminUpdate(u,body):await handleAdminUpdate(u,body));}if(method==='POST'&&p[2]==='prices'&&p[3])return response(await reviewPriceChange(p[3],u));assert(method==='GET','פעולה לא נתמכת',405);if(p[2]==='updates')return response(await adminUpdates(query));if(p[2]==='search')return response(await adminLobbySearch(query.get('q')||''));if(p[2]==='prices')return response({prices:(await all("SELECT a.*,w.name AS website_name,w.url AS website_url FROM activity a LEFT JOIN websites w ON w.id=a.resource WHERE json_type(a.data,'$.before_price') IS NOT NULL AND COALESCE(json_extract(a.data,'$.after_price'),json_extract(a.data,'$.price'))<>json_extract(a.data,'$.before_price') AND NOT EXISTS(SELECT 1 FROM records r WHERE r.id='price-reviewed:'||a.id) ORDER BY a.created DESC")).map(parse)});return response(await adminControlCenter());}
         if(p[1]==='sheets')return response(await sheetsAdmin(r,p,u,json));
         if (p[1] === 'users') {
             if (method === 'GET')

@@ -1,0 +1,176 @@
+/* Approved guide-like admin surfaces. Shared shell, dialogs and native pickers retain ownership. */
+.admin-design-v172 .admin-guide {
+ --guide-ink:var(--admin-v172-ink,#071f4b);--guide-copy:var(--admin-v172-muted,#50627d);--guide-line:var(--admin-v172-line,#cfe5ef);--guide-blue:var(--admin-v172-blue,#0872d5);--guide-ice:#f1fbff;
+ width:100%;max-width:1180px;margin-inline:auto;color:var(--guide-ink);font-family:Heebo,Arial,sans-serif;line-height:1.7;min-width:0;font-variant-numeric:tabular-nums;
+}
+.admin-design-v172 .admin-guide :is(h1,h2,h3,p,dl,dd){margin:0;}
+.admin-design-v172 .admin-guide :is(button,a,summary){touch-action:manipulation;}
+.admin-design-v172 .admin-guide :is(button,a,summary):not(:disabled){cursor:pointer;}
+.admin-design-v172 .admin-guide :is(button,a,input,select,summary):focus-visible{outline:3px solid #1689da;outline-offset:3px;}
+.admin-design-v172 .admin-guide .guide-heading{display:flex;align-items:center;justify-content:space-between;gap:24px;min-height:132px;margin-block:0 24px;padding:22px 8px;background:url('/brand/admin-guide-waves.svg') center/cover no-repeat;}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body .admin-guide h1{font-size:clamp(30px,3.2vw,44px)!important;line-height:1.3!important;font-weight:800!important;letter-spacing:-.025em;}
+.admin-design-v172 .admin-guide .guide-heading p{color:var(--guide-copy);font-size:16px;margin-block-start:6px;}
+.admin-design-v172 .admin-guide .guide-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 18px;max-width:100%;border:1px solid #a8cee5;border-radius:8px;background:#fff;color:#075b9b;font:650 15px/1.5 Heebo,Arial,sans-serif;text-align:center;text-decoration:none;white-space:normal;box-shadow:none;}
+.admin-design-v172 .admin-guide .guide-button:hover:not(:disabled){background:#eff9ff;border-color:#4c9fce;}
+.admin-design-v172 .admin-guide .guide-button:active:not(:disabled){transform:translateY(1px);}
+.admin-design-v172 .admin-guide .guide-button:disabled{opacity:.55;cursor:not-allowed;}
+.admin-design-v172 .admin-guide .guide-button.is-primary{background:var(--guide-blue);border-color:var(--guide-blue);color:#fff;}
+.admin-design-v172 .admin-guide .guide-button.is-primary:hover:not(:disabled){background:#075fae;border-color:#075fae;}
+.admin-design-v172 .admin-guide .guide-button.is-success-outline{border-color:#8ecab5;color:#176647;background:#f7fffb;}
+.admin-design-v172 .admin-guide .guide-button.is-success-outline:hover:not(:disabled){background:#e6f8ee;border-color:#4a9e7e;}
+.admin-design-v172 .admin-guide .guide-button svg{flex:none;}
+.admin-design-v172 .admin-guide .guide-frame,.admin-design-v172 .admin-guide .guide-notification,.admin-design-v172 .admin-guide .guide-order-card{border:1px solid var(--guide-line);border-radius:14px;background:#fff;box-shadow:0 4px 16px #18426104;}
+.admin-design-v172 .admin-guide .guide-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:6px;border:1px solid var(--guide-line);border-radius:12px;background:#fff;margin-block-end:22px;}
+.admin-design-v172 .admin-guide .guide-tabs button{display:flex;gap:8px;align-items:center;justify-content:center;min-height:50px;border:1px solid transparent;border-radius:8px;font-size:17px;font-weight:650;color:var(--guide-copy);background:#fff;}
+.admin-design-v172 .admin-guide .guide-tabs button:hover{background:var(--guide-ice);}
+.admin-design-v172 .admin-guide .guide-tabs button[aria-pressed=true]{background:#e4f7ff;border-color:#a8d9ef;color:#075b9b;}
+.admin-design-v172 .admin-guide .guide-tabs bdi{font-size:14px;font-weight:500;}
+.admin-design-v172 .admin-guide .guide-filter-form{display:flex;gap:12px;align-items:end;flex-wrap:wrap;margin-block:0 12px;}
+.admin-design-v172 .admin-guide .guide-select-label{display:flex;flex-direction:column;gap:6px;min-width:180px;flex:1;color:var(--guide-copy);font-size:14px;font-weight:600;}
+.admin-design-v172 .admin-guide .guide-select-label :is(select,input){width:100%;min-height:46px;padding:10px 12px;border:1px solid #c7daea;border-radius:8px;background:#fff;color:var(--guide-ink);font:400 16px/1.5 Heebo,Arial,sans-serif;}
+.admin-design-v172 .admin-guide .guide-search{position:relative;display:flex;align-items:center;gap:10px;flex:2;min-width:220px;min-height:46px;padding-inline:12px;border:1px solid #c7daea;border-radius:8px;background:#fff;color:var(--guide-copy);}
+.admin-design-v172 .admin-guide .guide-search:focus-within{outline:2px solid #1689da;outline-offset:2px;}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body .admin-guide .guide-search input{flex:1;width:100%;min-width:0;min-height:44px;border:0!important;outline:none!important;padding:8px 0;box-shadow:none;background:transparent!important;font:400 16px/1.5 Heebo,Arial,sans-serif;}
+.admin-design-v172 .admin-guide .guide-search input::-webkit-search-cancel-button{display:none;}
+.admin-design-v172 .admin-guide .guide-search>svg{flex:none;}
+.admin-design-v172 .admin-guide .guide-search button{display:grid;place-items:center;flex:none;min-width:44px;min-height:44px;border:0;border-radius:6px;background:transparent;color:#50627d;margin-inline-end:-10px;}
+.admin-design-v172 .admin-guide .guide-search button:hover{background:#eaf5fb;}
+.admin-design-v172 .admin-guide .guide-hint{font-size:13px;color:var(--guide-copy);line-height:1.8;margin-block:10px 16px;overflow-wrap:anywhere;}
+.admin-design-v172 .admin-guide .guide-error{padding:16px;border:1px solid #e2b6be;border-radius:10px;background:#fff8f9;color:#942139;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-block:16px;}
+.admin-design-v172 .admin-guide .guide-empty{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:12px;min-height:220px;text-align:center;padding:28px;color:var(--guide-copy);border:1px solid var(--guide-line);border-radius:12px;background:#fff;}
+.admin-design-v172 .admin-guide .guide-empty h2{font-size:19px;font-weight:650;}
+.admin-design-v172 .admin-guide .guide-notifications{display:grid;gap:20px;}
+.admin-design-v172 .admin-guide .guide-notification{padding:24px;}
+.admin-design-v172 .admin-guide .guide-notification-heading{display:flex;align-items:start;justify-content:space-between;gap:16px;}
+.admin-design-v172 .admin-guide .guide-notification h2{font-size:20px;line-height:1.5;font-weight:750;overflow-wrap:anywhere;}
+.admin-design-v172 .admin-guide .guide-status{display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:3px 12px;max-width:100%;border-radius:20px;background:#edf2f7;color:#4b5c73;font-size:13px;line-height:1.5;font-weight:650;text-align:center;}
+.admin-design-v172 .admin-guide .guide-status.is-success{background:#dcf8e8;color:#176647;}
+.admin-design-v172 .admin-guide .guide-status.is-warning{background:#fff0d7;color:#995007;}
+.admin-design-v172 .admin-guide .guide-status.is-info{background:#e4f3ff;color:#075b9b;}
+.admin-design-v172 .admin-guide .guide-meta{font-size:14px;color:var(--guide-copy);margin-block-start:8px;overflow-wrap:anywhere;}
+.admin-design-v172 .admin-guide .guide-notification-facts{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-block:14px;font-size:14px;color:var(--guide-copy);}
+.admin-design-v172 .admin-guide .guide-notification-facts strong{font-size:22px;color:var(--guide-ink);font-weight:750;}
+.admin-design-v172 .admin-guide .guide-notification-copy{padding-block:14px 18px;line-height:1.8;overflow-wrap:anywhere;}
+.admin-design-v172 .admin-guide .guide-notification-actions{display:flex;align-items:center;gap:12px;border-block-start:1px solid #e1eef4;padding-block-start:18px;}
+.admin-design-v172 .admin-guide .guide-notification-actions .guide-button{min-width:150px;}
+.admin-design-v172 .admin-guide .guide-pagination{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-block:22px 12px;font-size:14px;color:var(--guide-copy);}
+.admin-design-v172 .admin-guide .guide-pagination nav{display:flex;align-items:center;gap:12px;}
+.admin-design-v172 .admin-guide .guide-month-link{display:flex;align-items:center;gap:14px;min-width:246px;min-height:76px;padding:14px 18px;border:1px solid #b9d2e6;border-radius:9px;background:#fff;color:var(--guide-ink);text-decoration:none;}
+.admin-design-v172 .admin-guide .guide-month-link span{flex:1;display:flex;flex-direction:column;line-height:1.5;}
+.admin-design-v172 .admin-guide .guide-month-link strong{font-size:19px;font-weight:750;}
+.admin-design-v172 .admin-guide .guide-month-link small{font-size:14px;color:var(--guide-copy);}
+.admin-design-v172 .admin-guide .guide-month-link>svg:last-child{color:var(--guide-blue);}
+.admin-design-v172 .admin-guide :is(.guide-month-link,.guide-back-link):hover{background:#edf9ff;}
+.admin-design-v172 .admin-guide .guide-order-choices{display:grid;gap:10px;padding:12px;border:1px solid var(--guide-line);border-radius:12px;background:#fff;margin-block-end:22px;}
+.admin-design-v172 .admin-guide .guide-order-choices button{display:flex;align-items:center;gap:12px;min-height:54px;padding:12px 16px;border:1px solid #d1deea;border-radius:8px;color:var(--guide-ink);background:#fff;text-align:start;font-size:17px;font-weight:650;}
+.admin-design-v172 .admin-guide .guide-order-choices button:hover{background:#f3fbff;border-color:#8dcce8;}
+.admin-design-v172 .admin-guide .guide-order-choices button[aria-pressed=true]{background:#e1f7ff;border-color:#9dd9f0;}
+.admin-design-v172 .admin-guide .guide-choice-indicator{display:grid;place-items:center;border:2px solid #aab9ca;width:22px;height:22px;border-radius:50%;flex:none;background:#fff;}
+.admin-design-v172 .admin-guide [aria-pressed=true] .guide-choice-indicator{border-color:var(--guide-blue);background:var(--guide-blue);color:#fff;}
+.admin-design-v172 .admin-guide .guide-order-choices bdi{margin-inline-start:auto;font-size:14px;font-weight:400;color:var(--guide-copy);}
+.admin-design-v172 .admin-guide .guide-section-title{font-size:22px;font-weight:750;line-height:1.5;margin-block:24px 14px;}
+.admin-design-v172 .admin-guide .guide-order-list{display:grid;gap:16px;}
+.admin-design-v172 .admin-guide .guide-order-card{padding:18px;overflow-wrap:anywhere;}
+.admin-design-v172 .admin-guide .guide-order-toggle{display:flex;align-items:start;justify-content:space-between;gap:12px;text-align:start;width:100%;border:0;background:transparent;padding:0 0 14px;color:var(--guide-ink);min-height:84px;}
+.admin-design-v172 .admin-guide .guide-order-toggle:hover .guide-order-identity strong{color:var(--guide-blue);}
+.admin-design-v172 .admin-guide .guide-order-toggle>svg{flex:none;align-self:center;}
+.admin-design-v172 .admin-guide .guide-order-identity{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.5;}
+.admin-design-v172 .admin-guide .guide-order-identity>bdi{font-size:14px;}
+.admin-design-v172 .admin-guide .guide-order-identity strong{font-size:18px;font-weight:750;}
+.admin-design-v172 .admin-guide .guide-order-identity time{font-size:13px;color:var(--guide-copy);margin-block-start:2px;}
+.admin-design-v172 .admin-guide .guide-order-facts{display:grid;grid-template-columns:1fr 1fr;border-block-start:1px solid #e0edf4;padding-block:14px;gap:12px;}
+.admin-design-v172 .admin-guide .guide-order-facts>div+div{border-inline-start:1px solid #d8e6ef;padding-inline-start:16px;}
+.admin-design-v172 .admin-guide dt{font-size:14px;color:var(--guide-copy);}
+.admin-design-v172 .admin-guide .guide-order-facts dd{font-size:20px;font-weight:750;line-height:1.5;}
+.admin-design-v172 .admin-guide .guide-order-expanded{border-block-start:1px solid #e0edf4;padding-block:16px;}
+.admin-design-v172 .admin-guide .guide-payment-report{padding:18px;border:1px solid #c7e4f4;border-radius:10px;background:var(--guide-ice);margin-block-end:18px;}
+.admin-design-v172 .admin-guide .guide-payment-report h3{font-size:19px;font-weight:750;margin-block-end:12px;}
+.admin-design-v172 .admin-guide .guide-payment-report dl{display:grid;gap:8px;}
+.admin-design-v172 .admin-guide .guide-payment-report dl>div{display:flex;align-items:baseline;justify-content:space-between;gap:16px;}
+.admin-design-v172 .admin-guide .guide-payment-report dd{font-size:15px;text-align:end;overflow-wrap:anywhere;min-width:0;}
+.admin-design-v172 .admin-guide .guide-proof-link{display:inline-flex;gap:8px;align-items:center;min-height:44px;color:var(--guide-blue);font-size:15px;text-decoration:underline;text-underline-offset:3px;}
+.admin-design-v172 .admin-guide .guide-report-pending{color:#995007;border-block-start:1px solid #d1e7f2;padding-block-start:12px;margin-block-start:12px;font-size:14px;}
+.admin-design-v172 .admin-guide .guide-order-card-actions>.guide-button{width:100%;}
+.admin-design-v172 .admin-guide .is-expanded{transform:rotate(180deg);}
+.admin-design-v172 .admin-guide .guide-secondary{margin-block-start:28px;border-block-start:1px solid var(--guide-line);padding-block:12px;}
+.admin-design-v172 .admin-guide .guide-secondary>summary{min-height:44px;padding-block:9px;color:#075b9b;font-size:14px;}
+.admin-design-v172 .admin-guide .guide-secondary>button{margin-block:12px;}
+.admin-design-v172 .admin-guide .guide-back-link{display:flex;align-items:center;gap:8px;padding:10px 6px;min-height:44px;color:var(--guide-blue);font-size:15px;font-weight:650;text-decoration:none;border-radius:6px;}
+.admin-design-v172 .admin-guide .guide-report-filters{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:18px;padding:24px;margin-block-end:24px;align-items:end;}
+.admin-design-v172 .admin-guide .guide-report-filters .guide-select-label{min-width:0;}
+.admin-design-v172 .admin-guide .guide-report-filter-actions{display:flex;gap:12px;grid-column:1/-1;}
+.admin-design-v172 .admin-guide .guide-report-filter-actions .guide-button{flex:1;}
+.admin-design-v172 .admin-guide .guide-report-filters>.guide-hint{grid-column:1/-1;text-align:center;margin:0;}
+.admin-design-v172 .admin-guide .guide-report-summary,.admin-design-v172 .admin-guide .guide-report-orders{padding:24px;margin-block-end:24px;}
+.admin-design-v172 .admin-guide .guide-section-heading{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px 18px;margin-block-end:16px;}
+.admin-design-v172 .admin-guide .guide-section-heading h2{font-size:23px;font-weight:800;line-height:1.5;}
+.admin-design-v172 .admin-guide .guide-section-heading p{font-size:13px;color:var(--guide-copy);}
+.admin-design-v172 .admin-guide .guide-summary-lines>div{display:flex;justify-content:space-between;align-items:baseline;gap:16px;min-height:52px;padding:12px 6px;border-block-start:1px solid #e3edf3;}
+.admin-design-v172 .admin-guide .guide-summary-lines dt{font-size:16px;}
+.admin-design-v172 .admin-guide .guide-summary-lines dd{font-size:21px;line-height:1.5;color:var(--guide-ink);}
+.admin-design-v172 .admin-guide .guide-summary-lines .guide-summary-profit{background:#dff9fc;border:0;border-radius:9px;margin-block-start:6px;padding-inline:12px;font-weight:750;}
+.admin-design-v172 .admin-guide .guide-summary-profit dt{color:var(--guide-ink);font-weight:750;}
+.admin-design-v172 .admin-guide .guide-report-warning{border:1px solid #ead7ad;background:#fff9ec;color:#78500d;border-radius:6px;padding:12px 16px;font-size:14px;margin-block:12px;}
+.admin-design-v172 .admin-guide .guide-report-table-heading,.admin-design-v172 .admin-guide .guide-report-order summary{display:grid;grid-template-columns:minmax(200px,2fr) repeat(4,minmax(90px,1fr)) 20px;gap:12px;align-items:center;}
+.admin-design-v172 .admin-guide .guide-report-table-heading{font-size:13px;color:var(--guide-copy);padding:12px;}
+.admin-design-v172 .admin-guide .guide-report-order-list{display:grid;gap:10px;}
+.admin-design-v172 .admin-guide .guide-report-order{border:1px solid #d7e7f0;border-radius:11px;background:#fff;overflow-wrap:anywhere;}
+.admin-design-v172 .admin-guide .guide-report-order summary{min-height:68px;list-style:none;padding:14px 12px;font-size:14px;}
+.admin-design-v172 .admin-guide .guide-report-order summary::-webkit-details-marker{display:none;}
+.admin-design-v172 .admin-guide .guide-report-order summary:hover{background:#f3fbff;border-radius:11px;}
+.admin-design-v172 .admin-guide .guide-report-order[open] summary>svg{transform:rotate(180deg);}
+.admin-design-v172 .admin-guide .guide-report-client{display:flex;gap:10px;align-items:center;min-width:0;}
+.admin-design-v172 .admin-guide .guide-report-client>span:last-child{display:flex;flex-direction:column;min-width:0;}
+.admin-design-v172 .admin-guide .guide-report-client strong{font-weight:650;}
+.admin-design-v172 .admin-guide .guide-report-income{font-size:16px;}
+.admin-design-v172 .admin-guide .guide-report-order-detail{margin:0 10px 10px;padding:16px;background:#f5f9fc;border-radius:8px;}
+.admin-design-v172 .admin-guide .guide-report-order-detail dl{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-block-end:16px;}
+.admin-design-v172 .admin-guide .guide-report-order-detail dd{font-size:15px;}
+.admin-design-v172 .admin-guide .guide-report-export-note{padding:12px 16px;background:#eff9ff;color:#075b9b;border-radius:9px;font-size:14px;margin-block-start:16px;}
+@media(min-width:1360px){.admin-design-v172 .guide-work-center{max-width:980px;}.admin-design-v172 .guide-orders{max-width:1020px;}}
+@media(max-width:1050px){
+ .admin-design-v172 .admin-guide .guide-report-table-heading,.admin-design-v172 .admin-guide .guide-report-order summary{grid-template-columns:minmax(150px,2fr) repeat(4,minmax(75px,1fr)) 18px;gap:8px;}
+ .admin-design-v172 .admin-guide .guide-report-order-detail dl{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:760px){
+ .admin-design-v172 .admin-guide .guide-heading{gap:16px;min-height:105px;padding:16px 0;margin-block-end:18px;}
+ .admin-design-v172 .admin-editorial-surface .admin-workspace-body .admin-guide h1{font-size:30px!important;}
+ .admin-design-v172 .admin-guide .guide-heading p{font-size:14px;}
+ .admin-design-v172 .admin-guide .guide-month-link{min-width:0;min-height:64px;padding:10px 12px;gap:10px;}
+ .admin-design-v172 .admin-guide .guide-month-link strong{font-size:16px;}.admin-design-v172 .admin-guide .guide-month-link small{font-size:12px;}
+ .admin-design-v172 .admin-guide .guide-month-link>svg:first-child{width:22px;}
+ .admin-design-v172 .admin-guide .guide-filter-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;}
+ .admin-design-v172 .admin-guide .guide-filter-form>.guide-select-label{min-width:0;grid-column:1/-1;}
+ .admin-design-v172 .admin-guide .guide-search{min-width:0;}
+ .admin-design-v172 .admin-guide .guide-filter-form>button:last-child{grid-column:1/-1;}
+ .admin-design-v172 .admin-guide .guide-notification{padding:18px;}
+ .admin-design-v172 .admin-guide .guide-notification-heading{flex-wrap:wrap;gap:10px;}
+ .admin-design-v172 .admin-guide .guide-notification h2{font-size:19px;}
+ .admin-design-v172 .admin-guide .guide-notification-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+ .admin-design-v172 .admin-guide .guide-notification-actions .guide-button{min-width:0;padding:10px;}
+ .admin-design-v172 .admin-guide .guide-order-toggle{gap:8px;}
+ .admin-design-v172 .admin-guide .guide-order-card{padding:16px;}
+ .admin-design-v172 .admin-guide .guide-order-toggle>.guide-status{font-size:12px;max-width:125px;}
+ .admin-design-v172 .admin-guide .guide-order-facts dd{font-size:18px;}
+ .admin-design-v172 .admin-guide .guide-section-title{font-size:20px;}
+ .admin-design-v172 .admin-guide .guide-report-filters{grid-template-columns:minmax(0,1fr) minmax(0,1fr);padding:18px;gap:16px 12px;}
+ .admin-design-v172 .admin-guide .guide-basis{grid-column:1/-1;}
+ .admin-design-v172 .admin-guide .guide-report-filter-actions{gap:10px;}
+ .admin-design-v172 .admin-guide .guide-report-filter-actions .guide-button{padding-inline:10px;}
+ .admin-design-v172 .admin-guide .guide-report-summary,.admin-design-v172 .admin-guide .guide-report-orders{padding:18px;}
+ .admin-design-v172 .admin-guide .guide-section-heading h2{font-size:21px;}
+ .admin-design-v172 .admin-guide .guide-summary-lines dt{font-size:14px;}
+ .admin-design-v172 .admin-guide .guide-summary-lines dd{font-size:18px;}
+ .admin-design-v172 .admin-guide .guide-report-order summary{grid-template-columns:minmax(0,1fr) auto 18px;gap:10px;font-size:14px;}
+ .admin-design-v172 .admin-guide .guide-report-client{gap:8px;}.admin-design-v172 .admin-guide .guide-report-client .guide-status{font-size:12px;padding-inline:8px;}
+ .admin-design-v172 .admin-guide :is(.guide-report-table-heading,.guide-desktop-amounts){display:none;}
+ .admin-design-v172 .admin-guide .guide-report-order-detail dl{gap:14px 12px;}
+ .admin-design-v172 .admin-guide .guide-report-order-detail dt{font-size:12px;}
+ .admin-design-v172 .admin-guide .guide-report-order-detail dd{font-size:14px;}
+ .admin-design-v172 .admin-guide .guide-report-income{font-size:15px;}
+ .admin-design-v172 .admin-guide .guide-back-link{font-size:14px;white-space:nowrap;}
+ .admin-design-v172 .admin-guide .guide-error{align-items:start;flex-direction:column;gap:12px;}
+}
+@media(max-width:390px){.admin-design-v172 .admin-guide .guide-heading{flex-wrap:wrap;}.admin-design-v172 .admin-guide .guide-month-link{width:100%;}.admin-design-v172 .admin-guide .guide-notification-actions{grid-template-columns:1fr;}.admin-design-v172 .admin-guide .guide-summary-lines dd{font-size:16px;}}
+@media(prefers-reduced-motion:reduce){.admin-design-v172 .admin-guide :is(button,a,summary,svg){transition:none!important;animation:none!important;}}
+@media(forced-colors:active){.admin-design-v172 .admin-guide :is(.guide-status,.guide-choice-indicator,.guide-summary-profit){border:1px solid CanvasText;}.admin-design-v172 .admin-guide :is(button[aria-pressed=true],.is-primary){outline:2px solid Highlight;}}
