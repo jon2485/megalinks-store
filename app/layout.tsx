@@ -4,6 +4,7 @@ import "./approved-hebrew-font.css";
 import "./admin-reviewed-controls.css";
 import "./customer-finance-glass.css";
 import "./approved-account.css";
+import "./customer-payment-detail.css";
 import "./client-account-updates.css";
 import FloatingWhatsApp from './floating-whatsapp';
 import './floating-whatsapp.css';

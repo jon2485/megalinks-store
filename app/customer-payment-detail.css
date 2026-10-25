@@ -1,0 +1,81 @@
+/* Approved inline order detail. Scoped to customers; existing page/admin shells stay intact. */
+.customer-payment-detail{
+ --payment-ink:var(--account-ink,#071f4b);--payment-muted:var(--account-muted,#486383);
+ --payment-blue:var(--account-blue,#0872d5);--payment-line:#d5e5f0;--payment-ice:#f3faff;
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;
+ padding:4px 16px 16px;min-width:0;direction:rtl;text-align:right;
+ color:var(--payment-ink);font-family:Heebo,Arial,sans-serif;font-size:16px;line-height:1.65;
+}
+.customer-payment-detail .order-payment-section{min-width:0;margin:0;padding:18px 20px;border:1px solid var(--payment-line);border-radius:14px;background:#fff;}
+.customer-payment-detail .order-payment-section h3{display:flex;align-items:center;gap:9px;margin:0 0 12px;padding:0 0 12px;border-bottom:1px solid var(--payment-line);background:none;color:var(--payment-ink);font-size:20px;font-weight:750;line-height:1.5;}
+.customer-payment-detail .order-payment-section h3>svg{flex-shrink:0;color:var(--payment-blue);}
+.customer-payment-detail .order-payment-sites,.customer-payment-detail .order-payment-document{grid-column:1/-1;}
+.customer-payment-detail .order-payment-sites ul{list-style:none;padding:0;margin:0;}
+.customer-payment-detail .order-payment-sites li{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:18px;padding:8px 0;min-width:0;}
+.customer-payment-detail .order-payment-sites li+li{border-top:1px solid var(--payment-line);margin-top:10px;padding-top:16px;}
+.customer-payment-detail .order-payment-site{min-width:0;}
+.customer-payment-detail .site-reference{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0;}
+.customer-payment-detail .site-reference strong{display:block;font-size:17px;font-weight:700;overflow-wrap:anywhere;}
+.customer-payment-detail .site-reference a{display:inline-flex;align-items:center;gap:5px;max-width:100%;color:var(--payment-blue);font-size:14px;text-decoration:underline;text-underline-offset:3px;}
+.customer-payment-detail .site-reference a svg{flex-shrink:0;}
+.customer-payment-detail .site-reference bdi{min-width:0;overflow-wrap:anywhere;}
+.customer-payment-detail .order-payment-purchase-date,.customer-payment-detail .order-payment-item-amount{display:flex;flex-direction:column;gap:3px;min-width:0;border-inline-start:1px solid var(--payment-line);padding-inline-start:20px;}
+.customer-payment-detail .order-payment-sites li :is(span,time){font-size:15px;}
+.customer-payment-detail :is(.order-payment-purchase-date,.order-payment-item-amount)>span{color:var(--payment-muted);}
+.customer-payment-detail .order-payment-purchase-date time{font-variant-numeric:tabular-nums;}
+.customer-payment-detail .order-payment-item-amount strong{font-size:19px;font-weight:750;}
+.customer-payment-detail dl{display:grid;gap:0;padding:0;margin:0;}
+.customer-payment-detail dl>div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;min-width:0;}
+.customer-payment-detail dl>div+div{border-top:1px solid var(--payment-line);}
+.customer-payment-detail dt{margin:0;color:var(--payment-muted);font-size:15px;}
+.customer-payment-detail dd{margin:0;min-width:0;max-width:65%;font-size:16px;text-align:left;overflow-wrap:anywhere;}
+.customer-payment-detail bdi{font-variant-numeric:tabular-nums;}
+.customer-payment-detail .order-payment-status{display:inline-flex;align-items:center;gap:6px;border:1px solid #c2e4d5;border-radius:8px;background:#edf9f2;color:#087348;padding:3px 10px;font-size:14px;font-weight:650;line-height:1.6;}
+.customer-payment-detail .order-payment-status svg{flex-shrink:0;}
+.customer-payment-detail .order-payment-status.is-pending{border-color:#efdcaf;background:#fff7e6;color:#735000;}
+.customer-payment-detail .order-payment-status.is-cancelled{border-color:#ebc7d1;background:#fff0f3;color:#b42338;}
+.customer-payment-detail .order-payment-status.is-demo{border-color:var(--payment-line);background:var(--payment-ice);color:var(--payment-muted);}
+.customer-payment-detail dl>.order-payment-total{margin-top:8px;padding:12px;border:0;border-radius:9px;background:#eaf7fc;}
+.customer-payment-detail .order-payment-total :is(dt,dd){font-size:21px;font-weight:750;color:var(--payment-ink);}
+.customer-payment-detail .order-payment-note{margin:12px 0 0;color:var(--payment-muted);font-size:14px;line-height:1.8;overflow-wrap:anywhere;}
+.customer-payment-detail .order-payment-cancellation{display:block;color:#b42338;font-size:13px!important;}
+.customer-payment-detail .order-payment-document{display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--payment-ice);}
+.customer-payment-detail .order-payment-document-name{display:flex;align-items:center;gap:12px;min-width:0;}
+.customer-payment-detail .order-payment-document-name>svg{color:var(--payment-blue);flex-shrink:0;}
+.customer-payment-detail .order-payment-document h3{margin:0;border:0;padding:0;font-size:22px;}
+.customer-payment-detail .order-payment-document p{margin:2px 0 0;color:var(--payment-muted);font-size:14px;overflow-wrap:anywhere;}
+.customer-payment-detail .order-payment-document-actions{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.customer-payment-detail .order-payment-action{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:10px 18px;border:1px solid #91bae8;border-radius:10px;background:white;color:var(--payment-blue);font-size:15px;font-weight:650;line-height:1.5;text-decoration:none;cursor:pointer;transition:background-color .18s ease,transform .18s ease;}
+.customer-payment-detail .order-payment-action svg{flex-shrink:0;}
+.customer-payment-detail .order-payment-action.is-primary{color:#fff;background:var(--payment-blue);border-color:var(--payment-blue);}
+.customer-payment-detail .order-payment-action:active{transform:translateY(1px);}
+.customer-payment-detail a:focus-visible,.customer-payment-detail button:focus-visible{outline:3px solid #006fc6;outline-offset:3px;}
+.customer-payment-detail .customer-payment-report.compact-report{margin:14px 0 0;padding:0;border:0;background:none;}
+.customer-payment-detail .compact-report .simple-report-button{min-height:44px;width:auto;padding:10px 16px;border-radius:10px;background:var(--payment-blue);color:white;font:650 15px/1.5 Heebo,Arial,sans-serif;}
+.customer-payment-detail .compact-report p{font-size:14px;line-height:1.8;color:var(--payment-muted);}
+@media(hover:hover){.customer-payment-detail .order-payment-action:hover{background:#e6f2fd;transform:translateY(-1px);}.customer-payment-detail .order-payment-action.is-primary:hover{background:#0062bd;}.customer-payment-detail .site-reference a:hover{text-decoration-thickness:2px;}}
+@media(max-width:800px){
+ .customer-payment-detail{grid-template-columns:minmax(0,1fr);gap:12px;padding:4px 12px 14px;}
+ .customer-payment-detail .order-payment-section{padding:16px;}
+ .customer-payment-detail .order-payment-document{flex-wrap:wrap;gap:16px;}
+ .customer-payment-detail .order-payment-document-actions{width:100%;flex-wrap:wrap;}
+ .customer-payment-detail .order-payment-document-actions>a{flex:1;}
+}
+@media(max-width:480px){
+ .customer-payment-detail .order-payment-section{padding:14px 12px;}
+ .customer-payment-detail .order-payment-section h3{font-size:18px;}
+ .customer-payment-detail .order-payment-sites li{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px;}
+ .customer-payment-detail .order-payment-site{grid-column:1/-1;}
+ .customer-payment-detail .order-payment-purchase-date{border-inline-start:0;padding-inline-start:0;}
+ .customer-payment-detail .order-payment-item-amount{padding-inline-start:12px;}
+ .customer-payment-detail :is(dt,dd){font-size:14px;}
+ .customer-payment-detail .order-payment-total :is(dt,dd){font-size:18px;}
+ .customer-payment-detail .order-payment-action{padding:10px 12px;font-size:14px;}
+ .customer-payment-detail .order-payment-document h3{font-size:20px;}
+}
+@media(prefers-reduced-motion:reduce){.customer-payment-detail .order-payment-action{transition:none;transform:none!important;}}
+@media(forced-colors:active){
+ .customer-payment-detail .order-payment-section,.customer-payment-detail .order-payment-status{border-color:CanvasText;background:Canvas;color:CanvasText;}
+ .customer-payment-detail .order-payment-action{border-color:ButtonText;background:ButtonFace;color:ButtonText;}
+ .customer-payment-detail .order-payment-total{background:Canvas;border:1px solid CanvasText;}
+}

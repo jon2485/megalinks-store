@@ -340,7 +340,7 @@ if (p[0] === 'cart') {
                 const fileId = JSON.parse(order.data).invoice_file_id; assert(fileId, 'טרם צורפה חשבונית להזמנה', 404);
                 const f = await one('SELECT * FROM files WHERE id=?',fileId); assert(f && f.type === 'application/pdf', 'המסמך לא נמצא', 404);
                 const blob = await env.BUCKET?.get(f.key); assert(blob,'המסמך לא נמצא',404);
-                return new Response(blob.body,{headers:{'Content-Type':'application/pdf','Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent('invoice-'+String(order.number).replace(/[^a-zA-Z0-9-]/g,'')+'.pdf')}`,'X-Content-Type-Options':'nosniff','Cache-Control':'private, no-store','Content-Security-Policy':"default-src 'none'"}});
+                return new Response(blob.body,{headers:{'Content-Type':'application/pdf','Content-Disposition':`${query.get('view')==='inline'?'inline':'attachment'}; filename*=UTF-8''${encodeURIComponent('invoice-'+String(order.number).replace(/[^a-zA-Z0-9-]/g,'')+'.pdf')}`,'X-Content-Type-Options':'nosniff','Cache-Control':'private, no-store','Content-Security-Policy':"default-src 'none'"}});
             }
         }
         if (method === 'GET')
