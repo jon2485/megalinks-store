@@ -5,7 +5,7 @@ import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {money,type Row} from '@/lib/shared';
 
-export default function EditorialAddon({item,save,dirty}:{item:Row;save:(b:Row)=>Promise<void>;dirty:(value:boolean)=>void}){
+export default function EditorialAddon({item,save,dirty,customers=[],customersError,customersLoading=false}:{item:Row;customers?:Row[];customersError?:string;customersLoading?:boolean;save:(b:Row)=>Promise<void>;dirty:(value:boolean)=>void}){
  const [expanded,setExpanded]=useState(false),[words,setWords]=useState(String(item.editorial_words||400)),[custom,setCustom]=useState(!!item.editorial&&![400,600].includes(Number(item.editorial_words))),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const pending=useRef(false);
  const changeWords=(count:number)=>{const next=String(Math.min(5000,Math.max(100,count)));setCustom(true);setWords(next);dirty(!item.editorial||Number(next)!==Number(item.editorial_words));};
@@ -17,8 +17,9 @@ export default function EditorialAddon({item,save,dirty}:{item:Row;save:(b:Row)=
   catch(e){setError((e as Error).message);}finally{pending.current=false;setBusy(false);}
  };
  return <section className="cart-writing-addon" aria-label={'כתיבה מקצועית עבור '+item.name}>
-  <Button type="button" variant="ghost" className="cart-writing-toggle" aria-expanded={expanded} aria-controls={'cart-writing-'+item.id} onClick={()=>setExpanded(!expanded)}><span>הוספת שירותי כתיבה{!!item.editorial&&<small>נבחרו {item.editorial_words||400} מילים · {money(item.editorial_price??Number(item.editorial_words||400)*15)} לכל כתבה</small>}</span>{expanded?<Minus size={18}/>:<Plus size={18}/>}</Button>
+  <Button type="button" variant="ghost" className="cart-writing-toggle" aria-expanded={expanded} aria-controls={'cart-writing-'+item.id} onClick={()=>setExpanded(!expanded)}><span>כתיבה ושיוך ללקוח{!!item.editorial&&<small>נבחרו {item.editorial_words||400} מילים · {money(item.editorial_price??Number(item.editorial_words||400)*15)} לכל כתבה</small>}</span>{expanded?<Minus size={18}/>:<Plus size={18}/>}</Button>
   {expanded&&<div id={'cart-writing-'+item.id} className="cart-writing-panel">
+   <label className="cart-customer-assignment"><span>שיוך ללקוח (לא חובה)</span><select aria-label={'שיוך ללקוח עבור '+item.name} value={item.customer_id||''} disabled={busy||customersLoading||!!customersError} onChange={async e=>{const customer_id=e.target.value;if(pending.current)return;pending.current=true;setBusy(true);setError('');try{await save({customer_id});}catch(e){setError((e as Error).message);}finally{pending.current=false;setBusy(false);}}}><option value="">ללא שיוך ללקוח</option>{customers.map(customer=><option key={customer.id} value={customer.id}>{customer.name}{customer.company?' · '+customer.company:''}</option>)}</select><small>{customersLoading?'טוען לקוחות…':customersError?'לא ניתן לטעון לקוחות. נסו לרענן את העמוד.':'הכתבות יופיעו אצל הלקוח שנבחר ב״הלקוחות שלי״ לאחר הרכישה. השיוך אינו מוסיף שירות כתיבה.'}</small></label>
    <div className="cart-writing-options" role="group" aria-label="אפשרויות כתיבה מקצועית">
     {[400,600].map(count=><Button key={count} type="button" variant="outline" disabled={busy} aria-pressed={!!item.editorial&&!custom&&Number(words)===count} onClick={()=>void update(true,count)}><FileText size={21}/><span>כתיבה מקצועית — {count} מילים</span><strong>{money(count*15)}</strong></Button>)}
     <div className="cart-writing-custom-choice" data-selected={custom}>

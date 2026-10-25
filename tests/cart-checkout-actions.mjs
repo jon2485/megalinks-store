@@ -22,7 +22,7 @@ let item={id:'item',name:'אתר',quantity:2,editorial:false,editorial_words:400
 const save=async body=>{saves.push(body);if(hold)await hold;if(failure)throw Error('שמירה נכשלה');Object.assign(item,body)};
 const renderAddon=()=>{index=0;return EditorialAddon({item,save,dirty:v=>dirty.push(v)})};
 reset();let tree=renderAddon();assert.equal(nodes(tree).find(n=>n.props?.['aria-expanded']!==undefined).props['aria-expanded'],false);
-action(tree,'הוספת שירותי כתיבה').props.onClick();tree=renderAddon();assert(label(tree).includes('400 מילים'));assert(label(tree).includes('600 מילים'));assert(!label(tree).includes('AI'));
+action(tree,'כתיבה ושיוך ללקוח').props.onClick();tree=renderAddon();assert(label(tree).includes('400 מילים'));assert(label(tree).includes('600 מילים'));assert(!label(tree).includes('AI'));
 action(tree,'400 מילים').props.onClick();await flush();tree=renderAddon();assert.deepEqual(saves.at(-1),{editorial:true,editorial_words:400});assert.equal(dirty.at(-1),false);
 action(tree,'600 מילים').props.onClick();await flush();tree=renderAddon();assert.equal(item.editorial_words,600);
 action(tree,'בחירת כמות מילים').props.onClick();tree=renderAddon();const savesBeforeStep=saves.length;nodes(tree).find(n=>n.props?.['aria-label']==='הגדלת מספר המילים').props.onClick();tree=renderAddon();assert.equal(nodes(tree).find(n=>n.props?.id==='editorial-words-item').props.value,'601');assert.equal(saves.length,savesBeforeStep,'word stepper never saves without confirmation');nodes(tree).find(n=>n.props?.['aria-label']==='הפחתת מספר המילים').props.onClick();tree=renderAddon();assert.equal(nodes(tree).find(n=>n.props?.id==='editorial-words-item').props.value,'600');let input=nodes(tree).find(n=>n.props?.id==='editorial-words-item');input.props.onChange({target:{value:'725'}});tree=renderAddon();assert.equal(dirty.at(-1),true);action(tree,'שמירה').props.onClick();await flush();tree=renderAddon();assert.equal(item.editorial_words,725);assert.equal(dirty.at(-1),false);
@@ -31,6 +31,9 @@ for(const invalid of ['0','99','5001','120.5','']){nodes(tree).find(n=>n.props?.
 failure=true;const previous=item.editorial_words;action(tree,'600 מילים').props.onClick();await flush();tree=renderAddon();assert.equal(item.editorial_words,previous);assert(nodes(tree).some(n=>n.props?.role==='alert'&&label(n).includes('שמירה נכשלה')));failure=false;
 let release;hold=new Promise(r=>release=r);const before=saves.length;action(tree,'400 מילים').props.onClick();action(tree,'400 מילים').props.onClick();tree=renderAddon();assert.equal(saves.length,before+1);assert(action(tree,'600 מילים').props.disabled);release();await flush();hold=null;tree=renderAddon();assert.equal(item.editorial_words,400);assert(!action(tree,'600 מילים').props.disabled);
 action(tree,'הסרת שירות הכתיבה').props.onClick();await flush();assert.equal(item.editorial,false);
+// Assigning a client persists through the existing cart patch without buying writing.
+reset();tree=renderAddon();action(tree,'כתיבה ושיוך ללקוח').props.onClick();tree=renderAddon();
+await nodes(tree).find(n=>String(n.props?.['aria-label']||'').startsWith('שיוך ללקוח עבור')).props.onChange({target:{value:'owned-client'}});await flush();assert.deepEqual(saves.at(-1),{customer_id:'owned-client'});assert.equal(item.editorial,false);
 // Existing cart handlers remain connected: remove, quantity, coupon and navigation.
 reset();const ctx={revision:0,user:{id:'fixture',name:'לקוח',phone:'0500000000',monthly_account:{enabled:0}},catalog:[],refresh(){},go:v=>routes.push(v),run:async(fn)=>fn()};
 const renderCart=(checkoutOnly=false)=>{index=0;effects=[];return CartFlow({ctx,checkoutOnly})};

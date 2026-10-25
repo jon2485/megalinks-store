@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { bulkHeaders, parseBulkSheet, bulkRowError, bulkCartPayload } from '../lib/bulk-order.ts';
+import { bulkHeaders, parseBulkSheet, bulkRowError, bulkCartPayload,bulkTemplateHeaders,bulkExampleRow } from '../lib/bulk-order.ts';
 const sites = [{ id: 's1', name: 'אתר בדיקה', url: 'https://site.test', active: 1 }];
 const customers = [{ id: 'c1', name: 'דנה', email: 'dana@test.test' }, { id: 'c2', name: 'יוסי' }, { id: 'c3', name: 'יוסי' }];
 const row = (customer = '', paid = '') => ['אתר בדיקה', 'נושא', 'מותג בדיקה', 'מילת קישור', 'https://target.test/internal/page', customer, paid];
@@ -16,7 +16,7 @@ assert.equal(bulkCartPayload(paid).anchor, 'מילת קישור');
 assert(!bulkHeaders.includes('קהל יעד'));
 assert(!('audience' in bulkCartPayload(paid)));
 const templateView = readFileSync('app/bulk-order-view.tsx', 'utf8');
-assert(templateView.includes("exportSpreadsheet('megalinks-bulk-order-template.xlsx', [bulkHeaders])"), 'download contains headers only, never a sample order');
+assert(templateView.includes("downloadSpreadsheetBytes('megalinks-bulk-order-template.xlsx',bulkTemplateBytes())"), 'download uses the styled template with a protected example');
 const blankOptional = row(); blankOptional[2] = ''; blankOptional[3] = ''; blankOptional[4] = '';
 assert.equal(bulkRowError(parse(blankOptional), sites, customers), '');
 assert.equal(bulkCartPayload(paid).target_url, 'https://target.test/internal/page');
@@ -54,3 +54,7 @@ assert.equal(bulkCartPayload(instructions).editorial,false,'instructions do not 
 
 assert.equal(bulkRowError({...deferred,notes:'א'.repeat(6000)},sites,customers),'');
 assert.match(bulkRowError({...deferred,notes:'א'.repeat(6001)},sites,customers),/6,000/);
+
+
+assert.equal(parseBulkSheet([bulkTemplateHeaders,bulkExampleRow,[...row(),'']],sites,customers).length,1,'colored example is excluded while real rows import');
+assert.throws(()=>parseBulkSheet([bulkTemplateHeaders,bulkExampleRow],sites,customers),/אינו מכיל/);

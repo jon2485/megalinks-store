@@ -1,6 +1,9 @@
 import type { Row } from './shared';
 
 export const bulkHeaders = ['אתר', 'נושא הכתבה (לא חובה)', 'מותג (לא חובה)', 'עוגן (לא חובה)', 'קישור (לא חובה)', 'לקוח הסוכנות', 'מילים לכתיבה בתשלום', 'הנחיות (לא חובה)'];
+export const bulkExampleMarker='דוגמה בלבד — לא להזמנה';
+export const bulkTemplateHeaders=[...bulkHeaders,'סוג שורה'];
+export const bulkExampleRow=['ישראל היום (לדוגמה)','איך לבחור אתר לפרסום (לדוגמה)','המותג שלי (לדוגמה)','למידע נוסף (לדוגמה)','https://example.com (לדוגמה)','שם לקוח קיים (לדוגמה)','400 (לדוגמה)','קהל יעד והנחיות לכתיבה (לדוגמה)',bulkExampleMarker];
 const norm = (v: unknown) => String(v ?? '').trim().toLocaleLowerCase();
 export function bulkRowError(row: Row, catalog: Row[], customers: Row[]): string {
     if (!catalog.some(site => site.id === row.website_id && site.active !== 0)) return 'בחרו אתר פעיל מהקטלוג';
@@ -16,7 +19,8 @@ export function parseBulkSheet(sheet: string[][], catalog: Row[], customers: Row
     const [headings = [], ...source] = sheet;
     const headers = headings.map(v => String(v).trim());
     if (!headers.includes('אתר') && !headers.includes('website')) throw new Error('חסרה עמודת אתר. השתמשו בתבנית ההזמנה המרוכזת.');
-    const rows = source.filter(r => r.some(v => String(v ?? '').trim()));
+    const markerColumn=headers.indexOf('סוג שורה');
+    const rows = source.filter(r => !(markerColumn>=0&&String(r[markerColumn]??'').trim()===bulkExampleMarker)&&r.some(v => String(v ?? '').trim()));
     if (!rows.length) throw new Error('הקובץ אינו מכיל הזמנות');
     if (rows.length > 500) throw new Error('אפשר לייבא עד 500 שורות בכל פעם');
     const at = (r: string[], ...keys: string[]) => { const index = headers.findIndex(h => keys.includes(h)); return index < 0 ? '' : String(r[index] ?? '').trim(); };
