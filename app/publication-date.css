@@ -11,3 +11,28 @@
 @media(max-width:600px){.article-schedule-card{display:grid;grid-template-columns:40px minmax(0,1fr);padding:15px;gap:11px}.article-schedule-icon{width:40px;height:40px;border-radius:12px}.article-schedule-card h2{font-size:17px}.article-schedule-card strong{font-size:15px}.article-schedule-card p{font-size:13px}.article-schedule-controls{grid-column:1/-1;width:100%}.article-schedule-controls>.publication-date-trigger{width:100%;min-height:46px}.article-schedule-card small{font-size:11px}.publication-date-dialog{padding:21px 15px!important}.publication-calendar{padding:8px;--cell-size:36px}.publication-calendar td button{min-height:36px}.publication-date-trigger{white-space:normal}}
 @media(prefers-reduced-motion:reduce){.publication-date-trigger{transition:none}.publication-date-trigger:hover,.publication-date-trigger:active{transform:none}}
 @media(forced-colors:active){.publication-date-trigger,.article-schedule-card,.article-schedule-notice,.publication-date-dialog{background:Canvas;border-color:CanvasText;color:CanvasText;box-shadow:none}.publication-calendar button[data-selected-single=true]{background:Highlight!important;color:HighlightText!important}}
+
+/* Approved customer scheduling glass; one maintained calendar and validation owner. */
+.publication-date-customer[data-slot=dialog-content]{width:min(464px,calc(100vw - 24px))!important;max-width:464px!important;padding:24px!important;border-radius:20px!important;background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(239,249,255,.94))!important;box-shadow:0 22px 64px #08264b35,inset 0 1px 0 #fff;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px);gap:20px}
+.publication-date-customer [data-slot=dialog-header]{padding-inline-end:18px;text-align:right;gap:10px}
+.publication-date-customer [data-slot=dialog-title]{display:flex;align-items:center;gap:10px;font-size:24px;line-height:1.45;font-weight:750}
+.publication-date-customer [data-slot=dialog-title] svg{flex-shrink:0;color:#345475}
+.publication-date-customer [data-slot=dialog-description]{font-size:15px;line-height:1.8;color:#415e7d}
+.publication-date-input{position:relative}.publication-date-input>svg{position:absolute;inset-inline-start:14px;top:50%;transform:translateY(-50%);color:#345475;pointer-events:none}
+.publication-date-input input{padding-inline:42px}
+.publication-date-customer .publication-date-input input{height:48px;border:1px solid #79aeea;border-radius:10px;background:#ffffffb8;font-size:19px;letter-spacing:.5px}
+.publication-date-customer .publication-date-hint{text-align:center;font-size:13px;color:#345475;margin:8px 0 16px}
+.publication-date-customer .publication-calendar{padding:14px 10px;margin:0 0 16px;border-color:#c4dff4;border-radius:12px;background:#ffffffb0;--cell-size:40px}
+.publication-date-customer .publication-calendar .rdp-dropdown_root{border:1px solid #c0d5e9;border-radius:9px;background:#ffffffb8;box-shadow:0 2px 5px #123c6810}
+.publication-date-customer .publication-calendar .rdp-caption_label{font-size:15px;padding-inline:8px}
+.publication-date-customer .publication-calendar .rdp-button_previous,.publication-date-customer .publication-calendar .rdp-button_next{border:1px solid #c0d5e9;border-radius:9px;background:#fff;color:#17365c}
+.publication-date-customer .publication-calendar td button{height:40px!important;min-height:40px!important;font-size:15px;border-radius:50%;width:40px;max-width:100%;margin-inline:auto}
+.publication-date-customer .publication-calendar th{font-size:13px;color:#415e7d}
+.publication-date-customer .publication-date-actions>button{min-height:46px;border-radius:10px;font-size:16px;font-weight:650}
+.publication-date-customer .publication-date-reset{display:flex;width:fit-content;margin-top:12px;margin-inline-start:0;margin-inline-end:auto;min-height:44px;font-size:13px;color:#415e7d}
+@media(max-width:480px){.publication-date-customer[data-slot=dialog-content]{padding:20px 16px!important}.publication-date-customer [data-slot=dialog-title]{font-size:21px}.publication-date-customer [data-slot=dialog-description]{font-size:14px}.publication-date-customer .publication-calendar{padding:12px 6px;--cell-size:36px}.publication-date-customer .publication-calendar td button{height:36px!important;min-height:36px!important;width:36px}.publication-date-customer .publication-calendar .rdp-caption_label{font-size:14px;padding-inline:5px}}
+@media(prefers-reduced-transparency:reduce){.publication-date-customer[data-slot=dialog-content]{background:#f5fbff!important;backdrop-filter:none;-webkit-backdrop-filter:none}}
+@media(forced-colors:active){.publication-date-customer[data-slot=dialog-content],.publication-date-customer .publication-calendar,.publication-date-customer .publication-date-input input{background:Canvas!important;border-color:CanvasText!important;box-shadow:none;color:CanvasText}}
+
+.publication-date-customer>[data-slot=dialog-close]{top:10px;right:auto;left:10px;display:grid;place-items:center;min-width:44px;min-height:44px;color:#415e7d;border-radius:10px;background:transparent}
+.publication-date-customer>[data-slot=dialog-close]:hover{background:#e2f1fb}
