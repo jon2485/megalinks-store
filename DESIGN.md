@@ -261,10 +261,11 @@ Panels have 24px padding and a 24px section rhythm; paired work/aside layouts us
 28px gutters. At widths up to 1000px, editors and list/detail grids collapse to
 one column. Below 768px, the main gutter is 16px, panel padding is 18px, headings
 and actions stack, and 118px plus the safe-area inset reserves space for the
-existing mobile dock. The five-shortcut dock and WhatsApp action share one bottom
-lane: the dock occupies the area between 8px left and 64px right; WhatsApp sits
-8px from the right edge and 26px above the bottom, with safe-area offsets. The
-page owns long-form scrolling. Existing dialogs retain bounded internal scrolling
+existing mobile dock. After the approved administrator WhatsApp removal, the
+five-shortcut dock spans the available phone width, with 8px minimum gutters
+on both sides and the corresponding device safe-area inset on each side. Its
+five equal grid columns and sliding selected indicator retain their owners.
+The page owns long-form scrolling. Existing dialogs retain bounded internal scrolling
 and all original fields.
 
 Opted-in administrative tables retain their real table elements and handlers.
@@ -708,3 +709,11 @@ catalog destination below the sticky header. Both buttons share native smooth
 scroll and focus the existing catalog region without an intermediate jump.
 Reduced motion uses immediate scrolling and removes button movement. The arrow
 is hidden above 700px. Catalog filters, purchases, prices and exports are unchanged.
+
+
+Customer cancellation updates reuse the existing customer-order glass dialog
+owner in customer-finance-glass.css. The dedicated read-only view separates
+transaction details, cancellation facts and the customer-facing manager reason
+into softly framed sections, with Hebrew RTL, full-value wrapping, canonical
+44px close control and document-safe bounded dialog scrolling. It inherits the
+finance palette, typography, Radix focus/dismissal and mobile geometry.

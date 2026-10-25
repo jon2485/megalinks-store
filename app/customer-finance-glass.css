@@ -260,3 +260,15 @@ body:has(.customer-topup-glass,.customer-usage-glass) [data-slot=dialog-overlay]
 @media(prefers-reduced-transparency:reduce){.customer-orders-glass .simple-order-card,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass){background:#f4f8fc;-webkit-backdrop-filter:none;backdrop-filter:none;}body:has(.customer-topup-glass,.customer-usage-glass) [data-slot=dialog-overlay]{background:#26364d5c;-webkit-backdrop-filter:none;backdrop-filter:none;}}
 @media(prefers-reduced-motion:reduce){.customer-orders-glass .simple-order-row>svg,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass),:is(.customer-topup-glass,.customer-usage-glass) button{animation:none!important;transition:none!important;}}
 @media(forced-colors:active){.customer-orders-glass .simple-order-card,[data-slot=dialog-content]:has(.customer-topup-glass,.customer-usage-glass){background:Canvas;color:CanvasText;border:1px solid CanvasText;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;}.customer-orders-glass .simple-order-detail .compact-report .simple-report-button,.customer-topup-glass button[type=submit]{background:ButtonFace;color:ButtonText;border:1px solid ButtonText;}}
+
+/* Cancellation updates reuse the established customer glass dialog and its Radix owner. */
+.customer-cancellation-glass .customer-cancellation-section{margin-block:0 16px;padding:18px;border:1px solid var(--customer-finance-line);border-radius:16px;background:#ffffff73;}
+[data-slot=dialog-content] .customer-cancellation-glass .customer-cancellation-section h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;color:var(--customer-finance-ink);font-size:17px;font-weight:650;}
+.customer-cancellation-facts{display:grid;gap:12px;margin-block:14px 0!important;}
+.customer-cancellation-facts>div{display:flex;align-items:baseline;justify-content:space-between;gap:18px;}
+.customer-cancellation-facts dt{flex:1;}.customer-cancellation-facts dd{flex:1;text-align:end;margin:0;overflow-wrap:anywhere;min-width:0;}
+.customer-cancellation-glass .customer-cancellation-note{background:#dff0f582;}
+.customer-cancellation-note p{white-space:pre-wrap;overflow-wrap:anywhere;}
+.customer-cancellation-error{padding:16px;border:1px solid #e8b6c3;border-radius:12px;background:#fff3f7;margin-block-end:16px;}
+.customer-cancellation-error button{margin-block-start:12px;}
+@media(max-width:420px){.customer-cancellation-glass .customer-cancellation-section{padding:14px;}.customer-cancellation-facts>div{gap:12px;}.customer-cancellation-facts dd{flex:1.2;}}

@@ -149,8 +149,8 @@ body:has(.admin-editorial-surface) .admin-glass-menu .admin-v172-area li a {font
  .admin-design-v172 .admin-editorial-surface .admin-mega-finance .admin-mega-stats [data-slot=card-content]>span {display:none;}
  .admin-design-v172 .admin-editorial-surface .admin-mega-finance .admin-mega-stats [data-slot=card-content]>div {display:flex;align-items:center;justify-content:space-between;gap:16px;width:100%;}
  .admin-design-v172 .admin-editorial-surface .admin-mega-finance .admin-mega-stats [data-slot=card-content] strong {font-size:20px;order:2;flex:none;white-space:nowrap;}
- .admin-design-v172:has(.admin-editorial-surface) .admin-mobile-dock {left:8px;right:64px;width:auto;max-width:none;transform:none;}
- body:has(.admin-design-v172 .admin-editorial-surface) .floating-whatsapp {right:max(8px,env(safe-area-inset-right));bottom:calc(26px + env(safe-area-inset-bottom));}
+ /* Administrator contact is hidden; all five shortcuts share the full safe width. */
+ .admin-design-v172:has(.admin-editorial-surface) .admin-mobile-dock {left:max(8px,env(safe-area-inset-left));right:max(8px,env(safe-area-inset-right));width:auto;max-width:none;transform:none;}
  .admin-design-v172:has(.admin-editorial-surface) .megalinks-footer {padding:20px 16px calc(112px + env(safe-area-inset-bottom));}
  .admin-editorial-breadcrumb {font-size:12px;margin-bottom:14px;}
  .admin-design-v172 .admin-editorial-surface .admin-workspace-body :is(h1,.page-heading h1,.users-admin-heading h1,.account-hero h1,.knowledge-admin-heading h1) {font-size:27px!important;}

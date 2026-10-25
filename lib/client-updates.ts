@@ -11,7 +11,7 @@ export function buildClientUpdates(articles:Row[],orders:Row[],transactions:Row[
   if(a.demo)continue;
   const common={articleId:a.id,orderId:a.order_id,orderNumber:a.number,siteName:a.website_name,title:a.title||a.topic||'כתבה ללא כותרת',image:a.image_id?'/api/files/'+encodeURIComponent(a.image_id):undefined,logo:a.website_logo};
   if(a.status==='published')result.push({...common,id:'published:'+a.id,kind:'published',status:'הכתבה פורסמה',date:a.published_at||a.updated||'',dateLabel:a.published_at?'תאריך הפרסום':'עודכן בתאריך',url:publicationLink(a)});
-  if(a.status==='cancelled'||a.publication_refunded)result.push({...common,id:'cancelled:'+a.id,kind:'cancelled',status:a.publication_refunded?'פרסום הכתבה בוטל':'הכתבה בוטלה',date:a.cancelled_at||a.refunded_at||a.updated||'',dateLabel:a.cancelled_at||a.refunded_at?'תאריך הביטול':'עודכן בתאריך',note:a.cancel_reason||''});
+  if(a.status==='cancelled'||a.publication_refunded)result.push({...common,id:'cancelled:'+a.id,kind:'cancelled',status:a.publication_refunded?'פרסום הכתבה בוטל':'הכתבה בוטלה',date:a.cancelled_at||a.refunded_at||a.updated||'',dateLabel:a.cancelled_at||a.refunded_at?'תאריך הביטול':'עודכן בתאריך',note:a.refund_reason||a.cancel_reason||''});
   if(a.status==='revisions'){
    const message=notifications.filter(n=>{
     if(n.subject!=='המאמר הוחזר לתיקון')return false;

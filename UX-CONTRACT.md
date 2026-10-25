@@ -278,3 +278,19 @@ order-finance, order-summary and API admin/owns guards. New ticket GET is owner
 or admin only; other customers cannot read it. New nested pages are private and
 noindex, and do not bypass server authorization. Domain values in the mockups are
 illustrative; production always shows actual API values.
+
+
+## Customer cancellation update details — approved 2026-10-26
+
+The cancellation action in ClientUpdates opens CustomerCancellationDialog through
+the existing ctx.open/Radix dialog, preserving focus/dismissal and the established
+customer-order glass presentation. It reads the existing owned article endpoint
+and shows the matching transaction, recorded cancellation date/amount and the
+customer-facing refund_reason (or legacy cancel_reason). It never opens the
+article writer, issues a refund, approves a cancellation, or displays internal
+admin_notes. Missing recorded amounts/reasons remain explicit rather than being
+invented; publication-only cancellation distinguishes retained writing charges.
+The exact refund reason is added to the existing article allowlist; raw audit
+payloads, supplier fields and general administrative notes remain private.
+Source: existing lib/account-management.ts refund reason, customer-privacy.ts
+projection, order-finance.ts component amounts and the existing article owns guard.

@@ -42,9 +42,10 @@ natural document scrolling.
 At 1000px and below, work/aside and list/detail grids collapse to one column.
 At 767px and below, gutters are 16px and work-panel padding is 18px; actions wrap,
 fields stay 16px, and the page reserves 118px plus the safe-area inset for the
-preserved mobile dock. The dock keeps all five destinations and shares the bottom
-lane with WhatsApp: dock left 8px/right 64px; WhatsApp right 8px/bottom 26px, with
-safe-area offsets. Source-header labels remain visible on opted-in phone table
+preserved mobile dock. Following the approved administrator WhatsApp removal,
+the dock keeps all five destinations and fills the available phone width. Both
+side gutters use `max(8px, env(safe-area-inset-left/right))`; five equal columns
+and the sliding indicator continue to scale with the full dock width. Source-header labels remain visible on opted-in phone table
 cards and record actions remain reachable. Native table semantics and
 source handlers remain present. Unopted tables keep their existing behavior.
 
@@ -60,7 +61,7 @@ retains a transparent accessible native file input and visible containing focus.
 - Runtime model B: `app/admin-editorial.css` is canonical for this admin-scoped
   refinement; `app/admin-approved-glass.css` retains the underlying header, menu,
   feed and dock. The editorial owner supplies compact header/footer refinements
-  and the shared mobile dock/WhatsApp lane. Root DESIGN.md mirrors the scoped
+  and the full-width mobile dock with device-safe side gutters. Root DESIGN.md mirrors the scoped
   tokens and its sidecar extends them. Higher-specificity editorial selectors
   supersede the obsolete knowledge rail/grid exception independently of CSS order;
   actual computed-style verification remains with the browser review.
