@@ -1,0 +1,429 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-24T19:41:46.720815+00:00",
+  "title": "Design System: Mega Links — Administrative Editorial System",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Primary",
+        "tonalRamp": [
+          "oklch(15% 0.08721 261.12)",
+          "oklch(26% 0.08721 261.12)",
+          "oklch(38% 0.08721 261.12)",
+          "oklch(49% 0.08721 261.12)",
+          "oklch(61% 0.08721 261.12)",
+          "oklch(72% 0.08721 261.12)",
+          "oklch(84% 0.08721 261.12)",
+          "oklch(95% 0.08721 261.12)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "Background",
+        "tonalRamp": [
+          "oklch(15% 0.00287 264.54)",
+          "oklch(26% 0.00287 264.54)",
+          "oklch(38% 0.00287 264.54)",
+          "oklch(49% 0.00287 264.54)",
+          "oklch(61% 0.00287 264.54)",
+          "oklch(72% 0.00287 264.54)",
+          "oklch(84% 0.00287 264.54)",
+          "oklch(95% 0.00287 264.54)"
+        ]
+      },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Foreground",
+        "tonalRamp": [
+          "oklch(15% 0.02889 222.35)",
+          "oklch(26% 0.02889 222.35)",
+          "oklch(38% 0.02889 222.35)",
+          "oklch(49% 0.02889 222.35)",
+          "oklch(61% 0.02889 222.35)",
+          "oklch(72% 0.02889 222.35)",
+          "oklch(84% 0.02889 222.35)",
+          "oklch(95% 0.02889 222.35)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "Card",
+        "tonalRamp": [
+          "oklch(15% 0.00000 0.00)",
+          "oklch(26% 0.00000 0.00)",
+          "oklch(38% 0.00000 0.00)",
+          "oklch(49% 0.00000 0.00)",
+          "oklch(61% 0.00000 0.00)",
+          "oklch(72% 0.00000 0.00)",
+          "oklch(84% 0.00000 0.00)",
+          "oklch(95% 0.00000 0.00)"
+        ]
+      },
+      "accent": {
+        "role": "neutral",
+        "displayName": "Accent",
+        "tonalRamp": [
+          "oklch(15% 0.01734 210.19)",
+          "oklch(26% 0.01734 210.19)",
+          "oklch(38% 0.01734 210.19)",
+          "oklch(49% 0.01734 210.19)",
+          "oklch(61% 0.01734 210.19)",
+          "oklch(72% 0.01734 210.19)",
+          "oklch(84% 0.01734 210.19)",
+          "oklch(95% 0.01734 210.19)"
+        ]
+      },
+      "destructive": {
+        "role": "neutral",
+        "displayName": "Destructive",
+        "tonalRamp": [
+          "oklch(15% 0.16210 23.55)",
+          "oklch(26% 0.16210 23.55)",
+          "oklch(38% 0.16210 23.55)",
+          "oklch(49% 0.16210 23.55)",
+          "oklch(61% 0.16210 23.55)",
+          "oklch(72% 0.16210 23.55)",
+          "oklch(84% 0.16210 23.55)",
+          "oklch(95% 0.16210 23.55)"
+        ]
+      },
+      "admin-editorial-ink": {
+        "role": "primary",
+        "displayName": "Editorial navy",
+        "tonalRamp": [
+          "oklch(15% 0.08721 261.12)",
+          "oklch(26% 0.08721 261.12)",
+          "oklch(38% 0.08721 261.12)",
+          "oklch(49% 0.08721 261.12)",
+          "oklch(61% 0.08721 261.12)",
+          "oklch(72% 0.08721 261.12)",
+          "oklch(84% 0.08721 261.12)",
+          "oklch(95% 0.08721 261.12)"
+        ]
+      },
+      "admin-editorial-copy": {
+        "role": "neutral",
+        "displayName": "Slate copy",
+        "tonalRamp": [
+          "oklch(15% 0.05647 259.99)",
+          "oklch(26% 0.05647 259.99)",
+          "oklch(38% 0.05647 259.99)",
+          "oklch(49% 0.05647 259.99)",
+          "oklch(61% 0.05647 259.99)",
+          "oklch(72% 0.05647 259.99)",
+          "oklch(84% 0.05647 259.99)",
+          "oklch(95% 0.05647 259.99)"
+        ]
+      },
+      "admin-editorial-blue": {
+        "role": "primary",
+        "displayName": "Action blue",
+        "tonalRamp": [
+          "oklch(15% 0.17380 254.04)",
+          "oklch(26% 0.17380 254.04)",
+          "oklch(38% 0.17380 254.04)",
+          "oklch(49% 0.17380 254.04)",
+          "oklch(61% 0.17380 254.04)",
+          "oklch(72% 0.17380 254.04)",
+          "oklch(84% 0.17380 254.04)",
+          "oklch(95% 0.17380 254.04)"
+        ]
+      },
+      "admin-editorial-surface": {
+        "role": "neutral",
+        "displayName": "White work surface",
+        "tonalRamp": [
+          "oklch(15% 0.00000 0.00)",
+          "oklch(26% 0.00000 0.00)",
+          "oklch(38% 0.00000 0.00)",
+          "oklch(49% 0.00000 0.00)",
+          "oklch(61% 0.00000 0.00)",
+          "oklch(72% 0.00000 0.00)",
+          "oklch(84% 0.00000 0.00)",
+          "oklch(95% 0.00000 0.00)"
+        ]
+      },
+      "admin-editorial-ice": {
+        "role": "neutral",
+        "displayName": "Ice page ground",
+        "tonalRamp": [
+          "oklch(15% 0.00832 236.56)",
+          "oklch(26% 0.00832 236.56)",
+          "oklch(38% 0.00832 236.56)",
+          "oklch(49% 0.00832 236.56)",
+          "oklch(61% 0.00832 236.56)",
+          "oklch(72% 0.00832 236.56)",
+          "oklch(84% 0.00832 236.56)",
+          "oklch(95% 0.00832 236.56)"
+        ]
+      },
+      "admin-editorial-line": {
+        "role": "neutral",
+        "displayName": "Pale blue divider",
+        "tonalRamp": [
+          "oklch(15% 0.02711 226.78)",
+          "oklch(26% 0.02711 226.78)",
+          "oklch(38% 0.02711 226.78)",
+          "oklch(49% 0.02711 226.78)",
+          "oklch(61% 0.02711 226.78)",
+          "oklch(72% 0.02711 226.78)",
+          "oklch(84% 0.02711 226.78)",
+          "oklch(95% 0.02711 226.78)"
+        ]
+      },
+      "admin-editorial-field-line": {
+        "role": "neutral",
+        "displayName": "Field edge",
+        "tonalRamp": [
+          "oklch(15% 0.03013 243.45)",
+          "oklch(26% 0.03013 243.45)",
+          "oklch(38% 0.03013 243.45)",
+          "oklch(49% 0.03013 243.45)",
+          "oklch(61% 0.03013 243.45)",
+          "oklch(72% 0.03013 243.45)",
+          "oklch(84% 0.03013 243.45)",
+          "oklch(95% 0.03013 243.45)"
+        ]
+      },
+      "admin-editorial-outline-ink": {
+        "role": "primary",
+        "displayName": "Outline action ink",
+        "tonalRamp": [
+          "oklch(15% 0.12552 249.43)",
+          "oklch(26% 0.12552 249.43)",
+          "oklch(38% 0.12552 249.43)",
+          "oklch(49% 0.12552 249.43)",
+          "oklch(61% 0.12552 249.43)",
+          "oklch(72% 0.12552 249.43)",
+          "oklch(84% 0.12552 249.43)",
+          "oklch(95% 0.12552 249.43)"
+        ]
+      },
+      "admin-editorial-outline-line": {
+        "role": "neutral",
+        "displayName": "Outline action edge",
+        "tonalRamp": [
+          "oklch(15% 0.04223 234.89)",
+          "oklch(26% 0.04223 234.89)",
+          "oklch(38% 0.04223 234.89)",
+          "oklch(49% 0.04223 234.89)",
+          "oklch(61% 0.04223 234.89)",
+          "oklch(72% 0.04223 234.89)",
+          "oklch(84% 0.04223 234.89)",
+          "oklch(95% 0.04223 234.89)"
+        ]
+      },
+      "admin-editorial-selected": {
+        "role": "neutral",
+        "displayName": "Selected tab wash",
+        "tonalRamp": [
+          "oklch(15% 0.01782 245.38)",
+          "oklch(26% 0.01782 245.38)",
+          "oklch(38% 0.01782 245.38)",
+          "oklch(49% 0.01782 245.38)",
+          "oklch(61% 0.01782 245.38)",
+          "oklch(72% 0.01782 245.38)",
+          "oklch(84% 0.01782 245.38)",
+          "oklch(95% 0.01782 245.38)"
+        ]
+      },
+      "admin-editorial-table-head": {
+        "role": "neutral",
+        "displayName": "Table heading wash",
+        "tonalRamp": [
+          "oklch(15% 0.01171 239.90)",
+          "oklch(26% 0.01171 239.90)",
+          "oklch(38% 0.01171 239.90)",
+          "oklch(49% 0.01171 239.90)",
+          "oklch(61% 0.01171 239.90)",
+          "oklch(72% 0.01171 239.90)",
+          "oklch(84% 0.01171 239.90)",
+          "oklch(95% 0.01171 239.90)"
+        ]
+      },
+      "admin-editorial-danger": {
+        "role": "tertiary",
+        "displayName": "Destructive action",
+        "tonalRamp": [
+          "oklch(15% 0.18361 15.95)",
+          "oklch(26% 0.18361 15.95)",
+          "oklch(38% 0.18361 15.95)",
+          "oklch(49% 0.18361 15.95)",
+          "oklch(61% 0.18361 15.95)",
+          "oklch(72% 0.18361 15.95)",
+          "oklch(84% 0.18361 15.95)",
+          "oklch(95% 0.18361 15.95)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "admin-editorial-body": {
+        "displayName": "Body",
+        "purpose": "Authenticated administrative editorial surface only."
+      },
+      "admin-editorial-heading": {
+        "displayName": "Heading",
+        "purpose": "Authenticated administrative editorial surface only."
+      },
+      "admin-editorial-heading-phone": {
+        "displayName": "Heading Phone",
+        "purpose": "Authenticated administrative editorial surface only."
+      },
+      "admin-editorial-panel-title": {
+        "displayName": "Panel Title",
+        "purpose": "Authenticated administrative editorial surface only."
+      },
+      "admin-editorial-control": {
+        "displayName": "Control",
+        "purpose": "Authenticated administrative editorial surface only."
+      },
+      "admin-editorial-field": {
+        "displayName": "Field",
+        "purpose": "Authenticated administrative editorial surface only."
+      },
+      "admin-editorial-label": {
+        "displayName": "Label",
+        "purpose": "Authenticated administrative editorial surface only."
+      },
+      "admin-editorial-meta": {
+        "displayName": "Meta",
+        "purpose": "Authenticated administrative editorial surface only."
+      }
+    },
+    "shadows": [
+      {
+        "name": "admin-editorial-panel",
+        "value": "0 5px 18px #163d6209",
+        "purpose": "Quiet ambient work-panel separation; --admin-v172-shadow in app/admin-editorial.css."
+      },
+      {
+        "name": "admin-editorial-action-hover",
+        "value": "0 4px 12px #153f6814",
+        "purpose": "Small hover response on enabled administrative actions."
+      }
+    ],
+    "motion": [
+      {
+        "name": "admin-inherited-state-transition",
+        "value": "background-color .18s, border-color .18s, color .18s, box-shadow .18s, transform .18s",
+        "purpose": "Existing approved-glass control feedback; removed for reduced motion."
+      },
+      {
+        "name": "admin-editorial-pressed",
+        "value": "translateY(1px)",
+        "purpose": "Pressed action response; removed for reduced motion."
+      },
+      {
+        "name": "admin-preserved-dock-indicator",
+        "value": "right .36s cubic-bezier(.22,.7,.2,1), opacity .18s",
+        "purpose": "Existing phone pill indicator; preserved by the approved-glass owner."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "admin-editorial-single-column",
+        "value": "1000px"
+      },
+      {
+        "name": "admin-editorial-phone",
+        "value": "767px"
+      },
+      {
+        "name": "admin-editorial-desktop-header",
+        "value": "768px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Administrative primary action",
+      "kind": "button",
+      "description": "Explicit administrative save or primary action; preserves the real handler in the application.",
+      "html": "<div dir=\"rtl\"><button class=\"ds-admin-primary\">שמירת שינויים</button></div>",
+      "css": ".ds-admin-primary{min-height:44px;border-radius:8px;padding:10px 18px;font-family:Heebo,Arial,sans-serif;font-size:15px;font-weight:650;line-height:1.5;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:box-shadow .18s,transform .18s;background:var(--admin-v172-blue,#0872d5);border:1px solid var(--admin-v172-blue,#0872d5);color:#fff;}.ds-admin-primary:hover:not(:disabled){box-shadow:0 4px 12px #153f6814;}.ds-admin-primary:focus-visible{outline:3px solid var(--admin-v172-focus,#0872d5);outline-offset:3px;}.ds-admin-primary:active:not(:disabled){transform:translateY(1px);}.ds-admin-primary:disabled{opacity:.5;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-admin-primary{transition:none;}.ds-admin-primary:active{transform:none;}}",
+      "refersTo": "admin-editorial-button-primary"
+    },
+    {
+      "name": "Administrative outline action",
+      "kind": "button",
+      "description": "Secondary return, cancel or supporting action.",
+      "html": "<div dir=\"rtl\"><button class=\"ds-admin-outline\">חזרה לעריכה</button></div>",
+      "css": ".ds-admin-outline{min-height:44px;border-radius:8px;padding:10px 18px;font-family:Heebo,Arial,sans-serif;font-size:15px;font-weight:650;line-height:1.5;display:inline-flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;transition:box-shadow .18s,transform .18s;background:#fff;border:1px solid #b9d8eb;color:#075b9b;}.ds-admin-outline:hover:not(:disabled){box-shadow:0 4px 12px #153f6814;}.ds-admin-outline:focus-visible{outline:3px solid var(--admin-v172-focus,#0872d5);outline-offset:3px;}.ds-admin-outline:active:not(:disabled){transform:translateY(1px);}.ds-admin-outline:disabled{opacity:.5;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-admin-outline{transition:none;}.ds-admin-outline:active{transform:none;}}",
+      "refersTo": "admin-editorial-button-outline"
+    },
+    {
+      "name": "Administrative field",
+      "kind": "input",
+      "description": "A visible Hebrew label with a readable field; LTR values retain their own direction when needed.",
+      "html": "<label class=\"ds-admin-field\" dir=\"rtl\">שם האתר<input placeholder=\"הזינו שם אתר\" /></label>",
+      "css": ".ds-admin-field{display:grid;gap:8px;font-family:Heebo,Arial,sans-serif;font-size:15px;font-weight:600;color:var(--admin-v172-ink,#071f4b);}.ds-admin-field input{min-width:0;min-height:46px;padding:0 12px;border:1px solid #c7daea;border-radius:8px;background:#fff;font-family:Heebo,Arial,sans-serif;font-size:16px;font-weight:400;line-height:1.5;color:var(--admin-v172-ink,#071f4b);caret-color:var(--admin-v172-blue,#0872d5);text-align:start;}.ds-admin-field input::placeholder{color:#5b7187;opacity:1;}.ds-admin-field input:hover{border-color:#b9d8eb;}.ds-admin-field input:focus-visible{outline:3px solid var(--admin-v172-focus,#0872d5);outline-offset:3px;}.ds-admin-field input:disabled{opacity:.5;}",
+      "refersTo": "admin-editorial-field"
+    },
+    {
+      "name": "Administrative work panel",
+      "kind": "card",
+      "description": "Opaque white editorial grouping for real record fields and actions.",
+      "html": "<section class=\"ds-admin-panel\" dir=\"rtl\"><h3>פרטי האתר</h3><p>פרטי האתר והנחיות לפרסום.</p></section>",
+      "css": ".ds-admin-panel{padding:24px;border:1px solid var(--admin-v172-line,#cfe5ef);border-radius:12px;background:#fff;box-shadow:var(--admin-v172-shadow,0 5px 18px #163d6209);color:var(--admin-v172-ink,#071f4b);font-family:Heebo,Arial,sans-serif;}.ds-admin-panel h3{font-size:19px;font-weight:750;line-height:1.5;margin:0 0 20px;}.ds-admin-panel p{font-size:15px;line-height:1.8;color:var(--admin-v172-muted,#425574);margin:0;}@media(max-width:767px){.ds-admin-panel{padding:18px;}}",
+      "refersTo": "admin-editorial-panel"
+    },
+    {
+      "name": "Complete administrative menu",
+      "kind": "nav",
+      "description": "Header Sheet content supplies the complete searchable canonical navigation; this sample illustrates item treatment only.",
+      "html": "<nav class=\"ds-admin-nav\" dir=\"rtl\" aria-label=\"אזורי ניהול\"><a href=\"#work\" aria-current=\"page\">מרכז העבודה</a><a href=\"#orders\">הזמנות</a><a href=\"#catalog\">קטלוג ותמחור</a></nav>",
+      "css": ".ds-admin-nav{display:grid;gap:5px;padding:16px;background:#f7fbff;font-family:Heebo,Arial,sans-serif;}.ds-admin-nav a{display:flex;align-items:center;min-height:52px;padding:12px 10px;border:1px solid transparent;border-radius:8px;font-size:15px;font-weight:650;color:#0b274d;text-decoration:none;}.ds-admin-nav a:hover{background:#e6f3ff;}.ds-admin-nav a[aria-current=page]{background:linear-gradient(115deg,#e4f8ffeb,#cee9fff2);color:#075c9e;box-shadow:inset 0 1px #fff;}.ds-admin-nav a:focus-visible{outline:3px solid #006fc6;outline-offset:3px;}"
+    },
+    {
+      "name": "Administrative selected tab",
+      "kind": "chip",
+      "description": "An existing account or pricing workflow tab; selected state remains explicit.",
+      "html": "<div class=\"ds-admin-tabs\" dir=\"rtl\"><button aria-current=\"page\">פרטי לקוח</button><button>תשלומים</button></div>",
+      "css": ".ds-admin-tabs{display:flex;flex-wrap:wrap;gap:8px;font-family:Heebo,Arial,sans-serif;}.ds-admin-tabs button{min-height:44px;padding:9px 15px;border:1px solid var(--admin-v172-line,#cfe5ef);border-radius:8px;background:#fff;font:inherit;font-size:14px;color:var(--admin-v172-muted,#425574);cursor:pointer;}.ds-admin-tabs button[aria-current=page]{background:#eaf5ff;color:#075b9b;border-color:#a8cfea;}.ds-admin-tabs button:hover{box-shadow:0 4px 12px #153f6814;}.ds-admin-tabs button:focus-visible{outline:3px solid var(--admin-v172-focus,#0872d5);outline-offset:3px;}",
+      "refersTo": "admin-editorial-tab-selected"
+    },
+    {
+      "name": "Administrative labeled record table",
+      "kind": "custom",
+      "description": "Real table elements remain canonical; phone record cards expose each source column label.",
+      "html": "<div class=\"ds-admin-table-wrap\" dir=\"rtl\"><table class=\"ds-admin-table\"><thead><tr><th>אתר</th><th>מצב</th></tr></thead><tbody><tr><td data-label=\"אתר\">שם האתר</td><td data-label=\"מצב\">פעיל</td></tr></tbody></table></div>",
+      "css": ".ds-admin-table-wrap{border:1px solid var(--admin-v172-line,#cfe5ef);border-radius:12px;overflow:auto;}.ds-admin-table{width:100%;border-collapse:collapse;font-family:Heebo,Arial,sans-serif;font-size:15px;color:var(--admin-v172-ink,#071f4b);}.ds-admin-table th{background:#eff7fd;color:var(--admin-v172-muted,#425574);font-size:13px;font-weight:650;padding:15px 18px;text-align:start;}.ds-admin-table td{padding:20px 18px;line-height:1.7;border-bottom:1px solid #e3edf5;text-align:start;}@media(max-width:767px){.ds-admin-table-wrap{border:0;overflow:visible;}.ds-admin-table,.ds-admin-table tbody{display:block;}.ds-admin-table thead{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;}.ds-admin-table tbody tr{display:grid;gap:10px;padding:18px;border:1px solid var(--admin-v172-line,#cfe5ef);border-radius:12px;background:#fff;}.ds-admin-table td{display:grid;grid-template-columns:minmax(74px,.65fr) minmax(0,1.35fr);gap:12px;padding:4px 0;border:0;}.ds-admin-table td::before{content:attr(data-label);font-size:13px;font-weight:600;color:var(--admin-v172-muted,#425574);}}",
+      "refersTo": "admin-editorial-table-head"
+    },
+    {
+      "name": "Administrative summary strip",
+      "kind": "custom",
+      "description": "Quiet grouping for existing real account or order summary figures. The finance phone variant uses three compact full-width rows; labels stand in for live application data.",
+      "html": "<div class=\"ds-admin-summary\" dir=\"rtl\"><div><span>סכום הזמנות</span><strong>סכום בפועל</strong></div><div><span>יתרה</span><strong>יתרה בפועל</strong></div></div>",
+      "css": ".ds-admin-summary{display:flex;flex-wrap:wrap;border:1px solid var(--admin-v172-line,#cfe5ef);border-radius:12px;background:#ffffffce;color:var(--admin-v172-ink,#071f4b);font-family:Heebo,Arial,sans-serif;}.ds-admin-summary>div{flex:1 1 180px;padding:16px 20px;border-inline-end:1px solid var(--admin-v172-line,#cfe5ef);}.ds-admin-summary>div:last-child{border-inline-end:0;}.ds-admin-summary span{font-size:15px;color:var(--admin-v172-muted,#425574);}.ds-admin-summary strong{display:block;font-size:23px;line-height:1.4;font-variant-numeric:tabular-nums;}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Editorial Desk",
+    "overview": "The approved administration system puts real records and editing space first.\nOpaque white panels sit on an ice ground with faint existing waves, beneath the\nMega Links navy header. Blue actions, measured spacing and Heebo Hebrew type\nmake the operating surface feel like the approved article editor.\n\nThis is an admin-scoped system change. It supersedes earlier administrative rail,\nglass-panel, radius and density guidance below; catalog, customer, supplier and\npublic knowledge styling retain their existing owners. Runtime CSS remains\ncanonical (model B): `app/admin-editorial.css` refines\n`app/admin-approved-glass.css` only while the authenticated editorial admin\nsurface is present. The `admin-editorial-*` frontmatter entries mirror that scope\nand do not replace global tokens. Surface composition and verification boundaries\nlive in `.impeccable/surfaces/admin-editorial.md`.",
+    "keyCharacteristics": [
+      "A complete searchable header menu and an uninterrupted desktop work surface.",
+      "White editorial panels, faint ice waves, blue primary actions and navy titles.",
+      "Hebrew RTL with existing Heebo, original record content and explicit actions.",
+      "The approved mobile update feed and five-destination pill dock remain familiar."
+    ],
+    "rules": [
+      {
+        "name": "The Scope Rule",
+        "body": "Administrative editorial tokens apply only to authenticated administration and its currently mounted portals; never replace customer, supplier or public catalog brand tokens with them.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "**Do** preserve every administrative destination, field, operation and real record while applying the scoped editorial hierarchy.",
+      "**Do** use the existing Heebo font, Hebrew RTL, explicit primary actions and readable field/table typography.",
+      "**Do** keep mobile record actions clear of the five-item dock and preserve the existing complete searchable menu at every width."
+    ],
+    "donts": [
+      "**Don't** restore a persistent desktop navigation rail in the editorial system.",
+      "**Don't** replace global brand tokens, business statuses, permissions, finance calculations or save owners through presentation styling.",
+      "**Don't** ship generated mock records, claims or illustrative amounts as data."
+    ]
+  }
+}

@@ -1,4 +1,5 @@
 'use client';
+import {AdminResponsiveTable} from '@/components/ui/table';
 import React,{useState} from 'react';
 import {Building2,CheckCircle2,Wallet,ChevronDown,ExternalLink} from 'lucide-react';
 import {Button} from '@/components/ui/button';
@@ -29,7 +30,7 @@ function AdminSupplierSettlements({ctx}:{ctx:Ctx}){
    {row&&<>
     <div className="settlement-amounts"><div><span>{row.demo?'סכום בהדגמה':'עלות הפרסומים לספק'}</span><strong><bdi>{money(row.amount)}</bdi></strong></div><div><span>סכום ששולם</span><strong><bdi>{money(Number(row.payment?.amount_paid||0))}</bdi></strong></div><div className={due(row)>0&&!row.demo?'settlement-due has-attention':'settlement-due'}><span>יתרה לתשלום</span><strong><bdi>{money(due(row))}</bdi></strong></div></div>
     {row.demo&&<p className="settlement-demo-note">רישום הדגמה בלבד — אינו יוצר חוב או תשלום כספי.</p>}
-    <section className="admin-settlement-publications"><h3>פרסומים בחודש {row.month}</h3><div className="overflow-x-auto"><table><thead><tr><th>אתר</th><th>כתבה</th><th>עלות לספק</th><th>פרסום</th></tr></thead><tbody>{row.articles.map((a:Row)=><tr key={a.id}><td><SiteReference name={a.website_name} url={a.website_url}/></td><td>{a.title||'ללא כותרת'}</td><td><bdi>{money(a.cost_cents)}</bdi></td><td>{a.url?<a href={a.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={15}/>לכתבה שפורסמה</a>:'—'}</td></tr>)}</tbody></table></div></section>
+    <section className="admin-settlement-publications"><h3>פרסומים בחודש {row.month}</h3><div className="overflow-x-auto"><AdminResponsiveTable><thead><tr><th>אתר</th><th>כתבה</th><th>עלות לספק</th><th>פרסום</th></tr></thead><tbody>{row.articles.map((a:Row)=><tr key={a.id}><td><SiteReference name={a.website_name} url={a.website_url}/></td><td>{a.title||'ללא כותרת'}</td><td><bdi>{money(a.cost_cents)}</bdi></td><td>{a.url?<a href={a.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={15}/>לכתבה שפורסמה</a>:'—'}</td></tr>)}</tbody></AdminResponsiveTable></div></section>
     <section className="admin-settlement-payment"><h3>תיעוד תשלום</h3>{row.payment?<div className="settlement-receipt"><CheckCircle2 size={18}/><span>אסמכתת תשלום: <bdi>{row.payment.reference}</bdi>{row.payment.paid_at&&<small>תועד ב־{when(row.payment.paid_at)}</small>}</span></div>:<p>לא תועד תשלום להתחשבנות זו.</p>}
     {due(row)>0&&<Button className="settlement-pay" onClick={()=>ctx.open({kind:'admin-finance',title:row.demo?'תיעוד תשלום בהדגמה':'תיעוד תשלום לספק',description:row.supplier_name+' · '+row.month+' · '+money(due(row)),render:(close:()=>void)=><ActionForm fields={[["reference","אסמכתת התשלום שבוצע","text"]]} submit={b=>ctx.run(()=>api('admin/supplier-payment','POST',{...b,settlement_key:row.id}),'התשלום תועד').then(close)}/>})}><Wallet size={18}/>{row.demo?'תיעוד תשלום בהדגמה':'תיעוד תשלום שבוצע'}</Button>}
     </section>

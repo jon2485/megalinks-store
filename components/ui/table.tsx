@@ -3,19 +3,48 @@
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
+import {EditorialTableContext} from './table-presentation'
+
+const TableLabelsContext = React.createContext<string[]>([])
+function flatChildren(children: React.ReactNode): React.ReactNode[] {
+  return React.Children.toArray(children).flatMap(child => React.isValidElement<{children?:React.ReactNode}>(child) && child.type === React.Fragment ? flatChildren(child.props.children) : [child])
+}
+function textLabel(node: React.ReactNode): string {
+  return typeof node === 'string' || typeof node === 'number' ? String(node) : React.isValidElement<{children?:React.ReactNode}>(node) ? flatChildren(node.props.children).map(textLabel).join(' ') : ''
+}
+function labelsIn(children: React.ReactNode): string[] {
+  return flatChildren(children).flatMap(child => !React.isValidElement<{children?:React.ReactNode}>(child) ? [] : child.type === TableHead || child.type === 'th' ? [textLabel(child.props.children)] : labelsIn(child.props.children))
+}
+
+function labelNativeRows(children:React.ReactNode,labels:string[]):React.ReactNode {
+  return flatChildren(children).map(child=>{
+    if(!React.isValidElement<{children?:React.ReactNode}>(child))return child
+    if(child.type==='tr')return React.cloneElement(child,{},flatChildren(child.props.children).map((cell,index)=>React.isValidElement<Record<string,unknown>>(cell)&&cell.type==='td'?React.cloneElement(cell,{'data-label':labels[index]||'פעולות'}):cell))
+    return child.props.children ? React.cloneElement(child,{},labelNativeRows(child.props.children,labels)) : child
+  })
+}
+/** Same table and handlers; only opt-in administration receives phone labels. */
+export function AdminResponsiveTable({children,...props}:React.ComponentProps<'table'>) {
+  const editorial=React.useContext(EditorialTableContext)
+  return <table {...props} data-admin-cards={editorial||undefined}>{editorial?labelNativeRows(children,labelsIn(children)):children}</table>
+}
 
 function Table({ className, ...props }: React.ComponentProps<"table">) {
+  const editorial = React.useContext(EditorialTableContext)
   return (
+    <TableLabelsContext.Provider value={editorial ? labelsIn(props.children) : []}>
     <div
       data-slot="table-container"
       className="relative w-full overflow-x-auto"
     >
       <table
         data-slot="table"
+        data-admin-cards={editorial || undefined}
         className={cn("w-full caption-bottom text-sm", className)}
         {...props}
       />
     </div>
+    </TableLabelsContext.Provider>
   )
 }
 
@@ -53,6 +82,7 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
 }
 
 function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+  const labels = React.useContext(TableLabelsContext)
   return (
     <tr
       data-slot="table-row"
@@ -61,7 +91,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
         className
       )}
       {...props}
-    />
+    >{labels.length ? flatChildren(props.children).map((child,index) => React.isValidElement<Record<string,unknown>>(child) && child.type === TableCell ? React.cloneElement(child, {'data-label':labels[index] || 'פעולות'}) : child) : props.children}</tr>
   )
 }
 

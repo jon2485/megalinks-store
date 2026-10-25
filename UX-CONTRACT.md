@@ -1,5 +1,39 @@
 # Catalog interaction contract
 
+## Approved editorial administration — 2026-10-24
+
+The current admin presentation supersedes earlier presentation-only caveats below
+for the explicitly migrated workflows. Domain rules remain server-owned. No API,
+schema, financial amount, permission or supplier visibility policy changes.
+
+| Capability | Canonical owner | Source of truth | Allowed variants | Verification |
+|---|---|---|---|---|
+| Table Selection | Existing screen selection/filter handlers | Existing APIs and screen state | Existing selection scope; same handlers in desktop tables and labeled mobile records | admin-editorial, admin-complete-actions, admin-finance-ui |
+| Select/Listbox | components/ui/select.tsx and existing native selects; SupplierPicker | Existing control ownership | Radix authored popup; OS-owned native selects accepted; searchable supplier picker unchanged | catalog-workspace-actions; browser supplier open/close |
+| Date | Existing native date fields and PublicationDatePicker | Existing domain scheduling contract | Native OS-owned fields stay native; maintained authored publication calendar stays authored | Existing action/scheduling checks; no date policy change |
+| Form | CatalogWebsiteForm, ActionForm and original record forms | Existing validation, API versions, busy locks and errors | Full-page site editor; existing dialogs; independently saved customer panels | catalog-workspace-actions, pricing-admin-ui, admin-finance-ui |
+| Scrollbar | Global stylesheet plus admin-editorial.css | DESIGN.md runtime model B | Document scrolling for full-page forms; internal overflow only where existing data table requires it | Browser width/scroll checks at 390 and 1280 |
+| Toast | Existing Sonner provider | Existing success/error callbacks | Existing localized outcomes | Existing action suites |
+| CRUD | Existing handlers and server; Workspace.go; useAdminDraftGuard | docs/security.md, docs/supplier-data-privacy.md, original API handlers | Return/stay behavior preserved; app-owned unsaved guard for full-page site/profile editors | 35 API call expressions preserved; real isolated Worker 40-check suite |
+
+The same-route navigation is a no-op and must not clear a dirty editor. Separate
+editor routes mount separate state. Site saves clear only the site draft after
+success; failed saves retain it. Customer profile and monthly-limit panels own
+independent dirty keys. Choosing the already active customer tab is a no-op.
+The new guard handles app navigation, browser history and unload for those
+opt-in editors. It does not claim to retrofit every historical modal with drafts.
+
+All 24 admin destinations remain reachable through the complete searchable
+header menu, including attention counts. The five mobile shortcuts remain real
+links with the moving glass selection indicator. Duplicate section navigation
+is suppressed; catalog-internal tabs remain available. Customer/supplier table
+markup is unchanged outside the opt-in admin presentation context.
+
+The approved customer-account tabs expose the already implemented orders,
+articles, profile and history content. No new financial eligibility is inferred.
+Screenshots use isolated fixture data; no preview records or authentication
+headers are included in release source.
+
 This task documents the existing catalog and its presentation redesign.
 It does not establish new payment, permission, retention or order policies.
 Visual ownership and motion tokens: [DESIGN.md](DESIGN.md).

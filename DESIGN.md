@@ -9,18 +9,110 @@ colors:
   card: "#ffffff"
   accent: "#e8f8fb"
   destructive: "#ca4b4b"
+  admin-editorial-ink: "#071f4b"
+  admin-editorial-copy: "#425574"
+  admin-editorial-blue: "#0872d5"
+  admin-editorial-surface: "#ffffff"
+  admin-editorial-ice: "#f5fbff"
+  admin-editorial-line: "#cfe5ef"
+  admin-editorial-field-line: "#c7daea"
+  admin-editorial-outline-ink: "#075b9b"
+  admin-editorial-outline-line: "#b9d8eb"
+  admin-editorial-selected: "#eaf5ff"
+  admin-editorial-table-head: "#eff7fd"
+  admin-editorial-danger: "#b92342"
 typography:
   body:
     fontFamily: "Arial, Helvetica, sans-serif"
     fontSize: "16px"
   display:
     fontFamily: "Heebo, Arial, Helvetica, sans-serif"
+  admin-editorial-body:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.7
+  admin-editorial-heading:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "32px"
+    fontWeight: 800
+    lineHeight: 1.3
+    letterSpacing: "-0.025em"
+  admin-editorial-heading-phone:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "27px"
+    fontWeight: 800
+    lineHeight: 1.3
+  admin-editorial-panel-title:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "19px"
+    fontWeight: 750
+    lineHeight: 1.5
+  admin-editorial-control:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "15px"
+    fontWeight: 650
+    lineHeight: 1.5
+  admin-editorial-field:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.5
+  admin-editorial-label:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "15px"
+    fontWeight: 600
+  admin-editorial-meta:
+    fontFamily: "Heebo, Arial, sans-serif"
+    fontSize: "13px"
 rounded:
   DEFAULT: "0.7rem"
   catalog-card: "28px"
+  admin-editorial-panel: "12px"
+  admin-editorial-control: "8px"
 spacing:
   catalog-gap: "16px"
   catalog-max: "1760px"
+  admin-editorial-control-gap: "8px"
+  admin-editorial-action-gap: "10px"
+  admin-editorial-filter-gap: "12px"
+  admin-editorial-section-gap: "24px"
+  admin-editorial-column-gap: "28px"
+  admin-editorial-desktop-gutter: "36px"
+  admin-editorial-phone-gutter: "16px"
+components:
+  admin-editorial-button-primary:
+    backgroundColor: "{colors.admin-editorial-blue}"
+    textColor: "{colors.admin-editorial-surface}"
+    typography: "{typography.admin-editorial-control}"
+    rounded: "{rounded.admin-editorial-control}"
+    padding: "10px 18px"
+  admin-editorial-button-outline:
+    backgroundColor: "{colors.admin-editorial-surface}"
+    textColor: "{colors.admin-editorial-outline-ink}"
+    typography: "{typography.admin-editorial-control}"
+    rounded: "{rounded.admin-editorial-control}"
+    padding: "10px 18px"
+  admin-editorial-field:
+    backgroundColor: "{colors.admin-editorial-surface}"
+    textColor: "{colors.admin-editorial-ink}"
+    typography: "{typography.admin-editorial-field}"
+    rounded: "{rounded.admin-editorial-control}"
+  admin-editorial-panel:
+    backgroundColor: "{colors.admin-editorial-surface}"
+    textColor: "{colors.admin-editorial-ink}"
+    rounded: "{rounded.admin-editorial-panel}"
+    padding: "24px"
+  admin-editorial-tab-selected:
+    backgroundColor: "{colors.admin-editorial-selected}"
+    textColor: "{colors.admin-editorial-outline-ink}"
+    rounded: "{rounded.admin-editorial-control}"
+    padding: "9px 15px"
+  admin-editorial-table-head:
+    backgroundColor: "{colors.admin-editorial-table-head}"
+    textColor: "{colors.admin-editorial-copy}"
+    typography: "{typography.admin-editorial-meta}"
+    padding: "15px 18px"
 ---
 
 # Mega Links design context
@@ -39,6 +131,31 @@ Runtime CSS is canonical (ownership model B). This document mirrors its values;
 it does not generate CSS. Existing business and permission constraints remain
 in `docs/security.md`, `docs/supplier-data-privacy.md` and the server implementation.
 
+### Administrative editorial system — approved 2026-10-24
+
+**Creative North Star: "The Editorial Desk"**
+
+The approved administration system puts real records and editing space first.
+Opaque white panels sit on an ice ground with faint existing waves, beneath the
+Mega Links navy header. Blue actions, measured spacing and Heebo Hebrew type
+make the operating surface feel like the approved article editor.
+
+This is an admin-scoped system change. It supersedes earlier administrative rail,
+glass-panel, radius and density guidance below; catalog, customer, supplier and
+public knowledge styling retain their existing owners. Runtime CSS remains
+canonical (model B): `app/admin-editorial.css` refines
+`app/admin-approved-glass.css` only while the authenticated editorial admin
+surface is present. The `admin-editorial-*` frontmatter entries mirror that scope
+and do not replace global tokens. Surface composition and verification boundaries
+live in `.impeccable/surfaces/admin-editorial.md`.
+
+**Key Characteristics:**
+
+- A complete searchable header menu and an uninterrupted desktop work surface.
+- White editorial panels, faint ice waves, blue primary actions and navy titles.
+- Hebrew RTL with existing Heebo, original record content and explicit actions.
+- The approved mobile update feed and five-destination pill dock remain familiar.
+
 ## Colors
 
 Navy anchors titles/actions; cyan surfaces and borders provide catalog depth.
@@ -46,10 +163,36 @@ Existing orange purchase actions remain unchanged. Brand values are owned by
 `app/globals.css` (`:root` and the `.azure-catalog` section), with Tailwind aliases
 in its `@theme inline` block. Motion introduces no new brand palette.
 
+### Administrative editorial colors
+
+Primary blue identifies explicit actions and focus; navy carries titles and record
+text. Opaque white carries work, ice carries the page ground, and pale blue lines
+separate fields and records. The frontmatter's administrative colors are the
+normative mirror of the runtime values. `--admin-v172-ink`, `muted`, `line`,
+`blue` and `focus` are resolved by the editorial admin owner; fields, outline
+controls, selected tabs and table headers use its repeated literal values.
+Existing status colors continue to communicate their original domain states.
+The shared navy header and preserved mobile feed/dock remain owned by the
+approved-glass layer.
+
+**The Scope Rule.** Administrative editorial tokens apply only to authenticated
+administration and its currently mounted portals; never replace customer,
+supplier or public catalog brand tokens with them.
+
 ## Typography
 
 Use the existing Heebo family for the catalog body and display, with Arial fallback, Hebrew RTL, and LTR domains.
 Use the existing responsive title sizes and numeric currency formatting.
+
+### Administrative editorial typography
+
+Use the existing local Heebo face with Arial fallback for administrative headings,
+body, labels and values. The scoped roles above capture the implemented page
+heading, panel title, control, field and metadata hierarchy. Page headings reduce
+to the phone role below 768px. Fields remain 16px on phones; Hebrew labels wrap,
+and existing LTR domains,
+emails, identifiers and monetary bidi isolation remain intact. Tables use readable
+15px values with 13px headings, rather than compressing the complete workspace.
 
 ## Layout
 
@@ -81,6 +224,31 @@ composition height. Text wraps naturally rather than shrinking to fit two lines.
 The shared existing header is compact and sticky on desktop and phone; its real
 navigation/account/cart controls are unchanged. The document owns page scrolling.
 
+### Administrative editorial layout
+
+Desktop uses one continuous content column without a persistent navigation rail.
+The actual main owner currently fills the available width up to 1600px, with
+36px side gutters and 24px top spacing. Every destination and alias remains in
+the complete searchable header menu. Breadcrumbs preserve page context; duplicate
+section-navigation rows are visually suppressed. Local pricing and account tabs
+continue to expose their actual workflows.
+
+Panels have 24px padding and a 24px section rhythm; paired work/aside layouts use
+28px gutters. At widths up to 1000px, editors and list/detail grids collapse to
+one column. Below 768px, the main gutter is 16px, panel padding is 18px, headings
+and actions stack, and 118px plus the safe-area inset reserves space for the
+existing mobile dock. The five-shortcut dock and WhatsApp action share one bottom
+lane: the dock occupies the area between 8px left and 64px right; WhatsApp sits
+8px from the right edge and 26px above the bottom, with safe-area offsets. The
+page owns long-form scrolling. Existing dialogs retain bounded internal scrolling
+and all original fields.
+
+Opted-in administrative tables retain their real table elements and handlers.
+On phones, source header text supplies visible cell labels in vertically stacked
+record cards; action cells remain reachable. Tables outside the administrative
+context retain their existing presentation. The original work-center mobile feed
+and five-item dock retain their established composition.
+
 ## Elevation & Depth
 
 Preserve original PublicationCard styling in catalog-view.tsx and globals.css:
@@ -89,11 +257,29 @@ box and orange purchase action. catalog-experience.css owns only the split intro
 lower search/category controls and scoped opening animations. No card restyling,
 pointer tilt or extra hover lift is enabled by this presentation change.
 
+### Administrative editorial depth
+
+White work panels use one quiet ambient shadow, mirrored in the sidecar from
+`--admin-v172-shadow`; pale boundaries carry most separation. The page reuses
+`public/brand/checkout-waves.webp` beneath a translucent white wash. Decorative
+legacy hero waves are suppressed inside the work surface to keep the page calm.
+Hover gives actions a small shadow; pressed actions shift by 1px. Existing
+reduced-motion rules remove movement and transitions. Header/menu/dock depth and
+the liked mobile feed stay owned by the approved-glass layer.
+
 ## Shapes
 
 Keep current 28px catalog cards, inner panels and existing action-button shapes.
 Keep branding and footer unchanged. Header geometry is owned by
 workspace-header-compact.css, with a compact sticky shell and existing controls.
+
+### Administrative editorial shapes
+
+Use gently curved editorial panels (12px) and controls (8px), each with thin pale
+blue boundaries. These scoped values supersede older administrative glass radii
+for work panels and forms. They do not flatten the preserved fully rounded mobile
+dock, status pills or header menu trigger. Long text and Hebrew labels wrap within
+their container instead of clipping operations.
 
 ## Components
 
@@ -121,12 +307,57 @@ change at runtime. Without JavaScript or IntersectionObserver, cards stay visibl
 Keyboard focus reveals a pending card immediately. Print reveals all content.
 Animation shells own entrance transforms; original inner-card hover styling stays.
 
+### Administrative editorial components
+
+- **Actions:** blue primary and white outline variants use the scoped frontmatter
+  values, a 44px minimum height and visible inherited 3px focus outline. Hover,
+  pressed, disabled and busy feedback stay attached to the real controls.
+- **Fields:** white 46px-minimum controls use 8px corners and pale field borders;
+  textareas have a 120px minimum and no manual resize handle. Labels remain visible.
+- **Panels and tables:** 12px panels organize existing forms, summaries and record
+  lists. Tables keep their source columns; only the opted-in phone presentation
+  changes into labeled record cards.
+- **Navigation:** the sticky navy brand header always offers “כל אזורי הניהול”.
+  Its searchable Sheet uses the canonical destination list and existing dirty
+  navigation. Radix retains focus, Escape and dismissal ownership. The mobile dock
+  supplies its existing five shortcuts; the complete menu supplies every screen.
+- **Editors:** site creation/editing uses a full-page form with a right-hand work
+  column and a 330px metadata column on desktop. Customer profile and payment
+  settings remain editable on their page. Original handlers own all saves and
+  errors; the opt-in draft guard tracks independently saved sections. Opening the
+  site editor scrolls to the document top and focuses its title without a second
+  scroll. The Hebrew logo-upload zone retains a transparent, accessible file input
+  and a containing focus indicator.
+- **Finance summaries:** the hero aligns with the RTL reading edge and omits its
+  decorative floating icon. On phones, the three existing summary figures become
+  compact full-width rows with reset inner-card padding.
+- **Utility footer:** administration uses a compact white footer, keeping every
+  existing link and contact action. Customer and supplier footers retain their
+  previous styling.
+
+The sidecar provides standalone administrative button, field, panel, navigation,
+selected-tab, table and summary-strip samples. These are documentation previews,
+not replacements for React components or business handlers.
+
 ## Do's and Don'ts
 
 - Preserve data, permissions, routes, card anatomy and catalog behavior.
 - Keep labels direct, in Hebrew, and iconography in the existing Lucide family.
 - Do not apply motion rules globally to admin tables, checkout or other cards.
 - Do not use exaggerated springs, large tilts, new brand gradients or fake data.
+
+### Administrative editorial guardrails
+
+- **Do** preserve every administrative destination, field, operation and real
+  record while applying the scoped editorial hierarchy.
+- **Do** use the existing Heebo font, Hebrew RTL, explicit primary actions and
+  readable field/table typography.
+- **Do** keep mobile record actions clear of the five-item dock and preserve the
+  existing complete searchable menu at every width.
+- **Don't** restore a persistent desktop navigation rail in the editorial system.
+- **Don't** replace global brand tokens, business statuses, permissions, finance
+  calculations or save owners through presentation styling.
+- **Don't** ship generated mock records, claims or illustrative amounts as data.
 
 The approved illustration at public/brand/home-publication.webp is decorative and
 aria-hidden, remains visible alongside the copy on phones and has reserved image
