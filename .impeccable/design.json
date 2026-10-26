@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-24T19:41:46.720815+00:00",
+  "generatedAt": "2026-10-26T23:47:36.753484+00:00",
   "title": "Design System: Mega Links — Administrative Editorial System",
   "extensions": {
     "colorMeta": {
@@ -255,6 +255,278 @@
           "oklch(84% 0.18361 15.95)",
           "oklch(95% 0.18361 15.95)"
         ]
+      },
+      "site-journey-ink": {
+        "role": "primary",
+        "displayName": "Journey navy",
+        "tonalRamp": [
+          "oklch(15% 0.07776 257.17)",
+          "oklch(26% 0.07776 257.17)",
+          "oklch(38% 0.07776 257.17)",
+          "oklch(49% 0.07776 257.17)",
+          "oklch(61% 0.07776 257.17)",
+          "oklch(72% 0.07776 257.17)",
+          "oklch(84% 0.07776 257.17)",
+          "oklch(95% 0.07776 257.17)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-copy": {
+        "role": "neutral",
+        "displayName": "Supporting blue",
+        "tonalRamp": [
+          "oklch(15% 0.04977 248.83)",
+          "oklch(26% 0.04977 248.83)",
+          "oklch(38% 0.04977 248.83)",
+          "oklch(49% 0.04977 248.83)",
+          "oklch(61% 0.04977 248.83)",
+          "oklch(72% 0.04977 248.83)",
+          "oklch(84% 0.04977 248.83)",
+          "oklch(95% 0.04977 248.83)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-teal": {
+        "role": "primary",
+        "displayName": "Action teal",
+        "tonalRamp": [
+          "oklch(15% 0.09357 207.34)",
+          "oklch(26% 0.09357 207.34)",
+          "oklch(38% 0.09357 207.34)",
+          "oklch(49% 0.09357 207.34)",
+          "oklch(61% 0.09357 207.34)",
+          "oklch(72% 0.09357 207.34)",
+          "oklch(84% 0.09357 207.34)",
+          "oklch(95% 0.09357 207.34)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-blue": {
+        "role": "primary",
+        "displayName": "Action blue",
+        "tonalRamp": [
+          "oklch(15% 0.16871 251.84)",
+          "oklch(26% 0.16871 251.84)",
+          "oklch(38% 0.16871 251.84)",
+          "oklch(49% 0.16871 251.84)",
+          "oklch(61% 0.16871 251.84)",
+          "oklch(72% 0.16871 251.84)",
+          "oklch(84% 0.16871 251.84)",
+          "oklch(95% 0.16871 251.84)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-line": {
+        "role": "neutral",
+        "displayName": "Answer boundary",
+        "tonalRamp": [
+          "oklch(15% 0.02281 229.10)",
+          "oklch(26% 0.02281 229.10)",
+          "oklch(38% 0.02281 229.10)",
+          "oklch(49% 0.02281 229.10)",
+          "oklch(61% 0.02281 229.10)",
+          "oklch(72% 0.02281 229.10)",
+          "oklch(84% 0.02281 229.10)",
+          "oklch(95% 0.02281 229.10)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-error": {
+        "role": "neutral",
+        "displayName": "Field error",
+        "tonalRamp": [
+          "oklch(15% 0.17903 15.28)",
+          "oklch(26% 0.17903 15.28)",
+          "oklch(38% 0.17903 15.28)",
+          "oklch(49% 0.17903 15.28)",
+          "oklch(61% 0.17903 15.28)",
+          "oklch(72% 0.17903 15.28)",
+          "oklch(84% 0.17903 15.28)",
+          "oklch(95% 0.17903 15.28)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-ice": {
+        "role": "neutral",
+        "displayName": "Ice ground",
+        "tonalRamp": [
+          "oklch(15% 0.00844 225.08)",
+          "oklch(26% 0.00844 225.08)",
+          "oklch(38% 0.00844 225.08)",
+          "oklch(49% 0.00844 225.08)",
+          "oklch(61% 0.00844 225.08)",
+          "oklch(72% 0.00844 225.08)",
+          "oklch(84% 0.00844 225.08)",
+          "oklch(95% 0.00844 225.08)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-surface": {
+        "role": "neutral",
+        "displayName": "White surface",
+        "tonalRamp": [
+          "oklch(15% 0.00000 0.00)",
+          "oklch(26% 0.00000 0.00)",
+          "oklch(38% 0.00000 0.00)",
+          "oklch(49% 0.00000 0.00)",
+          "oklch(61% 0.00000 0.00)",
+          "oklch(72% 0.00000 0.00)",
+          "oklch(84% 0.00000 0.00)",
+          "oklch(95% 0.00000 0.00)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-field-line": {
+        "role": "neutral",
+        "displayName": "Field boundary",
+        "tonalRamp": [
+          "oklch(15% 0.03559 232.12)",
+          "oklch(26% 0.03559 232.12)",
+          "oklch(38% 0.03559 232.12)",
+          "oklch(49% 0.03559 232.12)",
+          "oklch(61% 0.03559 232.12)",
+          "oklch(72% 0.03559 232.12)",
+          "oklch(84% 0.03559 232.12)",
+          "oklch(95% 0.03559 232.12)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-field-focus": {
+        "role": "neutral",
+        "displayName": "Field focus wash",
+        "tonalRamp": [
+          "oklch(15% 0.02308 196.77)",
+          "oklch(26% 0.02308 196.77)",
+          "oklch(38% 0.02308 196.77)",
+          "oklch(49% 0.02308 196.77)",
+          "oklch(61% 0.02308 196.77)",
+          "oklch(72% 0.02308 196.77)",
+          "oklch(84% 0.02308 196.77)",
+          "oklch(95% 0.02308 196.77)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-header-start": {
+        "role": "primary",
+        "displayName": "Header deep navy",
+        "tonalRamp": [
+          "oklch(15% 0.07283 258.16)",
+          "oklch(26% 0.07283 258.16)",
+          "oklch(38% 0.07283 258.16)",
+          "oklch(49% 0.07283 258.16)",
+          "oklch(61% 0.07283 258.16)",
+          "oklch(72% 0.07283 258.16)",
+          "oklch(84% 0.07283 258.16)",
+          "oklch(95% 0.07283 258.16)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-header-end": {
+        "role": "primary",
+        "displayName": "Header blue navy",
+        "tonalRamp": [
+          "oklch(15% 0.07490 245.37)",
+          "oklch(26% 0.07490 245.37)",
+          "oklch(38% 0.07490 245.37)",
+          "oklch(49% 0.07490 245.37)",
+          "oklch(61% 0.07490 245.37)",
+          "oklch(72% 0.07490 245.37)",
+          "oklch(84% 0.07490 245.37)",
+          "oklch(95% 0.07490 245.37)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-header-accent": {
+        "role": "secondary",
+        "displayName": "Header cyan rule",
+        "tonalRamp": [
+          "oklch(15% 0.12642 203.34)",
+          "oklch(26% 0.12642 203.34)",
+          "oklch(38% 0.12642 203.34)",
+          "oklch(49% 0.12642 203.34)",
+          "oklch(61% 0.12642 203.34)",
+          "oklch(72% 0.12642 203.34)",
+          "oklch(84% 0.12642 203.34)",
+          "oklch(95% 0.12642 203.34)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-header-copy": {
+        "role": "neutral",
+        "displayName": "Header supporting text",
+        "tonalRamp": [
+          "oklch(15% 0.02700 226.77)",
+          "oklch(26% 0.02700 226.77)",
+          "oklch(38% 0.02700 226.77)",
+          "oklch(49% 0.02700 226.77)",
+          "oklch(61% 0.02700 226.77)",
+          "oklch(72% 0.02700 226.77)",
+          "oklch(84% 0.02700 226.77)",
+          "oklch(95% 0.02700 226.77)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-path-done": {
+        "role": "secondary",
+        "displayName": "Completed underline",
+        "tonalRamp": [
+          "oklch(15% 0.07263 200.26)",
+          "oklch(26% 0.07263 200.26)",
+          "oklch(38% 0.07263 200.26)",
+          "oklch(49% 0.07263 200.26)",
+          "oklch(61% 0.07263 200.26)",
+          "oklch(72% 0.07263 200.26)",
+          "oklch(84% 0.07263 200.26)",
+          "oklch(95% 0.07263 200.26)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
+      },
+      "site-journey-path-idle": {
+        "role": "neutral",
+        "displayName": "Pending underline",
+        "tonalRamp": [
+          "oklch(15% 0.01429 231.21)",
+          "oklch(26% 0.01429 231.21)",
+          "oklch(38% 0.01429 231.21)",
+          "oklch(49% 0.01429 231.21)",
+          "oklch(61% 0.01429 231.21)",
+          "oklch(72% 0.01429 231.21)",
+          "oklch(84% 0.01429 231.21)",
+          "oklch(95% 0.01429 231.21)"
+        ],
+        "scope": "site-application-journey",
+        "source": "app/site-application-brand.css",
+        "note": "Tonal ramp is a documentation preview; DESIGN.md mirrors the canonical runtime value."
       }
     },
     "typographyMeta": {
@@ -289,6 +561,56 @@
       "admin-editorial-meta": {
         "displayName": "Meta",
         "purpose": "Authenticated administrative editorial surface only."
+      },
+      "site-journey-display": {
+        "displayName": "Site journey display",
+        "purpose": "Introductory headline, bold 700.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-display-phone": {
+        "displayName": "Site journey display-phone",
+        "purpose": "Introductory headline at 700px and below.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-heading": {
+        "displayName": "Site journey heading",
+        "purpose": "Chapter/review/edit heading; 28px at 700px and below.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-question": {
+        "displayName": "Site journey question",
+        "purpose": "Active question; 21px on phones, 19px at 350px and below.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-body": {
+        "displayName": "Site journey body",
+        "purpose": "Introductory/success supporting copy; intro is 16px/1.75 on phones.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-section-copy": {
+        "displayName": "Site journey section-copy",
+        "purpose": "Chapter/review/edit description; 15px on phones.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-field": {
+        "displayName": "Site journey field",
+        "purpose": "Shared input/textarea values; 16px at 350px and below.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-control": {
+        "displayName": "Site journey control",
+        "purpose": "Primary action labels.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-label": {
+        "displayName": "Site journey label",
+        "purpose": "Consolidated edit labels.",
+        "scope": "site-application-journey"
+      },
+      "site-journey-helper": {
+        "displayName": "Site journey helper",
+        "purpose": "Field hints, with explicit optional/error context.",
+        "scope": "site-application-journey"
       }
     },
     "shadows": [
@@ -301,6 +623,11 @@
         "name": "admin-editorial-action-hover",
         "value": "0 4px 12px #153f6814",
         "purpose": "Small hover response on enabled administrative actions."
+      },
+      {
+        "name": "site-journey-primary",
+        "value": "0 7px 17px #0073a11f",
+        "purpose": "Quiet blue lift beneath the scoped primary action; app/site-application-brand.css."
       }
     ],
     "motion": [
@@ -318,6 +645,26 @@
         "name": "admin-preserved-dock-indicator",
         "value": "right .36s cubic-bezier(.22,.7,.2,1), opacity .18s",
         "purpose": "Existing phone pill indicator; preserved by the approved-glass owner."
+      },
+      {
+        "name": "site-journey-chapter-arrival",
+        "value": "420ms cubic-bezier(.16,1,.3,1)",
+        "purpose": "RTL-aware 100% horizontal chapter arrival and height interpolation; app/site-journey-motion.ts."
+      },
+      {
+        "name": "site-journey-chapter-exit",
+        "value": "320ms cubic-bezier(.16,1,.3,1)",
+        "purpose": "Inert, aria-hidden departing chapter; IDs removed, controls disabled, cancellation cleanup."
+      },
+      {
+        "name": "site-journey-question-arrival",
+        "value": "280ms cubic-bezier(.16,1,.3,1), translateY(14px) to 0",
+        "purpose": "Same-chapter question-body reveal; removed for reduced motion."
+      },
+      {
+        "name": "site-journey-control-feedback",
+        "value": "filter .18s, transform .18s",
+        "purpose": "Primary action hover brightness(1.08)/translateY(-2px); active resets. Reduced motion removes spatial response."
       }
     ],
     "breakpoints": [
@@ -332,8 +679,111 @@
       {
         "name": "admin-editorial-desktop-header",
         "value": "768px"
+      },
+      {
+        "name": "site-journey-stacked",
+        "value": "700px"
+      },
+      {
+        "name": "site-journey-compact",
+        "value": "350px"
       }
-    ]
+    ],
+    "surfaceSystems": {
+      "site-application-journey": {
+        "approvedAt": "2026-10-27",
+        "status": "Ship; source publication and existing-staging deployment pending.",
+        "authority": "Runtime CSS is canonical (model B); DESIGN.md scoped primitives mirror app/site-application-brand.css.",
+        "scope": ".site-journey and its direct containing shared Dialog only.",
+        "supersedes": "Only the old site-application three-frame and dark/fading-header guidance. Incumbent admin/global/customer-card systems remain authoritative.",
+        "brief": ".impeccable/surfaces/site-application-journey.md",
+        "contract": "UX-CONTRACT.md",
+        "sources": [
+          "app/seller-site-form.tsx",
+          "app/site-application-brand.css",
+          "app/site-journey-motion.ts",
+          "lib/site-application.ts"
+        ],
+        "layout": {
+          "desktopMax": "1040px",
+          "questionMax": "690px",
+          "desktopViewportClearance": "16px each side",
+          "phoneMax": "560px",
+          "phoneViewportClearance": "10px each side",
+          "intro": "Two equal columns at desktop, copy right/art left; artwork above copy at <=700px.",
+          "review": "minmax(0,.8fr) minmax(0,1.2fr), 38px gap; one column at <=700px.",
+          "edit": "Two equal columns, 24px gap; instructions span; one column at <=700px.",
+          "scroll": "One bounded Radix dialog; visualViewport height/offset keep visible keyboard space."
+        },
+        "states": {
+          "fieldBorder": "1px solid #bcd7e6",
+          "fieldFocus": "border-color:#007f8c; box-shadow:0 0 0 3px #dff5f5",
+          "focusVisible": "3px solid #0579d7; outline-offset:3px",
+          "invalid": "border-color:#b42342 with linked inline error",
+          "disabled": "opacity:.6; cursor:wait",
+          "primaryBackground": "linear-gradient(105deg,#007f8c,#0579d7)",
+          "nextBackground": "linear-gradient(150deg,#007f8c,#0579d7)",
+          "surfaceBackground": "linear-gradient(160deg,#f5fcff,#fff 66%)",
+          "headerBackground": "linear-gradient(110deg,#071f42,#0d3a5b)",
+          "reducedMotion": "Immediate chapter changes; no question animation, spatial hover or smooth scrolling.",
+          "forcedColors": "Canvas/ButtonFace/ButtonText/Highlight preserve controls and current progress."
+        },
+        "narrative": {
+          "overview": "The approved animated site application extends the existing identity with a brief brand introduction followed by focused questions, review and explicit submission. The original MegaLinks logo and glass-link/publication artwork accompany navy, ice, white and teal-to-blue actions. Local Rubik regular and bold provide the Hebrew hierarchy for this surface only.",
+          "rules": [
+            {
+              "name": "The Journey Scope Rule",
+              "body": "Apply the `site-journey-*` system only to the customer site application and its containing dialog; shared seller and administrative surfaces retain their existing typography and palette owners.",
+              "section": "colors"
+            }
+          ],
+          "dos": [
+            "Preserve seven original fields, full review, explicit final submission and original approval owners.",
+            "Keep RTL labels/actions, LTR URL/email values, full-value wrapping and reachable controls."
+          ],
+          "donts": [
+            "Do not upload or submit during navigation, review or edit cancellation.",
+            "Do not extend these scoped tokens or motion to other surfaces."
+          ]
+        },
+        "ownership": {
+          "controls": "Shared Button, Input, Textarea, Dialog, AlertDialog and Lucide.",
+          "mutations": "api, ctx.run and Sonner; existing POST files then POST selling/sites only on final submission.",
+          "server": "lib/customer-sellers.ts retains permission, file, pricing, publication and manager approval rules.",
+          "dismissal": "Optional registered modal.beforeClose guard plus unload guard; busy lock and upload retry cache.",
+          "globalCss": "Three blanket dialog text rules exclude only this direct-child named journey via zero-specificity :where."
+        },
+        "provenance": {
+          "artwork": "Existing public/brand/home-publication-20261020.webp and megalinks-logo.png reused unchanged; no new acquired/generated raster.",
+          "fontCss": "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap",
+          "regularTtf": "https://fonts.gstatic.com/s/rubik/v31/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-B4i1UA.ttf",
+          "boldTtf": "https://fonts.gstatic.com/s/rubik/v31/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-4I-1UA.ttf",
+          "conversion": "FontTools subsets U+0020–017F, U+0590–05FF, U+20AA, en/em dash, curly quotes, ellipsis and LTR/RTL marks, encoded as local WOFF. TTF intermediates removed.",
+          "faces": [
+            "public/brand/rubik-regular.woff (400)",
+            "public/brand/rubik-bold.woff (700)"
+          ],
+          "license": "Copyright 2015 The Rubik Project Authors; SIL OFL 1.1 at public/brand/Rubik-OFL.txt.",
+          "licenseSource": "https://raw.githubusercontent.com/google/fonts/main/ofl/rubik/OFL.txt"
+        },
+        "verification": {
+          "finishReview": "Ship; no material issues.",
+          "passed": [
+            "typecheck",
+            "production build",
+            "scoped lint: 0 errors, 4 form img warnings, 2 pre-existing seller-workspace img warnings",
+            "journey schema/handler tests",
+            "seller UI",
+            "48 existing seller API requests",
+            "cart/checkout/catalog checks",
+            "real-component Playwright fixture APIs: 320/390/1440px, validation/edit/cancel/failures/retry/duplicate/busy close/keyboard/reduced motion, no runtime errors"
+          ],
+          "limits": "No authenticated live-account or physical iOS Safari claim. Global strict audit retains 76 legacy/ownership findings, none in the new journey/form/schema/motion files.",
+          "restoreBranch": "restore/before-site-journey-20261027",
+          "restoreCommit": "a4162c8f12605a11c714b060a73e321d6e6623b0"
+        }
+      }
+    }
   },
   "components": [
     {
@@ -397,6 +847,48 @@
       "description": "Quiet grouping for existing real account or order summary figures. The finance phone variant uses three compact full-width rows; labels stand in for live application data.",
       "html": "<div class=\"ds-admin-summary\" dir=\"rtl\"><div><span>סכום הזמנות</span><strong>סכום בפועל</strong></div><div><span>יתרה</span><strong>יתרה בפועל</strong></div></div>",
       "css": ".ds-admin-summary{display:flex;flex-wrap:wrap;border:1px solid var(--admin-v172-line,#cfe5ef);border-radius:12px;background:#ffffffce;color:var(--admin-v172-ink,#071f4b);font-family:Heebo,Arial,sans-serif;}.ds-admin-summary>div{flex:1 1 180px;padding:16px 20px;border-inline-end:1px solid var(--admin-v172-line,#cfe5ef);}.ds-admin-summary>div:last-child{border-inline-end:0;}.ds-admin-summary span{font-size:15px;color:var(--admin-v172-muted,#425574);}.ds-admin-summary strong{display:block;font-size:23px;line-height:1.4;font-variant-numeric:tabular-nums;}"
+    },
+    {
+      "name": "Site journey primary action",
+      "kind": "button",
+      "refersTo": "site-journey-button-primary",
+      "description": "Scoped canonical Button treatment; explicit next/final action.",
+      "html": "<button class=\"ds-journey-primary\" dir=\"rtl\">אישור ושליחה למנהל</button>",
+      "css": ".ds-journey-primary{font-family:MegaLinksRubik,Heebo,Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:52px;height:auto;padding:13px 23px;border:0;border-radius:13px;background:linear-gradient(105deg,#007f8c,#0579d7);color:#fff;font-size:17px;font-weight:700;line-height:1.5;white-space:normal;box-shadow:0 7px 17px #0073a11f;cursor:pointer;transition:filter .18s,transform .18s}.ds-journey-primary:hover{filter:brightness(1.08);transform:translateY(-2px)}.ds-journey-primary:active{transform:translateY(0)}.ds-journey-primary:focus-visible{outline:3px solid #0579d7;outline-offset:3px}.ds-journey-primary:disabled{opacity:.6;cursor:wait}@media(prefers-reduced-motion:reduce){.ds-journey-primary{transition:none}.ds-journey-primary:hover{transform:none}}",
+      "scope": "site-application-journey"
+    },
+    {
+      "name": "Site journey field",
+      "kind": "input",
+      "refersTo": "site-journey-field",
+      "description": "Visible Hebrew label and full LTR URL value; canonical Input semantics.",
+      "html": "<label class=\"ds-journey-field\" dir=\"rtl\">כתובת האתר<input type=\"url\" dir=\"ltr\" placeholder=\"https://example.co.il\" /></label>",
+      "css": ".ds-journey-field{font-family:MegaLinksRubik,Heebo,Arial,sans-serif;display:grid;gap:7px;font-size:16px;font-weight:700;color:#0b274d}.ds-journey-field input{font-family:MegaLinksRubik,Heebo,Arial,sans-serif;width:100%;min-width:0;min-height:54px;padding:12px 14px;border:1px solid #bcd7e6;border-radius:12px;background:#fff;color:#0b274d;font-size:17px;font-weight:400;line-height:1.5;text-align:left;caret-color:#007f8c}.ds-journey-field input::placeholder{color:#60758b;opacity:1}.ds-journey-field input:hover{border-color:#007f8c}.ds-journey-field input:focus{border-color:#007f8c;box-shadow:0 0 0 3px #dff5f5}.ds-journey-field input:focus-visible{outline:3px solid #0579d7;outline-offset:3px}.ds-journey-field input[aria-invalid=true]{border-color:#b42342}.ds-journey-field input:disabled{opacity:.6;cursor:wait}",
+      "scope": "site-application-journey"
+    },
+    {
+      "name": "Site journey progress",
+      "kind": "nav",
+      "description": "Four-part underline; current step and completed chapter remain explicit.",
+      "html": "<nav class=\"ds-journey-path\" dir=\"rtl\" aria-label=\"שלבי הוספת אתר\"><span class=\"ds-journey-done\">מתחילים</span><span aria-current=\"step\">פרטי האתר</span><span>פרטי הפרסום</span><span>סיכום</span></nav>",
+      "css": ".ds-journey-path{font-family:MegaLinksRubik,Heebo,Arial,sans-serif;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;max-width:800px}.ds-journey-path span{display:flex;flex-direction:column;gap:8px;font-size:13px;font-weight:400;line-height:1.55;text-align:center;color:#506982}.ds-journey-path span:after{content:\"\";height:3px;border-radius:2px;background:#e2edf3;transition:background .35s}.ds-journey-path [aria-current=step]{color:#007f8c;font-weight:700}.ds-journey-path [aria-current=step]:after{background:#007f8c}.ds-journey-path .ds-journey-done:after{background:#96dfe3}@media(prefers-reduced-motion:reduce){.ds-journey-path span:after{transition:none}}",
+      "scope": "site-application-journey"
+    },
+    {
+      "name": "Site journey completed answer",
+      "kind": "button",
+      "description": "A real button reopens a completed answer; source field owns the value.",
+      "html": "<button class=\"ds-journey-answer\" dir=\"rtl\"><span>שם האתר</span><strong>שם האתר שהוזן</strong></button>",
+      "css": ".ds-journey-answer{font-family:MegaLinksRubik,Heebo,Arial,sans-serif;display:grid;gap:2px;min-height:44px;width:100%;padding:0;border:0;border-radius:6px;background:transparent;color:#0b274d;text-align:start;cursor:pointer}.ds-journey-answer span{font-size:12px;font-weight:400;line-height:1.6;color:#506982}.ds-journey-answer strong{font-size:16px;font-weight:400;line-height:1.5;overflow-wrap:anywhere;unicode-bidi:plaintext}.ds-journey-answer:hover strong{color:#007f8c}.ds-journey-answer:focus-visible{outline:3px solid #0579d7;outline-offset:3px}.ds-journey-answer:disabled{opacity:.6;cursor:wait}",
+      "scope": "site-application-journey"
+    },
+    {
+      "name": "Site journey image picker",
+      "kind": "custom",
+      "description": "Accessible real file control and containing focus treatment; no early upload.",
+      "html": "<label class=\"ds-journey-upload\" dir=\"rtl\"><strong>בחירת לוגו או תמונה</strong><small>PNG · JPG · WEBP</small><input type=\"file\" accept=\"image/png,image/jpeg,image/webp\" aria-label=\"לוגו או תמונת האתר\" /></label>",
+      "css": ".ds-journey-upload{font-family:MegaLinksRubik,Heebo,Arial,sans-serif;display:flex;flex-direction:column;justify-content:center;position:relative;min-height:88px;min-width:0;padding:12px;border:1px solid #bee7ee;border-radius:12px;background:#f0fbfd;color:#0b274d;cursor:pointer}.ds-journey-upload strong{font-size:15px;font-weight:700;line-height:1.5}.ds-journey-upload small{font-size:12px;font-weight:400;line-height:1.5;color:#506982;margin-top:4px}.ds-journey-upload input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}.ds-journey-upload:hover{background:#e6f7fb}.ds-journey-upload:focus-within{outline:3px solid #0579d7;outline-offset:3px}",
+      "scope": "site-application-journey"
     }
   ],
   "narrative": {

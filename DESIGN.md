@@ -21,6 +21,22 @@ colors:
   admin-editorial-selected: "#eaf5ff"
   admin-editorial-table-head: "#eff7fd"
   admin-editorial-danger: "#b92342"
+  site-journey-ink: "#0b274d"
+  site-journey-copy: "#506982"
+  site-journey-teal: "#007f8c"
+  site-journey-blue: "#0579d7"
+  site-journey-line: "#d4e6ef"
+  site-journey-error: "#b42342"
+  site-journey-ice: "#f5fcff"
+  site-journey-surface: "#ffffff"
+  site-journey-field-line: "#bcd7e6"
+  site-journey-field-focus: "#dff5f5"
+  site-journey-header-start: "#071f42"
+  site-journey-header-end: "#0d3a5b"
+  site-journey-header-accent: "#16c7d4"
+  site-journey-header-copy: "#d4eaf4"
+  site-journey-path-done: "#96dfe3"
+  site-journey-path-idle: "#e2edf3"
 typography:
   body:
     fontFamily: "Arial, Helvetica, sans-serif"
@@ -65,11 +81,68 @@ typography:
   admin-editorial-meta:
     fontFamily: "Heebo, Arial, sans-serif"
     fontSize: "13px"
+  site-journey-display:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "clamp(34px, 3.5vw, 44px)"
+    fontWeight: 700
+    lineHeight: 1.28
+    letterSpacing: "-0.025em"
+  site-journey-display-phone:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "clamp(29px, 8.3vw, 39px)"
+    fontWeight: 700
+    lineHeight: 1.28
+    letterSpacing: "-0.025em"
+  site-journey-heading:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "30px"
+    fontWeight: 700
+    lineHeight: 1.35
+    letterSpacing: "-0.02em"
+  site-journey-question:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "23px"
+    fontWeight: 700
+    lineHeight: 1.4
+  site-journey-body:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "17px"
+    fontWeight: 400
+    lineHeight: 1.8
+  site-journey-section-copy:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 400
+    lineHeight: 1.65
+  site-journey-field:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "17px"
+    fontWeight: 400
+    lineHeight: 1.5
+  site-journey-control:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "17px"
+    fontWeight: 700
+    lineHeight: 1.5
+  site-journey-label:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: 1.55
+  site-journey-helper:
+    fontFamily: "MegaLinksRubik, Heebo, Arial, sans-serif"
+    fontSize: "13px"
+    fontWeight: 400
+    lineHeight: 1.65
 rounded:
   DEFAULT: "0.7rem"
   catalog-card: "28px"
   admin-editorial-panel: "12px"
   admin-editorial-control: "8px"
+  site-journey-dialog: "20px"
+  site-journey-dialog-phone: "18px"
+  site-journey-primary: "13px"
+  site-journey-field: "12px"
 spacing:
   catalog-gap: "16px"
   catalog-max: "1760px"
@@ -80,6 +153,13 @@ spacing:
   admin-editorial-column-gap: "28px"
   admin-editorial-desktop-gutter: "36px"
   admin-editorial-phone-gutter: "16px"
+  site-journey-page-inline: "36px"
+  site-journey-page-block-start: "32px"
+  site-journey-page-inline-phone: "22px"
+  site-journey-page-inline-compact: "16px"
+  site-journey-edit-column-gap: "24px"
+  site-journey-review-column-gap: "38px"
+  site-journey-action-gap: "12px"
 components:
   admin-editorial-button-primary:
     backgroundColor: "{colors.admin-editorial-blue}"
@@ -113,6 +193,22 @@ components:
     textColor: "{colors.admin-editorial-copy}"
     typography: "{typography.admin-editorial-meta}"
     padding: "15px 18px"
+  site-journey-button-primary:
+    textColor: "{colors.site-journey-surface}"
+    typography: "{typography.site-journey-control}"
+    rounded: "{rounded.site-journey-primary}"
+    padding: "13px 23px"
+  site-journey-field:
+    backgroundColor: "{colors.site-journey-surface}"
+    textColor: "{colors.site-journey-ink}"
+    typography: "{typography.site-journey-field}"
+    rounded: "{rounded.site-journey-field}"
+    padding: "12px 14px"
+  site-journey-dialog:
+    backgroundColor: "{colors.site-journey-surface}"
+    textColor: "{colors.site-journey-ink}"
+    rounded: "{rounded.site-journey-dialog}"
+    padding: "0"
 ---
 
 # Mega Links design context
@@ -170,6 +266,23 @@ system tokens are preserved; local guide values and composition are recorded in
 and financial boundaries are recorded in UX-CONTRACT.md, rather than inferred
 from the visual references.
 
+### Site application journey — approved 2026-10-27
+
+The approved animated site application extends the existing identity with a brief
+brand introduction followed by focused questions, review and explicit submission.
+The original MegaLinks logo and glass-link/publication artwork accompany navy,
+ice, white and teal-to-blue actions. Local Rubik regular and bold provide the
+Hebrew hierarchy for this surface only.
+
+This approved scoped system change supersedes the earlier site-application
+three-frame and dark/fading-title guidance. It does not replace the customer-card,
+seller-workspace, administrative or global systems. `app/site-application-brand.css`
+is canonical (model B); the `site-journey-*` frontmatter entries mirror its actual
+values. `.impeccable/design.json` carries scoped motion, responsive, provenance and
+component extensions. Composition and evidence live in
+`.impeccable/surfaces/site-application-journey.md`; behavior lives in UX-CONTRACT.md.
+No PRODUCT.md was found, so this extension records no new business or brand claims.
+
 ## Colors
 
 Navy anchors titles/actions; cyan surfaces and borders provide catalog depth.
@@ -198,6 +311,19 @@ The guide owner aliases `--guide-ink/copy/line/blue` to inherited
 property is absent. Its local ice, selected, focus and status treatments remain
 scoped to these three surfaces; they do not redefine the shared palette.
 
+### Site application journey colors
+
+The scoped frontmatter palette uses deep navy for content, muted blue for supporting
+copy, white and ice for the surface, and teal-to-blue gradients for the next and
+final actions. The compact header uses its own two navy endpoints and bright cyan
+rule. Fine blue boundaries separate answers; error color remains explicit beside
+the relevant field. Completed and pending progress underlines use their scoped
+path colors. These are local role values, not replacements for global palette tokens.
+
+**The Journey Scope Rule.** Apply the `site-journey-*` system only to the customer
+site application and its containing dialog; shared seller and administrative
+surfaces retain their existing typography and palette owners.
+
 ## Typography
 
 Use the existing Heebo family for the catalog body and display, with Arial fallback, Hebrew RTL, and LTR domains.
@@ -217,6 +343,20 @@ Guide surfaces retain Heebo/Arial, RTL and tabular numerals. Their scoped page
 title is `clamp(30px, 3.2vw, 44px)` and becomes 30px at 760px and below. Inputs
 remain 16px; action labels are 15px, metadata/hints 13–14px and prominent record
 amounts 18–22px. Identifiers, domains and money keep bidi isolation.
+
+### Site application journey typography
+
+Use the local `MegaLinksRubik` family with Heebo/Arial/sans-serif fallback, regular
+(400) for copy/fields and bold (700) for titles/actions. The frontmatter records
+actual display, heading, question, body, field, label and helper roles. At 700px
+and below, section titles become 28px, question titles 21px and introductory body
+copy 16px with 1.75 line-height; at 350px and below question titles become 19px
+and fields 16px. URLs, sample-article links, email and numeric fields retain LTR
+direction within Hebrew RTL; review values wrap without truncation.
+
+The local WOFF faces are Hebrew/Latin subsets of Google Fonts Rubik. The Rubik
+Project's SIL Open Font License 1.1 is preserved at `public/brand/Rubik-OFL.txt`.
+Exact font source URLs and subset provenance are in the surface brief and sidecar.
 
 ## Layout
 
@@ -285,6 +425,21 @@ list exposes its extra values in record details. Below 391px, notification actio
 stack and the month-summary link spans its heading row. The document retains
 scroll ownership and the existing shell reserves dock space.
 
+### Site application journey layout
+
+One Radix dialog owns vertical scrolling. Its desktop stage caps at 1040px with
+16px minimum viewport-side clearance; the intro pairs copy at RTL start/right
+with original artwork at left. Questions cap at 690px. Review uses two unequal
+columns, and consolidated editing uses two equal columns with instructions
+spanning both. Page padding and gaps follow the scoped frontmatter values.
+
+At 700px and below the dialog uses 10px side clearance and caps at 560px. The
+intro stacks artwork above copy, review and editing become one column, and actions
+wrap or stack. At 350px and below the inline page gutter is 16px and nonessential
+header copy is hidden. Runtime visualViewport bounds keep the dialog within the
+available keyboard area. Full values and controls remain reachable by natural
+dialog scrolling; there is no second nested form scroll region.
+
 ## Elevation & Depth
 
 Preserve original PublicationCard styling in catalog-view.tsx and globals.css:
@@ -308,6 +463,15 @@ borders and opaque white surfaces. Their heading uses the local
 `public/brand/admin-guide-waves.svg` backdrop. These scoped treatments do not
 change the global elevation vocabulary.
 
+### Site application journey depth
+
+White and ice tonal layering, fine borders and a compact navy header carry the
+surface. The primary action uses one quiet blue shadow, mirrored in the sidecar;
+focus uses a visible blue outline and a pale teal field ring. No artwork shadow or
+new image is introduced. Chapter transitions move the outgoing and incoming
+surfaces horizontally with a short height interpolation; reduced motion removes
+spatial transitions and question reveals.
+
 ## Shapes
 
 Keep current 28px catalog cards, inner panels and existing action-button shapes.
@@ -325,6 +489,13 @@ their container instead of clipping operations.
 Guide notification/order/report frames use 14px corners; their controls retain
 8px corners and status pills retain their rounded silhouette. These are local
 surface variants, not a replacement for the editorial 12px panel primitive.
+
+### Site application journey shapes
+
+The containing dialog has gently rounded corners, reducing from its desktop to
+phone role. Primary actions and fields use their distinct scoped corner roles;
+question numbers are circular and progress is a four-part underline. File preview
+and review artwork use containing geometry so the original image stays intact.
 
 ## Components
 
@@ -404,6 +575,33 @@ blocked by the cloud browser's `ERR_CONNECTION_REFUSED` when reaching the local
 server at port 7777; visual fidelity, actual popup/focus/touch behavior and zoom
 remain unverified. The surface brief records the evidence boundary.
 
+### Site application journey components
+
+- **Controls:** canonical Button/Input/Textarea remain the rendered controls.
+  Main actions have a 52px minimum height, fields 54px and auxiliary actions 44px.
+  Hover, pressed, focus, error, busy and disabled states stay with the real control.
+- **Progress:** four labeled underlines communicate introduction, two question
+  chapters and review; the current step is explicit. Completed answers are real
+  buttons that reopen the field, with labels and full-value wrapping.
+- **Review and edit:** the summary retains every original field, an explicit
+  consolidated edit action, edit cancellation and final manager submission.
+  Existing-site updates enter the consolidated edit form directly.
+- **Dialog and safety:** shared Radix Dialog retains focus/dismissal semantics.
+  An optional registered `modal.beforeClose` guard protects this draft; shared
+  AlertDialog confirms discard and browser unload protects unsent changes. Busy
+  submission locks duplicate actions and dismissal. Other dialogs retain their
+  existing behavior unless they explicitly register a guard.
+- **Motion:** `app/site-journey-motion.ts` owns cancellable chapter transitions,
+  inert/hidden outgoing clones and destination focus. Same-chapter question bodies
+  reveal briefly; reduced motion changes chapters immediately. Shared API,
+  `ctx.run` and Sonner retain mutation, refresh and feedback ownership.
+
+Three legacy blanket dialog text rules in `app/globals.css` exclude only a dialog
+whose direct child is this named journey. The `:where` condition contributes zero
+specificity; other dialogs retain their existing rule specificity. Scoped sidecar
+previews document journey actions, field, progress, completed answer and upload
+without replacing React behavior.
+
 ## Do's and Don'ts
 
 - Preserve data, permissions, routes, card anatomy and catalog behavior.
@@ -423,6 +621,19 @@ remain unverified. The surface brief records the evidence boundary.
 - **Don't** replace global brand tokens, business statuses, permissions, finance
   calculations or save owners through presentation styling.
 - **Don't** ship generated mock records, claims or illustrative amounts as data.
+
+### Site application journey guardrails
+
+- **Do** preserve the seven original fields, explicit final review and existing
+  upload/submission/manager-approval owners.
+- **Do** reuse original logo/artwork, local licensed Rubik faces, Hebrew RTL controls
+  and LTR URLs/email within this named surface.
+- **Do** keep full values, keyboard focus, error/retry and draft-discard controls
+  reachable at narrow widths and with reduced motion.
+- **Don't** upload files or write an application while moving through questions,
+  reviewing answers or cancelling edits.
+- **Don't** promote local journey typography, gradients or motion into other
+  customer, seller, catalog or administrative surfaces.
 
 The approved illustration at public/brand/home-publication.webp is decorative and
 aria-hidden, remains visible alongside the copy on phones and has reserved image
@@ -729,14 +940,12 @@ exec-d064144e-407c-4f2d-a688-b0b9aa571a84.png; sample identities and amounts rem
 illustrative. Runtime source and interaction/API checks do not certify browser
 pixel fidelity, focus or native popup rendering.
 
-## Approved customer cards and site application — 2026-10-27
+## Approved customer cards — 2026-10-27
 Operate refinement, preserving brand and behavior. Mobile order/customer surfaces
 are owned by app/customer-cards-approved.css: navy #0b274d, muted #52677e, fine
 #d6e6f0 lines, white records, pale #f2f7fa contact rows and teal #007c88 actions.
 Order dates center in equal RTL columns, with 82px minimum row height that may grow.
 Customer identity is19px, body13–14px, metadata12px; no mock data is persisted.
-app/site-application-brand.css owns the approved form: centered white26px title
-on navy #08254b, soft blue fade into the light form; white framed sections with
-18px titles and small teal icons,16px inputs,44px field/button minimums. The
-image picker stays at RTL start; URLs/email stay LTR. Existing runtime CSS remains
-canonical and all form/save/approval behavior remains with its existing owner.
+The site-application portion of this earlier approval is superseded by the scoped
+Site application journey entries in the canonical sections above. Customer-card
+values and behavior in this section remain authoritative for their scope.

@@ -378,10 +378,10 @@ No production fixtures, credentials or real email sends are part of validation.
 
 ## Customer seller refinements — 2026-10-26
 
-The approved three-frame site form lives in `seller-site-form.tsx`, uses shared
-Input/Textarea/Button and the existing modal owner, preserves RTL labels and LTR
-URLs/email, aligns image selection right, validates before uploading, and keeps
-only the manager-check/publication note at its footer. Approval policy is unchanged.
+The site-application portion of this approval is superseded by the approved
+animated journey documented below. Its shared controls, original seven fields,
+RTL/LTR requirements, existing endpoints and manager-approval policy remain in
+force. Other seller refinements in this section retain their existing scope.
 
 `seller-articles.tsx` reads only paginated metadata from GET selling/articles.
 Existing customers without sites receive an empty list, not a supplier-role error.
@@ -479,10 +479,9 @@ Their compact rows place the date at the true middle column, order number/status
 at RTL start and the disclosure at the opposite side. Rows grow for long labels.
 Mobile customer cards group actual name/company, contact labels/values, update
 date and the existing articles action; one customer uses singular count copy.
-Site application uses the approved centered navy title/subtitle fading to white,
-framed sections, right-aligned image picker, compact fields and brand submit CTA.
-Shared Radix dialog still owns focus/dismissal and bounded natural form scrolling;
-fields, validation, drafts, upload types, retry lock and manager approval unchanged.
+The site-application presentation in this approval is superseded by the animated
+journey documented below. Customer/order card presentation and all original
+business, field, upload and manager-approval contracts remain authoritative.
 These are presentation changes. Desktop customer/order layout stays with its owner.
 Restore: restore/before-customer-cards-site-form-20261027 at 7c24b47.
 Actual validation: order/payment UI, seller form/workspace handlers, customer actions,
@@ -493,5 +492,69 @@ Only the mobile catalog actions at widths up to700px return to three equal grid
 columns (filter/export/bulk). Controls use64px minimum height,13px labels and20px
 icons, growing naturally for wrapped/enlarged text. The existing add-site action
 spans the next row. No hero dimensions, illustration, heading, search, category,
-scroll cue, desktop styling or action handler changed. New site-form mockup is
-proposal only and is not included in this correction.
+scroll cue, desktop styling or action handler changed. The site-form mockup was
+outside this sizing correction; its later approved journey is documented below.
+
+
+## Approved animated site application journey — 2026-10-27
+
+My Sites → Add site opens the approved introduction, two question chapters,
+complete review, consolidated edit form and success state in the existing shared
+Radix Dialog. Existing-site updates enter the full edit form first, then review.
+The original fields remain: site name, full site URL, sample article URL, logo or
+image, price before VAT, delivery email and optional publication instructions.
+`lib/site-application.ts` centralizes client field definitions/validation; server
+ownership, permissions, file checks, pricing/publication policy and approval stay
+in `lib/customer-sellers.ts`.
+
+Completed answers reopen in place. The review exposes all values and an explicit
+edit-all action. Consolidated changes apply to the local review draft only after
+validation; cancelling those edits restores the prior review values and image.
+Cancelling an initial existing-site edit requests close and respects the dirty
+check. No navigation, question, review or edit-save action writes an application
+or uploads a file. Only final submission uploads a selected PNG/JPEG/WebP via the
+existing `POST files`, then sends the original payload to `POST selling/sites`
+with existing create/edit kind and site identity. Publication still requires
+manager approval. Shared `api`, `ctx.run` and Sonner retain request, refresh and
+feedback ownership; shared Input/Textarea/Button retain native control semantics.
+
+One synchronous busy lock blocks duplicate final submission, mutation and
+closing while a request is active. Failed requests keep the draft and show an
+inline alert; retries reuse a successfully uploaded file ID until the selected
+file changes. Dirty close, Escape and backdrop dismissal invoke the optional
+registered `modal.beforeClose` guard and canonical AlertDialog. Continue editing
+retains details; explicit discard closes without an application submission.
+Browser unload also guards unsent changes. Successful completion clears the
+unsent guard and returns to My Sites through the existing close callback. Other
+modal users retain existing behavior when no guard is registered.
+
+One bounded dialog owns vertical scrolling. Desktop caps at 1040px; at 700px and
+below artwork stacks above copy and review/edit columns collapse. visualViewport
+updates keep the dialog in the visible keyboard area. Hebrew labels/actions use
+RTL; URL/email/numeric controls retain LTR direction and full values wrap. Chapter
+motion uses an inert, aria-hidden outgoing clone, cancels/cleans animations, locks
+repeated chapter changes and focuses the arriving field/heading. Reduced motion
+uses immediate transitions. The four-part path exposes the current step; errors
+are linked to their field and keyboard focus reaches the first invalid field.
+
+`app/site-application-brand.css` owns this approved Rubik/navy/ice/teal-blue scoped
+extension (model B), mirrored in DESIGN.md and `.impeccable/design.json`. The only
+global CSS adjustment is a zero-specificity `:where` exclusion for this named
+surface in three blanket dialog text rules. It leaves their specificity for
+other dialogs intact. Original artwork/logo and locally served OFL Rubik faces
+are documented in `.impeccable/surfaces/site-application-journey.md`.
+
+Verification: typecheck, production build, lint with 0 errors (four form image
+warnings and two pre-existing seller-workspace image warnings), journey
+schema/handler tests, seller UI, 48 existing seller API requests and existing
+cart/checkout/catalog checks passed. A real-component Playwright fixture at
+320px, 390px and 1440px covers validation, edit/cancel, existing-site payload,
+file/request failure, cached-upload retry, duplicate/busy-close locks, guarded
+close, keyboard and reduced motion, with no runtime errors. Fixture APIs do not
+certify authenticated live accounts or physical iOS Safari. The strict global
+audit retains 76 legacy/ownership findings, none in the new journey/form/schema/
+motion files. Finish review disposition: ship, with no material issues.
+
+Restore: public branch `restore/before-site-journey-20261027`, commit
+`a4162c8f12605a11c714b060a73e321d6e6623b0`. Source publication and deployment to
+the existing staging service/environment are pending; no live release is claimed.
