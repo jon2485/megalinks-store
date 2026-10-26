@@ -1,6 +1,7 @@
 'use client';
 import React from 'react';
 import './account-navigation-refinements.css';
+import './customer-cards-approved.css';
 import {Home,FileText,ShoppingCart,Wallet,Users,Settings,Plus,Globe,Headphones,FolderOpen,Bell,Code2} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import AccountFirstScreen from './account-first-screen';

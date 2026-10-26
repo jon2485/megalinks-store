@@ -728,3 +728,15 @@ boards are exec-3b8bf593-7225-4de1-b1e4-aea0c93d7bf3.png and
 exec-d064144e-407c-4f2d-a688-b0b9aa571a84.png; sample identities and amounts remain
 illustrative. Runtime source and interaction/API checks do not certify browser
 pixel fidelity, focus or native popup rendering.
+
+## Approved customer cards and site application — 2026-10-27
+Operate refinement, preserving brand and behavior. Mobile order/customer surfaces
+are owned by app/customer-cards-approved.css: navy #0b274d, muted #52677e, fine
+#d6e6f0 lines, white records, pale #f2f7fa contact rows and teal #007c88 actions.
+Order dates center in equal RTL columns, with 82px minimum row height that may grow.
+Customer identity is19px, body13–14px, metadata12px; no mock data is persisted.
+app/site-application-brand.css owns the approved form: centered white26px title
+on navy #08254b, soft blue fade into the light form; white framed sections with
+18px titles and small teal icons,16px inputs,44px field/button minimums. The
+image picker stays at RTL start; URLs/email stay LTR. Existing runtime CSS remains
+canonical and all form/save/approval behavior remains with its existing owner.

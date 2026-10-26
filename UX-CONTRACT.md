@@ -472,3 +472,18 @@ Reduced motion removes spatial animation and uses immediate scroll. No dependenc
 Restore: restore/before-mobile-account-motion-20261026 at 0d9ac1e.
 Validation: typecheck, scoped lint, navigation/assignment handler checks and motion
 scroll/reduced-motion tests. Authenticated browser/device visual QA remains pending.
+
+## Approved order/customer cards and branded site form — 2026-10-27
+Mobile customer orders retain disclosure/payment actions and all actual statuses.
+Their compact rows place the date at the true middle column, order number/status
+at RTL start and the disclosure at the opposite side. Rows grow for long labels.
+Mobile customer cards group actual name/company, contact labels/values, update
+date and the existing articles action; one customer uses singular count copy.
+Site application uses the approved centered navy title/subtitle fading to white,
+framed sections, right-aligned image picker, compact fields and brand submit CTA.
+Shared Radix dialog still owns focus/dismissal and bounded natural form scrolling;
+fields, validation, drafts, upload types, retry lock and manager approval unchanged.
+These are presentation changes. Desktop customer/order layout stays with its owner.
+Restore: restore/before-customer-cards-site-form-20261027 at 7c24b47.
+Actual validation: order/payment UI, seller form/workspace handlers, customer actions,
+typecheck and scoped lint/build. Authenticated device pixels not verified.
