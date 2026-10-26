@@ -445,3 +445,12 @@ Existing catalog/sign-in links remain valid. Seller workflows and approval rules
 are unchanged. Legacy supplier portal retained for supplier accounts.
 Restore: restore/before-personal-grid-20261026 at a78df11710fffd95f8dfb6a774b53163ea8b1fbd.
 Source/handler and build verification do not certify authenticated browser pixels.
+
+## Personal launcher placement correction — 2026-10-26
+On mobile, mount the unchanged launcher permanently in document flow immediately
+after ClientHub's heading/purchase-button header, before page content. Remove its
+local account trigger, popover, close control and overlay heading. Grid, underline,
+support row, sites CTA and legacy supplier destination keep their actions. Desktop
+navigation and the standalone sites destination are unchanged. The document scrolls;
+there is no fixed position, internal scroller or height limit on this inline panel.
+Restore: restore/before-inline-personal-grid-20261026 at 2d47329.

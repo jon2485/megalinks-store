@@ -100,3 +100,9 @@
 .standalone-customer-sites{width:min(1200px,100%);margin:0 auto;padding:24px 16px 48px;direction:rtl;font-family:Heebo,Arial,sans-serif;color:#0b274d}
 .standalone-customer-sites>header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.standalone-customer-sites>header h1{font-size:26px;font-weight:700}
 @media(max-width:767px){.client-hub.approved-account .personal-desktop-sites{display:none}}
+/* Corrected placement: permanent navigation immediately after the account purchase header. */
+.personal-launchpad-inline{display:none}
+@media(max-width:767px){
+ .mobile-personal-menu-content.personal-launchpad.personal-launchpad-inline{display:block;width:100%;max-width:none;max-height:none;overflow:visible;margin:0 0 20px;padding:14px;border:1px solid #d5e6f0;border-radius:16px;background:#fbfdff;box-shadow:none;backdrop-filter:none}
+ .personal-launchpad-inline nav{padding-top:0}
+}
