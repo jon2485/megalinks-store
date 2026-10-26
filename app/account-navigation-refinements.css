@@ -46,3 +46,36 @@
 .mobile-personal-menu-content button:focus-visible,.mobile-personal-menu-trigger:focus-visible{outline:2px solid #0872d5;outline-offset:-2px}
 @media(max-width:767px){.mobile-personal-menu{display:flex;justify-content:flex-start;direction:rtl;margin-bottom:14px}.mobile-personal-menu-trigger{min-height:46px;gap:10px;background:#f6fbffd9;border:1px solid #bcd8e8;border-radius:11px;padding:10px 16px;color:#102b4b;font:600 16px/1.5 Arial,Heebo,sans-serif;cursor:pointer}.mobile-personal-menu-trigger:hover,.mobile-personal-menu-trigger[data-state=open]{background:#e4f3fc;border-color:#86b8d3}.client-hub.approved-account .client-hub-tabs[aria-label]{display:none!important}}
 @media(prefers-reduced-motion:reduce){.mobile-personal-menu-content nav button{transition:none}}
+/* Approved article controls, desktop board and mobile text-tab reference (26 October). */
+.client-hub.approved-account .personal-redesign.purchased-atmosphere [aria-label="סינון לפי מצב הכתבה"]{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;border:0;border-radius:0;background:transparent;padding:0!important;backdrop-filter:none}
+.client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{display:flex!important;align-items:center!important;justify-content:center!important;min-width:0!important;min-height:58px!important;padding:10px 8px!important;border:1px solid #d7e7f1!important;border-radius:8px!important;background:#fff!important;box-shadow:none!important}
+.client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger[data-state=active]{background:#effafa!important;border-color:#55aeb6!important;box-shadow:none!important;color:#087d89!important}
+.client-hub.approved-account .personal-redesign .purchased-stage-copy{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-width:0}
+.client-hub.approved-account .personal-redesign .purchased-stage-icon{display:none!important}
+.client-hub.approved-account .personal-redesign .purchased-stage-number{display:inline-flex!important;align-items:center;justify-content:center;min-width:22px!important;width:auto!important;height:24px!important;padding:0 5px!important;background:#edf4f7!important;font-size:13px!important;line-height:1.4!important;font-weight:500!important}
+.client-hub.approved-account .personal-redesign .purchased-stage-label{font-size:15px!important;font-weight:600!important;line-height:1.4!important}
+.client-hub.approved-account .purchase-modern-actions{display:flex;align-self:center;justify-content:center;align-items:stretch;gap:0;min-width:0}
+.client-hub.approved-account .purchase-action-row{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-width:0}
+.client-hub.approved-account .purchase-action-row .purchase-action-buttons{flex:1;min-width:0;max-width:none;grid-column:auto}
+.client-hub.approved-account .article-customer-compact{flex:0 0 44px;display:flex;align-items:center;margin:0}
+.client-hub.approved-account .article-more-trigger{display:flex;align-items:center;justify-content:center;width:44px!important;min-width:44px!important;height:44px!important;padding:0!important;border:1px solid #cbdce8!important;border-radius:8px!important;background:white!important;color:#546b85!important;cursor:pointer}
+.client-hub.approved-account .article-more-trigger:hover{background:#eaf5fa!important;color:#087d89!important;border-color:#55aeb6!important}
+.client-hub.approved-account .article-more-trigger:focus-visible{outline:2px solid #0872d5;outline-offset:2px}
+.client-hub.approved-account .purchase-modern-story .purchase-customer-label{font-size:12px!important;color:#546b85!important;margin:5px 0!important;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [aria-label="סינון לפי מצב הכתבה"]{gap:0!important;border-bottom:1px solid #d7e3ed;background:white}
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{min-height:48px!important;padding:10px 2px!important;border:0!important;border-radius:0!important;background:white!important;gap:0!important}
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger[data-state=active]{background:white!important;box-shadow:inset 0 -2px #078b98!important}
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger:hover{background:#f1f9fa!important}
+ .client-hub.approved-account .personal-redesign .purchased-stage-copy{gap:4px!important;flex:0 1 auto!important;white-space:nowrap}
+ .client-hub.approved-account .personal-redesign .purchased-stage-label{font-size:13px!important;white-space:nowrap;word-break:normal}
+ .client-hub.approved-account .personal-redesign .purchased-stage-desktop-label{display:none!important}
+ .client-hub.approved-account .personal-redesign .purchased-stage-mobile-label{display:inline!important}
+ .client-hub.approved-account .personal-redesign .purchased-stage-number{min-width:0!important;width:auto!important;height:auto!important;padding:0!important;border-radius:0!important;background:transparent!important;font-size:11px!important;color:inherit!important}
+ .client-hub.approved-account .purchase-modern-content{gap:12px;padding:16px!important}
+ .client-hub.approved-account .purchase-modern-story{padding-top:0}
+ .client-hub.approved-account .purchase-modern-actions{align-self:center;margin-top:4px}
+ .client-hub.approved-account .personal-hero-search input{background:#f3f5f7!important;border:0!important;border-radius:8px!important;box-shadow:none!important}
+}
+@media(min-width:761px){.client-hub.approved-account .personal-redesign .purchased-stage-desktop-label{display:inline!important}.client-hub.approved-account .personal-redesign .purchased-stage-mobile-label{display:none!important}}
+@media(max-width:360px){.client-hub.approved-account .personal-redesign .purchased-stage-label{font-size:12px!important}.client-hub.approved-account .personal-redesign .purchased-stage-copy{gap:3px!important}}

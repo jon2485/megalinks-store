@@ -416,3 +416,20 @@ Railway staging deployment `8dca96e4-49ff-4cd2-8cfc-1bbd8411d169`. No schema
 changes or destructive data operations accompany these UI refinements.
 The source review found and resolved legacy supplier navigation, nested route
 highlights, requested-page/clamped-page matching and manager-published history.
+
+## Approved article controls — 2026-10-26
+Desktop uses four equal shallow status filters (approved exec-070e89ef board).
+Mobile uses a single row of text tabs with inline counts, shortened visible labels
+בעריכה / לאישור / לפרסום / פורסמו and an active teal underline (exec-8c68789a).
+Existing stage predicates, counts, month/search filtering and primary/AI/link actions
+are unchanged. Actions center vertically in their desktop cell and within the
+mobile action row. Assignment moves to the canonical Radix dropdown's more-actions
+item, opening the existing guarded dialog. Show it only when owned customer options
+exist or an owned article is already assigned. Unknown/failed options do not opt in;
+existing assignments remain manageable. First-time users add a customer through
+My Customers. Assigned names appear in article details, never as an extra action row.
+Rollback source: restore/before-article-tabs-20261026 at 98f27e3766842c5b278a0cf54552f416a521e83b.
+This is frontend-only; no schema, order, publication or payment mutations changed.
+Validation: typecheck, production build, scoped lint (no errors), assignment API
+39 requests, assignment dialog/menu handlers, account navigation, and conditional
+visibility tests passed. Authenticated browser pixels/touch/focus were not verified.

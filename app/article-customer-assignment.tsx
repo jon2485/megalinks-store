@@ -1,9 +1,10 @@
 'use client';
 import React,{useEffect,useRef,useState} from 'react';
-import {Plus,Search,Users,X,LoaderCircle,RefreshCw} from 'lucide-react';
+import {Plus,Search,Users,X,LoaderCircle,RefreshCw,MoreHorizontal} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Dialog,DialogContent,DialogDescription,DialogHeader,DialogTitle,DialogTrigger} from '@/components/ui/dialog';
+import {DropdownMenu,DropdownMenuTrigger,DropdownMenuContent,DropdownMenuItem} from '@/components/ui/dropdown-menu';
 import {RadioGroup,RadioGroupItem} from '@/components/ui/radio-group';
 import {Tabs,TabsContent,TabsList,TabsTrigger} from '@/components/ui/tabs';
 import {AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle} from '@/components/ui/alert-dialog';
@@ -66,10 +67,11 @@ export function ArticleCustomerForm({article,ctx,onSaved,onCancel,onDirty,onBusy
     </form>;
 }
 
-export default function ArticleCustomerAssignment({article,ctx}:{article:Row;ctx:Ctx}) {
+export default function ArticleCustomerAssignment({article,ctx,compact=false}:{article:Row;ctx:Ctx;compact?:boolean}) {
     const [open,setOpen]=useState(false),[busy,setBusy]=useState(false),[dirty,setDirty]=useState(false),[discard,setDiscard]=useState(false);
+    const [menu,setMenu]=useState(false);
     const cancel=()=>{if(busy)return;if(dirty)setDiscard(true);else setOpen(false);};
-    return <><div className="article-customer-inline"><span><Users size={14} aria-hidden="true"/>משויך ללקוח: <strong>{article.customer_name||'ללא שיוך'}</strong></span><Dialog open={open} onOpenChange={value=>value?setOpen(true):cancel()}><DialogTrigger asChild><Button type="button" variant="outline" className="article-customer-trigger" onClick={()=>setOpen(true)} aria-label={(article.customer_name?'שינוי שיוך':'שיוך ללקוח')+' לכתבה '+(article.title||'ללא כותרת')}> <Users size={16} aria-hidden="true"/>{article.customer_name?'שינוי שיוך':'שיוך ללקוח'}</Button></DialogTrigger><DialogContent dir="rtl" className="article-customer-dialog" onEscapeKeyDown={event=>{if(busy)event.preventDefault();}} onPointerDownOutside={event=>{if(busy)event.preventDefault();}}><DialogHeader><DialogTitle>שיוך כתבה ללקוח</DialogTitle><DialogDescription>{article.title||'כתבה ללא כותרת'} · {article.website_name||'פרסום כתבה'}{article.number&&<> · <bdi>{article.number}</bdi></>}</DialogDescription></DialogHeader>{open&&<ArticleCustomerForm article={article} ctx={ctx} onSaved={()=>{setDirty(false);setOpen(false);}} onCancel={cancel} onDirty={setDirty} onBusy={setBusy}/>}</DialogContent></Dialog></div>
+    return <><div className={compact?"article-customer-compact":"article-customer-inline"}>{!compact&&<span><Users size={14} aria-hidden="true"/>משויך ללקוח: <strong>{article.customer_name||'ללא שיוך'}</strong></span>}<Dialog open={open} onOpenChange={value=>value?setOpen(true):cancel()}>{compact?<DropdownMenu dir="rtl" open={menu} onOpenChange={setMenu}><DropdownMenuTrigger asChild><Button variant="outline" className="article-more-trigger" aria-label={'פעולות נוספות לכתבה '+(article.title||'ללא כותרת')} title="פעולות נוספות"><MoreHorizontal size={19}/></Button></DropdownMenuTrigger><DropdownMenuContent align="end" onCloseAutoFocus={event=>{if(open)event.preventDefault();}}><DropdownMenuItem onSelect={()=>{setMenu(false);setOpen(true);}}><Users size={16}/>{article.customer_name?'שינוי שיוך':'שיוך ללקוח'}</DropdownMenuItem></DropdownMenuContent></DropdownMenu>:<DialogTrigger asChild><Button type="button" variant="outline" className="article-customer-trigger" onClick={()=>setOpen(true)} aria-label={(article.customer_name?'שינוי שיוך':'שיוך ללקוח')+' לכתבה '+(article.title||'ללא כותרת')}> <Users size={16} aria-hidden="true"/>{article.customer_name?'שינוי שיוך':'שיוך ללקוח'}</Button></DialogTrigger>}<DialogContent dir="rtl" className="article-customer-dialog" onEscapeKeyDown={event=>{if(busy)event.preventDefault();}} onPointerDownOutside={event=>{if(busy)event.preventDefault();}}><DialogHeader><DialogTitle>שיוך כתבה ללקוח</DialogTitle><DialogDescription>{article.title||'כתבה ללא כותרת'} · {article.website_name||'פרסום כתבה'}{article.number&&<> · <bdi>{article.number}</bdi></>}</DialogDescription></DialogHeader>{open&&<ArticleCustomerForm article={article} ctx={ctx} onSaved={()=>{setDirty(false);setOpen(false);}} onCancel={cancel} onDirty={setDirty} onBusy={setBusy}/>}</DialogContent></Dialog></div>
         <AlertDialog open={discard} onOpenChange={setDiscard}><AlertDialogContent dir="rtl"><AlertDialogHeader><AlertDialogTitle>לסגור בלי לשמור?</AlertDialogTitle><AlertDialogDescription>הבחירה ופרטי הלקוח שהוזנו בחלונית עדיין לא נשמרו.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>המשך עריכה</AlertDialogCancel><AlertDialogAction onClick={()=>{setDirty(false);setOpen(false);setDiscard(false);}}>סגירה ללא שמירה</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog>
     </>;
 }
