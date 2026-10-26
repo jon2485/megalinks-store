@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {compile,reset,render,nodes,text} from './admin-ui-harness.mjs';
+const {default:Intro}=await compile('app/account-first-screen.tsx','account-first-screen');
+let reduced=false,focused=false,scroll=null;
+globalThis.window={matchMedia:()=>({matches:reduced})};
+globalThis.document={getElementById:id=>{assert.equal(id,'client-hub-page-content');return{focus:options=>{assert.deepEqual(options,{preventScroll:true});focused=true;},scrollIntoView:options=>scroll=options};}};
+reset();const tree=render(Intro,{children:'פתיח'}),button=nodes(tree).find(n=>n.type==='button');
+assert(!text(tree).includes('המשך לתוכן'));assert.equal(button.props['aria-label'],'גלילה לתוכן העמוד');button.props.onClick();assert(focused);assert.equal(scroll.behavior,'smooth');reduced=true;button.props.onClick();assert.equal(scroll.behavior,'auto');
+const nav=await compile('lib/client-hub-navigation.ts','account-scroll-navigation');
+assert(nav.preserveAccountScroll('purchased/articles','purchased/profile'));
+assert(!nav.preserveAccountScroll('purchased/articles','purchased/selling'));
+assert(!nav.preserveAccountScroll('catalog','purchased'));
+assert(!nav.preserveAccountScroll('purchased','article/a'));
+console.log('ACCOUNT MOBILE MOTION PASS: arrow scroll/focus, reduced motion, no visible caption, retained account scroll and normal external navigation.');

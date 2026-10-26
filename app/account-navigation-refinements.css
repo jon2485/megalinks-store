@@ -106,3 +106,58 @@
  .mobile-personal-menu-content.personal-launchpad.personal-launchpad-inline{display:block;width:100%;max-width:none;max-height:none;overflow:visible;margin:0 0 20px;padding:14px;border:1px solid #d5e6f0;border-radius:16px;background:#fbfdff;box-shadow:none;backdrop-filter:none}
  .personal-launchpad-inline nav{padding-top:0}
 }
+/* Shared, measured underline keeps continuity in RTL and when labels resize. */
+.account-sliding-nav,[data-account-stages]{position:relative}
+.account-sliding-marker{position:absolute;left:0;top:0;width:var(--marker-width,0px);height:2px;transform:translate3d(var(--marker-x,0px),var(--marker-y,0px),0);border-radius:2px;background:#007c88;pointer-events:none;opacity:0;transition:transform .24s cubic-bezier(.16,1,.3,1),width .24s cubic-bezier(.16,1,.3,1);z-index:1}
+[data-marker-ready=true]>.account-sliding-marker{opacity:1}
+.personal-launchpad nav[data-marker-ready=true] button[aria-current=page]::after{display:none}
+.account-mobile-first-screen{display:contents}.account-heading-mobile,.account-mobile-subtitle,.account-scroll-cue{display:none}
+#client-hub-page-content{scroll-margin-top:var(--account-scroll-offset,80px)}
+#client-hub-page-content:focus{outline:none}
+@media(max-width:767px){
+ .client-hub.approved-account .account-mobile-first-screen{display:flex;flex-direction:column;justify-content:space-between;gap:16px;min-height:max(0px,calc(100svh - var(--account-intro-top,64px)));padding:16px 0 max(18px,env(safe-area-inset-bottom))}
+ .client-hub.approved-account .account-mobile-first-screen .client-hub-heading{min-height:0;padding:12px 0 6px;gap:12px;align-items:center}
+ .client-hub.approved-account .account-mobile-first-screen .client-hub-heading>div:first-child{padding-top:0}
+ .account-heading-desktop,.client-hub.approved-account .account-desktop-subtitle{display:none}
+ .account-heading-mobile,.client-hub.approved-account .account-mobile-subtitle{display:block}
+ .client-hub.approved-account .client-hub-heading h1{font-size:30px!important;line-height:1.25!important;letter-spacing:-.02em}
+ .account-heading-mobile em{font-style:normal;color:#007c88}
+ .client-hub.approved-account .client-hub-greeting{margin-top:14px}
+ .client-hub.approved-account .client-hub-greeting>span{font-size:17px!important;line-height:1.5!important;font-weight:650;display:block;overflow-wrap:anywhere}
+ .client-hub.approved-account .client-hub-greeting p{font-size:15px!important;font-weight:400;margin-top:6px}
+ .client-hub.approved-account .client-hub-heading .account-mobile-subtitle{font-size:13px;line-height:1.5;margin-top:8px}
+ .client-hub.approved-account .client-hub-welcome{width:120px;gap:6px}
+ .client-hub.approved-account .approved-account-art{width:120px;height:104px}
+ .client-hub.approved-account .account-mobile-first-screen .personal-launchpad-inline{margin-bottom:0}
+ .account-scroll-cue{display:flex;align-items:center;justify-content:center;flex-shrink:0;align-self:center;width:44px;height:44px;min-height:44px;border:1px solid #d5e6f0;border-radius:50%;background:#ffffffd9;color:#007c88;cursor:pointer}
+ .account-scroll-cue:hover{background:#e7f6f8}
+ .account-mobile-first-screen[data-cue-visible=true] .account-scroll-cue svg{animation:account-down-cue 4s cubic-bezier(.16,1,.3,1) infinite}
+ .account-content-transition{animation:account-content-arrive .22s ease-out both}
+}
+@media(max-width:767px) and (max-height:740px){
+ .client-hub.approved-account .account-mobile-first-screen{gap:10px;padding-top:8px;padding-bottom:12px}
+ .client-hub.approved-account .account-mobile-first-screen .client-hub-heading{padding:4px 0}
+ .account-mobile-first-screen .personal-launchpad nav button{min-height:76px;gap:5px;padding:7px 3px}
+ .account-mobile-first-screen .personal-launchpad nav button span{min-height:38px}
+ .account-mobile-first-screen .personal-launchpad nav button svg{width:22px;height:22px}
+ .account-mobile-first-screen .personal-launchpad-support{min-height:44px}
+}
+@keyframes account-down-cue{0%,72%,100%{transform:translateY(0)}80%{transform:translateY(6px)}88%{transform:translateY(0)}94%{transform:translateY(4px)}}
+@keyframes account-content-arrive{from{opacity:.4;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+/* Four compact status rectangles, using the launchpad colors and underline. */
+@media(max-width:760px){
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [aria-label="סינון לפי מצב הכתבה"]{padding:3px!important;gap:0!important;border:1px solid #d5e6f0;border-radius:12px;background:#fbfdff;overflow:visible}
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{position:relative;display:grid!important;grid-template-columns:16px auto;grid-template-rows:auto auto;justify-content:center!important;align-content:center;column-gap:5px!important;row-gap:4px!important;min-height:64px!important;height:auto!important;padding:8px 3px!important;border:0!important;border-radius:8px!important;background:transparent!important;color:#52677e!important;box-shadow:none!important;transition:color .18s,background-color .18s}
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger[data-state=active]{background:transparent!important;color:#007c88!important;box-shadow:none!important}
+ .client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger:hover{background:#f0f7fa!important}
+ .client-hub.approved-account .personal-redesign .purchased-stage-icon{display:flex!important;align-items:center;justify-content:center;grid-column:1;grid-row:1;width:16px!important;height:16px!important;padding:0!important}
+ .client-hub.approved-account .personal-redesign .purchased-stage-icon svg{width:16px;height:16px;stroke-width:1.75}
+ .client-hub.approved-account .personal-redesign .purchased-stage-copy{display:contents!important}
+ .client-hub.approved-account .personal-redesign .purchased-stage-label{grid-column:2;grid-row:1;font-size:13px!important;line-height:1.4!important;font-weight:600!important}
+ .client-hub.approved-account .personal-redesign .purchased-stage-number{grid-column:1/-1;grid-row:2;justify-self:center;font-size:11px!important;font-weight:400!important;line-height:1.4!important}
+ .client-hub.approved-account .purchased-stage-trigger[data-state=active]::after{content:'';position:absolute;bottom:3px;inset-inline:22%;height:2px;border-radius:2px;background:#007c88}
+ .client-hub.approved-account [data-account-stages][data-marker-ready=true] .purchased-stage-trigger::after{display:none}
+}
+@media(max-width:360px){.client-hub.approved-account .personal-redesign .purchased-stage-label{font-size:12px!important}.client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{column-gap:3px!important}}
+@media(prefers-reduced-motion:reduce){.account-sliding-marker{transition:none}.account-mobile-first-screen .account-scroll-cue svg,.account-content-transition{animation:none!important}}
+@media(hover:none){.personal-launchpad nav button:hover{background:transparent}.client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger:hover{background:transparent!important}}

@@ -2,7 +2,7 @@
 import ClientHub from './client-hub';
 import KnowledgeAdmin from './knowledge-admin';
 import {BrandLoadingScreen} from './brand-loading';
-import {clientHubRoute,isClientHub} from '@/lib/client-hub-navigation';
+import {clientHubRoute,isClientHub,preserveAccountScroll} from '@/lib/client-hub-navigation';
 import {clientPageSeo} from '@/lib/seo';
 import {AdminNavigation,AdminControlCenter,AdminSectionTabs,AdminHeader,AdminMobileDock} from './admin-shell';
 import {AdminAttentionBoundary} from './admin-attention';
@@ -120,7 +120,7 @@ export default function Workspace({ initialCatalog, initialView = 'catalog' }: {
     },!adminMode,user?.id||'guest');
     const refresh = () => setRevision(x => x + 1);
     useEffect(()=>{const update=(event:Event)=>{if((event as CustomEvent).detail?.status!=='writing')setRevision(x=>x+1);};window.addEventListener('megalinks:ai-generation',update);return()=>window.removeEventListener('megalinks:ai-generation',update);},[]);
-    const navigate = (v: string) => { v=clientContentView(v); if(v==='knowledge'){window.location.assign('/knowledge');return;} if(adminMode && v.startsWith('article/'))v='admin-'+v; dirtyNavigation.current=false; setDirty(false); setView(v); window.history.pushState({}, '', v === 'catalog' ? '/' : '/' + v); window.scrollTo(0, 0); };
+    const navigate = (v: string) => { v=clientContentView(v); if(v==='knowledge'){window.location.assign('/knowledge');return;} if(adminMode && v.startsWith('article/'))v='admin-'+v; dirtyNavigation.current=false; setDirty(false); setView(v); window.history.pushState({}, '', v === 'catalog' ? '/' : '/' + v); if(!preserveAccountScroll(view,v))window.scrollTo(0, 0); };
     const go = (v: string) => { v=clientContentView(v); if(adminMode&&v.startsWith('article/'))v='admin-'+v; if(view===v)return; if (adminMode?dirtyNavigation.current:dirty) {
         setModal({ title: 'יש שינויים שלא נשמרו', description: 'חזרו לעריכה כדי לשמור אותם, או צאו ללא שמירה.', render: (close: () => void) => <div className="flex-row"><Button onClick={close}>חזרה לעריכה</Button><Button variant="outline" onClick={() => { close(); navigate(v); }}>יציאה ללא שמירה</Button></div> });
         return;

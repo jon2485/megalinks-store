@@ -12,3 +12,5 @@ export function isClientHub(view:string){return view==='purchased'||view.startsW
 export function clientHubTab(view:string){const part=view.split('/')[1]||'lobby';return part==='monthly'?'orders':['support','api','files','notifications'].includes(part)?'profile':part;}
 
 export function personalDestinationActive(path:string,view:string){return path===view||path!=='purchased'&&(view.startsWith(path+'/')||path==='purchased/articles'&&view.startsWith('article/'));}
+
+export function preserveAccountScroll(from:string,to:string){return isClientHub(from)&&isClientHub(to)&&from!=='purchased/selling'&&to!=='purchased/selling';}

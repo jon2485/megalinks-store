@@ -454,3 +454,21 @@ support row, sites CTA and legacy supplier destination keep their actions. Deskt
 navigation and the standalone sites destination are unchanged. The document scrolls;
 there is no fixed position, internal scroller or height limit on this inline panel.
 Restore: restore/before-inline-personal-grid-20261026 at 2d47329.
+
+## Approved mobile first screen and stage motion — 2026-10-26
+Phones show the approved stable account welcome typography, purchase action,
+permanent six-destination launcher and My Sites before the content. A small arrow
+(with accessible name but no visible caption) focuses and scrolls to page content.
+100svh minus measured page offset fills the first screen, with natural growth for
+short viewports/long names/enlarged text; no clipping or internal scrolling. The
+cue nudges every four seconds only while its intro is visible and document active.
+Four article filters retain one compact mobile row, small icons and counters;
+colors match the launcher and only an underline indicates selection. One measured
+RTL-safe marker slides between actual button bounds. Below-fold account content
+and stage results get short entrance transitions. Account-to-account navigation
+preserves scroll instead of jumping to top; leaving to catalog/editor/My Sites
+retains normal navigation. All existing dirty guards, filtering and handlers stay.
+Reduced motion removes spatial animation and uses immediate scroll. No dependencies.
+Restore: restore/before-mobile-account-motion-20261026 at 0d9ac1e.
+Validation: typecheck, scoped lint, navigation/assignment handler checks and motion
+scroll/reduced-motion tests. Authenticated browser/device visual QA remains pending.
