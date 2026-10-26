@@ -1,3 +1,5 @@
+import {publicationPeriod} from '@/lib/publication-period';
+import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
 import {releaseScheduledApprovals,futureArticleDate} from '@/lib/scheduled-approval';
 import {normalizeRequestedPublication} from '@/lib/publication-date';
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
@@ -40,7 +42,7 @@ import { workflowRoutes } from '@/lib/workflow-routes';
 import { articleChecks, checkLink } from '@/lib/checks';
 import { writingRequestMail, articleMail, queueMail } from '@/lib/mail';
 import { articleDocx } from '@/lib/delivery-docx';
-import { businessMonth, closeMonth } from '@/lib/monthly';
+import { closeMonth } from '@/lib/monthly';
 import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-content';
 import { dispatchArticle } from '@/lib/publication';
 import { contentHtml, signature, matchingSignature } from '@/lib/integrations';
@@ -150,6 +152,8 @@ async function handle(r: Request,access:ResponseAccess) {
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
     if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);return response(await releaseScheduledApprovals(new URL(r.url).origin));}
+    if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
+    if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);return response(await closeSellerMonths(new URL(r.url).origin));}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
     const knowledgePublic=await knowledgePublicRoutes(r,p);if(knowledgePublic)return knowledgePublic;
     if(p[0]==='catalog-logo'&&p[1]&&method==='GET'){
@@ -203,8 +207,9 @@ async function handle(r: Request,access:ResponseAccess) {
             assert(!JSON.parse(a.data).cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409);
             const url = httpUrl(b.url);
             assert(url, 'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const checked=await checkLink(url,w.url);assert(checked.ok,checked.message,422);assert(a.status==='sent','הכתבה כבר טופלה',409);
-            const reportResult=await db().batch([articleGuard(a),stmt('UPDATE tokens SET used=1 WHERE id=? AND used=0', token.id), stmt("UPDATE articles SET status='published',published_url=?,version=version+1,updated=? WHERE id=? AND status='sent'", url, now(), a.id), stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)', uid(), token.user_id, a.id, 'הספק דיווח על פרסום', JSON.stringify({ url }), now())]);
-            assert(reportResult[1].meta.changes===1,'קישור הספק כבר נוצל',403);await stmt("UPDATE jobs SET status='completed',updated=? WHERE id=?",now(),'publication:'+a.id).run();await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",a.id).run();await stmt("UPDATE articles SET data=json_set(data,'$.published_month',?) WHERE id=?",businessMonth(),a.id).run();await articleMail({...a,published_url:url},'published',new URL(r.url).origin);await syncOrder(a.order_id);
+            const publication=publicationPeriod();
+            const reportResult=await db().batch([articleGuard(a),stmt('UPDATE tokens SET used=1 WHERE id=? AND used=0', token.id), stmt("UPDATE articles SET status='published',published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?) WHERE id=? AND status='sent'", url, publication.stamp,publication.month,a.id), stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)', uid(), token.user_id, a.id, 'הספק דיווח על פרסום', JSON.stringify({ url }), now())]);
+            assert(reportResult[1].meta.changes===1,'קישור הספק כבר נוצל',403);await stmt("UPDATE jobs SET status='completed',updated=? WHERE id=?",now(),'publication:'+a.id).run();await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",a.id).run();await articleMail({...a,published_url:url},'published',new URL(r.url).origin);await syncOrder(a.order_id);
             return response({ ok: true });
         }
     }
@@ -228,14 +233,16 @@ async function handle(r: Request,access:ResponseAccess) {
         u = await actor();
     access.privileged=u.role==='admin';
     if(u.role==='admin'&&method==='GET')await releaseScheduledApprovals(new URL(r.url).origin);
+    const sellerResponse=await customerSellerRoutes(r,p,u);if(sellerResponse)return sellerResponse;
     const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
     const pricingResponse=await pricingRoutes(r,p,u,json);if(pricingResponse)return pricingResponse;
     const financeResponse=await financeRoutes(r,p,u,json);if(financeResponse)return financeResponse;
     const accountResponse=await accountManagementRoutes(r,p,u);if(accountResponse)return accountResponse;
     const workflowResponse=await workflowRoutes(r,p,u);if(workflowResponse)return workflowResponse;
     if (p[0] === 'supplier-inbox') {
-        assert(u.role==='admin'||u.role==='supplier','הגישה זמינה לספק מורשה',403);
-        const rows = (await all("SELECT j.* FROM jobs j WHERE j.kind='supplier_publication' ORDER BY j.created DESC")).map(parse).filter(j => j && (u.role==='admin' || (j.recipient_email && j.recipient_email===u.email.toLowerCase())));
+        const seller=await one('SELECT user_id FROM seller_profiles WHERE user_id=?',u.id);
+        assert(u.role==='admin'||u.role==='supplier'||seller,'הגישה זמינה לספק מורשה',403);
+        const rows = (await all("SELECT j.* FROM jobs j WHERE j.kind='supplier_publication' ORDER BY j.created DESC")).map(parse).filter(j => j && (u.role==='admin' || (u.role==='supplier'?j.recipient_email===u.email.toLowerCase():j.owner_user_id===u.id)));
         if (method==='GET' && !p[1]) return response({ deliveries:u.role==='admin'?rows:rows.map(row=>supplierDelivery(row!)) });
         const job=rows.find(j=>j!.id===decodeURIComponent(p[1] || '')); assert(job,'המשלוח לא נמצא',404);
         const article=parse(await one('SELECT * FROM articles WHERE id=?',job.article_id)); assert(article,'כתבה לא נמצאה',404);
@@ -244,8 +251,8 @@ async function handle(r: Request,access:ResponseAccess) {
         if (method==='GET' && query.get('image')==='1') { const f=await one('SELECT * FROM files WHERE id=?',(query.get('secondary')==='1'?article.secondary_image_id:article.image_id)||''); assert(f,'תמונה לא נמצאה',404); const blob=await env.BUCKET?.get(f.key); assert(blob,'תמונה לא נמצאה',404); return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}}); }
         if (method==='GET') return response({delivery:u.role==='admin'?job:supplierDelivery(job),article:{id:article.id,title:article.title,content:await supplierContent(article.content,'/api/supplier-inbox/'+encodeURIComponent(job.id)+'?inline='),image_id:article.image_id,image_credit:article.image_credit,image_credit_url:article.image_credit_url,secondary_image_id:article.secondary_image_id,secondary_image_credit:article.secondary_image_credit,meta_description:article.meta_description,client_notes:article.client_notes,scheduled:article.scheduled||'',status:article.status,cancel_pending:!!article.cancel_pending}});
         if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); const url=job.demo?'':httpUrl(b.url||''); assert(job.demo || url,'יש להזין קישור לפרסום'); if(!job.demo){const w=await website(article.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);}
-            await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=? WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,now(),article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
-            await stmt("UPDATE articles SET data=json_set(data,'$.published_month',?) WHERE id=?",businessMonth(),article.id).run();if(!job.demo)await articleMail({...article,published_url:url},'published',new URL(r.url).origin);await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
+            const publication=publicationPeriod();await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?) WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,publication.stamp,publication.month,article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
+            if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
     }
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
     if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
@@ -507,10 +514,10 @@ if (p[0] === 'cart') {
             const statusData=JSON.parse(a.data);if(next==='admin_review'&&futureArticleDate(a)){next='scheduled';statusData.scheduled_submitted_at=now();statusData.scheduled_from_status=a.status;}
             const url = next === 'published' ? httpUrl(b.url || '') : a.published_url;
             if (next === 'published'){assert(url,'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);assert(!JSON.parse(order!.data).demo,'הדגמה אינה פרסום אמיתי');}
-            const result = await stmt('UPDATE articles SET status=?,published_url=?,data=?,version=version+1,updated=? WHERE id=? AND version=?', next, url, JSON.stringify(statusData), now(), a.id, a.version).run();
+            const publication=publicationPeriod();if(next==='published')statusData.published_month=publication.month;
+            const result = await stmt('UPDATE articles SET status=?,published_url=?,data=?,version=version+1,updated=? WHERE id=? AND version=?', next, url, JSON.stringify(statusData), publication.stamp, a.id, a.version).run();
             assert(result.meta.changes, 'הכתבה עודכנה במקביל', 409);
             if(next==='admin_review'||next==='revisions'||next==='published')await articleMail({...a,version:a.version+1,published_url:url},next==='admin_review'?'submitted':next==='revisions'?'revisions':'published',new URL(r.url).origin,maxText(b.note,3000));
-            if(next==='published')await stmt("UPDATE articles SET data=json_set(data,'$.published_month',?) WHERE id=?",businessMonth(),a.id).run();
             await audit(u, a.id, 'סטטוס: ' + next, { note: maxText(b.note, 3000), url });
             await notify(u, 'article_status', { article_id: a.id, status: next, recipient_email: (await one('SELECT email FROM users WHERE id=?', a.user_id))?.email, recipient_phone: (await one('SELECT phone FROM users WHERE id=?', a.user_id))?.phone });
             if (next === 'approved') await dispatchArticle({...a,status:'approved',version:a.version+1},u,new URL(r.url).origin);
@@ -665,6 +672,7 @@ if (p[0] === 'cart') {
             assert(!(await one("SELECT id FROM orders WHERE json_extract(data,'$.invoice_file_id')=?",f.id)), 'הקובץ משויך לחשבונית הזמנה ולא ניתן למחיקה');
             assert(!(await one("SELECT id FROM orders WHERE EXISTS(SELECT 1 FROM json_each(COALESCE(json_extract(data,'$.invoice_history'),'[]')) h WHERE json_extract(h.value,'$.file_id')=?)",f.id)), 'הקובץ שמור בהיסטוריית מסמכי התשלום');
             assert(!(await one("SELECT id FROM records WHERE kind IN ('wallet_topup','ticket','customer_payment_report') AND json_extract(data,'$.proof_file_id')=?",f.id)), 'הקובץ משויך לבקשה או לדיווח תשלום ולא ניתן למחיקה');
+            assert(!(await one("SELECT id FROM seller_statements WHERE data LIKE ?",'%'+f.id+'%'))&&!await one("SELECT id FROM seller_requests WHERE proposal LIKE ?",'%'+f.id+'%'),'הקובץ משויך לפעילות ספק ולא ניתן למחיקה');
             await env.BUCKET.delete(f.key);
             await stmt('DELETE FROM files WHERE id=?', f.id).run();
             return response({ ok: true });

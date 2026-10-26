@@ -16,7 +16,7 @@ const privateRoots = new Set([
     'profile','files','support','api','notifications','supplier-workspace','supplier-finance',
 ]);
 const nestedRoots = new Set(['article','admin-article','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge','admin-order','admin-support']);
-const hubTabs = new Set(['articles','orders','payments','customers','profile','files','support','api','notifications','monthly']);
+const hubTabs = new Set(['articles','orders','payments','selling','customers','profile','files','support','api','notifications','monthly']);
 
 export function isWorkspacePath(parts:string[]) {
     if(parts.length===1)return privateRoots.has(parts[0]);

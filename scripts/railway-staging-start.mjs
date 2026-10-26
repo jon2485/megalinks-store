@@ -56,7 +56,7 @@ gateway.listen(Number(process.env.PORT||8080),'0.0.0.0',()=>console.log('Staging
 let releasing=false;
 async function releaseDueArticles(){
  if(releasing)return;releasing=true;
- try{const result=await fetch('http://127.0.0.1:8787/api/maintenance/scheduled-articles',{method:'POST',headers:{authorization:'Bearer '+automationKey,host:new URL(process.env.POSTFLOW_STAGING_ORIGIN).host},signal:AbortSignal.timeout(15000)});if(!result.ok)console.warn('Scheduled article release deferred; next minute will retry.');}
+ try{const result=await fetch('http://127.0.0.1:8787/api/maintenance/scheduled-articles',{method:'POST',headers:{authorization:'Bearer '+automationKey,host:new URL(process.env.POSTFLOW_STAGING_ORIGIN).host},signal:AbortSignal.timeout(15000)});if(!result.ok)console.warn('Scheduled article release deferred; next minute will retry.');const settlement=await fetch('http://127.0.0.1:8787/api/maintenance/seller-months',{method:'POST',headers:{authorization:'Bearer '+automationKey,host:new URL(process.env.POSTFLOW_STAGING_ORIGIN).host},signal:AbortSignal.timeout(30000)});if(!settlement.ok)console.warn('Seller month close deferred; next minute will retry.');}
  catch{/* Worker may still be starting; next minute retries without losing durable submissions. */}
  finally{releasing=false;}
 }

@@ -717,3 +717,14 @@ transaction details, cancellation facts and the customer-facing manager reason
 into softly framed sections, with Hebrew RTL, full-value wrapping, canonical
 44px close control and document-safe bounded dialog scrolling. It inherits the
 finance palette, typography, Radix focus/dismissal and mobile geometry.
+
+The approved customer-supplier extension adds “האתרים שלי” as an account category
+and three local tabs: sites, publication inbox and payments. seller-workspace.css
+extends the existing Heebo/navy/ice/blue framed system (12–16px panels, 8px fields,
+44px+ controls) without replacing catalog art, buying flows or the admin dock.
+The account category row wraps seven items on phones; new forms use canonical
+inputs/textareas and the existing bounded glass dialog owner. Approved reference
+boards are exec-3b8bf593-7225-4de1-b1e4-aea0c93d7bf3.png and
+exec-d064144e-407c-4f2d-a688-b0b9aa571a84.png; sample identities and amounts remain
+illustrative. Runtime source and interaction/API checks do not certify browser
+pixel fidelity, focus or native popup rendering.

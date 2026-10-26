@@ -1,5 +1,6 @@
 /** Queue membership is shared by the server's distinct task counts and navigation. */
 export const adminPageQueues: Record<string, readonly string[]> = {
+ 'admin-seller-requests':['seller_requests','seller_invoices'],
  'admin-orders':['bank','payment_reports','cancellations'],
  'admin-payment-reports':['payment_reports'],'admin-invoices':['invoices'],
  'admin-topups':['topups'],'admin-monthly':['monthly'],

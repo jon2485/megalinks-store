@@ -8,6 +8,8 @@ export async function reviewPriceChange(id:string,u:Row){const row=await one("SE
 const actionable=`NOT ${fullyCancelledOrderSql()} AND (o.paid=1 OR COALESCE(json_extract(o.data,'$.demo'),0)=1 OR COALESCE(json_extract(o.data,'$.on_account'),0)=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1))`;
 export async function adminControlCenter(){
  const definitions=[
+  ['seller_requests','בקשות ספקים','admin-seller-requests','הצטרפות, שינויי אתר ופרטי תשלום','seller_requests sr',"sr.status='pending'",'sr.created'],
+  ['seller_invoices','חשבוניות ספקים','admin-seller-requests','חשבוניות שממתינות לבדיקה','seller_statements ss',"ss.status='invoice_review'",'ss.updated'],
   ['payment_reports','דיווחי תשלום לאישור','admin-payment-reports','פרטי תשלום שנשלחו על ידי לקוחות',"records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id')","r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND o.paid=0 AND o.status<>'cancelled'",'r.created'],
   ['content','כתבות לאישור','admin-approvals','בדיקת התוכן ואישור המשך הטיפול',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND a.status='admin_review' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated'],
   ['writing','כתיבה מקצועית','admin-articles','כתבות שנמצאות בכתיבה',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND json_extract(a.data,'$.writing_requested_at') IS NOT NULL AND COALESCE(json_extract(a.data,'$.editorial'),0)=1 AND (a.status='writing' OR (a.status='revisions' AND json_extract(a.data,'$.writing_returned_at') IS NULL)) AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated'],
@@ -21,7 +23,7 @@ export async function adminControlCenter(){
   ['mail','דיוור לטיפול','admin-notifications','הודעות שנכשלו או מחכות לחיבור','jobs j',"j.kind='email' AND j.status IN ('failed','blocked')",'j.updated'],
  ];
  definitions.push(['revisions','כתבות שחזרו לתיקון','admin-articles','בדיקת ההערות והמשך הטיפול',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND a.status='revisions' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated']);
- const taskKey:Record<string,string>={payment_reports:"'order:'||o.id",content:"'article:'||a.id",writing:"'article:'||a.id",publication:"'article:'||a.id",revisions:"'article:'||a.id",bank:"'order:'||o.id",topups:"'record:'||r.id",invoices:"'order:'||o.id",cancellations:"'article:'||a.id",support:"'record:'||r.id",delivery:"'job:'||j.id",mail:"'job:'||j.id"};
+ const taskKey:Record<string,string>={seller_requests:"'seller-request:'||sr.id",seller_invoices:"'seller-invoice:'||ss.id",payment_reports:"'order:'||o.id",content:"'article:'||a.id",writing:"'article:'||a.id",publication:"'article:'||a.id",revisions:"'article:'||a.id",bank:"'order:'||o.id",topups:"'record:'||r.id",invoices:"'order:'||o.id",cancellations:"'article:'||a.id",support:"'record:'||r.id",delivery:"'job:'||j.id",mail:"'job:'||j.id"};
  const taskSources=definitions.map(([id,,,,from,where])=>`SELECT '${id}' AS queue_id,${taskKey[id]} AS task_key FROM ${from} WHERE ${where}`);
  const queues=await Promise.all(definitions.map(async([id,label,page,description,from,where,date])=>{const row=await one(`SELECT COUNT(*) AS count,MIN(${date}) AS oldest FROM ${from} WHERE ${where}`);return {id,label,page,description,count:Number(row?.count||0),oldest:row?.oldest||null};}));
  const sync=await setting('sheets_sync_state',{});const syncAttention=['needs_review','invalid','partial','failed','received'].includes(sync.status);

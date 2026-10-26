@@ -294,3 +294,51 @@ The exact refund reason is added to the existing article allowlist; raw audit
 payloads, supplier fields and general administrative notes remain private.
 Source: existing lib/account-management.ts refund reason, customer-privacy.ts
 projection, order-finance.ts component amounts and the existing article owns guard.
+
+## Customer selling capability — approved 2026-10-26
+
+`purchased/selling` is a category in the existing personal account, not a homepage
+CTA. Existing purchasing roles remain unchanged. `seller_profiles` binds a user
+ID to an internal supplier record; pending site proposals never alter the live
+catalog. Only administrators review creation, editing, price, pause/removal,
+payout-detail and cancellation requests. Site approval includes ownership and
+retail-price confirmation. Existing order fee snapshots remain immutable.
+
+Supplier delivery reuses dispatchArticle, its Word email attachment and secure
+single-resource token. Customer supplier-inbox authorization uses the immutable
+owner_user_id stamped on the dispatch job, never an arbitrary contact address.
+Legacy supplier-role accounts retain their existing email-based access.
+
+Month close runs through the authenticated Railway maintenance timer, after the
+entire local calendar month has ended, with catch-up on restart. Only verified,
+non-demo, non-refunded publications and recorded fees enter the durable monthly
+statement. The unique seller/month and email keys prevent duplicate requests.
+No publications means no invoice request; missing fees block statement creation.
+The intended pay date is the 10th of the next month. This is not automatic banking:
+admin approval of an owned PDF invoice and approved payout details precede an
+explicit actual-transfer confirmation/reference. Payment receipt insertion and
+statement CAS are atomic. Changed publications block approval/payment and require
+recalculation plus a new invoice; paid statements cannot be recalculated.
+
+Payout details are encrypted in both proposals and live profiles. Supplier-facing
+responses explicitly project only the user's sites, requests, fees and statements;
+request baselines/review tokens, other sellers, buyers and internal audit data
+are not returned. Invoice and logo files are owner/admin protected; only approved
+active-site image bytes are public. Referenced invoice/history/logo files cannot
+be deleted. Request decisions and settlement actions are audited.
+
+Button/Input/Textarea, ctx.open/Radix dialogs and Sonner retain canonical ownership.
+Seller native select/month controls retain OS-owned popup geometry. The supplier
+area uses the approved blue/navy framed account design and the existing inbox.
+Lists offer bounded initial renders with explicit additional rows. CSS owns only
+the new selling surfaces and the wrapping seven-category account row. Preview
+fixtures are not deployment data. Browser layout verification remains unavailable.
+
+Validation for the selling extension: TypeScript/production build, 38 isolated
+Worker requests, seller UI actions and calendar-boundary tests pass. Shared mail
+attachment, cart/checkout/phone/feedback checks pass; publication scheduling has
+83 checks, admin feed40 and supplier/privacy963. Independent source review scored
+its atomic-publication-month fix resolved. Layout detector has no findings; the
+new native month/select variants are explicit OS-owned exceptions in this
+contract. Pre-existing global static-audit findings remain outside this change.
+No production fixtures, credentials or real email sends are part of validation.

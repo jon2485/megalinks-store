@@ -18,7 +18,8 @@ export async function dispatchArticle(article:Row,actor:Row,origin:string){
  const w=parse(await one('SELECT * FROM websites WHERE id=?',article.website_id))!;
  const supplier=w.supplier_id?parse(await one('SELECT * FROM records WHERE id=? AND kind=?',w.supplier_id,'supplier')):null;
  const email=String(w.supplier_email||supplier?.email||'').trim().toLowerCase(),demo=order.demo?1:0;
- const data:Row={article_id:article.id,website_id:w.id,website_name:w.name,title:article.title,supplier_id:supplier?.id||w.supplier_id||'',supplier_name:supplier?.name||email,recipient_email:email,demo:!!demo};
+ const sellerOwner=await one('SELECT user_id FROM seller_profiles WHERE supplier_id=?',supplier?.id||w.supplier_id||'');
+ const data:Row={owner_user_id:sellerOwner?.user_id||'',article_id:article.id,website_id:w.id,website_name:w.name,title:article.title,supplier_id:supplier?.id||w.supplier_id||'',supplier_name:supplier?.name||email,recipient_email:email,demo:!!demo};
  const stamp=now();
  if(!job)await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,article.user_id,'supplier_publication','requested',JSON.stringify(data),stamp,stamp).run();
  const claim=await stmt("UPDATE jobs SET status='writing',data=?,updated=? WHERE id=? AND status IN ('requested','blocked','failed')",JSON.stringify(data),stamp,id).run();
