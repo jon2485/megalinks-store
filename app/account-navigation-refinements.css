@@ -161,3 +161,10 @@
 @media(max-width:360px){.client-hub.approved-account .personal-redesign .purchased-stage-label{font-size:12px!important}.client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{column-gap:3px!important}}
 @media(prefers-reduced-motion:reduce){.account-sliding-marker{transition:none}.account-mobile-first-screen .account-scroll-cue svg,.account-content-transition{animation:none!important}}
 @media(hover:none){.personal-launchpad nav button:hover{background:transparent}.client-hub.approved-account .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger:hover{background:transparent!important}}
+/* Restore only the mobile catalog action row; the home hero has a separate owner. */
+@media(max-width:700px){
+ .azure-catalog.catalog-approved-home .catalog-results-actions[role=group]{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:min(100%,510px)!important;max-width:510px!important;margin-inline:auto;gap:8px!important}
+ .azure-catalog.catalog-approved-home .catalog-results-actions[role=group] .catalog-action-button[data-slot=button]{display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%!important;min-width:0;height:auto;min-height:64px;padding:8px 4px;gap:6px;font-family:Heebo,Arial,sans-serif;font-size:13px;line-height:1.35;white-space:normal;overflow-wrap:normal;border-radius:14px}
+ .azure-catalog.catalog-approved-home .catalog-results-actions[role=group] .catalog-action-button>svg{width:20px;height:20px;flex-shrink:0}
+ .azure-catalog.catalog-approved-home .catalog-results-actions[role=group] .catalog-add-site{grid-column:1/-1;width:100%;margin-inline-start:0}
+}

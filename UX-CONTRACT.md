@@ -487,3 +487,11 @@ These are presentation changes. Desktop customer/order layout stays with its own
 Restore: restore/before-customer-cards-site-form-20261027 at 7c24b47.
 Actual validation: order/payment UI, seller form/workspace handlers, customer actions,
 typecheck and scoped lint/build. Authenticated device pixels not verified.
+
+## Mobile catalog action sizing correction — 2026-10-27
+Only the mobile catalog actions at widths up to700px return to three equal grid
+columns (filter/export/bulk). Controls use64px minimum height,13px labels and20px
+icons, growing naturally for wrapped/enlarged text. The existing add-site action
+spans the next row. No hero dimensions, illustration, heading, search, category,
+scroll cue, desktop styling or action handler changed. New site-form mockup is
+proposal only and is not included in this correction.
