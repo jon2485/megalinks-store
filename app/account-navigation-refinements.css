@@ -79,3 +79,24 @@
 }
 @media(min-width:761px){.client-hub.approved-account .personal-redesign .purchased-stage-desktop-label{display:inline!important}.client-hub.approved-account .personal-redesign .purchased-stage-mobile-label{display:none!important}}
 @media(max-width:360px){.client-hub.approved-account .personal-redesign .purchased-stage-label{font-size:12px!important}.client-hub.approved-account .personal-redesign .purchased-stage-copy{gap:3px!important}}
+/* Approved six-destination launchpad, with underline-only current state. */
+.client-hub.approved-account .client-hub-tabs[aria-label]{grid-template-columns:repeat(6,minmax(0,1fr))}
+.mobile-personal-menu-content.personal-launchpad{width:min(420px,calc(100vw - 28px));padding:14px;border-radius:16px;background:#fbfdff;backdrop-filter:blur(16px)}
+.personal-launchpad nav{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;padding:8px 0}
+.personal-launchpad nav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:94px;padding:12px 3px;border:0;border-radius:6px;font:500 14px/1.5 Heebo,Arial,sans-serif;text-align:center;color:#52677e;background:transparent}
+.personal-launchpad nav button span{display:flex;align-items:center;justify-content:center;min-height:42px;overflow-wrap:anywhere}
+.personal-launchpad nav button[aria-current=page]{background:transparent;border:0;color:#007c88}
+.personal-launchpad nav button[aria-current=page]::after{content:'';position:absolute;bottom:4px;inset-inline:22%;height:2px;background:#007c88;border-radius:2px}
+.personal-launchpad nav button:hover{background:#f0f7fa;color:#007c88}
+.personal-launchpad-support{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:46px;border:0;border-top:1px solid #dce7ee;background:transparent;color:#52677e;font-size:14px;cursor:pointer}
+.personal-launchpad-support:hover{background:#f0f7fa}
+.personal-launchpad-support[aria-current=page]{text-decoration:underline;text-underline-offset:8px;color:#007c88}
+.personal-sites-cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:48px;margin-top:12px;padding:10px 16px;border:1px solid #007c88;border-radius:9px;background:#007c88;color:white;font:600 15px/1.5 Heebo,Arial,sans-serif;cursor:pointer}
+.personal-sites-cta>svg:last-child{margin-inline-start:auto}.personal-sites-cta>span{flex:1}
+.personal-sites-cta:hover{background:#00616d;color:white}.personal-sites-cta:focus-visible{outline:2px solid #0872d5;outline-offset:3px}
+.client-hub.approved-account .personal-desktop-sites{width:auto;margin-inline-start:auto;margin-bottom:18px}
+.personal-glass-menu .workspace-top-navigation-link.personal-sites-link{background:#007c88!important;color:white!important;margin-top:9px}
+.personal-glass-menu .workspace-top-navigation-link[aria-current=page]:not(.personal-sites-link){background:transparent!important;border-color:transparent!important;box-shadow:inset 0 -2px #007c88}
+.standalone-customer-sites{width:min(1200px,100%);margin:0 auto;padding:24px 16px 48px;direction:rtl;font-family:Heebo,Arial,sans-serif;color:#0b274d}
+.standalone-customer-sites>header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}.standalone-customer-sites>header h1{font-size:26px;font-weight:700}
+@media(max-width:767px){.client-hub.approved-account .personal-desktop-sites{display:none}}

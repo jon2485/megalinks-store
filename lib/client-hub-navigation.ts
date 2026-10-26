@@ -4,7 +4,6 @@ export const clientHubTabs=[
  {id:'orders',path:'purchased/orders',label:'ההזמנות שלי'},
  {id:'payments',path:'purchased/payments',label:'יתרה וזיכויים'},
  {id:'customers',path:'purchased/customers',label:'הלקוחות שלי'},
- {id:'selling',path:'purchased/selling',label:'האתרים שלי'},
  {id:'profile',path:'purchased/profile',label:'פרטי חשבון'},
 ] as const;
 const aliases:Record<string,string>={orders:'purchased/orders',articles:'purchased/articles',links:'purchased/articles',dashboard:'purchased',strategies:'purchased',wallet:'purchased/payments',monthly:'purchased/orders','purchased/monthly':'purchased/orders',customers:'purchased/customers',profile:'purchased/profile',files:'purchased/files',support:'purchased/support',api:'purchased/api',notifications:'purchased/notifications'};

@@ -433,3 +433,15 @@ This is frontend-only; no schema, order, publication or payment mutations change
 Validation: typecheck, production build, scoped lint (no errors), assignment API
 39 requests, assignment dialog/menu handlers, account navigation, and conditional
 visibility tests passed. Authenticated browser pixels/touch/focus were not verified.
+
+## Approved personal launcher — 2026-10-26
+Six core destinations use a full 3-column / 2-row mobile launcher: updates,
+articles, orders, balance, customers, profile. Support occupies a full footer row.
+Current destination uses an underline, with no selected background tile. Hidden
+from this menu: notifications, files, API; their existing account links/routes
+remain available. A separate solid teal My Sites action opens purchased/selling,
+which now renders SellerWorkspace independently of ClientHub with a back action.
+Existing catalog/sign-in links remain valid. Seller workflows and approval rules
+are unchanged. Legacy supplier portal retained for supplier accounts.
+Restore: restore/before-personal-grid-20261026 at a78df11710fffd95f8dfb6a774b53163ea8b1fbd.
+Source/handler and build verification do not certify authenticated browser pixels.
