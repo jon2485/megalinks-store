@@ -1,5 +1,5 @@
 export const clientHubTabs=[
- {id:'lobby',path:'purchased',label:'לובי'},
+ {id:'lobby',path:'purchased',label:'עדכונים אישיים'},
  {id:'articles',path:'purchased/articles',label:'הכתבות שלי'},
  {id:'orders',path:'purchased/orders',label:'ההזמנות שלי'},
  {id:'payments',path:'purchased/payments',label:'יתרה וזיכויים'},
@@ -11,3 +11,5 @@ const aliases:Record<string,string>={orders:'purchased/orders',articles:'purchas
 export function clientHubRoute(view:string){return aliases[view]||view;}
 export function isClientHub(view:string){return view==='purchased'||view.startsWith('purchased/');}
 export function clientHubTab(view:string){const part=view.split('/')[1]||'lobby';return part==='monthly'?'orders':['support','api','files','notifications'].includes(part)?'profile':part;}
+
+export function personalDestinationActive(path:string,view:string){return path===view||path!=='purchased'&&(view.startsWith(path+'/')||path==='purchased/articles'&&view.startsWith('article/'));}

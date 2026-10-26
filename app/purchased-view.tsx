@@ -1,5 +1,7 @@
 'use client';
 
+import ArticleCustomerAssignment from './article-customer-assignment';
+import './article-customer-assignment.css';
 import {writingStatus,writingCustomerEditor,writingWaitingLabel} from '@/lib/writing-workflow';
 import React, { useMemo, useState } from 'react';
 import { CalendarDays, ExternalLink, FileText, Globe, Plus, Search, X, Sparkles, Clock, Pencil, Eye, Send, CheckCheck } from 'lucide-react';
@@ -45,6 +47,7 @@ export function PurchaseRow({ article, site, ctx, compact=false }: { article: Ro
                 {stage==='published'?liveLink?<a href={liveLink} target="_blank" rel="noreferrer" className={publishedStyle}><ExternalLink size={16}/>קישור לכתבה</a>:<Button disabled className={publishedStyle}>קישור לכתבה</Button>:stage==='demo-completed'?<span className="rounded-full bg-slate-100 px-4 py-2 text-center text-sm font-semibold text-slate-600">הדגמה הושלמה</span>:<Button className={primaryStyle} onClick={()=>ctx.go('article/'+article.id)}>{editable?<FileText size={16}/>:<Eye size={16}/ >}{editable?(article.editorial?(writingCustomerEditor(article)?'עריכת המאמר המוכן':article.writing_requested_at?'צפייה בהנחיות ובסטטוס':'מילוי הוראות לכותב התוכן'):compact?'המשך עריכה':'הוספת והמשך עריכת מאמר'):'צפייה בסטטוס'}</Button>}
                 {editable&&!article.editorial&&<div className="purchase-secondary-actions"><Button variant="outline" className={secondaryStyle} onClick={()=>ctx.go('article/'+article.id+'/ai')}><Sparkles size={16}/>יצירת תוכן AI</Button></div>}
                 </div>
+                <ArticleCustomerAssignment article={article} ctx={ctx}/>
             </div>
         </CardContent>
     </Card>;

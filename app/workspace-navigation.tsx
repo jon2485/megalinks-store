@@ -1,11 +1,13 @@
 'use client';
 
 import React,{useEffect,useState} from 'react';
-import {Globe,FileText,Wallet,LayoutDashboard,Settings,ShoppingCart,LifeBuoy,Code2,Building2,ShieldCheck,Menu,X,ChevronLeft,BookOpen} from 'lucide-react';
+import {Globe,FileText,Wallet,LayoutDashboard,Settings,ShoppingCart,LifeBuoy,Code2,Building2,ShieldCheck,Menu,X,ChevronLeft,BookOpen,Home,Users,FolderOpen,Bell} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Sheet,SheetTrigger,SheetContent,SheetTitle,SheetDescription,SheetClose} from '@/components/ui/sheet';
 import {NavigationMenu,NavigationMenuList,NavigationMenuItem,NavigationMenuTrigger,NavigationMenuContent,NavigationMenuLink} from '@/components/ui/navigation-menu';
 import BrandLogo from './brand-logo';
+import {clientHubTabs,personalDestinationActive} from '@/lib/client-hub-navigation';
+import './account-navigation-refinements.css';
 import './workspace-header-compact.css';
 import './workspace-mobile-glass.css';
 import {WorkspaceAccountControls} from './workspace-account-controls';
@@ -36,14 +38,18 @@ export function activeNavigation(page:string,view:string){
  if(page==='admin-articles')return view.startsWith('admin-article/');
  return false;
 }
+export function desktopNavigationGroups(ctx:Ctx):Group[]{
+ const icons={lobby:Home,articles:FileText,orders:ShoppingCart,payments:Wallet,customers:Users,selling:Globe,profile:Settings};
+ return navigationGroups(ctx).map(group=>!ctx.adminMode&&group.id==='work'?{...group,items:[...clientHubTabs.map(tab=>[tab.path,tab.label,icons[tab.id]] as Entry),['purchased/notifications','התראות',Bell],['purchased/files','קבצים',FolderOpen],['purchased/support','תמיכה',LifeBuoy],['purchased/api','חיבור API',Code2],...group.items.filter(([path])=>path!=='purchased')]}:group);
+}
 export function WorkspaceTopNavigation({ctx,view,counts}:{ctx:Ctx;view:string;counts:Row}){
- const [open,setOpen]=useState('');const groups=navigationGroups(ctx);
+ const [open,setOpen]=useState('');const groups=desktopNavigationGroups(ctx);
  useEffect(()=>setOpen(''),[view,ctx.adminMode]);
  const select=(page:string)=>{setOpen('');ctx.go(page);};
  return <NavigationMenu dir="rtl" viewport={false} value={open} onValueChange={setOpen} delayDuration={120} skipDelayDuration={200} aria-label={ctx.adminMode?'תפריט ניהול ראשי':'תפריט האתר'} className="workspace-top-navigation"><NavigationMenuList className="workspace-top-navigation-list">{groups.map(({id,label,icon:Icon,items})=>{
   const active=items.some(([page])=>activeNavigation(page,view));
   if(items.length===1){const [page,itemLabel,ItemIcon]=items[0];return <NavigationMenuItem key={id}><button type="button" className={'workspace-top-navigation-trigger'+(active?' is-current':'')} aria-current={active?'page':undefined} onClick={()=>select(page)}><span className="workspace-top-navigation-icon-badge"><ItemIcon size={21}/></span><span>{itemLabel}</span></button></NavigationMenuItem>;}
-  return <NavigationMenuItem value={id} key={id} className="workspace-top-navigation-group"><NavigationMenuTrigger className={'workspace-top-navigation-trigger'+(active?' is-current':'')}><span className="workspace-top-navigation-icon-badge"><Icon size={21} className="workspace-top-navigation-icon" aria-hidden="true"/></span><span>{label}</span></NavigationMenuTrigger><NavigationMenuContent className={'workspace-top-navigation-panel'+(items.length>8?' workspace-top-navigation-panel-wide':'')}><p className="workspace-top-navigation-caption">{label}</p><ul className="workspace-top-navigation-links">{items.map(([page,itemLabel,ItemIcon])=>{const selected=activeNavigation(page,view);return <li key={page}><NavigationMenuLink asChild active={selected}><button type="button" className="workspace-top-navigation-link" aria-current={selected?'page':undefined} onClick={()=>select(page)}><span className="workspace-top-navigation-link-icon"><ItemIcon size={19} aria-hidden="true"/></span><span>{itemLabel}</span>{page==='purchased'&&counts.orders>0&&<span className="workspace-top-navigation-count">{counts.orders}</span>}</button></NavigationMenuLink></li>;})}</ul></NavigationMenuContent></NavigationMenuItem>;
+  return <NavigationMenuItem value={id} key={id} className="workspace-top-navigation-group"><NavigationMenuTrigger className={'workspace-top-navigation-trigger'+(active?' is-current':'')}><span className="workspace-top-navigation-icon-badge"><Icon size={21} className="workspace-top-navigation-icon" aria-hidden="true"/></span><span>{label}</span></NavigationMenuTrigger><NavigationMenuContent className={'workspace-top-navigation-panel'+(id==='work'&&!ctx.adminMode?' personal-glass-menu':items.length>8?' workspace-top-navigation-panel-wide':'')}><p className="workspace-top-navigation-caption">{label}</p><ul className="workspace-top-navigation-links">{items.map(([page,itemLabel,ItemIcon])=>{const selected=page.startsWith('purchased')?personalDestinationActive(page,view):activeNavigation(page,view);return <li key={page}><NavigationMenuLink asChild active={selected}><button type="button" className="workspace-top-navigation-link" aria-current={selected?'page':undefined} onClick={()=>select(page)}><span className="workspace-top-navigation-link-icon"><ItemIcon size={19} aria-hidden="true"/></span><span>{itemLabel}</span>{page==='purchased'&&counts.orders>0&&<span className="workspace-top-navigation-count">{counts.orders}</span>}</button></NavigationMenuLink></li>;})}</ul></NavigationMenuContent></NavigationMenuItem>;
  })}</NavigationMenuList></NavigationMenu>;
 }
 export function WorkspaceMobileNavigation({ctx,view,counts}:{ctx:Ctx;view:string;counts:Row}){

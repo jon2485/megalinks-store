@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {compile,reset,render,nodes,text} from './admin-ui-harness.mjs';
+const {default:Articles,ReportPublication}=await compile('app/seller-articles.tsx','seller-refinements-ui');
+const ctx={revision:0,refresh(){},run:f=>f()};
+let h=reset({'selling/articles?filter=pending&page=1':{data:{filter:'pending',requested_page:1,page:1,pages:1,articles:[]},loading:false}});
+let tree=render(Articles,{ctx});assert(text(tree).includes('אין כתבות חדשות שממתינות לפרסום'));assert(!text(tree).includes('פורטל'));assert(!text(tree).includes('מורשה'));
+h=reset({'selling/articles?filter=pending&page=1':{data:{filter:'pending',requested_page:1,page:1,pages:1,articles:[{id:'job',title:'כתבה',site_name:'אתר',sent_at:'2026-10-26T10:00:00Z',status:'sent'}]},loading:false}});
+tree=render(Articles,{ctx});nodes(tree).find(n=>n.props?.onClick&&text(n)==='דיווח על פרסום').props.onClick();assert(nodes(render(Articles,{ctx})).some(n=>n.type?.name==='ReportPublication'));
+h=reset();tree=render(ReportPublication,{ctx,row:{id:'job'}});nodes(tree).find(n=>n.props?.type==='url').props.onChange({target:{value:'https://site.example/article'}});await nodes(render(ReportPublication,{ctx,row:{id:'job'}})).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});assert.equal(h.calls.at(-1).path,'selling/articles/job');assert.equal(h.calls.at(-1).body.url,'https://site.example/article');
+const {default:Site}=await compile('app/seller-site-form.tsx','seller-form-ui');h=reset();tree=render(Site,{ctx,close(){}});assert.equal(nodes(tree).filter(n=>n.type==='section').length,3);assert(text(tree).includes('האתר יפורסם בקטלוג לאחר בדיקה ואישור מנהל.'));assert(!text(tree).includes('שינויים עתידיים'));assert(nodes(tree).some(n=>n.props?.htmlFor==='site-logo'));assert(nodes(tree).some(n=>n.props?.name==='url'&&n.props.dir==='ltr'));
+const css=readFileSync('app/account-navigation-refinements.css','utf8');assert(css.includes('repeat(7,minmax(0,1fr))'));assert(css.includes('Arial,Heebo'));assert(readFileSync('app/catalog-view.tsx','utf8').includes('הוספת אתר לקטלוג'));
+console.log('Seller refinements UI PASS: exact empty state, inline reporting, no portal/content controls, three form sections, RTL URLs/photo label, approval-only footer, equal nav and CTA. Source/handler evidence only.');

@@ -1,5 +1,38 @@
 # Catalog interaction contract
 
+## Article customer assignment — approved 2026-10-26
+
+The supplied current My Articles screenshot is the visual authority. Keep the
+existing four columns, status tabs, month groups, rows and article actions.
+`ArticleCustomerAssignment` adds only the current customer and an outlined action
+inside the article details. Its scoped stylesheet does not redefine the list grid.
+
+The canonical Radix Dialog opens in place. Existing-client selection and the new
+client form are tabs in that same dialog; neither navigates away. Dialog, tabs,
+radio buttons, Input, Textarea, Button and Sonner retain their shared owners.
+`CustomerFields` is shared with My Customers. Search is local over an owned
+id/name/company projection, clears immediately, renders 20 matches at a time
+with explicit load more, and Enter in search does not submit the assignment.
+New-client fields are app-validated, retain their draft on failure, and identify
+the invalid field. Busy locks prevent duplicate submissions or closing mid-save;
+discarding unsaved choices/details uses the maintained AlertDialog.
+
+`lib/article-customer.ts` owns assignment metadata in an internal records kind,
+with an independent version and an idempotent request key. New customer creation
+and the link write share one guarded D1 batch. Both the article and customer must
+belong to the acting account. This metadata never edits article content, content
+versions, publication status, order totals or payments. Separate metadata keeps
+later editor autosaves and publication callbacks from reverting the association.
+Effective-customer SQL joins are shared by article list/detail, order detail and
+My Customers. Checkout customer_id remains the fallback until an explicit link
+exists; clearing or deleting a linked client does not restore an old association.
+
+Validated in isolated fixtures: 39 assignment API requests, existing cart-to-client
+propagation, client/account action tests, assignment form handlers, production
+build, typecheck, scoped ESLint, 41 supplier requests and 963 privacy checks.
+Current browser render, focus trapping/restoration and exact screenshot fidelity
+are still unverified; the source-only finish review cannot certify those.
+
 ## Administrative guide workflows — approved 2026-10-25
 
 This is the current scoped contract for work-center notifications, administrative
@@ -342,3 +375,44 @@ its atomic-publication-month fix resolved. Layout detector has no findings; the
 new native month/select variants are explicit OS-owned exceptions in this
 contract. Pre-existing global static-audit findings remain outside this change.
 No production fixtures, credentials or real email sends are part of validation.
+
+## Customer seller refinements — 2026-10-26
+
+The approved three-frame site form lives in `seller-site-form.tsx`, uses shared
+Input/Textarea/Button and the existing modal owner, preserves RTL labels and LTR
+URLs/email, aligns image selection right, validates before uploading, and keeps
+only the manager-check/publication note at its footer. Approval policy is unchanged.
+
+`seller-articles.tsx` reads only paginated metadata from GET selling/articles.
+Existing customers without sites receive an empty list, not a supplier-role error.
+Only deliveries stamped for the acting owner and an owned approved seller site
+are listed. No article body, image/document IDs, costs or attachments are returned.
+The inline report aliases the existing owned publication-report route after an
+additional owner/site check, preserving domain validation, concurrency guards,
+publication stamp, token invalidation and existing email dispatch. Full articles
+remain in the existing emailed Word attachment; no content or download controls
+are mounted in this customer tracking view. The legacy supplier portal is unchanged.
+
+Personal category widths are equal, with scoped Arial Hebrew navigation type and
+hover/focus feedback. The filled teal homepage add-site CTA opens My Sites through
+the existing authenticated route. The delicate-glass desktop dropdown and four article-stage controls are now approved.
+The assignment action sits beneath the existing article actions with pale teal fill.
+All 11 personal-area routes remain reachable in the existing Radix NavigationMenu,
+with exact selection for the lobby versus nested routes. The mobile dropdown is also approved: `mobile-personal-menu.tsx` uses the
+canonical Radix Popover beneath a named account trigger, with the same 11 routes,
+44px touch rows, exact current-page highlight, close/select behavior and
+viewport-bounded scrolling. It replaces the personal category strip only below
+768px; the global website drawer and its destinations remain available.
+
+Validation: production build, typecheck, metadata/report integration, existing
+seller workflow and privacy checks, scoped ESLint and handler tests. Current
+authenticated desktop/mobile renders remain unverified. Fresh source review resolved legacy supplier navigation, nested selection,
+requested-page/clamped-page response matching and manager-published history.
+No current browser pixel approval is claimed.
+
+Rollback point for this release: public branch `restore/before-account-glass-20261026`,
+commit `45b7047ad8a3f92275a778b7ecda3b356b8dc445`, the previously successful
+Railway staging deployment `8dca96e4-49ff-4cd2-8cfc-1bbd8411d169`. No schema
+changes or destructive data operations accompany these UI refinements.
+The source review found and resolved legacy supplier navigation, nested route
+highlights, requested-page/clamped-page matching and manager-published history.

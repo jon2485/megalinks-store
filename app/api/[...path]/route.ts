@@ -1,3 +1,4 @@
+import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
 import {publicationPeriod} from '@/lib/publication-period';
 import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
 import {releaseScheduledApprovals,futureArticleDate} from '@/lib/scheduled-approval';
@@ -60,7 +61,7 @@ const json = async (r: Request): Promise<Row> => { assert(Number(r.headers.get('
 catch {
     throw new ApiError(400, 'בקשה לא תקינה');
 } };
-const customerArticle=(a:Row,u:Row)=>{const row=u.role==='admin'?parse(a)!:customerArticleData(a);if(u.role!=='admin'&&writingSubmitted(row)&&['writing','revisions'].includes(row.status)&&!writingCustomerEditor(row)){row.content='';if(row.data)delete row.data.writing_brief_snapshot;}return row;};
+const customerArticle=(a:Row,u:Row)=>{if(a.assigned_customer_id!==undefined)a={...a,data:JSON.stringify({...JSON.parse(a.data),customer_id:a.assigned_customer_id})};const row=u.role==='admin'?parse(a)!:customerArticleData(a);if(u.role!=='admin'&&writingSubmitted(row)&&['writing','revisions'].includes(row.status)&&!writingCustomerEditor(row)){row.content='';if(row.data)delete row.data.writing_brief_snapshot;}return row;};
 const activityFor=(rows:Row[],u:Row)=>u.role==='admin'?rows:rows.map(row=>customerActivity(row,u));
 const maxText = (s: any, max = 10000) => String(s || '').slice(0, max);
 const adminKinds = ['supplier', 'bundle', 'instruction', 'package', 'announcement', 'newsletter', 'template'];
@@ -233,6 +234,10 @@ async function handle(r: Request,access:ResponseAccess) {
         u = await actor();
     access.privileged=u.role==='admin';
     if(u.role==='admin'&&method==='GET')await releaseScheduledApprovals(new URL(r.url).origin);
+    if(p[0]==='selling'&&p[1]==='articles'&&p[2]&&method==='POST'){
+        const delivery=await one("SELECT j.id FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') JOIN seller_sites s ON s.website_id=a.website_id WHERE j.id=? AND j.kind='supplier_publication' AND json_extract(j.data,'$.owner_user_id')=? AND s.user_id=? AND COALESCE(json_extract(j.data,'$.demo'),0)=0",decodeURIComponent(p[2]),u.id,u.id);
+        assert(delivery,'הפרסום לא נמצא',404);p.splice(0,p.length,'supplier-inbox',delivery.id);
+    }
     const sellerResponse=await customerSellerRoutes(r,p,u);if(sellerResponse)return sellerResponse;
     const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
     const pricingResponse=await pricingRoutes(r,p,u,json);if(pricingResponse)return pricingResponse;
@@ -355,7 +360,7 @@ if (p[0] === 'cart') {
             }
         }
         if (method === 'GET')
-            return response({ ...(u.role==='admin'?{payment_confirmation:orderPaymentEvidence(parse(order)!,await paymentEvidenceRows(order.user_id))}:{}),order: parse(order), articles: (await all("SELECT a.*,w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE a.order_id=?", order.id)).map(a=>customerArticle(a,u)), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', order.id),u) });
+            return response({ ...(u.role==='admin'?{payment_confirmation:orderPaymentEvidence(parse(order)!,await paymentEvidenceRows(order.user_id))}:{}),order: parse(order), articles: (await all(`SELECT a.*,${articleCustomerColumns},w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id ${articleCustomerJoins} WHERE a.order_id=?`, order.id)).map(a=>customerArticle(a,u)), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', order.id),u) });
         if (p[2] === 'payment-link' && method === 'POST') {
             assert(!JSON.parse(order.data).demo && !order.paid && order.status === 'pending'&&isCardPayment(order), 'קישור אשראי זמין רק להזמנה שנבחר לה תשלום באשראי');
             const c = await connection('payments');
@@ -400,7 +405,7 @@ if (p[0] === 'cart') {
             return response({ ok: true });
         }
         if (p[2] === 'cancel' && method === 'POST') {
-            const articles = await all("SELECT a.*,w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE a.order_id=?", order.id);
+            const articles = await all(`SELECT a.*,${articleCustomerColumns},w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id ${articleCustomerJoins} WHERE a.order_id=?`, order.id);
             assert(!['cancelled', 'completed'].includes(order.status), 'ההזמנה כבר נסגרה');
             assert(articles.every(a => !['sent', 'published'].includes(a.status)), 'לא ניתן לבטל כתבה שכבר נשלחה לפרסום');
             assert(!order.paid || order.payment === 'credits' || u.role === 'admin', 'תשלום חיצוני דורש טיפול מנהל');
@@ -424,11 +429,13 @@ if (p[0] === 'cart') {
         }
     }
     if (p[0] === 'articles') {
+        if(p[1]==='customer-options'&&method==='GET')return response(await articleCustomerList(u));
         if (method === 'GET' && !p[1]) {
             const scope = u.role === 'admin' && query.get('scope') === 'all';
-            return response({ articles: (await all(`SELECT a.*,o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo,u.name AS user_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id JOIN users u ON u.id=a.user_id ${scope ? '' : 'WHERE a.user_id=?'} ORDER BY a.updated DESC LIMIT 2000`, ...(scope ? [] : [u.id]))).map(a=>customerArticle(a,u)) });
+            return response({ articles: (await all(`SELECT a.*,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo,u.name AS user_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id JOIN users u ON u.id=a.user_id ${articleCustomerJoins} ${scope ? '' : 'WHERE a.user_id=?'} ORDER BY a.updated DESC LIMIT 2000`, ...(scope ? [] : [u.id]))).map(a=>customerArticle(a,u)) });
         }
-        const a = owns(u, await one('SELECT * FROM articles WHERE id=?', p[1]));
+        const a = owns(u, await one(`SELECT a.*,${articleCustomerColumns} FROM articles a ${articleCustomerJoins} WHERE a.id=?`, p[1]));
+        if(p[2]==='customer'&&method==='POST')return response(await assignArticleCustomer(a,u,await json(r)));
         if(method!=='GET'){const purchase=parse(await one('SELECT * FROM orders WHERE id=?',a.order_id));assert(purchase&&canWorkOrder(purchase),'יש להשלים את התשלום לפני טיפול ושליחת כתבות',409);}
         if(method!=='GET')assert(!JSON.parse(a.data).cancel_pending,'הכתבה ממתינה לביטול; לא ניתן להמשיך לטפל בה',409);
         if(method==='GET'&&p[2]==='writing-brief.pdf'){admin(u);const file=await writingBriefFile(a.id,new URL(r.url).origin);return new Response(file.bytes as BodyInit,{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="'+file.filename+'"','Cache-Control':'private, no-store'}});}
@@ -734,7 +741,7 @@ if (p[0] === 'cart') {
             admin(u);
         if(kind==='customer' && p[2] && p[3]==='articles' && method==='GET'){
             const customer=owns(u,await one('SELECT * FROM records WHERE id=? AND kind=?',p[2],'customer'));
-            const articles=await all("SELECT a.*,o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id WHERE a.user_id=? AND json_extract(a.data,'$.customer_id')=? ORDER BY a.updated DESC",customer.user_id,customer.id);
+            const articles=await all(`SELECT a.*,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id ${articleCustomerJoins} WHERE a.user_id=? AND assigned_customer.id=? ORDER BY a.updated DESC`,customer.user_id,customer.id);
             return response({articles:articles.map(a=>customerArticle(a,u))});
         }
         if (method === 'GET' && p[2] && kind==='ticket') {
