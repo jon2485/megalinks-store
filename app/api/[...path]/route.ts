@@ -1,3 +1,5 @@
+import {prepareOrderStatement} from '@/lib/order-statement';
+import {completeWalletCard} from '@/lib/wallet-card';
 import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
 import {publicationPeriod} from '@/lib/publication-period';
 import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
@@ -20,7 +22,8 @@ import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
 import {adminUpdates,handleAdminUpdate,reopenAdminUpdate} from '@/lib/admin-updates';
-import {adminOrders} from '@/lib/admin-order-data';
+import {israelDate} from '@/lib/admin-order-buckets';
+import {adminOrders,adminOrderCte} from '@/lib/admin-order-data';
 import {adminMonthReport} from '@/lib/admin-month-server';
 import {framedWorkbook,monthReportWorkbook} from '@/lib/admin-report-workbook';
 import {adminOrderBuckets} from '@/lib/admin-order-buckets';
@@ -183,14 +186,15 @@ async function handle(r: Request,access:ResponseAccess) {
         catch {
             throw new ApiError(400, 'JSON לא תקין');
         }
+        if(b.topup_id||String(b.order_id||'').startsWith('topup:'))return response(await completeWalletCard(b));
         assert(b.status === 'paid' && b.currency === 'ILS' && b.event_id, 'אירוע התשלום אינו תקין');
         const order = await one('SELECT * FROM orders WHERE id=?', b.order_id);
-        assert(order && (isCardPayment(order)||(isBankPayment(order)&&!!await one("SELECT id FROM jobs WHERE id=? AND kind='payment_link' AND status='succeeded'",'payment-link:'+order.id))) && order.status!=='cancelled' && (order.paid||order.status==='pending'), 'הזמנה אינה זמינה לתשלום', 409);
+        assert(order && (isCardPayment(order)||((['invoice','bank_transfer','monthly'].includes(order.payment))&&!!await one("SELECT id FROM jobs WHERE id=? AND kind='payment_link' AND status='succeeded'",'payment-link:'+order.id))) && order.status!=='cancelled' && (order.paid||order.status==='pending'||order.payment==='monthly'), 'הזמנה אינה זמינה לתשלום', 409);
         assert(Number(b.amount_cents) === cardAmount(order), 'סכום התשלום אינו תואם', 409);
         const event = 'payment:' + maxText(b.event_id, 100);
         if (await one('SELECT id FROM records WHERE id=?', event))
             return response({ ok: true, duplicate: true });
-        await completeOrderPayment(order,event,{amount_cents:b.amount_cents,reference:maxText(b.event_id,100)});
+        await completeOrderPayment(order,event,{amount_cents:b.amount_cents,payment_method:'card',reference:maxText(b.event_id,100)});
         await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
         return response({ ok: true });
     }
@@ -362,9 +366,10 @@ if (p[0] === 'cart') {
         if (method === 'GET')
             return response({ ...(u.role==='admin'?{payment_confirmation:orderPaymentEvidence(parse(order)!,await paymentEvidenceRows(order.user_id))}:{}),order: parse(order), articles: (await all(`SELECT a.*,${articleCustomerColumns},w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id ${articleCustomerJoins} WHERE a.order_id=?`, order.id)).map(a=>customerArticle(a,u)), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', order.id),u) });
         if (p[2] === 'payment-link' && method === 'POST') {
-            assert(!JSON.parse(order.data).demo && !order.paid && order.status === 'pending'&&isCardPayment(order), 'קישור אשראי זמין רק להזמנה שנבחר לה תשלום באשראי');
+            assert(!JSON.parse(order.data).demo && !order.paid && order.status!=='cancelled'&&(isCardPayment(order)||order.payment==='monthly'), 'קישור אשראי זמין רק להזמנה שנבחר לה תשלום באשראי');
             const c = await connection('payments');
             assert(c.enabled && c.url && c.secret, 'סליקה טרם הוגדרה. ניתן לפנות למנהל לאימות העברה', 503);
+            if(order.payment==='monthly'){const owner=await one('SELECT * FROM users WHERE id=?',order.user_id);assert(owner,'לקוח לא נמצא',404);const closing=await prepareOrderStatement(order.user_id,order.id,order.total,u.id,new URL(r.url).origin);if(closing.operations.length)await db().batch([financialGuard(owner),...closing.operations]);}
             const job = 'payment-link:' + order.id;
             const prior = await one('SELECT * FROM jobs WHERE id=?', job);
             if (prior?.status === 'succeeded')
@@ -1001,7 +1006,7 @@ if (p[0] === 'cart') {
             const totals = await one("SELECT COUNT(*) AS count,COALESCE(SUM(CASE WHEN paid=1 AND status<>'cancelled' THEN total ELSE 0 END),0) AS revenue,SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending FROM orders");
             const statuses = await all('SELECT status,COUNT(*) AS count FROM articles GROUP BY status');
             const bySite = await all("SELECT w.name,COUNT(*) AS count,SUM(CAST(json_extract(a.data,'$.paid_amount') AS INTEGER)) AS total FROM articles a JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE o.paid=1 GROUP BY w.id ORDER BY count DESC LIMIT 15");
-            const byMonth = await all("SELECT substr(created,1,7) AS month,COUNT(*) AS count,SUM(total) AS total FROM orders WHERE paid=1 AND status<>'cancelled' GROUP BY month ORDER BY month");
+            const confirmedRows=await all(`WITH ${adminOrderCte()} SELECT confirmed_date,total,data FROM classified WHERE paid=1 AND fully_cancelled=0 AND confirmed_date IS NOT NULL AND COALESCE(json_extract(data,'$.demo'),0)=0`),groups=new Map<string,Row>();for(const row of confirmedRows){const month=israelDate(row.confirmed_date).slice(0,7);if(!month)continue;const group=groups.get(month)||{month,count:0,total:0};group.count++;group.total+=Math.max(0,row.total-Number(JSON.parse(row.data).paid_refund_total||0));groups.set(month,group);}const byMonth=[...groups.values()].sort((a,b)=>a.month.localeCompare(b.month));
             return response({ totals, statuses, bySite, byMonth, customers: await one('SELECT COUNT(*) AS n FROM users'), websites: await one('SELECT COUNT(*) AS n FROM websites') });
         }
         if (p[1] === 'activity' && method === 'GET')

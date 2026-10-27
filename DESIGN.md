@@ -1021,3 +1021,21 @@ left; below 700px fields stack. No illustration or dark hero is introduced.
 The old broad dialog typography adapter excludes this named payout surface so
 its explicit label, hint and error roles remain readable. Other dialogs retain
 their adapter. Native month-picker ownership stays as documented above.
+
+## Unified orders workspace — approved 2026-10-27
+The six existing finance destinations share one in-content orders heading and
+category strip, owned by app/orders-unified.css and AdminSectionTabs. Desktop
+shows six open ice/white icon tabs with cyan selected edge; phones use the
+canonical portal Select with a full category label. The global menu has one
+Orders entry, while existing deep links remain valid. Existing controls and
+financial record components remain canonical. Navy #09234b, copy #485b78, line
+#d4e6ef and existing Heebo; 44px controls and RTL logical reading order.
+PaymentAssignment shows final accounting month separately from order, reported
+payment, report and final approval timestamps. Card credits require signed
+provider callbacks; browser return and manual reports are never payment proof.
+The final six-page verification includes the actual admin-design-v172 and
+editorial-surface ancestors, the main AdminOrderHistory list and its filters,
+and the existing guide stylesheet. Scoped finance overrides reduce repeated
+subheadings to 23px, use a three-choice desktop order filter, remove redundant
+back links and retain compact three-column mobile financial summaries. Monthly
+rows use Hebrew month names. These rules are confined to orders-unified.

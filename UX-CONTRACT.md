@@ -570,3 +570,17 @@ so leading zeros survive. Stored free text that cannot be parsed losslessly
 remains editable as free text; converting to separate fields is explicit.
 The canonical seller Action supplies duplicate-submit locking, error/retry and
 success feedback. Canonical Dialog owns focus, Escape and close controls.
+
+## Orders and final payment approval
+- Final approval in Israel time determines financial month. Open orders have no
+  final financial month. Purchase/billing month remains separate for debt tracking.
+- Card reports cannot enter manual review. Wallet credit is granted once, only
+  after a signed amount/currency-checked gateway callback. Provider availability
+  is configuration-driven; no success is inferred from redirect.
+- Bank wallet requests record execution date, report time, reference and optional
+  proof; approval, rejection and cancellation are distinct audited decisions.
+- Unpaid item cancellation reduces debt without wallet credit. Paid item refunds
+  default to wallet; external refunds require a description and are recorded only.
+- Sent/published articles require an explicit stop/removal confirmation before
+  refund. Pending cancellation blocks publication. Version and financial guards
+  prevent duplicate and concurrent changes. Per-component refund history persists.

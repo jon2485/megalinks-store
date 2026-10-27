@@ -1,3 +1,5 @@
+import {createWalletCard} from './wallet-card';
+import {connection} from './server';
 import {orderSummarySql,fullyCancelledOrderSql} from './order-summary';
 import {env} from 'cloudflare:workers';
 import {Row,money} from './shared';
@@ -20,11 +22,12 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   await saveSetting('bank_details',bank);await audit(u,'bank_details','פרטי בנק עודכנו');return output({ok:true});
  }
  if(p[0]==='wallet-topups'){
+  if(r.method==='GET'&&p[1]==='config'){const c=await connection('payments');return output({card_enabled:!!(c.enabled&&c.url&&c.secret)});}
   if(r.method==='GET'&&!p[1]){
    const scope=u.role==='admin'&&query.get('scope')==='all';const page=Math.max(1,Math.floor(Number(query.get('page'))||1));
    const filters=[topupWhere],args:any[]=[];
    if(!scope){filters.push('r.user_id=?');args.push(u.id);}
-   const state=query.get('status');if(state&&state!=='all'){assert(['pending','approved','rejected'].includes(state),'סטטוס לא תקין');filters.push(topupStatus+'=?');args.push(state);}
+   const state=query.get('status');if(state&&state!=='all'){assert(['pending','approved','rejected','cancelled','awaiting_gateway'].includes(state),'סטטוס לא תקין');filters.push(topupStatus+'=?');args.push(state);}
    const search=text(query.get('search'));if(search){filters.push("(u.name||' '||u.email||' '||COALESCE(json_extract(r.data,'$.reference'),'')) LIKE ? ESCAPE '\\'");args.push('%'+search.replace(/[\\%_]/g,'\\$&')+'%');}
    const where=filters.join(' AND '),total=await one('SELECT COUNT(*) AS n FROM records r JOIN users u ON u.id=r.user_id WHERE '+where,...args);
    const rows=await all('SELECT r.*,u.name AS user_name,u.email,u.credits AS balance,actor.name AS handled_by_name,f.type AS proof_type,j.status AS mail_status FROM records r JOIN users u ON u.id=r.user_id LEFT JOIN users actor ON actor.id=json_extract(r.data,\'$.handled_by\') LEFT JOIN files f ON f.id=json_extract(r.data,\'$.proof_file_id\') LEFT JOIN jobs j ON j.id=\'email:decision:\'||r.id WHERE '+where+' ORDER BY r.created DESC LIMIT 30 OFFSET ?',...args,(page-1)*30);
@@ -32,20 +35,22 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
    return output({requests:rows.map(row=>({...parse(row),decision:parse(row)?.decision||'pending'})),total:total?.n||0,page,summary});
   }
   if(r.method==='POST'&&!p[1]){
-   const b=await readBody(r),amount=Number(b.amount_cents),reference=text(b.reference),requestId=text(b.request_id,80);
+   const b=await readBody(r);if(b.payment_method==='card')return output(await createWalletCard(r,u,b),201);assert(!b.payment_method||b.payment_method==='bank_transfer','אמצעי תשלום אינו תקין');const amount=Number(b.amount_cents),reference=text(b.reference),requestId=text(b.request_id,80);
    assert(Number.isSafeInteger(amount)&&amount>0&&amount<=100000000,'סכום אינו תקין');assert(reference,'יש להזין אסמכתא');assert(/^[\w-]{8,80}$/.test(requestId),'מזהה הבקשה אינו תקין');
    if(b.proof_file_id){const f=owns(u,await one('SELECT * FROM files WHERE id=?',b.proof_file_id));assert(f.user_id===u.id&&['image/png','image/jpeg','image/webp','application/pdf'].includes(f.type)&&f.size<=15*1024*1024,'מסמך ההעברה אינו תקין');assert(await env.BUCKET?.head(f.key),'המסמך לא נמצא',404);}
    const id='topup:'+u.id+':'+requestId,existing=await one('SELECT * FROM records WHERE id=?',id);if(existing){const prior=parse(existing)!;assert(prior.amount_cents===amount&&prior.reference===reference&&String(prior.proof_file_id||'')===String(b.proof_file_id||''),'הבקשה כבר נשמרה עם פרטים אחרים. יש לפתוח בקשה חדשה',409);return output({id,duplicate:true});}
-   const data={name:'בקשת טעינת יתרה',payment_method:'bank_transfer',amount_cents:amount,reference,proof_file_id:b.proof_file_id||'',decision:'pending',status:'open'};
+   const date=String(b.payment_date||'');assert(/^\d{4}-\d{2}-\d{2}$/.test(date)&&!isNaN(Date.parse(date))&&new Date(date).toISOString().slice(0,10)===date&&date<=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem'}).format(new Date()),'יש להזין תאריך ביצוע העברה תקין');
+   const data={payment_date:date,reported_at:now(),name:'בקשת טעינת יתרה',payment_method:'bank_transfer',amount_cents:amount,reference,proof_file_id:b.proof_file_id||'',decision:'pending',status:'open'};
    await stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',id,'wallet_topup',u.id,JSON.stringify(data),now(),now()).run();await audit(u,id,'בקשת הטענת יתרה נשלחה',{amount,reference});
    const recipients=new Set([...(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email),String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(',')].map(x=>x.trim()).filter(Boolean));for(const email of recipients)await safeMail('email:new:'+id+':'+email,u.id,{to:email,subject:'בקשת הטענת יתרה חדשה',text:u.name+'\n'+money(amount)+'\nאסמכתא: '+reference,button:{label:'טיפול בבקשה',url:origin+'/admin-topups'}});
    return output({id},201);
   }
-  admin(u);assert(r.method==='POST'&&['approve','reject'].includes(p[2]),'פעולה לא נתמכת',405);
+  admin(u);assert(r.method==='POST'&&['approve','reject','cancel'].includes(p[2]),'פעולה לא נתמכת',405);
   const row=parse(await one('SELECT * FROM records WHERE id=?',p[1]));assert(row&&isTopUp(row),'בקשת הטענה לא נמצאה',404);
-  const b=await readBody(r),decision=p[2]==='approve'?'approved':'rejected',note=text(b.note,1500);
-  if(row.decision&&row.decision!=='pending'){assert(row.decision===decision,'הבקשה כבר טופלה בהחלטה אחרת',409);return output({ok:true,duplicate:true});}
-  if(decision==='rejected')assert(note,'יש לציין סיבת דחייה');else assert(b.confirmed===true,'יש לאשר שהכספים התקבלו בפועל');
+  assert(row.payment_method!=='card','הטענת אשראי מאושרת רק על ידי הסליקה',409);
+  const b=await readBody(r),decision=p[2]==='approve'?'approved':p[2]==='cancel'?'cancelled':'rejected',note=text(b.note,1500);
+  if(row.decision&&row.decision!=='pending'){assert(row.decision===decision,'הבקשה כבר טופלה בהחלטה אחרת',409);return output({ok:true,decision,duplicate:true});}
+  if(decision!=='approved')assert(note,'יש לציין סיבת דחייה או ביטול');else assert(b.confirmed===true,'יש לאשר שהכספים התקבלו בפועל');
   const amount=Number(row.amount_cents);assert(Number.isSafeInteger(amount)&&amount>0&&amount<=100000000,'סכום הבקשה אינו תקין');assert(text(row.reference),'אסמכתא חסרה');
   const stamp=now(),ledgerId=uid(),eventId=uid(),mailId='email:decision:'+row.id,target=await one('SELECT * FROM users WHERE id=?',row.user_id);assert(target,'לקוח לא נמצא',404);
   const pending="id=? AND COALESCE(json_extract(data,'$.decision'),'pending')='pending'";
@@ -57,8 +62,8 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
    ops.push(stmt('UPDATE users SET credits=credits+? WHERE id=? AND EXISTS(SELECT id FROM ledger WHERE id=?)',amount,row.user_id,ledgerId));
   }
   ops.push(stmt(`UPDATE records SET data=json_set(data,'$.decision',?,'$.status','closed','$.handled_by',?,'$.handled_at',?,'$.decision_note',?,'$.ledger_id',?,'$.decision_event',?),updated=? WHERE ${pending}`,decision,u.id,stamp,note,decision==='approved'?ledgerId:'',eventId,stamp,row.id));
-  ops.push(stmt("INSERT INTO activity(id,user_id,resource,action,data,created) SELECT ?,?,?,?, ?,? WHERE EXISTS(SELECT id FROM records WHERE id=? AND json_extract(data,'$.decision_event')=?)",eventId,u.id,row.id,decision==='approved'?'הטענת יתרה אושרה':'הטענת יתרה נדחתה',JSON.stringify({amount,note,customer_id:row.user_id}),stamp,row.id,eventId));
-  const mail={to:target.email,subject:decision==='approved'?'בקשת הטענת היתרה אושרה':'בקשת הטענת היתרה נדחתה',text:decision==='approved'?money(amount)+' נוספו ליתרה שלכם.\nאסמכתא: '+row.reference:'הבקשה לא אושרה: '+note,button:{label:'לארנק שלי',url:origin+'/wallet'}};
+  ops.push(stmt("INSERT INTO activity(id,user_id,resource,action,data,created) SELECT ?,?,?,?, ?,? WHERE EXISTS(SELECT id FROM records WHERE id=? AND json_extract(data,'$.decision_event')=?)",eventId,u.id,row.id,decision==='approved'?'הטענת יתרה אושרה':decision==='cancelled'?'בקשת הטענה בוטלה':'הטענת יתרה נדחתה',JSON.stringify({amount,note,customer_id:row.user_id}),stamp,row.id,eventId));
+  const mail={to:target.email,subject:decision==='approved'?'בקשת הטענת היתרה אושרה':'בקשת הטענת היתרה נסגרה',text:decision==='approved'?money(amount)+' נוספו ליתרה שלכם.\nאסמכתא: '+row.reference:'הבקשה לא אושרה: '+note,button:{label:'לארנק שלי',url:origin+'/wallet'}};
   ops.push(stmt("INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) SELECT ?,?,'email','requested',?,?,? WHERE EXISTS(SELECT id FROM records WHERE id=? AND json_extract(data,'$.decision_event')=?)",mailId,row.user_id,JSON.stringify(mail),stamp,stamp,row.id,eventId));
   try{await db().batch(ops);}catch(error){const current=parse(await one('SELECT * FROM records WHERE id=?',row.id));if(current?.decision===decision)return output({ok:true,decision,duplicate:true});if(String(error).includes('ledger.reference'))assert(false,'אסמכתא זו כבר זוכתה. יש לבדוק את תנועות הארנק',409);throw error;}const result=parse(await one('SELECT * FROM records WHERE id=?',row.id));assert(result?.decision===decision,'הבקשה טופלה במקביל בהחלטה אחרת',409);
   const delivery=await safeMail(mailId,row.user_id,mail);return output({ok:true,decision,mail_status:delivery?.status});

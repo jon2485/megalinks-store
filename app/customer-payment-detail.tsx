@@ -1,4 +1,5 @@
 'use client';
+import PaymentAssignment from './payment-assignment';
 import React from 'react';
 import {Calculator,Check,Clock3,CreditCard,Download,Eye,FileText,Link2} from 'lucide-react';
 import {money,type Row} from '@/lib/shared';
@@ -35,7 +36,7 @@ export default function CustomerPaymentDetail({ctx,order:o,items}:{ctx:Ctx;order
     return <li key={a.id} className={cancelled?'is-cancelled':undefined}>
      <div className="order-payment-site"><SiteReference name={a.website_name||a.data?.website_name||site?.name} url={a.website_url||a.data?.website_url||site?.url}/>{cancelled&&<span className="order-payment-cancellation">{remainingArticleNet(a,o)>0?'בוטל חלקית':'בוטל'}</span>}</div>
      <div className="order-payment-purchase-date"><span>תאריך רכישה</span><time dateTime={a.purchased_at||o.created}>{dateLabel(a.purchased_at||o.created)}</time></div>
-     <div className="order-payment-item-amount"><span>לפני מע״מ</span><strong><bdi>{money(remainingArticleNet(a,o))}</bdi></strong></div>
+     <div className="order-payment-item-amount"><span>לפני מע״מ</span><strong><bdi>{money(remainingArticleNet(a,o))}</bdi></strong></div>{(a.refund_history||[]).map((h:Row,i:number)=><p className="order-payment-note" key={i}>{dateLabel(h.at)} · {h.destination==='wallet'?'זיכוי לקרדיט':h.destination==='external'?'זיכוי חיצוני: '+h.note:'הסרה מהחיוב ללא זיכוי'}</p>)}
     </li>;
    })}</ul>:<p className="order-payment-note">אין פריטים להצגה בהזמנה זו.</p>}
   </section>
@@ -53,9 +54,9 @@ export default function CustomerPaymentDetail({ctx,order:o,items}:{ctx:Ctx;order
    {!facts.paid&&!o.demo&&!facts.cancelled&&<CustomerPaymentReport ctx={ctx} order={o} compact/>}
   </section>
   <section className="order-payment-section order-payment-summary" aria-label="סיכום התשלום">
-   <h3><Calculator size={22} aria-hidden="true"/>סיכום התשלום:</h3>
+   <h3><Calculator size={22} aria-hidden="true"/>סיכום התשלום:</h3><PaymentAssignment order={o}/>
    <dl><div><dt>לפני מע״מ</dt><dd><bdi>{money(amounts.net)}</bdi></dd></div><div><dt>מע״מ ({o.vat_percent??18}%)</dt><dd><bdi>{money(amounts.vat)}</bdi></dd></div><div className="order-payment-total"><dt>סה״כ כולל מע״מ</dt><dd><bdi>{money(amounts.total)}</bdi></dd></div></dl>
-   {refunded>0&&<p className="order-payment-note">זיכוי ליתרה: <bdi>{money(refunded)}</bdi>. הסכומים המוצגים מעודכנים לאחר הזיכוי.</p>}
+   {refunded>0&&<p className="order-payment-note">זיכוי שתועד: <bdi>{money(refunded)}</bdi>. הסכומים המוצגים מעודכנים לאחר הזיכוי.</p>}
   </section>
   <section className="order-payment-section order-payment-document" aria-label="מסמכי ההזמנה">
    <div className="order-payment-document-name"><FileText size={30} aria-hidden="true"/><div><h3>{facts.documentTitle}</h3><p>{o.invoice_file_id?'המסמך שצורף להזמנה · PDF':'טרם צורף מסמך להזמנה'}{o.invoice_file_id&&o.invoice_document_number&&<> · <bdi>{o.invoice_document_number}</bdi></>}</p></div></div>

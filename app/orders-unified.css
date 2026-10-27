@@ -1,0 +1,106 @@
+/* Approved orders workspace: shared navy/ice register, six open categories. */
+.orders-unified{--orders-ink:#09234b;--orders-copy:#485b78;--orders-line:#d4e6ef;--orders-ice:#f5fbff;min-width:0;color:var(--orders-ink);font-family:Heebo,Arial,sans-serif}
+.orders-unified-heading{margin:0 0 28px;padding:4px 0 0}
+.orders-unified-heading h1{font-size:30px!important;line-height:1.35;font-weight:800;color:#09234b;margin:0 0 6px}
+.orders-unified-heading>p{color:#485b78;margin:0 0 26px;font-size:16px}
+.orders-category-tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px}
+.orders-category-tiles>a{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;min-height:100px;text-align:center;padding:15px 8px;border:1px solid #d4e6ef;border-radius:10px;background:linear-gradient(145deg,#fff,#f4faff);color:#09234b;font-weight:600;font-size:15px;transition:background .18s,border-color .18s,transform .18s}
+.orders-category-tiles>a:hover{background:#eaf6fc;border-color:#8dbbd5;transform:translateY(-2px)}
+.orders-category-tiles>a[aria-current=page]{background:linear-gradient(135deg,#e4fbfc,#d9efff);border-color:#6ac9df;box-shadow:inset 0 -3px #0ebcd0;color:#075b9b}
+.orders-category-tiles>a:focus-visible,.orders-unified button:focus-visible{outline:2px solid #0579d7;outline-offset:3px}
+.orders-category-phone{display:none}
+.orders-unified>.admin-mega-page{padding:0!important;background:transparent!important}
+.orders-unified .admin-mega-hero{background:white!important;border:1px solid #d4e6ef;border-radius:12px;color:#09234b!important;padding:22px!important}
+.orders-unified .admin-mega-hero p{color:#485b78!important}
+.orders-unified .admin-mega-hero>div>span{display:none}
+.orders-unified .admin-mega-hero h1,.orders-unified .studio-hero h1{font-size:22px!important}
+.orders-unified .admin-mega-primary{background:#0872d5!important;color:white!important;border-radius:9px!important;min-height:44px}
+.orders-unified .admin-mega-primary:hover{background:#065dab!important}
+.orders-unified .admin-mega-secondary{border-radius:9px!important;background:white!important}
+.orders-unified .admin-mega-stats{gap:12px}
+.orders-unified .admin-mega-card{border:1px solid #d4e6ef!important;box-shadow:none!important;border-radius:12px!important}
+.orders-unified .studio-hero{background:transparent!important;padding:0 0 40px!important;text-align:right}
+.orders-unified .studio-hero>div{text-align:right}
+.orders-unified .studio-hero p[dir=ltr]{display:none}
+.orders-unified .admin-payment-reports article{background:#fff;border:1px solid #d4e6ef;border-radius:12px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px}
+.orders-unified .admin-payment-reports article h2{font-size:18px;font-weight:700}
+.orders-unified .admin-payment-reports article p{color:#485b78;font-size:14px;margin-top:6px}
+.orders-unified .admin-payment-reports article>strong{font-size:22px;white-space:nowrap}
+.orders-unified .guide-month-link,.orders-unified .guide-back-link{display:none}
+.payment-assignment{margin:18px 0;padding:16px 18px;border:1px solid #d4e6ef;border-radius:10px;background:#f5fbff;color:#09234b;font-size:14px;text-align:right}
+.payment-assignment dl{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px!important;margin:0!important}
+.payment-assignment dl>div{display:block!important;padding:0!important;border:0!important;min-width:0}
+.payment-assignment dt{color:#485b78;font-size:13px;margin-bottom:5px}
+.payment-assignment dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.payment-assignment dl>div:first-child{grid-column:1/-1}
+.payment-assignment p{margin:12px 0 0;color:#485b78;font-size:12px}
+.refund-dialog textarea{resize:none;min-height:100px}
+.refund-dialog .account-warning{padding:16px;border-radius:10px;background:#fff6e8;color:#75420b}
+.refund-dialog .account-warning p{font-weight:600;margin-bottom:12px}
+.refund-dialog small{display:block;line-height:1.7}
+.orders-category-popup{direction:rtl;font-family:Heebo,Arial,sans-serif}
+.orders-category-popup [role=option]{min-height:46px;font-size:16px}
+@media(max-width:767px){
+.orders-unified-heading{margin-bottom:20px}
+.orders-unified-heading h1{font-size:27px!important}
+.orders-unified-heading>p{font-size:14px;margin-bottom:18px}
+.orders-category-tiles{display:none}
+.orders-category-phone{display:block;border:1px solid #d4e6ef;border-radius:12px;padding:10px;background:#fff}
+.orders-category-phone label{display:block;color:#485b78;font-size:12px;margin-bottom:6px}
+.orders-category-phone [role=combobox]{width:100%;height:50px;background:linear-gradient(135deg,#e8fcfd,#e5f3ff);border:1px solid #58bfd9;color:#075b9b;border-radius:9px;font-size:16px;font-weight:700}
+.orders-unified .admin-payment-reports article{display:grid;grid-template-columns:minmax(0,1fr) auto;padding:16px}
+.orders-unified .admin-payment-reports article button{grid-column:1/-1;width:100%;min-height:44px}
+.orders-unified .admin-mega-hero{padding:16px!important}
+.payment-assignment{padding:14px;font-size:13px}
+}
+@media(prefers-reduced-motion:reduce){.orders-category-tiles>a{transition:none}.orders-category-tiles>a:hover{transform:none}}
+.orders-unified .admin-mega-hero{text-align:right!important}
+@media(max-width:767px){
+.orders-unified .admin-mega-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+.orders-unified .admin-mega-stats>div{min-width:0}
+.orders-unified .admin-mega-stats>div>div{padding:12px 6px!important;display:block!important;text-align:center}
+.orders-unified .admin-mega-stats>div>div>span{display:none}
+.orders-unified .admin-mega-stats strong{font-size:18px!important}
+.orders-unified .admin-mega-stats span{font-size:12px!important;line-height:1.5!important}
+}
+/* Finance owns these overrides after the legacy administration adapters. */
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-guide .guide-heading{min-height:0;padding:0;margin:0 0 22px;background:none}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-guide h1,
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-mega-hero h1,
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .studio-hero h1{font-size:23px!important;line-height:1.45!important}
+.admin-design-v172 .orders-unified .admin-guide :is(.guide-back-link,.guide-month-link){display:none!important}
+.admin-design-v172 .orders-unified .guide-order-choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:8px;margin-bottom:20px}
+.admin-design-v172 .orders-unified .guide-order-choices button{min-width:0;min-height:52px;margin:0;padding:12px;font-size:15px;white-space:normal}
+.admin-design-v172 .orders-unified .admin-mega-hero{padding:18px 20px!important;text-align:right!important;align-items:flex-start}
+.admin-design-v172 .orders-unified .admin-mega-hero>div{width:100%;text-align:right!important;justify-content:flex-start;align-items:flex-start}
+.admin-design-v172 .orders-unified .admin-mega-hero>div>span{display:none!important}
+.admin-design-v172 .orders-unified .admin-mega-hero p{max-width:65ch;color:#485b78!important}
+.admin-design-v172 .orders-unified .admin-payment-reports article button{min-height:44px;background:#0872d5!important;color:#fff!important;border-radius:9px}
+.admin-design-v172 .orders-unified .admin-payment-reports article button:hover{background:#065dab!important}
+.admin-design-v172 .orders-unified>.monthly-accounts-view{background:transparent!important;padding:0!important}
+.admin-design-v172 .orders-unified .monthly-accounts-view .studio-hero{padding:0 0 42px!important;min-height:0;background:none!important}
+.admin-design-v172 .orders-unified .monthly-accounts-view .studio-hero>div{text-align:right!important}
+.admin-design-v172 .orders-unified .monthly-accounts-view>.relative{padding-inline:0!important}
+.admin-design-v172 .orders-unified .monthly-accounts-summary>div{box-shadow:none;border-color:#d4e6ef;border-radius:12px}
+.admin-design-v172 .orders-unified .guide-report-orders>.guide-empty{min-height:100px;padding:28px 20px}
+@media(max-width:767px){
+.admin-design-v172 .orders-unified .guide-order-choices{grid-template-columns:minmax(0,1fr);gap:7px}
+.admin-design-v172 .orders-unified .monthly-accounts-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.admin-design-v172 .orders-unified .monthly-accounts-summary>div{padding:12px 5px!important;text-align:center;display:block}
+.admin-design-v172 .orders-unified .monthly-accounts-summary>div>span{display:none}
+.admin-design-v172 .orders-unified .monthly-accounts-summary p{font-size:12px;line-height:1.55;min-height:36px}
+.admin-design-v172 .orders-unified .monthly-accounts-summary strong{font-size:16px;font-variant-numeric:tabular-nums}
+.admin-design-v172 .orders-unified .admin-mega-hero{padding:16px!important}
+.admin-design-v172 .orders-unified .monthly-accounts-view article .flex{gap:10px}
+.admin-design-v172 .orders-unified .monthly-accounts-view article .flex>button{flex:1 1 145px;white-space:normal;min-height:46px}
+}
+.order-item-cancel-action{margin-block-start:10px;min-height:44px;white-space:normal}
+.simple-order-refund-history{font-size:13px;line-height:1.7;color:#485b78;margin-block-start:8px;overflow-wrap:anywhere}
+@media(max-width:767px){
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-mega-finance .admin-mega-stats{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:0!important}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-mega-finance .admin-mega-stats>*{padding:12px 6px!important;min-width:0;min-height:0;border-bottom:0!important}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-mega-finance .admin-mega-stats [data-slot=card-content]{display:block!important;padding:0!important;width:100%}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-mega-finance .admin-mega-stats [data-slot=card-content]>div{display:flex!important;flex-direction:column!important;align-items:center!important;gap:6px!important;width:100%;min-width:0;text-align:center}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-mega-finance .admin-mega-stats [data-slot=card-content] strong{font-size:16px!important;order:0!important;white-space:normal!important;overflow-wrap:anywhere}
+.admin-design-v172 .admin-editorial-surface .admin-workspace-body.orders-unified .admin-mega-finance .admin-mega-stats [data-slot=card-content]>div>span{display:block!important;font-size:12px!important;line-height:1.6;white-space:normal;word-break:normal;overflow-wrap:normal;width:100%}
+}
