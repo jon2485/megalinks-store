@@ -37,6 +37,12 @@ colors:
   site-journey-header-copy: "#d4eaf4"
   site-journey-path-done: "#96dfe3"
   site-journey-path-idle: "#e2edf3"
+  seller-hub-ink: "#09234b"
+  seller-hub-copy: "#485b78"
+  seller-hub-line: "#d4e6ef"
+  seller-hub-selected: "#007f8c"
+  seller-hub-underline: "#008d9d"
+  seller-hub-surface: "#ffffff"
 typography:
   body:
     fontFamily: "Arial, Helvetica, sans-serif"
@@ -134,6 +140,13 @@ typography:
     fontSize: "13px"
     fontWeight: 400
     lineHeight: 1.65
+  seller-hub-heading:
+    fontSize: "clamp(27px, 3.5vw, 40px)"
+    fontWeight: 800
+    lineHeight: 1.3
+  seller-hub-lead:
+    fontSize: "17px"
+    lineHeight: 1.85
 rounded:
   DEFAULT: "0.7rem"
   catalog-card: "28px"
@@ -143,6 +156,8 @@ rounded:
   site-journey-dialog-phone: "18px"
   site-journey-primary: "13px"
   site-journey-field: "12px"
+  seller-hub-guide: "16px"
+  seller-hub-report: "12px"
 spacing:
   catalog-gap: "16px"
   catalog-max: "1760px"
@@ -160,6 +175,9 @@ spacing:
   site-journey-edit-column-gap: "24px"
   site-journey-review-column-gap: "38px"
   site-journey-action-gap: "12px"
+  seller-hub-stage: "1120px"
+  seller-hub-guide-padding: "28px"
+  seller-hub-step-gap: "14px"
 components:
   admin-editorial-button-primary:
     backgroundColor: "{colors.admin-editorial-blue}"
@@ -282,6 +300,19 @@ values. `.impeccable/design.json` carries scoped motion, responsive, provenance 
 component extensions. Composition and evidence live in
 `.impeccable/surfaces/site-application-journey.md`; behavior lives in UX-CONTRACT.md.
 No PRODUCT.md was found, so this extension records no new business or brand claims.
+
+### Seller hub — approved 2026-10-27
+
+The approved seller hub extends the existing bulk-order instruction language for
+My Sites, publication articles and payments. It retains the current Hebrew RTL
+identity and uses three pastel numbered steps, a connecting line, an emphasized
+teal-to-blue heading line and underline-selected tabs. This is a scoped extension;
+the catalog, administration and site application journey keep their owners.
+`app/seller-hub-approved.css` remains canonical (model B). The `seller-hub-*`
+frontmatter entries mirror its reusable local primitives; its gradients, shadow,
+motion and breakpoints live in `.impeccable/design.json`. Composition, approved
+copy and evidence boundaries live in `.impeccable/surfaces/seller-hub.md`.
+Source publication and deployment are pending; this records local implementation.
 
 ## Colors
 

@@ -782,6 +782,54 @@
           "restoreBranch": "restore/before-site-journey-20261027",
           "restoreCommit": "a4162c8f12605a11c714b060a73e321d6e6623b0"
         }
+      },
+      "seller-hub": {
+        "status": "Approved scoped extension, 2026-10-27; local implementation; source publication and deployment pending.",
+        "mode": "Operate",
+        "runtimeOwner": "app/seller-hub-approved.css",
+        "ownershipModel": "B: runtime CSS canonical; DESIGN.md mirrors scoped primitives.",
+        "surfaceBrief": ".impeccable/surfaces/seller-hub.md",
+        "scope": "Seller My Sites, publication articles and payments only. Existing catalog, administration and site journey systems remain owned separately.",
+        "gradients": {
+          "heading": "linear-gradient(100deg,#008b96,#0579d7)",
+          "primary": "linear-gradient(110deg,#00818b,#0570c8)",
+          "stepOne": "linear-gradient(120deg,#e9f8ff,#d0e9ff)",
+          "stepTwo": "linear-gradient(120deg,#ddf7f6,#c9eff4)",
+          "stepThree": "linear-gradient(120deg,#f0eaff,#e5edff)",
+          "connector": "linear-gradient(#0089ef,#008d9d,#7950ce)",
+          "paymentsDesktopConnector": "linear-gradient(270deg,#0089ef,#008d9d,#7950ce)"
+        },
+        "shadows": {
+          "guide": "0 8px 28px #09234b09",
+          "buttonHover": "0 5px 14px #09234b14"
+        },
+        "motion": {
+          "button": "background-color .2s,box-shadow .2s,transform .2s",
+          "tabUnderline": "transform .25s",
+          "pressed": "translateY(1px)",
+          "reducedMotion": "Remove button/underline transitions and pressed transform."
+        },
+        "responsive": {
+          "phone": "max-width:600px; 29px titles, 32px numbered discs, 26px icons, full-width report action.",
+          "paymentsDesktop": "min-width:900px; three payment columns with horizontal connector and 26px icons."
+        },
+        "accessibility": "Real buttons retain aria-pressed; ordered steps retain semantic order. Existing labels and LTR URL/email controls remain. Forced colors removes heading gradient and adds step borders.",
+        "verification": {
+          "fixture": "tests/seller-hub-browser.mjs",
+          "evidenceDirectory": ".sites-runtime/seller-hub-browser/",
+          "widths": [
+            390,
+            1440
+          ],
+          "limits": "Isolated real-component fixture with built CSS and mocked API responses; no authenticated live-account or deployment claim."
+        },
+        "approvedExceptions": "The explicitly approved heading gradient and connected pastel numbered guide are pinned surface exceptions to generic gradient-text and decorative-card avoidance.",
+        "approvedMocks": {
+          "sites": "/workspace/scratch/480206aee6f5/generated_images/exec-b628e3b5-7ed1-405a-ab1d-4276321d252f.png",
+          "articles": "/workspace/scratch/480206aee6f5/generated_images/exec-271f782b-f0dc-4fc2-9fa1-affedfad10bb.png",
+          "payments": "/workspace/scratch/480206aee6f5/generated_images/exec-6bed8cfe-367b-40d5-ad77-daf37ec83371.png",
+          "articlesOverride": "Final approved title כל הכתבות לפרסום, במקום אחד supersedes wording in the article mock."
+        }
       }
     }
   },
