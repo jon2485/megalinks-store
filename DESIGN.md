@@ -1039,3 +1039,15 @@ and the existing guide stylesheet. Scoped finance overrides reduce repeated
 subheadings to 23px, use a three-choice desktop order filter, remove redundant
 back links and retain compact three-column mobile financial summaries. Monthly
 rows use Hebrew month names. These rules are confined to orders-unified.
+
+## Orders list reference replacement — 2026-10-28
+The attached approved desktop/mobile orders mockup supersedes the earlier
+accordion/card-based main order list. app/orders-reference.css owns this named
+surface only: pale ice ground, compact six category tiles, a single white bordered
+panel, inline search/status/month filters and a six-column desktop table. Phones
+use the anchored category Select and compact amount/identity/status cards. Export
+is in the page heading and pagination remains inside the panel. Existing real
+records, counters, detail routes and audited refund/payment actions remain valid.
+The status groups move into the status dropdown. A new combined query includes
+all order groups; paid rows retain final-approval month filtering. No mock data,
+identity, status, amount or page count is persisted.

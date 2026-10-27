@@ -2,6 +2,8 @@ import type {Row} from './shared';
 import {orderCancellation} from './order-finance';
 export const adminOrderBuckets={monthly:'הזמנות חודשיות פתוחות',closed:'הזמנות סגורות',process:'הזמנות בתהליך',archive:'ביטולים והדגמות'} as const;
 export type AdminOrderBucket=keyof typeof adminOrderBuckets;
+export const adminOrderFilterLabels={all:'כל הסטטוסים',...adminOrderBuckets};
+export type AdminOrderFilterBucket=keyof typeof adminOrderFilterLabels;
 export const paymentConfirmed=(o:Row)=>!o.demo&&!!(o.paid||o.settled||o.payment_settled);
 /** Purchase closure, month PDF and customer reports never prove receipt of money. */
 export function adminOrderBucket(o:Row):AdminOrderBucket{

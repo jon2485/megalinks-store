@@ -26,7 +26,7 @@ import {israelDate} from '@/lib/admin-order-buckets';
 import {adminOrders,adminOrderCte} from '@/lib/admin-order-data';
 import {adminMonthReport} from '@/lib/admin-month-server';
 import {framedWorkbook,monthReportWorkbook} from '@/lib/admin-report-workbook';
-import {adminOrderBuckets} from '@/lib/admin-order-buckets';
+import {adminOrderFilterLabels} from '@/lib/admin-order-buckets';
 import {adminLobbySearch} from '@/lib/admin-lobby-search';
 import {sheetsAdmin,receiveSheets} from '@/lib/sheets-sync';
 import {paymentEvidenceRows,orderPaymentEvidence} from '@/lib/payment-evidence';
@@ -830,7 +830,7 @@ if (p[0] === 'cart') {
         if(p[1]==='orders'){
             assert(method==='GET','פעולה לא נתמכת',405);const exported=query.get('export')==='1',result=await adminOrders(query,exported);
             if(!exported)return response(result);
-            const rows=[['מספר הזמנה','שם הלקוח','דוא״ל','טלפון','תאריך הזמנה','תאריך תשלום','סוג הזמנה','אופן תשלום','לפני מע״מ','מע״מ','כולל מע״מ','מצב דיווח','תאריך דיווח','סכום שדווח','אסמכתא'],...result.orders.map(o=>[o.number,o.user_name||o.name,o.user_email,o.user_phone,o.created,o.paid_date||o.payment_date||o.paid_at||'',adminOrderBuckets[result.filters.bucket],o.payment_label,o.amounts.net/100,o.amounts.vat/100,o.amounts.total/100,({pending:'ממתין לאישור',approved:'אושר',rejected:'נדחה'} as Record<string,string>)[o.payment_report?.status]||'טרם נשלח דיווח',o.payment_report?.reported_at||'',o.payment_report?o.payment_report.amount_cents/100:'',o.payment_report?.reference||''])];
+            const rows=[['מספר הזמנה','שם הלקוח','דוא״ל','טלפון','תאריך הזמנה','תאריך תשלום','סוג הזמנה','אופן תשלום','לפני מע״מ','מע״מ','כולל מע״מ','מצב דיווח','תאריך דיווח','סכום שדווח','אסמכתא'],...result.orders.map(o=>[o.number,o.user_name||o.name,o.user_email,o.user_phone,o.created,o.paid_date||o.payment_date||o.paid_at||'',adminOrderFilterLabels[result.filters.bucket],o.payment_label,o.amounts.net/100,o.amounts.vat/100,o.amounts.total/100,({pending:'ממתין לאישור',approved:'אושר',rejected:'נדחה'} as Record<string,string>)[o.payment_report?.status]||'טרם נשלח דיווח',o.payment_report?.reported_at||'',o.payment_report?o.payment_report.amount_cents/100:'',o.payment_report?.reference||''])];
             const bytes=framedWorkbook(rows,'הזמנות מסוננות',[22,30,36,22,28,28,30,28,23,22,23,24,28,23,30],[8,9,10,13],result.orders.length);
             return new Response(bytes as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="orders-'+result.filters.bucket+'-'+(result.filters.month||'all')+'.xlsx"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
         }

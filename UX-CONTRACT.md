@@ -584,3 +584,23 @@ success feedback. Canonical Dialog owns focus, Escape and close controls.
 - Sent/published articles require an explicit stop/removal confirmation before
   refund. Pending cancellation blocks publication. Version and financial guards
   prevent duplicate and concurrent changes. Per-component refund history persists.
+
+## Orders reference layout — 2026-10-28
+The attached approved mockup is the visual authority for the main orders list.
+Desktop uses one semantic, paginated table; phones use compact cards. Existing
+order details retain all cancellation, refund, payment and assignment controls.
+The canonical Select owns category, status and month popups, focus and keyboard
+behavior. Category selection keeps the six existing destination routes.
+Combined status filtering is read-only. Final approval remains the month basis
+for paid records; open records filter by creation date. Payment confirmation
+wins over any stale pending report when displaying a status. Search ignores
+stale responses, supports IME/Enter/clear and preserves the committed filters in
+existing in-memory admin state, consistent with the application navigation.
+Export covers the full filtered result and locks duplicate requests. Loading,
+empty results and failed requests remain explicit and recoverable.
+Verification: typecheck, scoped ESLint and production build passed; handler tests,
+117 orders-finance API checks, 119 payment-report regression checks and 82 split
+payment/receipt checks passed. Real component browser fixtures covered all six
+routes at 390px and 1440px, category popup geometry/navigation, filtering/search,
+order-detail navigation, export failure, final month and refund failure/retry.
+No customer records or payment provider actions were changed by verification.
