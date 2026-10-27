@@ -21,3 +21,77 @@
 @media(min-width:901px){.standalone-customer-sites:has(.seller-wide){position:relative}.standalone-customer-sites:has(.seller-wide)>.seller-hub-return{position:absolute;top:20px;left:clamp(20px,2.3vw,48px);z-index:1;justify-content:flex-end;margin:0}.seller-wide .seller-wide-heading{padding-top:8px}.seller-space.seller-wide .seller-hub-steps li{grid-template-columns:54px minmax(0,1fr)}.seller-space.seller-wide .seller-hub-steps li>svg{grid-column:1;grid-row:1}.seller-space.seller-wide .seller-hub-steps li>div{grid-column:2;grid-row:1}}
 @media(max-width:900px){.seller-wide .seller-month-picker{width:190px}.seller-wide .seller-month-picker input{width:100%}.standalone-customer-sites:has(.seller-wide)>.seller-hub-return{justify-content:flex-end}}
 @media(max-width:380px){.seller-wide .seller-month-picker{width:165px}}
+
+/* Approved payout dialog, 2026-10-27. Existing canonical Dialog and Action. */
+[data-slot="dialog-content"]:has(.seller-payout-form) {
+  --payout-ink: #09234b; --payout-copy: #485b78; --payout-line: #d4e6ef;
+  width: min(880px, calc(100vw - 40px)); max-width: 880px; max-height: 90dvh;
+  overflow-y: auto; padding: 0; gap: 0; border: 1px solid var(--payout-line);
+  border-radius: 20px; background: #fff; color: var(--payout-ink);
+  font-family: SellerRubik, Heebo, Arial, sans-serif; box-shadow: 0 24px 80px #09234b26;
+}
+[data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-header"] {
+  margin: 0 28px; padding: 52px 80px 30px 0; min-height: 150px;
+  position: relative; isolation: isolate; border-bottom: 1px solid var(--payout-line);
+  text-align: right; gap: 8px;
+}
+[data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-header"]::before {
+  content: ''; position: absolute; z-index: -1; inset: 0 -28px;
+  border-radius: 20px 20px 0 0; opacity: .6;
+  background: #f5fcff url('/brand/checkout-waves.webp') center top / 100% 230px no-repeat;
+}
+[data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-title"] {
+  color: var(--payout-ink); font: 700 30px/1.4 SellerRubik, Heebo, Arial, sans-serif;
+}
+[data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-description"] {
+  font-size: 16px; line-height: 1.6; color: var(--payout-copy);
+}
+[data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-close"] {
+  right: auto; left: 22px; top: 22px; width: 44px; height: 44px;
+  display: grid; place-items: center; border: 1px solid var(--payout-line);
+  border-radius: 50%; background: #fff; color: var(--payout-ink); cursor: pointer;
+}
+[data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-close"]:hover {background: #e8f8fb}
+.seller-payout-icon {position: absolute; top: 54px; right: 28px; width: 60px; height: 60px; display: grid; place-items: center; border-radius: 15px; background: #dff5fb; color: #056bc2}
+.seller-payout-form {padding: 24px 28px; direction: rtl; text-align: right}
+.seller-payout-form form {display: grid; grid-template-columns: auto auto 1fr; gap: 12px; align-items: center}
+.seller-payout-form .seller-form {grid-column: 1 / -1; display: block; margin: 0; padding: 0; border: 0; min-width: 0}
+.seller-payout-form .seller-payout-section {padding: 0; margin: 0; border: 0; min-width: 0}
+.seller-payout-form .seller-payout-section + .seller-payout-section {margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--payout-line)}
+.seller-payout-section legend {float: right; width: 100%; margin-bottom: 16px; font-size: 18px; font-weight: 700; color: var(--payout-ink)}
+.seller-payout-grid {clear: both; display: grid; grid-template-columns: 1fr 1fr; gap: 28px}
+.seller-payout-form .seller-field {display: flex; flex-direction: column; gap: 8px; min-width: 0; color: var(--payout-ink); font-size: 16px; font-weight: 400}
+.seller-payout-form .seller-payout-input {position: relative; display: block; font-weight: 400}
+.seller-payout-input svg {position: absolute; right: 16px; top: 17px; color: #506982; pointer-events: none}
+.seller-payout-form input:not([type="checkbox"]), .seller-payout-form textarea {width: 100%; height: 54px; border: 1px solid #bcd7e6; border-radius: 10px; padding: 12px 44px 12px 16px; background: #fff; color: var(--payout-ink); font: 400 16px/1.5 SellerRubik, Heebo, Arial, sans-serif; text-align: right; box-shadow: none; transition: border-color .18s, box-shadow .18s}
+.seller-payout-form input::placeholder {color: #627993; opacity: 1}
+.seller-payout-form input:focus {border-color: #008d9d; box-shadow: 0 0 0 2px #008d9d20}
+.seller-payout-form textarea {padding: 12px 16px; min-height: 140px; resize: none}
+.seller-payout-form small {font-size: 13px; font-weight: 400; color: #b42342}
+.seller-payout-form input[aria-invalid="true"] {border-color: #b42342}
+.seller-payout-notice {display: flex; align-items: center; gap: 12px; margin: 28px 0; padding: 14px 16px; border-radius: 10px; background: #e8f8fb; font-size: 14px; line-height: 1.65; color: var(--payout-ink)}
+.seller-payout-notice svg {flex-shrink: 0; color: #008d9d}
+.seller-payout-form form > button {min-height: 50px; height: auto; padding: 12px 24px; border-radius: 10px; font: 700 16px/1.5 SellerRubik, Heebo, Arial, sans-serif; cursor: pointer; transition: transform .18s, filter .18s, background .18s}
+.seller-payout-form form > button[type="submit"] {grid-column: 1; min-width: 270px; background: linear-gradient(110deg, #0570c8, #00aaba); color: #fff; border: 0}
+.seller-payout-form form > button[type="button"] {grid-column: 2; background: #fff; border: 1px solid var(--payout-line); color: var(--payout-ink); min-width: 110px}
+.seller-payout-form form > button:hover:enabled {filter: brightness(.95); transform: translateY(-1px)}
+.seller-payout-form :is(input,textarea,button):focus-visible {outline: 2px solid #007f8c; outline-offset: 3px}
+.seller-payout-form button:disabled {opacity: .6; cursor: wait}
+.seller-payout-legacy {display: flex; gap: 10px; margin-top: 20px; font-size: 14px}
+.seller-payout-form [role="alert"] {grid-column: 1 / -1}
+@media (max-width: 700px) {
+  [data-slot="dialog-content"]:has(.seller-payout-form) {width: calc(100vw - 24px); max-height: 92dvh}
+  [data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-header"] {margin: 0 20px; padding: 72px 0 22px; min-height: 0}
+  [data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-header"]::before {inset-inline: -20px}
+  [data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-title"] {font-size: 25px}
+  [data-slot="dialog-content"]:has(.seller-payout-form) [data-slot="dialog-description"] {font-size: 15px}
+  .seller-payout-icon {top: 20px; right: 20px; width: 42px; height: 42px; border-radius: 10px}
+  .seller-payout-icon svg {width: 25px}
+  .seller-payout-form {padding: 22px 20px}
+  .seller-payout-grid, .seller-payout-form form {grid-template-columns: 1fr; gap: 18px}
+  .seller-payout-form form > button[type="submit"], .seller-payout-form form > button[type="button"] {grid-column: 1; width: 100%; min-width: 0}
+  .seller-payout-notice {margin: 24px 0 6px; padding: 12px; font-size: 14px}
+}
+@media (prefers-reduced-motion: reduce) {.seller-payout-form *, .seller-payout-form form > button {transition: none}.seller-payout-form form > button:hover:enabled {transform: none}}
+
+.seller-payout-footer-line {grid-column: 1 / -1; border-top: 1px solid var(--payout-line); margin-bottom: 8px}

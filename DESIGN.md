@@ -1007,3 +1007,17 @@ Customer identity is19px, body13–14px, metadata12px; no mock data is persisted
 The site-application portion of this earlier approval is superseded by the scoped
 Site application journey entries in the canonical sections above. Customer-card
 values and behavior in this section remain authoritative for their scope.
+
+## Approved seller payout dialog — 2026-10-27
+
+Operate refinement for the existing My Sites → Payments → payout action only.
+The approved reference is exec-3c65ea69-1cf6-4216-bed5-9924297f5c85.png.
+Runtime canonical owner is the payout-scoped section in app/seller-wide.css;
+shared Dialog, Input, Textarea and seller Action retain behavior. The dialog
+reuses SellerRubik, #09234b ink, #485b78 copy, #d4e6ef lines and the existing
+checkout-waves asset, with a compact wallet icon and white body. Two meaningful
+field groups place holder and branch at RTL start/right, bank and account at
+left; below 700px fields stack. No illustration or dark hero is introduced.
+The old broad dialog typography adapter excludes this named payout surface so
+its explicit label, hint and error roles remain readable. Other dialogs retain
+their adapter. Native month-picker ownership stays as documented above.

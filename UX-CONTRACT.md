@@ -558,3 +558,15 @@ motion files. Finish review disposition: ship, with no material issues.
 Restore: public branch `restore/before-site-journey-20261027`, commit
 `a4162c8f12605a11c714b060a73e321d6e6623b0`. Source publication and deployment to
 the existing staging service/environment are pending; no live release is claimed.
+
+## Seller payout form presentation — 2026-10-27
+
+The approved four fields serialize to the existing payment_details string and
+POST selling/payout. Existing encryption, duplicate-pending rejection, manager
+approval and payment transfer rules remain server-owned and unchanged. All four
+structured fields must be filled; inline errors preserve inputs and focus the
+first missing field. Bank/account identifiers are text with numeric input mode
+so leading zeros survive. Stored free text that cannot be parsed losslessly
+remains editable as free text; converting to separate fields is explicit.
+The canonical seller Action supplies duplicate-submit locking, error/retry and
+success feedback. Canonical Dialog owns focus, Escape and close controls.
