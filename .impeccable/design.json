@@ -859,6 +859,44 @@
           "formCopy": "Removed the requested site-form subtitle שאלה אחת בכל פעם פשוט וקל.",
           "evidence": "Populated pending and active site fixtures plus long URL at 390px/1440px; production build, TypeScript, handler and browser checks passed. Fixture image is a stand-in, not proof of a live uploaded file."
         }
+      },
+      "catalog-desktop-controls": {
+        "status": "Approved narrow desktop restoration implemented; build, TypeScript, handler, catalog-home-actions and all six-width browser checks passed. Fresh finish review in progress; staging approval and deployment pending.",
+        "mode": "Operate",
+        "runtimeOwner": "app/account-navigation-refinements.css @media(min-width:701px)",
+        "authority": "Restore established app/catalog-filter-dialog.css and app/catalog-experience.css dimensions. catalog-filter-dialog.css is byte-identical to baseline 93c30f6.",
+        "scope": "Home catalog filter/search controls and three existing actions above 700px only; approved phone/tablet layout at <=700px preserved.",
+        "brief": ".impeccable/surfaces/catalog-desktop-controls.md",
+        "layout": {
+          "tools": "max-width 870px; category 220px plus flexible search; 12px gap; 52px control height.",
+          "actions": "Three equal actions, up to 282px each (870px including two 12px gaps); 60px height, 18px labels, 21px icons, 999px corners. Narrow desktop sizes use calc((100% - 24px)/3).",
+          "addSite": "Existing action remains at opposite edge with margin-inline-start:auto in the same wrapping row; wraps below when space is insufficient."
+        },
+        "verification": {
+          "fixture": "tests/catalog-controls-browser.mjs",
+          "widths": [
+            390,
+            700,
+            701,
+            1024,
+            1440,
+            1920
+          ],
+          "passed": [
+            "production build",
+            "TypeScript",
+            "handler checks",
+            "catalog-home-actions",
+            "Six widths 390/700/701/1024/1440/1920: desktop original geometry, exact mobile baseline equality, search/filter/bulk interactions, no horizontal overflow"
+          ],
+          "limits": "Real-component browser fixture with isolated API responses; no authenticated account, deployed pixels or live-site visual verification claim.",
+          "evidence": [
+            "/tmp/catalog-desktop-restore-browser.log",
+            ".sites-runtime/catalog-controls-browser/final.json"
+          ],
+          "finishReview": "In progress; staging approval and deployment pending."
+        },
+        "proposalBoundary": "The requested three wide seller page mockups and site table rows are generated proposals only, awaiting approval; not part of this implementation."
       }
     }
   },

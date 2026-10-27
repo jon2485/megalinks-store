@@ -330,6 +330,17 @@ animation; all prior approved changes are authorized together for the existing
 Railway staging service. Deployment remains pending.
 Source publication and deployment are pending; this records local implementation.
 
+### Catalog desktop control restoration — 2026-10-27
+
+The approved home catalog restores its original desktop filter/search and three
+action dimensions through a narrowly scoped rule at 701px and above in
+`app/account-navigation-refinements.css`. The original catalog styles remain
+canonical for the restored values; approved layouts at 700px and below retain
+their current owner. The add-site action remains in the same wrapping row at the
+opposite edge. This is a restoration of established sizing, with no business or
+navigation change. Composition and evidence boundaries are recorded in
+`.impeccable/surfaces/catalog-desktop-controls.md`. Staging remains pending.
+
 ## Colors
 
 Navy anchors titles/actions; cyan surfaces and borders provide catalog depth.
