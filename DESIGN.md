@@ -142,7 +142,7 @@ typography:
     lineHeight: 1.65
   seller-hub-heading:
     fontFamily: "SellerRubik, Heebo, Arial, sans-serif"
-    fontSize: "clamp(32px, 4.3vw, 48px)"
+    fontSize: "clamp(36px, 3.7vw, 56px)"
     fontWeight: 700
     letterSpacing: "-0.025em"
     lineHeight: 1.3
@@ -162,7 +162,7 @@ rounded:
   site-journey-field: "12px"
   seller-hub-step: "16px"
   seller-hub-report: "12px"
-  seller-hub-owned-site: "16px"
+  seller-hub-table-frame: "10px"
 spacing:
   catalog-gap: "16px"
   catalog-max: "1760px"
@@ -180,9 +180,9 @@ spacing:
   site-journey-edit-column-gap: "24px"
   site-journey-review-column-gap: "38px"
   site-journey-action-gap: "12px"
-  seller-hub-stage: "1120px"
-  seller-hub-guide-padding: "12px 0 22px"
-  seller-hub-step-gap: "18px"
+  seller-hub-stage: "100%"
+  seller-hub-guide-padding: "0"
+  seller-hub-step-gap: "20px"
 components:
   admin-editorial-button-primary:
     backgroundColor: "{colors.admin-editorial-blue}"
@@ -306,29 +306,26 @@ component extensions. Composition and evidence live in
 `.impeccable/surfaces/site-application-journey.md`; behavior lives in UX-CONTRACT.md.
 No PRODUCT.md was found, so this extension records no new business or brand claims.
 
-### Seller hub — approved 2026-10-27
+### Seller hub — approved wide composition, 2026-10-27
 
-The approved seller hub extends the existing bulk-order instruction language for
-My Sites, publication articles and payments. It retains the current Hebrew RTL
-identity and uses three pastel numbered steps, a connecting line, an emphasized
-teal-to-blue heading line and underline-selected tabs. This is a scoped extension;
-the catalog, administration and site application journey keep their owners.
-`app/seller-hub-approved.css` remains canonical (model B). The `seller-hub-*`
-frontmatter entries mirror its reusable local primitives; its gradients, shadow,
-motion and breakpoints live in `.impeccable/design.json`. Composition, approved
-copy and evidence boundaries live in `.impeccable/surfaces/seller-hub.md`.
-The screenshot-led refinement removes duplicate My Sites headings, places the
-primary title before tabs, reuses the waves ground without a white guide wrapper,
-and uses self-hosted Rubik 400/700. Number markers and connecting segments occupy
-an external right rail in both guides; payment steps remain vertical at desktop.
-This supersedes only the earlier seller guide wrapper/column composition.
-The approved owned-site record extends this scope with a real identity/image,
-status, full URL, actual price with pre-VAT label and pending-review notice.
-Uploaded owner imagery and existing action permissions remain canonical. The
-separate fullscreen onboarding concept is now approved for implementation, including
-animation; all prior approved changes are authorized together for the existing
-Railway staging service. Deployment remains pending.
-Source publication and deployment are pending; this records local implementation.
+The user approved all three wide desktop compositions: My Sites, publication
+articles and payments. `app/seller-wide.css` is the canonical customer-seller
+composition owner (model B), extending retained primitives in
+`app/seller-hub-approved.css`. It supersedes the older capped desktop stage,
+vertical desktop guide and large owned-site card layout within this surface.
+
+The actual brand header remains; the customer seller stage uses the available
+width. Each destination places its approved heading/copy before shared underline
+tabs. Three pastel steps share a horizontal number rail above panels on desktop;
+at 900px and below they stack beside a vertical rail. Real sites and articles use
+tables, and payments pairs a publication table with its month summary. Narrow
+screens turn labeled table rows into readable cards. Original data, owner uploads,
+publication/reporting permissions and canonical dialogs retain their owners.
+Scoped composition and verification live in `.impeccable/surfaces/seller-hub.md`.
+The separate fullscreen site journey retains its existing approved owner.
+Final production build, TypeScript, seller/API/catalog and nine real-component
+browser captures passed. Fresh finish review: SHIP, no material findings across nine captures. Railway
+publication remains pending; the user explicitly authorized publication of this approved work.
 
 ### Catalog desktop control restoration — 2026-10-27
 

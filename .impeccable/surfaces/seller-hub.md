@@ -1,126 +1,92 @@
-# Seller hub — approved 2026-10-27
+# Seller hub — approved wide composition, 2026-10-27
 
-Mode: Operate. Status: approved scoped extension implemented locally. Source
-publication and deployment remain pending. This brief makes no live-account claim.
+Mode: Operate. Status: all three wide desktop mocks explicitly approved and
+implemented. Final production build, TypeScript, scoped lint, 48 API requests,
+handler/catalog checks and all nine real-component browser captures/actions
+passed. Fresh finish review: SHIP; all nine captures match the approved compositions,
+with no material findings. The user requested Railway publication;
+deployment remains pending. No live-account or deployed-pixel claim is made.
 
 ## Scope and authority
 
-My Sites, publication articles and payments extend the existing bulk-order guide
-language: three pastel numbered steps connected in sequence, a bold two-line
-heading with an emphasized teal-to-blue line, and underline-selected tabs.
-The explicitly approved heading gradient and connected pastel numbered steps are
-pinned surface exceptions to generic gradient-text and decorative-card avoidance.
-The original catalog, administration and site application journey retain their
-visual and behavioral owners. No new product or business claims are inferred.
+`app/seller-wide.css` is canonical (model B) for the customer seller composition,
+extending retained `app/seller-hub-approved.css` primitives. This supersedes the
+older 1120px desktop cap, vertical desktop guides and giant owned-site card
+composition. Administration, catalog and the approved fullscreen site application
+journey retain their separate owners. The actual brand header remains unchanged.
 
-`app/seller-hub-approved.css` is canonical (model B). Root DESIGN.md mirrors its
-reusable scoped primitives; `.impeccable/design.json` records gradients, depth,
-motion, breakpoints and provenance under `surfaceSystems.seller-hub`.
-The owner-approved implementation uses `app/seller-guide.tsx`,
-`app/seller-workspace.tsx` and `app/seller-articles.tsx` with existing shared controls.
+Approved wide references:
 
-## Approved visual references
+- My Sites: `/workspace/scratch/480206aee6f5/generated_images/exec-1b3010b1-a84b-43c5-b1ba-d2f965a1692b.png`.
+- Articles: `/workspace/scratch/480206aee6f5/generated_images/exec-83f19561-93c1-4752-9043-c4778b89d31b.png`.
+- Payments: `/workspace/scratch/480206aee6f5/generated_images/exec-3767116e-8b75-45da-baeb-3202059ecbcb.png`.
 
-- My Sites: `/workspace/scratch/480206aee6f5/generated_images/exec-b628e3b5-7ed1-405a-ab1d-4276321d252f.png`.
-- Articles: `/workspace/scratch/480206aee6f5/generated_images/exec-271f782b-f0dc-4fc2-9fa1-affedfad10bb.png`.
-- Payments: `/workspace/scratch/480206aee6f5/generated_images/exec-6bed8cfe-367b-40d5-ad77-daf37ec83371.png`.
+## Composition and responsive system
 
-These are approval references, not live screenshots. The final approved articles
-heading below supersedes the wording in that mock. Existing runtime assets are
-reused; no generated mock is inserted as product UI.
+The customer seller premium shell fills the available width; desktop fixtures
+assert more than 90% viewport width. Each of the three destinations places its
+approved title and copy before the shared underline tabs. Headlines use local
+SellerRubik bold, `clamp(36px,3.7vw,56px)`; body uses regular. The actual site
+logo/upload and data provide record identity, without invented screenshots.
 
-## Composition
+Desktop guides place three pastel panels below a horizontal connected number
+rail; their first icons remain at RTL start/right. A soft overlay tones the waves
+and the back action sits at desktop left. At 900px and below, steps stack with an external right number rail and
+tables become labeled record cards. Full URLs and values wrap. The payments
+publication table and summary sit side by side on desktop and stack on narrow
+screens. Existing brand waves, heading gradient and pastel guide remain approved
+surface exceptions. No new global brand palette is introduced.
 
-The centered stage caps at 1120px. My Sites puts its primary heading before tabs
-and its three-step guide before the
-existing site records and uses an explicit add-site action. Step colors run from
-pale blue to pale teal to lavender with matching numbered discs. The connecting
-line remains behind the discs. Payments reuses a vertical three-step guide before
-its existing month selector, publication summary and invoice records.
+## Real workflows and data
 
-The articles heading reads exactly “כל הכתבות לפרסום, במקום אחד”, broken between
-“לפרסום,” and “במקום אחד”. Supporting copy states that content arrives by email
-and publication can be reported here or by email. The publication report form is
-inline beneath the selected record; its labels, validation and save action remain
-real controls. Existing pending/published choices use underline selection.
+My Sites uses real rows for identity/upload, full URL, requested pre-VAT price,
+status and permitted actions. Pending proposal prices safely fall back to the
+existing proposal value. Pending rows expose no mutation controls. Active sites
+retain request-change and canonical DropdownMenu pause/remove actions; rejected
+requests retain the correction workflow. Existing manager approval remains.
 
-Article rows expose the actual site URL, isolated LTR. The seller-scoped query in
-`lib/customer-sellers.ts` projects `w.url AS site_url`; this is a real site value,
-not a URL inferred from a publication or a fixture label. New-window links retain
-`noopener noreferrer`. Existing permissions and server mutation owners remain.
+Articles uses a metadata-only table. The title remains exactly “כל הכתבות לפרסום,
+במקום אחד”; copy explains that content arrives by email and reporting is available
+here or by email. The actual site URL comes from the existing `site_url` query
+projection. Inline reporting expands a table row, retains URL validation and
+retry, and supplies cancel with focus return to its trigger. It keeps the
+existing explicit save endpoint rather than adding a new publication owner.
 
-## Screenshot-led refinement — 2026-10-27
+Payments reads immutable closed `statement.publications` and `statement.net` when
+a statement exists; otherwise it shows provisional current publications. Missing
+prices remain “חסר מחיר מתועד”, never an invented zero. Existing invoice and
+payout handlers open canonical dialogs. `app/seller-display.ts` formats integer
+agorot, Hebrew dates and month labels. The month picker retains its native transparent input with a visible Hebrew
+label and keyboard access. No finance, permission or payment-transfer
+rules change. Two generic global table rules exclude only `.seller-wide-table`
+through zero-specificity `:where`, preserving other table owners.
 
-User screenshots IMG3437/IMG3438 exposed duplicate My Sites headings and an
-obscured connector. The refinement removes the redundant shell and intro titles
-while retaining the back control. “האתרים שלך יכולים להרוויח בשבילך” is the first
-page heading, before tabs. The guide is transparent over the existing
-`checkout-waves.webp` ground; its former white wrapper and shadow are removed.
-“איך זה עובד?” is centered. Number markers now sit outside each pastel panel in
-an external right rail; separate segments connect marker centers visibly in both
-My Sites and payments. This supersedes the earlier desktop horizontal payment
-composition. The payment title is exactly “אז כמה הרווחתי?”.
+## Fullscreen journey boundary
 
-SellerRubik uses existing self-hosted regular 400 and bold 700 WOFFs, with
-Heebo/Arial/sans-serif fallback and the existing Rubik OFL license. The scoped
-heading is `clamp(32px,4.3vw,48px)`, with 34px on phones. Copy is regular weight;
-headings use bold. The subsequent owned-site card approval is recorded below;
-its presentation retains the existing site workflow and business owners.
+The approved fullscreen site application, dedicated transparent earnings artwork,
+real brand logo, existing 420ms RTL animation and removed one-question subtitle
+remain as documented in `.impeccable/surfaces/site-application-journey.md`.
+The wide composition reuses the actual add/edit journey and canonical dialogs;
+it does not replace their submission or dismissal contracts.
 
-## Owned-site card — subsequent approval, 2026-10-27
+## Evidence and release boundary
 
-The owner approved `/workspace/scratch/480206aee6f5/generated_images/exec-62ad13e3-e72c-455c-b4bf-27274f689ed1.png`.
-The implemented owned-site card presents the existing uploaded image/logo with
-site identity and status, a full LTR URL row, the actual price and pre-VAT label,
-and a pending-review notice. It preserves owner imagery; no invented screenshot
-replaces a real upload. White framing uses a fine blue border, subtle shadow,
-16px corners and a narrow teal-to-blue bottom accent. On phones the logo scales
-to 72×68px, full URLs wrap and existing actions stack.
+`tests/seller-wide-browser.mjs` renders actual header/components and canonical
+Dialog with isolated API fixtures at 390px, 1440px and 1920px. Nine captures are
+saved as `.sites-runtime/seller-wide-browser/{sites,articles,payments}-{390,1440,1920}.png`.
+Coverage includes pending/active/rejected actions, full-width stage, add/edit,
+canonical dropdown/dialog workflows, inline report validation/failure/retry/focus,
+published history, invoice upload, payout, provisional months and paid/missing/
+empty/loading/error states. These are fixture actions, not live mutations.
 
-Active and rejected-site actions retain their existing handlers and permission
-conditions. Pending records expose no edit/pause/remove actions. The site-form
-subtitle “שאלה אחת בכל פעם פשוט וקל” was removed as requested. The separately
-generated fullscreen onboarding concept
-`/workspace/scratch/480206aee6f5/generated_images/exec-0e036406-0bb5-4e9b-9360-9a146b43c5c2.png`
-is now approved and implemented, including animation and its dedicated transparent
-artwork. Production build, TypeScript, both seller handler suites and full-flow
-real-component browser checks passed; fresh finish review: SHIP, no material findings across all nine screens.
-
-## Responsive behavior and interaction
-
-At 600px and below, headings become 34px, guide padding shrinks, step icons remain visible at 26px,
-number discs reduce to 32px and report actions fill the available width. Step copy
-wraps within the remaining column; URLs wrap rather than widen cards. Payment steps retain a vertical single-column guide at desktop as well.
-All three destinations retain their existing state and callbacks.
-
-Tabs use real buttons with `aria-pressed`. The ordered guide retains semantic
-step order; visible discs and decorative icons are hidden from assistive reading.
-Button feedback uses brief color/shadow transitions and a 1px press response;
-selection underlines scale over 250ms. Reduced motion removes these transitions
-and the press transform. Forced colors restores readable heading text and step
-borders. Existing shared control focus, labels and error owners remain intact.
-
-## Verification and release boundary
-
-`tests/seller-hub-browser.mjs` bundles actual SellerWorkspace components with
-production-built styles and isolated API responses. Its assertions exercise the
-three tabs at 390px and 1440px, actual-site URL rendering, opening/filling the
-inline report form, no horizontal overflow and no runtime page errors. The six
-full-page snapshots are in `.sites-runtime/seller-hub-browser/`:
-`sites-390.png`, `sites-1440.png`, `articles-390.png`, `articles-1440.png`,
-`payments-390.png`, `payments-1440.png`.
-
-The latest My Sites captures include populated pending and active sample records
-and a long URL. The image endpoint serves a fixture stand-in, rather than proving
-a real account upload. Production build, TypeScript, handler and browser checks
-passed after this extension. The fixture uses sample records and stubbed APIs. It does not authenticate a live
-seller, save a real publication, send email, transfer money or prove deployment.
-The factual implementation/evidence handoff is `docs/seller-hub-20261027.md`.
-
-## Latest staging authorization
-
-The user requested all prior approved seller-card, hub and full-screen onboarding
-changes staged together on the existing Railway service. This authorizes staging
-work; source publication and deployment remain pending. The full-screen extension
-retains the existing business logic and real brand logo. Its implementation and
-verification are tracked in `.impeccable/surfaces/site-application-journey.md`.
+Final production build (`/tmp/seller-wide-build.log`), TypeScript, handler,
+48 API requests and catalog checks passed. Scoped lint had zero errors and two
+existing image warnings. All nine final captures and canonical-header/dialog
+browser action/error/missing/paid/month checks passed; table body text was checked
+for navy color and at least 15px size. The legacy seller-hub browser entry now
+imports the wide browser suite, replacing obsolete assertions. Fresh finish
+review: SHIP; all nine captures match the approved compositions with no material
+findings.
+The user explicitly approved all three compositions and requested Railway
+publication; deployment is pending. Implementation handoff:
+`docs/seller-wide-20261027.md`.

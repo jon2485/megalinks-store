@@ -95,7 +95,7 @@ export default function Workspace({ initialCatalog, initialView = 'catalog' }: {
     const [catalogSearch, setCatalogSearch] = useState('');
     useEffect(()=>{if(clientContentView(initialView)!==initialView)window.history.replaceState({},'', '/'+clientContentView(initialView));},[initialView]);
     const premiumCatalog = view === 'catalog';
-    const premiumShell = isClientHub(view) || ['profile','wallet','monthly','admin-topups','admin-invoices','customers','support','admin-support'].includes(view) || view === 'admin-promotions' || premiumCatalog || view === 'offers' || view === 'cart' || view === 'checkout' || view === 'purchased' || view.startsWith('article/') || view.startsWith('admin-article/');
+    const premiumShell = view === 'purchased/selling' || isClientHub(view) || ['profile','wallet','monthly','admin-topups','admin-invoices','customers','support','admin-support'].includes(view) || view === 'admin-promotions' || premiumCatalog || view === 'offers' || view === 'cart' || view === 'checkout' || view === 'purchased' || view.startsWith('article/') || view.startsWith('admin-article/');
     const me = useData('me', revision);const branding=useData('branding',revision);const brand=branding.data?.brand||'פוסטפלואו';
     const [pricingRevision,setPricingRevision]=useState(0);
     const catalogPath=view.startsWith('admin')?'catalog?scope=admin':'catalog';

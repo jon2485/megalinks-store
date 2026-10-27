@@ -796,24 +796,24 @@
         }
       },
       "seller-hub": {
-        "status": "All approved seller and fullscreen onboarding changes implemented and verified locally; finish review SHIP, no material findings across all nine screens. Bundle staged for existing Railway approval; deployment pending.",
+        "status": "All three wide compositions approved, implemented and verified; finish review SHIP, all nine captures match with no material findings. Authorized staging/deployment pending.",
         "mode": "Operate",
-        "runtimeOwner": "app/seller-hub-approved.css",
+        "runtimeOwner": "app/seller-wide.css; retained app/seller-hub-approved.css primitives",
         "ownershipModel": "B: runtime CSS canonical; DESIGN.md mirrors scoped primitives.",
         "surfaceBrief": ".impeccable/surfaces/seller-hub.md",
-        "scope": "Seller My Sites, publication articles and payments only. Existing catalog, administration and site journey systems remain owned separately.",
+        "scope": "Customer seller My Sites, articles and payments only; full-width premium shell. Admin, catalog and fullscreen site journey retain separate owners.",
         "gradients": {
           "heading": "linear-gradient(100deg,#008b96,#0579d7)",
           "primary": "linear-gradient(110deg,#00818b,#0570c8)",
-          "stepOne": "linear-gradient(120deg,#e9f8ff,#d0e9ff)",
-          "stepTwo": "linear-gradient(120deg,#ddf7f6,#c9eff4)",
-          "stepThree": "linear-gradient(120deg,#f0eaff,#e5edff)",
+          "stepOne": "linear-gradient(110deg,#e7f5ff,#d1eaff)",
+          "stepTwo": "linear-gradient(110deg,#dcf8f4,#cef0f3)",
+          "stepThree": "linear-gradient(110deg,#f0eaff,#e6ecff)",
           "connector": "Segment 1: linear-gradient(#0089ef,#008d9d); segment 2: linear-gradient(#008d9d,#7950ce)",
-          "ownedSiteAccent": "linear-gradient(100deg,#00b4bc,#0579d7)"
+          "ownedSiteAccent": "linear-gradient(100deg,#00b4bc,#0579d7)",
+          "desktopConnector": "linear-gradient(270deg,#0878ce,#008b96,#7950ce)"
         },
         "shadows": {
-          "buttonHover": "0 5px 14px #09234b14",
-          "ownedSiteCard": "0 8px 24px #09234b09"
+          "buttonHover": "0 5px 14px #09234b14"
         },
         "motion": {
           "button": "background-color .2s,box-shadow .2s,transform .2s",
@@ -822,18 +822,33 @@
           "reducedMotion": "Remove button/underline transitions and pressed transform."
         },
         "responsive": {
-          "phone": "max-width:600px; 34px titles, 32px numbered discs, 26px icons, 40px external right rail gutter, full-width report action.",
-          "paymentsDesktop": "min-width:900px; vertical single-column payment guide with external right number rail, connecting segments and visible icons."
+          "desktop": "Above 900px: uncapped stage (>90% viewport at 1440/1920 fixture widths), horizontal three-step rail above pastel panels, real site/article/payment tables and paired payment summary.",
+          "mobile": "At <=900px: vertical external step rail and labeled table-row cards; existing controls and full URL values wrap."
         },
         "accessibility": "Real buttons retain aria-pressed; ordered steps retain semantic order. Existing labels and LTR URL/email controls remain. Forced colors removes heading gradient and adds step borders.",
         "verification": {
-          "fixture": "tests/seller-hub-browser.mjs",
-          "evidenceDirectory": ".sites-runtime/seller-hub-browser/",
+          "fixture": "tests/seller-wide-browser.mjs",
+          "evidenceDirectory": ".sites-runtime/seller-wide-browser/",
           "widths": [
             390,
-            1440
+            1440,
+            1920
           ],
-          "limits": "Isolated real-component fixture with built CSS and mocked API responses; no authenticated live-account or deployment claim."
+          "pending": "Authorized staging/deployment only.",
+          "limits": "Actual header and canonical Dialog with isolated fixture APIs; no authenticated live-account or deployed-pixel claim.",
+          "passed": [
+            "final production build: /tmp/seller-wide-build.log",
+            "TypeScript: clean",
+            "scoped lint: 0 errors, 2 existing img warnings",
+            "48 API requests, handler and catalog checks",
+            "Nine final captures at 390/1440/1920; canonical header/dialog all-action and error/missing/paid/month checks",
+            "Table body navy color and font size >=15px"
+          ],
+          "legacyEntry": "tests/seller-hub-browser.mjs imports tests/seller-wide-browser.mjs, replacing obsolete layout assertions.",
+          "finishReview": "SHIP: all nine captures match approved compositions; actual header/uploaded imagery and mobile card reflow are documented adaptations. Cosmetic mobile payment-total label wrapping is nonblocking and retained.",
+          "restoreBranch": "restore/before-seller-wide-20261027",
+          "restoreCommit": "851f380187e85488be3125f69c36bcf0ed5278a4",
+          "bundle": "Includes preceding desktop catalog restoration; staging/deployment pending."
         },
         "approvedExceptions": "The explicitly approved heading gradient and connected pastel numbered guide are pinned surface exceptions to generic gradient-text and decorative-card avoidance.",
         "approvedMocks": {
@@ -841,23 +856,29 @@
           "articles": "/workspace/scratch/480206aee6f5/generated_images/exec-271f782b-f0dc-4fc2-9fa1-affedfad10bb.png",
           "payments": "/workspace/scratch/480206aee6f5/generated_images/exec-6bed8cfe-367b-40d5-ad77-daf37ec83371.png",
           "articlesOverride": "Final approved title כל הכתבות לפרסום, במקום אחד supersedes wording in the article mock.",
-          "ownedSiteCard": "/workspace/scratch/480206aee6f5/generated_images/exec-62ad13e3-e72c-455c-b4bf-27274f689ed1.png"
+          "ownedSiteCard": "/workspace/scratch/480206aee6f5/generated_images/exec-62ad13e3-e72c-455c-b4bf-27274f689ed1.png",
+          "wideDesktop": {
+            "sites": "/workspace/scratch/480206aee6f5/generated_images/exec-1b3010b1-a84b-43c5-b1ba-d2f965a1692b.png",
+            "articles": "/workspace/scratch/480206aee6f5/generated_images/exec-83f19561-93c1-4752-9043-c4778b89d31b.png",
+            "payments": "/workspace/scratch/480206aee6f5/generated_images/exec-3767116e-8b75-45da-baeb-3202059ecbcb.png"
+          }
         },
         "refinement": {
           "evidence": "User screenshots IMG3437/IMG3438 exposed duplicate headings and an obscured connector.",
-          "composition": "Primary My Sites heading first, before tabs. Duplicate shell/intro headings removed; back control retained. Transparent guide over existing checkout-waves background; centered How It Works. External right number rail for both guides.",
+          "composition": "All three approved headings before shared tabs. Real owned-site row table supersedes giant site cards; horizontal desktop guide supersedes vertical desktop guide. Actual brand header and back navigation retained.",
           "paymentTitle": "אז כמה הרווחתי?",
           "typography": "Self-hosted SellerRubik regular 400 and bold 700, reusing public/brand/rubik-regular.woff, rubik-bold.woff and existing Rubik-OFL.txt license.",
-          "previewBoundary": "Owned-site card and approved fullscreen onboarding are implemented. Fullscreen asset/build/TypeScript/seller handlers/full-flow browser passed; six populated seller-hub captures passed. Fresh finish review: SHIP, no material findings across all nine screens; deployment pending.",
-          "validation": "Production build, TypeScript, handler checks and six real-component fixture browser captures passed; no authenticated live/deployment claim."
+          "previewBoundary": "All three wide seller compositions are approved and implemented; fullscreen onboarding remains implemented under its own owner.",
+          "validation": "Production build, TypeScript, handler checks and six real-component fixture browser captures passed; no authenticated live/deployment claim.",
+          "desktopDetails": "Back action at left, first guide icons at RTL start/right, soft overlay on existing waves."
         },
-        "ownedSiteCard": {
-          "scope": "Owned-site records in seller My Sites only.",
-          "content": "Actual owner-uploaded image/logo, site name, status, full LTR URL, actual price with pre-VAT label; pending-review notice. No invented site screenshot.",
-          "layout": "16px rounded white card, 24px padding, subtle border/shadow and bottom accent. At 600px or below padding is 18px 14px 22px, logo 72x68px, full URL wraps and existing actions stack.",
-          "behavior": "Active and rejected actions retain existing handlers/permissions. Pending records expose no edit/pause/remove actions.",
-          "formCopy": "Removed the requested site-form subtitle שאלה אחת בכל פעם פשוט וקל.",
-          "evidence": "Populated pending and active site fixtures plus long URL at 390px/1440px; production build, TypeScript, handler and browser checks passed. Fixture image is a stand-in, not proof of a live uploaded file."
+        "tables": {
+          "sites": "Actual identity/upload, full URL, pre-VAT fee; pending proposal fee fallback. No mutation controls while pending; active change action plus canonical DropdownMenu pause/remove; rejected correction retained.",
+          "articles": "Metadata-only table; existing report endpoint in expanded row with cancel/focus return; email copy and actual site URL retained.",
+          "payments": "Closed statement.publications and statement.net authoritative if available; otherwise provisional current-month publications. Missing price is explicit, never invented zero. Existing invoice and payout handlers via canonical Dialog.",
+          "globalCss": "Two generic table rules exclude only .seller-wide-table through zero-specificity :where; no global tiny-font override for other tables.",
+          "formatting": "app/seller-display.ts formats stored integer agorot, Hebrew dates and month labels.",
+          "monthPicker": "Native transparent input, visible Hebrew month label, accessible keyboard interaction."
         }
       },
       "catalog-desktop-controls": {
