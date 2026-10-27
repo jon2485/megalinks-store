@@ -32,8 +32,8 @@ const pause=()=>page.waitForTimeout(500);
 const check=(value,label)=>{assert(value,label);console.log('PASS',label);};
 const capture=async name=>{await pause();await page.screenshot({path:join(out,name+'.png'),fullPage:true});};
 try{
- await open();await capture('mobile-intro');
- await page.getByRole('button',{name:'בוא נמשיך',exact:true}).click();await next();
+ await open();await capture('mobile-intro');check(await page.getByRole('dialog').evaluate(el=>Math.abs(el.getBoundingClientRect().width-innerWidth)<2),'journey fills viewport width');check(await page.locator('.journey-art').evaluate(el=>el.complete&&el.naturalWidth>0),'dedicated intro artwork loads');
+ await page.getByRole('button',{name:'בוא נמשיך',exact:true}).click();check(await page.evaluate(()=>document.getAnimations().some(a=>a.playState==='running')),'intro moves into questions with live animation');await next();
  check(await page.locator('#site-name').getAttribute('aria-invalid')==='true','required field exposes its error');
  await page.locator('#site-name').fill('מגזין אופק');await next();await page.locator('#site-url').fill('bad');await next();check(await page.locator('#site-url-error').innerText()!=='','bad URL stays in place');
  await page.locator('#site-url').fill('https://ofek.example');await next();await page.locator('#site-example_url').fill('https://ofek.example/article');await capture('mobile-questions');

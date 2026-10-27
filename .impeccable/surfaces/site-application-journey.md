@@ -1,9 +1,12 @@
 # Site application journey — approved 2026-10-27
 
-Status: implementation and finish review complete; ship disposition with no
-material issues. Source publication and existing-staging deployment are pending.
-The owner approved the full animated preview and requested desktop/mobile
-adaptation and smooth Hebrew RTL controls. No production deployment is in scope.
+Status: the user approved the new full-screen introduction and animation and
+requested all prior approvals staged together on the existing Railway service.
+The extension is implemented. Dedicated artwork, production build, TypeScript,
+both seller handler suites and full-flow real-component browser verification
+passed. Fresh finish review: SHIP, no material findings across all nine screens; source publication and staging
+deployment remain pending.
+No production deployment or authenticated live-account check is claimed.
 
 ## Scope and authority
 
@@ -21,17 +24,24 @@ they do not fit primitive color/component fields.
 
 ## Composition and responsive behavior
 
-- The introduction places copy at right/RTL start and existing glass-link artwork
-  at left on desktop. A compact navy logo header and four-part underline path
-  remain throughout the journey.
-- The dialog caps at 1040px; questions cap at 690px. Review uses unequal two-column
-  framing, and the full editor uses two equal columns with instructions spanning.
-- At 700px and below the dialog caps at 560px with 10px viewport-side clearance;
-  artwork stacks above copy and review/editing use one column. At 350px and below,
-  page gutters reduce and the secondary header label hides. All values may wrap.
-- The dialog owns vertical scrolling. visualViewport changes update its height
-  and vertical center for keyboard space. URL/email/numeric controls remain LTR
-  inside the RTL reading order; shared real controls retain focus and semantics.
+- The full flow uses a full-screen dialog, width 100vw, visualViewport height,
+  square outer corners and content capped at 1240px. Questions retain the 690px
+  cap; existing review/edit columns remain and collapse at 700px.
+- The approved intro pairs dedicated website-to-earnings artwork and RTL text on
+  desktop; phones stack artwork above copy. Existing waves ground and the real
+  MegaLinks logo remain. Phone gutters are 20px; footer respects the safe area.
+- visualViewport height and center follow keyboard changes without the prior
+  clearance subtraction. The dialog remains the sole vertical scroll owner;
+  existing LTR controls and full values remain reachable.
+
+### Latest approved introduction
+
+Reference: `/workspace/scratch/480206aee6f5/generated_images/exec-0e036406-0bb5-4e9b-9360-9a146b43c5c2.png`.
+This is now approved for implementation, including its animation. The intro reads
+“זה הזמן להרוויח כסף מהאתר שלך!”, followed by the approved publication earnings
+copy, short-details hint, “בוא נמשיך” action and manager-approval note. The removed
+one-question subtitle stays absent. The original 420ms RTL chapter transition
+remains; business logic, seven fields and final submission owners are unchanged.
 
 ## Visual system
 
@@ -68,9 +78,18 @@ UX-CONTRACT.md records the complete interaction and mutation boundary.
 
 ## Asset provenance
 
-- `public/brand/home-publication-20261020.webp` and `megalinks-logo.png` are reused
-  unchanged from the existing repository. No new raster, stock or generated asset
-  was acquired for this implementation.
+- The original `megalinks-logo.png` and `checkout-waves.webp` ground are reused.
+  The new transparent website-to-earnings illustration was extracted with imagegen
+  from the approved mock, generated as
+  `/workspace/scratch/480206aee6f5/generated_images/exec-39372c8f-eae3-44f5-aa4c-6b8d1afecfc8.png`,
+  and encoded as `public/brand/site-earning-intro-20261027.webp` (200086 bytes,
+  approximately 196 KiB). The extraction preserves the approved illustration
+  as a transparent standalone asset; this is new generated artwork, rather than
+  reused catalog art. Prompt provenance is preserved in the fallback sidecar
+  `public/brand/site-earning-intro-20261027.webp.json`; embedding preserved the
+  image bytes.
+  The previous generic glass-link/publication illustration is superseded only
+  in this intro.
 - Google Fonts CSS source:
   `https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap`.
   Acquired regular 400 TTF:
@@ -87,7 +106,18 @@ UX-CONTRACT.md records the complete interaction and mutation boundary.
 
 ## Evidence and release boundary
 
-Passed: typecheck; production build; scoped lint (0 errors, four form img warnings,
+The final fullscreen implementation passed production build (`/tmp/fullscreen-build.log`),
+TypeScript, both seller handler suites and real-component browser checks
+(`/tmp/fullscreen-browser.log`). Browser coverage includes all seven fields,
+edit/cancel, upload and request failures, upload cache/retry, busy locks, keyboard
+and reduced motion at 320px, 390px and 1440px. New assertions verify full-screen
+width, loaded dedicated art and the live 420ms intro-to-questions transition.
+The six seller-hub captures also passed with populated owned-site cards. Fresh
+finish review: SHIP, no material findings across all nine screens. Earlier baseline evidence is retained below. The user's
+latest authorization includes all prior approvals together on the existing
+Railway staging service. Deployment has not yet been established by this brief.
+
+Earlier baseline passed: typecheck; production build; scoped lint (0 errors, four form img warnings,
 two pre-existing seller-workspace img warnings); new schema/handler tests; seller
 UI; 48 existing seller API requests; cart/checkout/catalog checks. The
 real-component Playwright fixture uses isolated APIs at 320px, 390px and 1440px,

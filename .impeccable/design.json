@@ -692,10 +692,10 @@
     "surfaceSystems": {
       "site-application-journey": {
         "approvedAt": "2026-10-27",
-        "status": "Ship; source publication and existing-staging deployment pending.",
+        "status": "Approved fullscreen intro and animation implemented; production build, TypeScript, seller handlers and real-component browser verification passed. Fresh finish review: SHIP, no material findings across all nine screens; existing Railway staging deployment authorized but pending.",
         "authority": "Runtime CSS is canonical (model B); DESIGN.md scoped primitives mirror app/site-application-brand.css.",
         "scope": ".site-journey and its direct containing shared Dialog only.",
-        "supersedes": "Only the old site-application three-frame and dark/fading-header guidance. Incumbent admin/global/customer-card systems remain authoritative.",
+        "supersedes": "Only the old site-application three-frame and dark/fading-header guidance. Incumbent admin/global/customer-card systems remain authoritative. Approved full-screen extension supersedes the former 1040px/560px dialog bounds.",
         "brief": ".impeccable/surfaces/site-application-journey.md",
         "contract": "UX-CONTRACT.md",
         "sources": [
@@ -705,15 +705,15 @@
           "lib/site-application.ts"
         ],
         "layout": {
-          "desktopMax": "1040px",
+          "desktopMax": "100vw outer dialog; 1240px content",
           "questionMax": "690px",
-          "desktopViewportClearance": "16px each side",
-          "phoneMax": "560px",
-          "phoneViewportClearance": "10px each side",
-          "intro": "Two equal columns at desktop, copy right/art left; artwork above copy at <=700px.",
+          "desktopViewportClearance": "0px; fullscreen",
+          "phoneMax": "100vw outer dialog",
+          "phoneViewportClearance": "0px; fullscreen",
+          "intro": "Large dedicated illustration and text at desktop; artwork above copy at <=700px.",
           "review": "minmax(0,.8fr) minmax(0,1.2fr), 38px gap; one column at <=700px.",
           "edit": "Two equal columns, 24px gap; instructions span; one column at <=700px.",
-          "scroll": "One bounded Radix dialog; visualViewport height/offset keep visible keyboard space."
+          "scroll": "One full-screen Radix dialog for the full flow; visualViewport height/offset, no former clearance subtraction; phone safe-area footer."
         },
         "states": {
           "fieldBorder": "1px solid #bcd7e6",
@@ -723,13 +723,14 @@
           "disabled": "opacity:.6; cursor:wait",
           "primaryBackground": "linear-gradient(105deg,#007f8c,#0579d7)",
           "nextBackground": "linear-gradient(150deg,#007f8c,#0579d7)",
-          "surfaceBackground": "linear-gradient(160deg,#f5fcff,#fff 66%)",
+          "surfaceBackground": "#f3faff url('/brand/checkout-waves.webp') center top/cover no-repeat",
           "headerBackground": "linear-gradient(110deg,#071f42,#0d3a5b)",
           "reducedMotion": "Immediate chapter changes; no question animation, spatial hover or smooth scrolling.",
-          "forcedColors": "Canvas/ButtonFace/ButtonText/Highlight preserve controls and current progress."
+          "forcedColors": "Canvas/ButtonFace/ButtonText/Highlight preserve controls and current progress.",
+          "introHeadingGradient": "linear-gradient(100deg,#00818b,#0570c8)"
         },
         "narrative": {
-          "overview": "The approved animated site application extends the existing identity with a brief brand introduction followed by focused questions, review and explicit submission. The original MegaLinks logo and glass-link/publication artwork accompany navy, ice, white and teal-to-blue actions. Local Rubik regular and bold provide the Hebrew hierarchy for this surface only.",
+          "overview": "The approved animated site application extends the existing identity with a brief brand introduction followed by focused questions, review and explicit submission. The original MegaLinks logo and approved website-to-earnings illustration accompany navy, ice, white and teal-to-blue actions. Local Rubik regular and bold provide the Hebrew hierarchy for this surface only.",
           "rules": [
             {
               "name": "The Journey Scope Rule",
@@ -754,7 +755,7 @@
           "globalCss": "Three blanket dialog text rules exclude only this direct-child named journey via zero-specificity :where."
         },
         "provenance": {
-          "artwork": "Existing public/brand/home-publication-20261020.webp and megalinks-logo.png reused unchanged; no new acquired/generated raster.",
+          "artwork": "Dedicated transparent illustration extracted with imagegen from approved fullscreen mock; generated source /workspace/scratch/480206aee6f5/generated_images/exec-39372c8f-eae3-44f5-aa4c-6b8d1afecfc8.png encoded as public/brand/site-earning-intro-20261027.webp (200086 bytes, approximately 196 KiB). This is new generated art, not reused catalog artwork. Original megalinks-logo.png and checkout-waves.webp retained.",
           "fontCss": "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap",
           "regularTtf": "https://fonts.gstatic.com/s/rubik/v31/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-B4i1UA.ttf",
           "boldTtf": "https://fonts.gstatic.com/s/rubik/v31/iJWZBXyIfDnIV5PNhY1KTN7Z-Yh-4I-1UA.ttf",
@@ -764,10 +765,11 @@
             "public/brand/rubik-bold.woff (700)"
           ],
           "license": "Copyright 2015 The Rubik Project Authors; SIL OFL 1.1 at public/brand/Rubik-OFL.txt.",
-          "licenseSource": "https://raw.githubusercontent.com/google/fonts/main/ofl/rubik/OFL.txt"
+          "licenseSource": "https://raw.githubusercontent.com/google/fonts/main/ofl/rubik/OFL.txt",
+          "promptSidecar": "public/brand/site-earning-intro-20261027.webp.json; prompt embedding used a fallback sidecar and preserved image bytes."
         },
         "verification": {
-          "finishReview": "Ship; no material issues.",
+          "finishReview": "SHIP; no material findings across all nine screens. Existing Railway staging bundle awaiting approval; deployment pending.",
           "passed": [
             "typecheck",
             "production build",
@@ -776,15 +778,25 @@
             "seller UI",
             "48 existing seller API requests",
             "cart/checkout/catalog checks",
-            "real-component Playwright fixture APIs: 320/390/1440px, validation/edit/cancel/failures/retry/duplicate/busy close/keyboard/reduced motion, no runtime errors"
+            "real-component Playwright fixture APIs: 320/390/1440px, validation/edit/cancel/failures/retry/duplicate/busy close/keyboard/reduced motion, no runtime errors",
+            "Fullscreen extension: production build, TypeScript, both seller handlers and full-flow real-component browser at 320/390/1440px; fullscreen width, dedicated artwork loaded and live 420ms intro transition assertions."
           ],
           "limits": "No authenticated live-account or physical iOS Safari claim. Global strict audit retains 76 legacy/ownership findings, none in the new journey/form/schema/motion files.",
           "restoreBranch": "restore/before-site-journey-20261027",
           "restoreCommit": "a4162c8f12605a11c714b060a73e321d6e6623b0"
+        },
+        "fullscreenApproval": {
+          "reference": "/workspace/scratch/480206aee6f5/generated_images/exec-0e036406-0bb5-4e9b-9360-9a146b43c5c2.png",
+          "authorization": "User explicitly approved fullscreen intro and animation and staging all prior approvals together.",
+          "copy": "זה הזמן להרוויח כסף מהאתר שלך! / מוסיפים את האתר שלך ל־MegaLinks ומרוויחים מכל כתבה שמתפרסמת בו. / כמה פרטים קצרים, והאתר שלך בדרך לבדיקה. / בוא נמשיך",
+          "subtitle": "The removed one-question-at-a-time subtitle remains absent.",
+          "motion": "Existing 420ms RTL chapter slide retained.",
+          "businessBoundary": "No change to fields, mutation timing, manager approval, permission, pricing or finance rules.",
+          "verification": "PASS: production build (/tmp/fullscreen-build.log), TypeScript, both seller handler suites; real-component full-flow browser (/tmp/fullscreen-browser.log), all seven fields, edit/cancel, upload/request failures, cache/retry, busy locks, keyboard/reduced motion at 320/390/1440px; explicit fullscreen-width, artwork-loaded and live 420ms intro-to-question animation assertions. Fresh finish review: SHIP, no material findings across all nine screens; deployment pending."
         }
       },
       "seller-hub": {
-        "status": "Approved scoped extension, 2026-10-27; local implementation; source publication and deployment pending.",
+        "status": "All approved seller and fullscreen onboarding changes implemented and verified locally; finish review SHIP, no material findings across all nine screens. Bundle staged for existing Railway approval; deployment pending.",
         "mode": "Operate",
         "runtimeOwner": "app/seller-hub-approved.css",
         "ownershipModel": "B: runtime CSS canonical; DESIGN.md mirrors scoped primitives.",
@@ -796,10 +808,12 @@
           "stepOne": "linear-gradient(120deg,#e9f8ff,#d0e9ff)",
           "stepTwo": "linear-gradient(120deg,#ddf7f6,#c9eff4)",
           "stepThree": "linear-gradient(120deg,#f0eaff,#e5edff)",
-          "connector": "Segment 1: linear-gradient(#0089ef,#008d9d); segment 2: linear-gradient(#008d9d,#7950ce)"
+          "connector": "Segment 1: linear-gradient(#0089ef,#008d9d); segment 2: linear-gradient(#008d9d,#7950ce)",
+          "ownedSiteAccent": "linear-gradient(100deg,#00b4bc,#0579d7)"
         },
         "shadows": {
-          "buttonHover": "0 5px 14px #09234b14"
+          "buttonHover": "0 5px 14px #09234b14",
+          "ownedSiteCard": "0 8px 24px #09234b09"
         },
         "motion": {
           "button": "background-color .2s,box-shadow .2s,transform .2s",
@@ -826,15 +840,24 @@
           "sites": "/workspace/scratch/480206aee6f5/generated_images/exec-b628e3b5-7ed1-405a-ab1d-4276321d252f.png",
           "articles": "/workspace/scratch/480206aee6f5/generated_images/exec-271f782b-f0dc-4fc2-9fa1-affedfad10bb.png",
           "payments": "/workspace/scratch/480206aee6f5/generated_images/exec-6bed8cfe-367b-40d5-ad77-daf37ec83371.png",
-          "articlesOverride": "Final approved title כל הכתבות לפרסום, במקום אחד supersedes wording in the article mock."
+          "articlesOverride": "Final approved title כל הכתבות לפרסום, במקום אחד supersedes wording in the article mock.",
+          "ownedSiteCard": "/workspace/scratch/480206aee6f5/generated_images/exec-62ad13e3-e72c-455c-b4bf-27274f689ed1.png"
         },
         "refinement": {
           "evidence": "User screenshots IMG3437/IMG3438 exposed duplicate headings and an obscured connector.",
           "composition": "Primary My Sites heading first, before tabs. Duplicate shell/intro headings removed; back control retained. Transparent guide over existing checkout-waves background; centered How It Works. External right number rail for both guides.",
           "paymentTitle": "אז כמה הרווחתי?",
           "typography": "Self-hosted SellerRubik regular 400 and bold 700, reusing public/brand/rubik-regular.woff, rubik-bold.woff and existing Rubik-OFL.txt license.",
-          "previewBoundary": "New product-card mock remains preview only; no product-card redesign implemented.",
+          "previewBoundary": "Owned-site card and approved fullscreen onboarding are implemented. Fullscreen asset/build/TypeScript/seller handlers/full-flow browser passed; six populated seller-hub captures passed. Fresh finish review: SHIP, no material findings across all nine screens; deployment pending.",
           "validation": "Production build, TypeScript, handler checks and six real-component fixture browser captures passed; no authenticated live/deployment claim."
+        },
+        "ownedSiteCard": {
+          "scope": "Owned-site records in seller My Sites only.",
+          "content": "Actual owner-uploaded image/logo, site name, status, full LTR URL, actual price with pre-VAT label; pending-review notice. No invented site screenshot.",
+          "layout": "16px rounded white card, 24px padding, subtle border/shadow and bottom accent. At 600px or below padding is 18px 14px 22px, logo 72x68px, full URL wraps and existing actions stack.",
+          "behavior": "Active and rejected actions retain existing handlers/permissions. Pending records expose no edit/pause/remove actions.",
+          "formCopy": "Removed the requested site-form subtitle שאלה אחת בכל פעם פשוט וקל.",
+          "evidence": "Populated pending and active site fixtures plus long URL at 390px/1440px; production build, TypeScript, handler and browser checks passed. Fixture image is a stand-in, not proof of a live uploaded file."
         }
       }
     }

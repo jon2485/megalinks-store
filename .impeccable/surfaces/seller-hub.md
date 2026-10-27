@@ -64,8 +64,27 @@ composition. The payment title is exactly “אז כמה הרווחתי?”.
 SellerRubik uses existing self-hosted regular 400 and bold 700 WOFFs, with
 Heebo/Arial/sans-serif fallback and the existing Rubik OFL license. The scoped
 heading is `clamp(32px,4.3vw,48px)`, with 34px on phones. Copy is regular weight;
-headings use bold. The new product-card mock is preview only and has not been
-implemented. This refinement changes no product-card workflow or business owner.
+headings use bold. The subsequent owned-site card approval is recorded below;
+its presentation retains the existing site workflow and business owners.
+
+## Owned-site card — subsequent approval, 2026-10-27
+
+The owner approved `/workspace/scratch/480206aee6f5/generated_images/exec-62ad13e3-e72c-455c-b4bf-27274f689ed1.png`.
+The implemented owned-site card presents the existing uploaded image/logo with
+site identity and status, a full LTR URL row, the actual price and pre-VAT label,
+and a pending-review notice. It preserves owner imagery; no invented screenshot
+replaces a real upload. White framing uses a fine blue border, subtle shadow,
+16px corners and a narrow teal-to-blue bottom accent. On phones the logo scales
+to 72×68px, full URLs wrap and existing actions stack.
+
+Active and rejected-site actions retain their existing handlers and permission
+conditions. Pending records expose no edit/pause/remove actions. The site-form
+subtitle “שאלה אחת בכל פעם פשוט וקל” was removed as requested. The separately
+generated fullscreen onboarding concept
+`/workspace/scratch/480206aee6f5/generated_images/exec-0e036406-0bb5-4e9b-9360-9a146b43c5c2.png`
+is now approved and implemented, including animation and its dedicated transparent
+artwork. Production build, TypeScript, both seller handler suites and full-flow
+real-component browser checks passed; fresh finish review: SHIP, no material findings across all nine screens.
 
 ## Responsive behavior and interaction
 
@@ -91,6 +110,17 @@ full-page snapshots are in `.sites-runtime/seller-hub-browser/`:
 `sites-390.png`, `sites-1440.png`, `articles-390.png`, `articles-1440.png`,
 `payments-390.png`, `payments-1440.png`.
 
-The fixture uses sample records and stubbed APIs. It does not authenticate a live
+The latest My Sites captures include populated pending and active sample records
+and a long URL. The image endpoint serves a fixture stand-in, rather than proving
+a real account upload. Production build, TypeScript, handler and browser checks
+passed after this extension. The fixture uses sample records and stubbed APIs. It does not authenticate a live
 seller, save a real publication, send email, transfer money or prove deployment.
 The factual implementation/evidence handoff is `docs/seller-hub-20261027.md`.
+
+## Latest staging authorization
+
+The user requested all prior approved seller-card, hub and full-screen onboarding
+changes staged together on the existing Railway service. This authorizes staging
+work; source publication and deployment remain pending. The full-screen extension
+retains the existing business logic and real brand logo. Its implementation and
+verification are tracked in `.impeccable/surfaces/site-application-journey.md`.

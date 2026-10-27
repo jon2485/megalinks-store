@@ -26,7 +26,24 @@ control. “האתרים שלך יכולים להרוויח בשבילך” now 
 without a white wrapper on the existing waves ground, uses self-hosted Rubik
 regular/bold, and centers “איך זה עובד?”. An external right number rail exposes
 connecting segments on My Sites and payments. Payments reads “אז כמה הרווחתי?”.
-The new product-card mock is preview only; no product-card redesign is implemented.
+The subsequently approved owned-site card is implemented as described below.
+
+## Approved owned-site card
+
+The approved reference is
+`/workspace/scratch/480206aee6f5/generated_images/exec-62ad13e3-e72c-455c-b4bf-27274f689ed1.png`.
+The card now groups the actual uploaded owner image/logo, identity and status,
+full URL, actual price with “לפני מע״מ”, and pending-review notice. The image
+source is preserved; no invented site screenshot is substituted. Active and
+rejected actions retain their handlers and conditions; pending records have no
+edit/pause/remove actions. URLs wrap on phones and existing actions stack.
+
+The requested site-form subtitle “שאלה אחת בכל פעם פשוט וקל” was removed from
+`app/seller-site-form.tsx`. The fullscreen onboarding concept
+`/workspace/scratch/480206aee6f5/generated_images/exec-0e036406-0bb5-4e9b-9360-9a146b43c5c2.png`
+is now approved and implemented, including animation and its dedicated transparent
+artwork. Production build, TypeScript, both seller handler suites and full-flow
+real-component browser checks passed; fresh finish review: SHIP, no material findings across all nine screens.
 
 ## Implementation owners
 
@@ -34,6 +51,7 @@ The new product-card mock is preview only; no product-card redesign is implement
 - `app/seller-guide.tsx`: numbered guide and emphasized title components.
 - `app/seller-workspace.tsx`: seller tabs and My Sites/payments composition.
 - `app/seller-articles.tsx`: articles heading, email copy, site URL and inline report.
+- `app/seller-site-form.tsx`: requested subtitle removal only.
 - `DESIGN.md`, `.impeccable/design.json`, `.impeccable/surfaces/seller-hub.md`: durable scoped design context.
 
 ## Validation and browser evidence
@@ -52,7 +70,17 @@ runtime errors or horizontal overflow. The saved full-page captures are:
 | Articles, report open | `.sites-runtime/seller-hub-browser/articles-390.png` | `.sites-runtime/seller-hub-browser/articles-1440.png` |
 | Payments | `.sites-runtime/seller-hub-browser/payments-390.png` | `.sites-runtime/seller-hub-browser/payments-1440.png` |
 
-The sample fixture has empty site/payment lists and one pending article. It does
-not establish populated-record coverage, authenticated live behavior, delivery of
+The latest My Sites fixtures include pending and active records and a long URL;
+their 390px/1440px captures cover the approved card layout. The fixture image is
+a stand-in. Payment lists remain empty and articles use one pending record. The
+checks do not establish authenticated live behavior, delivery of
 email, a real saved publication, physical-device behavior or deployment state.
 Source publication and existing-staging deployment remain separate pending work.
+
+## Latest staging authorization
+
+The user requested all prior approved seller-card, hub and full-screen onboarding
+changes staged together on the existing Railway service. This authorizes staging
+work; source publication and deployment remain pending. The full-screen extension
+retains the existing business logic and real brand logo. Its implementation and
+verification are tracked in `.impeccable/surfaces/site-application-journey.md`.

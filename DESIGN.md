@@ -156,12 +156,13 @@ rounded:
   catalog-card: "28px"
   admin-editorial-panel: "12px"
   admin-editorial-control: "8px"
-  site-journey-dialog: "20px"
-  site-journey-dialog-phone: "18px"
+  site-journey-dialog: "0px"
+  site-journey-dialog-phone: "0px"
   site-journey-primary: "13px"
   site-journey-field: "12px"
   seller-hub-step: "16px"
   seller-hub-report: "12px"
+  seller-hub-owned-site: "16px"
 spacing:
   catalog-gap: "16px"
   catalog-max: "1760px"
@@ -172,10 +173,10 @@ spacing:
   admin-editorial-column-gap: "28px"
   admin-editorial-desktop-gutter: "36px"
   admin-editorial-phone-gutter: "16px"
-  site-journey-page-inline: "36px"
-  site-journey-page-block-start: "32px"
-  site-journey-page-inline-phone: "22px"
-  site-journey-page-inline-compact: "16px"
+  site-journey-page-inline: "40px"
+  site-journey-page-block-start: "clamp(24px, 4vh, 52px)"
+  site-journey-page-inline-phone: "20px"
+  site-journey-page-inline-compact: "20px"
   site-journey-edit-column-gap: "24px"
   site-journey-review-column-gap: "38px"
   site-journey-action-gap: "12px"
@@ -292,7 +293,7 @@ from the visual references.
 
 The approved animated site application extends the existing identity with a brief
 brand introduction followed by focused questions, review and explicit submission.
-The original MegaLinks logo and glass-link/publication artwork accompany navy,
+The original MegaLinks logo and approved website-to-earnings illustration accompany navy,
 ice, white and teal-to-blue actions. Local Rubik regular and bold provide the
 Hebrew hierarchy for this surface only.
 
@@ -321,6 +322,12 @@ primary title before tabs, reuses the waves ground without a white guide wrapper
 and uses self-hosted Rubik 400/700. Number markers and connecting segments occupy
 an external right rail in both guides; payment steps remain vertical at desktop.
 This supersedes only the earlier seller guide wrapper/column composition.
+The approved owned-site record extends this scope with a real identity/image,
+status, full URL, actual price with pre-VAT label and pending-review notice.
+Uploaded owner imagery and existing action permissions remain canonical. The
+separate fullscreen onboarding concept is now approved for implementation, including
+animation; all prior approved changes are authorized together for the existing
+Railway staging service. Deployment remains pending.
 Source publication and deployment are pending; this records local implementation.
 
 ## Colors
@@ -467,18 +474,21 @@ scroll ownership and the existing shell reserves dock space.
 
 ### Site application journey layout
 
-One Radix dialog owns vertical scrolling. Its desktop stage caps at 1040px with
-16px minimum viewport-side clearance; the intro pairs copy at RTL start/right
-with original artwork at left. Questions cap at 690px. Review uses two unequal
-columns, and consolidated editing uses two equal columns with instructions
-spanning both. Page padding and gaps follow the scoped frontmatter values.
+One full-screen Radix dialog owns vertical scrolling throughout introduction,
+questions, review, editing and success. It spans 100vw with square outer corners;
+visualViewport height/offset track keyboard space without the previous clearance
+subtraction. Content caps at 1240px. Questions retain their 690px cap; review and
+editing retain their existing desktop columns and collapse at 700px.
 
-At 700px and below the dialog uses 10px side clearance and caps at 560px. The
-intro stacks artwork above copy, review and editing become one column, and actions
-wrap or stack. At 350px and below the inline page gutter is 16px and nonessential
-header copy is hidden. Runtime visualViewport bounds keep the dialog within the
-available keyboard area. Full values and controls remain reachable by natural
-dialog scrolling; there is no second nested form scroll region.
+The approved intro uses a dedicated website-to-earnings illustration over the
+existing waves ground, alongside the original brand logo. Desktop artwork caps
+at min(560px,65dvh); the intro title is clamp(38px,4vw,58px). At 700px and below,
+artwork stacks above copy, caps at clamp(180px,32dvh,340px), and the title uses
+clamp(28px,7.7vw,40px). Phone page gutters are 20px and the footer reserves the
+bottom safe area. Fields, values, controls and the existing RTL chapter animation
+remain reachable in the single dialog scroll owner. The approved extension passed production build, TypeScript, seller handler and
+real-component full-flow browser checks, including asset loading, full-screen
+width and the live 420ms intro transition. Deployment remains pending.
 
 ## Elevation & Depth
 
