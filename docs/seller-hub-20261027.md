@@ -8,8 +8,8 @@ pending. No authenticated live-site verification is claimed.
 The seller My Sites, articles and payments surfaces use the approved bulk-order
 instruction language: three pastel numbered steps with a connector, emphasized
 teal-to-blue heading text and underline-selected navigation. Responsive rules
-adapt cards, guide copy and report controls for phones; desktop payments uses
-three compact guide columns. Shared catalog, admin and site-application owners
+adapt guide copy and report controls for phones; payment steps remain vertical
+with the external numbered rail at desktop as well. Shared catalog, admin and site-application owners
 remain separate.
 
 The articles title is exactly “כל הכתבות לפרסום, במקום אחד”. Supporting copy says
@@ -17,6 +17,16 @@ articles and files arrive by email and publication can be reported here or by
 email. Article rows show the actual site URL from `w.url AS site_url` in the
 seller-scoped query in `lib/customer-sellers.ts`. Inline reporting retains its
 existing endpoint, explicit submission, URL validation and busy lock.
+
+## Screenshot-led refinement
+
+User screenshots IMG3437/IMG3438 showed duplicated My Sites headings and a hidden
+connector. The redundant shell and intro headings were removed, keeping the back
+control. “האתרים שלך יכולים להרוויח בשבילך” now leads before tabs. The guide sits
+without a white wrapper on the existing waves ground, uses self-hosted Rubik
+regular/bold, and centers “איך זה עובד?”. An external right number rail exposes
+connecting segments on My Sites and payments. Payments reads “אז כמה הרווחתי?”.
+The new product-card mock is preview only; no product-card redesign is implemented.
 
 ## Implementation owners
 
@@ -28,7 +38,8 @@ existing endpoint, explicit submission, URL validation and busy lock.
 
 ## Validation and browser evidence
 
-The production build passed after the final contrast and connector adjustments.
+Production build, TypeScript and handler checks passed after the refinement,
+as did the six real-component desktop/phone browser captures.
 
 `tests/seller-hub-browser.mjs` renders actual production components with built CSS
 and isolated API fixtures. It exercises tab changes at 390px and 1440px, site URL

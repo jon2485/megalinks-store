@@ -796,11 +796,9 @@
           "stepOne": "linear-gradient(120deg,#e9f8ff,#d0e9ff)",
           "stepTwo": "linear-gradient(120deg,#ddf7f6,#c9eff4)",
           "stepThree": "linear-gradient(120deg,#f0eaff,#e5edff)",
-          "connector": "linear-gradient(#0089ef,#008d9d,#7950ce)",
-          "paymentsDesktopConnector": "linear-gradient(270deg,#0089ef,#008d9d,#7950ce)"
+          "connector": "Segment 1: linear-gradient(#0089ef,#008d9d); segment 2: linear-gradient(#008d9d,#7950ce)"
         },
         "shadows": {
-          "guide": "0 8px 28px #09234b09",
           "buttonHover": "0 5px 14px #09234b14"
         },
         "motion": {
@@ -810,8 +808,8 @@
           "reducedMotion": "Remove button/underline transitions and pressed transform."
         },
         "responsive": {
-          "phone": "max-width:600px; 29px titles, 32px numbered discs, 26px icons, full-width report action.",
-          "paymentsDesktop": "min-width:900px; three payment columns with horizontal connector and 26px icons."
+          "phone": "max-width:600px; 34px titles, 32px numbered discs, 26px icons, 40px external right rail gutter, full-width report action.",
+          "paymentsDesktop": "min-width:900px; vertical single-column payment guide with external right number rail, connecting segments and visible icons."
         },
         "accessibility": "Real buttons retain aria-pressed; ordered steps retain semantic order. Existing labels and LTR URL/email controls remain. Forced colors removes heading gradient and adds step borders.",
         "verification": {
@@ -829,6 +827,14 @@
           "articles": "/workspace/scratch/480206aee6f5/generated_images/exec-271f782b-f0dc-4fc2-9fa1-affedfad10bb.png",
           "payments": "/workspace/scratch/480206aee6f5/generated_images/exec-6bed8cfe-367b-40d5-ad77-daf37ec83371.png",
           "articlesOverride": "Final approved title כל הכתבות לפרסום, במקום אחד supersedes wording in the article mock."
+        },
+        "refinement": {
+          "evidence": "User screenshots IMG3437/IMG3438 exposed duplicate headings and an obscured connector.",
+          "composition": "Primary My Sites heading first, before tabs. Duplicate shell/intro headings removed; back control retained. Transparent guide over existing checkout-waves background; centered How It Works. External right number rail for both guides.",
+          "paymentTitle": "אז כמה הרווחתי?",
+          "typography": "Self-hosted SellerRubik regular 400 and bold 700, reusing public/brand/rubik-regular.woff, rubik-bold.woff and existing Rubik-OFL.txt license.",
+          "previewBoundary": "New product-card mock remains preview only; no product-card redesign implemented.",
+          "validation": "Production build, TypeScript, handler checks and six real-component fixture browser captures passed; no authenticated live/deployment claim."
         }
       }
     }

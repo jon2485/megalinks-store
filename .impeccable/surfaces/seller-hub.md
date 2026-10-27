@@ -31,10 +31,11 @@ reused; no generated mock is inserted as product UI.
 
 ## Composition
 
-The centered stage caps at 1120px. My Sites puts its three-step guide before the
+The centered stage caps at 1120px. My Sites puts its primary heading before tabs
+and its three-step guide before the
 existing site records and uses an explicit add-site action. Step colors run from
 pale blue to pale teal to lavender with matching numbered discs. The connecting
-line remains behind the discs. Payments reuses a compact three-step guide before
+line remains behind the discs. Payments reuses a vertical three-step guide before
 its existing month selector, publication summary and invoice records.
 
 The articles heading reads exactly “כל הכתבות לפרסום, במקום אחד”, broken between
@@ -48,12 +49,29 @@ Article rows expose the actual site URL, isolated LTR. The seller-scoped query i
 not a URL inferred from a publication or a fixture label. New-window links retain
 `noopener noreferrer`. Existing permissions and server mutation owners remain.
 
+## Screenshot-led refinement — 2026-10-27
+
+User screenshots IMG3437/IMG3438 exposed duplicate My Sites headings and an
+obscured connector. The refinement removes the redundant shell and intro titles
+while retaining the back control. “האתרים שלך יכולים להרוויח בשבילך” is the first
+page heading, before tabs. The guide is transparent over the existing
+`checkout-waves.webp` ground; its former white wrapper and shadow are removed.
+“איך זה עובד?” is centered. Number markers now sit outside each pastel panel in
+an external right rail; separate segments connect marker centers visibly in both
+My Sites and payments. This supersedes the earlier desktop horizontal payment
+composition. The payment title is exactly “אז כמה הרווחתי?”.
+
+SellerRubik uses existing self-hosted regular 400 and bold 700 WOFFs, with
+Heebo/Arial/sans-serif fallback and the existing Rubik OFL license. The scoped
+heading is `clamp(32px,4.3vw,48px)`, with 34px on phones. Copy is regular weight;
+headings use bold. The new product-card mock is preview only and has not been
+implemented. This refinement changes no product-card workflow or business owner.
+
 ## Responsive behavior and interaction
 
-At 600px and below, headings become 29px, guide padding shrinks, step icons remain visible at 26px,
+At 600px and below, headings become 34px, guide padding shrinks, step icons remain visible at 26px,
 number discs reduce to 32px and report actions fill the available width. Step copy
-wraps within the remaining column; URLs wrap rather than widen cards. At 900px
-and above, payment steps use three columns with a horizontal connector and 26px icons.
+wraps within the remaining column; URLs wrap rather than widen cards. Payment steps retain a vertical single-column guide at desktop as well.
 All three destinations retain their existing state and callbacks.
 
 Tabs use real buttons with `aria-pressed`. The ordered guide retains semantic

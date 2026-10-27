@@ -141,10 +141,14 @@ typography:
     fontWeight: 400
     lineHeight: 1.65
   seller-hub-heading:
-    fontSize: "clamp(27px, 3.5vw, 40px)"
-    fontWeight: 800
+    fontFamily: "SellerRubik, Heebo, Arial, sans-serif"
+    fontSize: "clamp(32px, 4.3vw, 48px)"
+    fontWeight: 700
+    letterSpacing: "-0.025em"
     lineHeight: 1.3
   seller-hub-lead:
+    fontFamily: "SellerRubik, Heebo, Arial, sans-serif"
+    fontWeight: 400
     fontSize: "17px"
     lineHeight: 1.85
 rounded:
@@ -156,7 +160,7 @@ rounded:
   site-journey-dialog-phone: "18px"
   site-journey-primary: "13px"
   site-journey-field: "12px"
-  seller-hub-guide: "16px"
+  seller-hub-step: "16px"
   seller-hub-report: "12px"
 spacing:
   catalog-gap: "16px"
@@ -176,8 +180,8 @@ spacing:
   site-journey-review-column-gap: "38px"
   site-journey-action-gap: "12px"
   seller-hub-stage: "1120px"
-  seller-hub-guide-padding: "28px"
-  seller-hub-step-gap: "14px"
+  seller-hub-guide-padding: "12px 0 22px"
+  seller-hub-step-gap: "18px"
 components:
   admin-editorial-button-primary:
     backgroundColor: "{colors.admin-editorial-blue}"
@@ -312,6 +316,11 @@ the catalog, administration and site application journey keep their owners.
 frontmatter entries mirror its reusable local primitives; its gradients, shadow,
 motion and breakpoints live in `.impeccable/design.json`. Composition, approved
 copy and evidence boundaries live in `.impeccable/surfaces/seller-hub.md`.
+The screenshot-led refinement removes duplicate My Sites headings, places the
+primary title before tabs, reuses the waves ground without a white guide wrapper,
+and uses self-hosted Rubik 400/700. Number markers and connecting segments occupy
+an external right rail in both guides; payment steps remain vertical at desktop.
+This supersedes only the earlier seller guide wrapper/column composition.
 Source publication and deployment are pending; this records local implementation.
 
 ## Colors
