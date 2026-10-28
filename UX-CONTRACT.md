@@ -696,3 +696,26 @@ without output, so no clean global audit is claimed. The final independent
 closure-preflight review returned **ship** after manual inspection of all 24
 captures: the material preflight fix is resolved, with no partial or unresolved
 findings in this scope. Actual deployment remains a separate completion record.
+
+
+## Month-close site visibility correction — 2026-10-28
+
+Each month-close order exposes its actual sites before disclosure, with the
+linked URL and historical remaining net price; monthly items also expose their
+purchase date/time. The site preview stays outside the summary button and hidden
+billing body, so following a site link does not toggle the disclosure.
+
+`buildMonthReport` projects only item ID, URL, purchase timestamp, remaining net
+and cancellation flags. Historical URL snapshots win; the server's website join
+supplies a legacy fallback when a snapshot URL is absent. Existing timestamp
+fallbacks remain in use. Article content, provider and item cost fields are not
+added to the item projection. Admin authorization, financial summary calculation,
+filters, full applied-range export and local 20-order paging remain unchanged.
+This correction adds no financial writes or migration.
+
+Production build, typecheck, scoped lint, the new month-close API checks and 117
+finance regression checks passed. Browser fixtures covered all six finance
+surfaces/actions at 320/390/1440px and month-close sites before/after disclosure.
+Independent manual review returned **ship** after inspecting all six scoped
+captures, with no material unresolved findings. Evidence and limits are appended
+to `.impeccable/surfaces/finance-siblings.md`.

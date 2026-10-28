@@ -1,5 +1,5 @@
 import type {Row} from './shared';
-import {effectiveOrderAmounts} from './order-finance';
+import {effectiveOrderAmounts,remainingArticleNet} from './order-finance';
 import {paymentConfirmed} from './admin-order-buckets';
 /** Costs are immutable purchase snapshots, not current catalog prices or supplier cash payments. */
 export function purchaseCosts(articles:Row[]){
@@ -14,7 +14,7 @@ export function purchaseCosts(articles:Row[]){
 }
 export function buildMonthReport(orders:Row[],articles:Row[]){
  const byOrder=new Map<string,Row[]>();for(const a of articles){const group=byOrder.get(a.order_id)||[];group.push(a);byOrder.set(a.order_id,group);}
- const rows:Row[]=orders.filter(o=>!o.demo).map(o=>{const paid=paymentConfirmed(o),amounts=effectiveOrderAmounts(o),cost=purchaseCosts(byOrder.get(o.id)||[]);return {...o,amounts,confirmed:paid,income_net:paid?amounts.net:0,income_vat:paid?amounts.vat:0,income_total:paid?amounts.total:0,cost_known:cost.known,cost_missing:cost.missing,cost_net:cost.cost,profit_net:paid&&cost.cost!==null?amounts.net-cost.cost:null};});
+ const rows:Row[]=orders.filter(o=>!o.demo).map(o=>{const paid=paymentConfirmed(o),amounts=effectiveOrderAmounts(o),cost=purchaseCosts(byOrder.get(o.id)||[]);return {...o,items:(byOrder.get(o.id)||[]).map(a=>({id:a.id,url:a.data?.website_url||a.website_url||a.current_website_url||'',purchased_at:a.purchased_at||a.created||o.created,net:remainingArticleNet(a,o),publication_refunded:!!a.publication_refunded,writing_refunded:!!a.writing_refunded})),amounts,confirmed:paid,income_net:paid?amounts.net:0,income_vat:paid?amounts.vat:0,income_total:paid?amounts.total:0,cost_known:cost.known,cost_missing:cost.missing,cost_net:cost.cost,profit_net:paid&&cost.cost!==null?amounts.net-cost.cost:null};});
  const summary={orders:rows.length,paid_orders:0,net:0,vat:0,total:0,cost_known:0,cost_missing:0,cost_net:null as number|null,profit_net:null as number|null};
  const clients=new Map<string,Row>();
  for(const o of rows){

@@ -128,3 +128,40 @@ comparison of all 24 captures; the material closure-preflight fix is resolved,
 with no partial or unresolved findings in this scope. This is a manual comparison,
 not an automated pixel diff. Actual deployment remains a separate completion
 record and is not asserted here.
+
+
+## Month-close site visibility correction — 2026-10-28
+
+The user's `upload/image(20261028-213223).png` reports missing site detail and
+requires it on the initial month-close screen. Every order now shows compact
+white site rows before and after opening its billing details: linked full URL
+on the right, historical remaining net price on the left, thin separators and
+purchase date/time for monthly items. There are no repeated tax/total blocks.
+The existing financial summary and incumbent visual system remain unchanged.
+
+`app/admin-month-close.tsx` supplies `FinanceItems` with `presentation="month-report"`
+through `FinanceRecord`'s optional preview slot in `app/finance-records.tsx`;
+`app/finance-records.css` owns the scoped white-row treatment. The preview is
+outside both the native summary button and hidden billing body.
+`lib/admin-month-report.ts` projects item ID, URL, purchase timestamp, remaining
+net and cancellation flags. `lib/admin-month-server.ts` joins the current website
+URL only as a legacy fallback; historical snapshot URLs win. Item content,
+provider and cost fields are excluded from this projection. Authorization,
+financial calculations, filters, complete export and local 20-order pages keep
+their existing behavior. No financial write or migration is introduced.
+
+| Scoped check | Evidence |
+|---|---|
+| Production build passed | `/tmp/month-close-sites-build.txt` |
+| Successful typecheck and scoped lint, empty logs | `/tmp/month-close-sites-typecheck.txt`; `/tmp/month-close-sites-lint.txt` |
+| New API checks: historical price/date, refunds, legacy URL fallback, privacy, admin authorization and unchanged totals | `/tmp/month-close-sites-api.txt`; `tests/month-close-sites.mjs` |
+| 117 finance regression checks passed | `/tmp/month-close-sites-finance-regression.txt` |
+| Six finance surfaces/actions at 320/390/1440px, including sites before/after disclosure | `/tmp/month-close-sites-browser.txt`; `tests/finance-siblings-browser.mjs` |
+
+Captures: `.sites-runtime/finance-siblings-browser/month-close-sites-{initial,expanded}-{320,390,1440}.png`.
+The fresh independent review manually inspected all six scoped captures and
+returned **ship**, with the user-reported omission resolved and no material
+unresolved findings. This is a manual scoped ship disposition. It does not claim
+an automated pixel diff, detector result, physical iOS verification, deployed
+pixels or live financial mutation testing. Earlier out-of-scope documentation
+drift is preserved and is not promoted into a design rule.

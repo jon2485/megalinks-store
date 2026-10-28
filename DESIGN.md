@@ -1123,3 +1123,17 @@ payment receipt and stage-dependent cancellation are distinct tasks with explici
 confirmations and recoverable errors. Their behavioral authority is the appended
 finance-sibling section of `UX-CONTRACT.md`, not visual styling. Scope,
 references and checked evidence live in `.impeccable/surfaces/finance-siblings.md`.
+
+
+## Month-close site visibility correction — 2026-10-28
+
+The user's month-close screenshot correction extends only this report's record
+presentation. Each order now keeps its site list visible on the initial screen
+and while its billing disclosure is open or closed. `FinanceRecord` places an
+optional preview outside its native summary button and hidden detail region;
+`FinanceItems` uses the named `month-report` presentation. Compact white rows
+keep the linked full URL on the right, historical remaining net price on the
+left and fine separators. Monthly items also show purchase date/time. This
+preview omits repeated subtotal, VAT and grand-total blocks; the existing period
+summary retains its hierarchy and amounts. The incumbent navy/ice/Heebo RTL
+system and local `--fin-*` owners remain authoritative.
