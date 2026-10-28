@@ -700,22 +700,27 @@ findings in this scope. Actual deployment remains a separate completion record.
 
 ## Month-close site visibility correction — 2026-10-28
 
-Each month-close order exposes its actual sites before disclosure, with the
-linked URL and historical remaining net price; monthly items also expose their
-purchase date/time. The site preview stays outside the summary button and hidden
-billing body, so following a site link does not toggle the disclosure.
+All month-close records start closed. The native row button exposes
+`aria-expanded`/`aria-controls` and opens or closes the complete detail body:
+site rows first, then billing facts and the explicit order-details action.
+Only one record is open at a time. Repeated mouse, Enter and Space activation
+must reclose it. Expansion stays on the report page and reveals its URLs there;
+opening an order remains a separate explicit action. No optional site preview
+sits outside the hidden body. Applying a valid report range resets the page and
+closes the detail; changing the local report page also closes it. Monthly,
+top-up and payment-report row toggles use functional state updates.
 
-`buildMonthReport` projects only item ID, URL, purchase timestamp, remaining net
-and cancellation flags. Historical URL snapshots win; the server's website join
-supplies a legacy fallback when a snapshot URL is absent. Existing timestamp
-fallbacks remain in use. Article content, provider and item cost fields are not
-added to the item projection. Admin authorization, financial summary calculation,
-filters, full applied-range export and local 20-order paging remain unchanged.
-This correction adds no financial writes or migration.
+Expanded rows show actual full site URLs and historical remaining net prices;
+monthly items retain purchase date/time. The existing item projection, historical
+URL preference, legacy URL/timestamp fallbacks, admin authorization, accounting,
+filters, applied-range export and local 20-order paging remain unchanged. This
+runtime correction adds no backend, API projection, financial write or migration.
 
-Production build, typecheck, scoped lint, the new month-close API checks and 117
-finance regression checks passed. Browser fixtures covered all six finance
-surfaces/actions at 320/390/1440px and month-close sites before/after disclosure.
-Independent manual review returned **ship** after inspecting all six scoped
-captures, with no material unresolved findings. Evidence and limits are appended
-to `.impeccable/surfaces/finance-siblings.md`.
+Production build, typecheck, scoped lint, month-close API checks, billing/refund
+and history handler checks, all-six-finance browser coverage and the main
+approved-order browser regression passed. Browser fixtures cover 320/390/1440px,
+repeated mouse/keyboard toggles, one-open-record behavior, hidden sites on closure,
+monthly dates and actions without overflow. Fresh independent manual review
+returned **ship** for this scoped correction with no material unresolved findings.
+Evidence and verification limits are in `.impeccable/surfaces/finance-siblings.md`.
+The corrected source has not yet been deployed.

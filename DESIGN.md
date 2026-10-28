@@ -1127,13 +1127,16 @@ references and checked evidence live in `.impeccable/surfaces/finance-siblings.m
 
 ## Month-close site visibility correction — 2026-10-28
 
-The user's month-close screenshot correction extends only this report's record
-presentation. Each order now keeps its site list visible on the initial screen
-and while its billing disclosure is open or closed. `FinanceRecord` places an
-optional preview outside its native summary button and hidden detail region;
-`FinanceItems` uses the named `month-report` presentation. Compact white rows
-keep the linked full URL on the right, historical remaining net price on the
-left and fine separators. Monthly items also show purchase date/time. This
-preview omits repeated subtotal, VAT and grand-total blocks; the existing period
-summary retains its hierarchy and amounts. The incumbent navy/ice/Heebo RTL
-system and local `--fin-*` owners remain authoritative.
+The user's final correction requires compact summary rows that start closed.
+`FinanceRecord` has no optional preview: its native summary button opens or
+closes the complete hidden detail body, with one record open at a time.
+`app/admin-month-close.tsx` places `FinanceItems`'s `month-report` presentation
+first in that body, followed by billing facts and the explicit order action.
+Expansion stays on the report page; closing hides the sites and billing details.
+
+Expanded site rows retain the linked full URL on the right, historical remaining
+net price on the left, fine separators and purchase date/time for monthly items.
+They remain compact and white without repeated subtotal, VAT or grand-total
+blocks. The existing period summary, navy/ice/white palette, Heebo RTL and scoped
+`--fin-*` owners remain authoritative. This is a disclosure repair within the
+incumbent composition, with no new design-system rule.

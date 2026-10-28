@@ -53,10 +53,8 @@ body:has(.finance-page) .admin-all-areas{width:44px;min-width:44px;padding:10px;
 @media(max-width:767px){.finance-phone-only{display:initial!important}.finance-record-name small.finance-phone-only,.finance-invoice-name small.finance-phone-only{display:block!important}.finance-invoice-row{grid-template-columns:minmax(0,1fr) auto}.finance-invoice-actions{flex-wrap:wrap}}
 .finance-preview-attachment{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.finance-preview-attachment>span{display:flex;align-items:center;gap:6px;font-size:13px}.finance-dialog .finance-items{margin:0}.finance-dialog .finance-items .finance-item-taxes{font-size:11px}.finance-dialog .finance-items li>strong{font-size:14px}
 
-/* Month report: site rows remain visible before opening the billing disclosure. */
-.finance-items.is-month-report{border:0;border-top:1px solid var(--fin-line);border-radius:0;margin:0;background:#fff}
-.finance-items.is-month-report .finance-items-heading{padding-inline:20px;background:#fff}
-.finance-items.is-month-report ul{padding-inline:20px!important}
-.finance-items.is-month-report li:last-child{border-bottom:0}
-.finance-items.is-month-report .finance-note{padding:8px 20px}
-@media(max-width:767px){.finance-items.is-month-report ul{padding-inline:12px!important}.finance-items.is-month-report .finance-note{padding-inline:12px}}
+/* Month-report sites share the financial record's single collapsible body. */
+.finance-record-body>.finance-items.is-month-report{border:0;border-radius:0;margin:0;background:#fff}
+.finance-record-body>.finance-items.is-month-report .finance-items-heading{padding-inline:0;background:#fff}
+.finance-record-body>.finance-items.is-month-report ul{padding-inline:0!important}
+.finance-record-body>.finance-items.is-month-report .finance-note{padding-block:8px}

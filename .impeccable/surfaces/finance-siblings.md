@@ -132,36 +132,49 @@ record and is not asserted here.
 
 ## Month-close site visibility correction — 2026-10-28
 
-The user's `upload/image(20261028-213223).png` reports missing site detail and
-requires it on the initial month-close screen. Every order now shows compact
-white site rows before and after opening its billing details: linked full URL
-on the right, historical remaining net price on the left, thin separators and
-purchase date/time for monthly items. There are no repeated tax/total blocks.
-The existing financial summary and incumbent visual system remain unchanged.
+The final user correction is that orders looked permanently open and could not
+be closed. The report now starts with compact closed summary rows. The row's
+native button opens or closes all its detail, with one record open at a time;
+expansion remains on the report page. This replaces the earlier always-visible
+site-preview requirement. Site links appear within the expanded record without
+requiring order navigation; the order-details action remains explicit.
 
-`app/admin-month-close.tsx` supplies `FinanceItems` with `presentation="month-report"`
-through `FinanceRecord`'s optional preview slot in `app/finance-records.tsx`;
-`app/finance-records.css` owns the scoped white-row treatment. The preview is
-outside both the native summary button and hidden billing body.
-`lib/admin-month-report.ts` projects item ID, URL, purchase timestamp, remaining
-net and cancellation flags. `lib/admin-month-server.ts` joins the current website
-URL only as a legacy fallback; historical snapshot URLs win. Item content,
-provider and cost fields are excluded from this projection. Authorization,
-financial calculations, filters, complete export and local 20-order pages keep
-their existing behavior. No financial write or migration is introduced.
+`app/finance-records.tsx` removes the optional preview slot.
+`app/admin-month-close.tsx` places `FinanceItems` with
+`presentation="month-report"` first inside the same hidden body as billing facts
+and the order action. `app/finance-records.css` scopes the compact white site rows
+to that body. Full linked URLs remain on the right, historical remaining net
+prices on the left, with fine separators and monthly purchase date/time. No
+repeated subtotal/VAT/grand-total blocks are added. Valid range submission and
+report-page changes close detail. Monthly, top-up and payment-report lists use
+functional state toggles so repeated activation reliably opens and recloses.
+
+The thesis remains compact scanning followed by one complete detail. The
+approved navy/ice/white, Heebo RTL world and existing `--fin-*` owners are
+preserved; the first viewport contains closed rows. This narrow repair inherits
+the incumbent composition and adds no new visual identity, seed or system rule.
+`PRODUCT.md` was already absent; no init or new product context was introduced.
+Backend accounting, authorization, item API projection, filters, full applied-
+range export and local 20-order paging remain unchanged. No financial write or
+migration is introduced.
 
 | Scoped check | Evidence |
 |---|---|
-| Production build passed | `/tmp/month-close-sites-build.txt` |
-| Successful typecheck and scoped lint, empty logs | `/tmp/month-close-sites-typecheck.txt`; `/tmp/month-close-sites-lint.txt` |
-| New API checks: historical price/date, refunds, legacy URL fallback, privacy, admin authorization and unchanged totals | `/tmp/month-close-sites-api.txt`; `tests/month-close-sites.mjs` |
-| 117 finance regression checks passed | `/tmp/month-close-sites-finance-regression.txt` |
-| Six finance surfaces/actions at 320/390/1440px, including sites before/after disclosure | `/tmp/month-close-sites-browser.txt`; `tests/finance-siblings-browser.mjs` |
+| Production build passed | `/tmp/finance-collapse-build.txt` |
+| Successful typecheck and scoped lint, empty logs | `/tmp/finance-collapse-typecheck.txt`; `/tmp/finance-collapse-lint.txt` |
+| Existing month-close item projection, historical prices/dates, refunds, URL fallback, authorization and totals passed | `/tmp/finance-collapse-api.txt`; `tests/month-close-sites.mjs` |
+| Billing/refund and history handler checks passed | `/tmp/finance-collapse-handlers.txt`; `/tmp/finance-collapse-history.txt` |
+| All six finance surfaces/actions at 320/390/1440px; mouse/Enter/Space repeated toggles, one-open-record, sites hidden on collapse, monthly dates and no overflow | `/tmp/finance-collapse-browser.txt`; `tests/finance-siblings-browser.mjs` |
+| Main approved-order browser regression passed | `/tmp/finance-collapse-orders-browser.txt` |
 
-Captures: `.sites-runtime/finance-siblings-browser/month-close-sites-{initial,expanded}-{320,390,1440}.png`.
-The fresh independent review manually inspected all six scoped captures and
-returned **ship**, with the user-reported omission resolved and no material
-unresolved findings. This is a manual scoped ship disposition. It does not claim
-an automated pixel diff, detector result, physical iOS verification, deployed
-pixels or live financial mutation testing. Earlier out-of-scope documentation
-drift is preserved and is not promoted into a design rule.
+Current captures are
+`.sites-runtime/finance-siblings-browser/month-close-sites-{closed,expanded,reclosed,monthly}-{320,390,1440}.png`.
+The fresh independent reviewer manually inspected expanded and reclosed captures
+at 320/390/1440px and the monthly capture at 390px, returning **ship** for the
+scoped runtime correction with no material fixes required. These checks use
+isolated fixtures and perform no live financial writes. Physical iOS, live
+authenticated pixels and an automated pixel diff are not certified. Context
+loading was unavailable earlier and the detector timed out without output;
+no clean detector result is claimed. The corrected source has not yet been
+deployed. Earlier out-of-scope documentation drift is preserved, not repaired or
+promoted into a design-system rule.
