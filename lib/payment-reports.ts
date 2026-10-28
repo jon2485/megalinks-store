@@ -9,7 +9,10 @@ async function due(order:Row){const charge=await one('SELECT * FROM monthly_char
 export async function paymentReports(r:Request,p:string[],u:Row,body:(r:Request)=>Promise<Row>){
  const manager=p[0]==='admin'&&p[1]==='payment-reports',customer=p[0]==='orders'&&p[2]==='payment-report';if(!manager&&!customer)return null;
  if(manager)admin(u);
- if(manager&&r.method==='GET')return {reports:(await all("SELECT r.*,o.number,o.paid,o.status AS order_status,u.name AS user_name,u.email FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=r.user_id WHERE r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND json_extract(r.data,'$.payment_method')='bank_transfer' AND o.payment NOT IN ('card','credits_card') AND o.paid=0 AND o.status<>'cancelled' ORDER BY r.created")).map(parse)};
+ if(manager&&r.method==='GET'){
+  const status=new URL(r.url).searchParams.get('status')||'pending';assert(['all','pending','approved','rejected'].includes(status),'סטטוס דיווח אינו תקין');
+  return {reports:(await all("SELECT r.*,o.number,o.paid,o.payment AS order_payment,json_extract(o.data,'$.on_account') AS order_on_account,o.status AS order_status,u.name AS user_name,u.email FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=r.user_id WHERE r.kind='customer_payment_report' AND (?='all' OR json_extract(r.data,'$.status')=?) AND json_extract(r.data,'$.payment_method')='bank_transfer' AND o.payment NOT IN ('card','credits_card') AND (json_extract(r.data,'$.status')<>'pending' OR (o.paid=0 AND o.status<>'cancelled')) ORDER BY r.created DESC LIMIT 1000",status,status)).map(parse)};
+ }
  const raw=await one('SELECT * FROM orders WHERE id=?',customer?p[1]:p[2]);assert(raw,'ההזמנה לא נמצאה',404);if(customer)owns(u,raw);const order=parse(raw)!,prior=await paymentReportStatus(order);
  if(customer&&r.method==='GET')return {report:prior};
  assert(r.method==='POST','פעולה לא נתמכת',405);const b=await body(r),target=await one('SELECT * FROM users WHERE id=?',order.user_id);assert(target,'הלקוח לא נמצא',404);const balance=await due(order),stamp=now();

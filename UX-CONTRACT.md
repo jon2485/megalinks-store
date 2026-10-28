@@ -648,3 +648,51 @@ four fields, safe URLs, final month, private proof, publication guard and duplic
 lock; real-component browser coverage at 320/390/1440 for list, regular/monthly
 details, billing and management, including external refund failure/retry.
 Synthetic fixtures perform no live customer or provider writes.
+
+## Approved finance sibling workflows — 2026-10-28
+
+The user approved these sibling mockups and deployment, then corrected the
+top-up amount hierarchy. This section supersedes only earlier presentation-only
+or “no financial write endpoints” descriptions for the explicitly scoped
+monthly-order price, statement-preview/closure and selected-order receipt work.
+It also supersedes the old grouped customer/month display in the monthly list
+and the report's earlier optional order-date basis. Existing permissions,
+financial guards, immutable historical purchases, refund rules and verified
+gateway approval remain authoritative. No new dependency, migration or
+environment variable is required.
+
+| Task | Canonical owner | Current contract |
+|---|---|---|
+| Finance shell and records | `AdminSectionTabs`; `FinancePage`, `FinanceRecord`, `FinanceItems`; `app/finance-records.css` | Keep the original logo and all six real categories. The active category supplies one page title. A native disclosure button exposes `aria-expanded`/`aria-controls`; one record opens at a time. URLs, amounts, statuses, dates and counts come from the real response. Shared controls, private files, `ctx.run` and global toast remain canonical. |
+| Monthly list and item snapshots | `MonthlyView`; GET `monthly?view=orders`; existing order detail API | Each row is one actual order, rather than a customer/month aggregate. Repeated purchases of the same site are valid separate items. Each item retains its actual `purchased_at` and purchase-price snapshot; later catalogue/customer-price updates do not reprice earlier items. Missing legacy timestamps remain honest fallbacks, never invented purchase times. |
+| Local price editing | `OrderItemPriceEditor`; POST `admin/customer-account/:user/price`; `AdminOrderManagement` | The monthly UI permits an item edit before paid/settled, purchase or monthly closure, invoice attachment and pending/approved report. The server validates article version, order ownership, expected total and existing financial guards. Only the chosen item/order and its unsettled debt change; the customer catalogue does not. Writing stays unchanged. Preview net/VAT/gross before save, record price history/activity, lock duplicate/busy actions, preserve failed drafts and use the existing dirty-navigation/unload guard. |
+| Cancellation and refund | Existing `RefundForm`; customer-account refund handler | Unpaid cancellation reduces debt without wallet credit. Paid refunds retain wallet/external destination rules; an external refund requires a note and records the outside action. Sent/published items keep the stop/removal warning and explicit confirmation or existing pending-stop flow. Price editing does not bypass component/version/duplicate guards. |
+| Close purchases and send statement | `CloseMonthlyOrder`; POST `admin/customer-account/:user/order-statement/:order`; `prepareOrderStatement`, `closeOrderForStatement` | Load the current order items, dates, net, VAT and gross before enabling confirmation. The expected total must still match on submission. Closure snapshots all sites/prices, closes only that order to purchases, records actor/activity and queues its branded PDF email. The exact monthly subject is `הזמנה חודשית מספר xxxx נסגרה לתשלום`, with `xxxx` replaced by the actual number without `#`. The real PDF is attached through the existing mail job; mail/PDF delay is shown honestly. Closure does not confirm receipt of money. |
+| Read-only statement preflight | GET the same private order-statement route with `?preview=pdf` (`?preview=1` for summary data) | Admin and customer/order ownership checks apply. Render the current statement and real branded PDF before confirmation; return private/no-store PDF bytes. Preparation may assemble operations, but preview executes no batch, creates no record/job and does not close purchases. Stored final summaries remain authoritative once closed. |
+| Receive one monthly payment | `ReceiveMonthlyPayment`; POST `admin/monthly/settle` with `order_id`; existing `completeOrderPayment` | Include the selected order, user, billing month and expected amount. Require bank reference, valid declared date and checked receipt confirmation; optional proof uses the existing private file flow. Settle only that selected order and its debt, retain original monthly order type, and preserve the reference/proof. The legacy aggregate endpoint branch remains available to existing callers. |
+| Bank report decisions and history | `AdminPaymentReports`, `ReportReview`; `lib/payment-reports.ts` | Show complete order items and method, declared date, report time, amount, reference/proof and decision. Checked actual receipt enables approval; rejection requires its note. Existing request/version/amount checks and duplicate locks govern the decision. Approved/rejected reports remain available through their status filters. Card payments cannot enter manual review. |
+| Top-up review | `AdminTopups`, `TopupReview`; existing wallet-topup endpoints and `lib/finance.ts` | Lead with the top-up amount in the large pale-blue block, followed by smaller current/projected balance facts and four compact report facts. Approval requires checked bank receipt; rejection/cancellation require notes. Actual returned wallet balance and handled details replace projections after approval. Verified gateway card credit remains immediate and once-only; it has no manual approve/reject controls. |
+| Financial month report | `AdminMonthClose`; existing report/export API and amount/cost snapshots | This surface uses final-payment basis. Israel final-approval timestamp determines the financial month, separately from creation, purchase, declared transfer and report dates. Draft from/to dates apply only on submission; matching response/applied range owns the summary and export. The report is read-only, uses local 20-row pages, and exports its complete selected dataset. Missing dates/costs remain explicit and profit excludes unrecorded expenses. |
+| Invoices and receipts | `AdminInvoices`, `InvoiceReview`, existing `InvoiceAttachment` | Reuse private download, attachment/version/history and exact-order navigation. A monthly purchase statement is distinct from a tax invoice or receipt. |
+
+Top-up and invoice lists retain existing server pagination at 30 rows. Monthly
+orders and payment reports load their latest 1,000 rows and display local pages
+of 30; they do not offer server pagination. The monthly view explicitly explains
+the 1,000-order cap and directs older-history work to the customer account.
+
+Verification evidence checked: production build, empty successful typecheck and
+scoped lint logs; 90 monthly-lifecycle checks including real PDF preview bytes,
+permission checks and unchanged record/job/purchase-closure state; 117 finance,
+119 report and 250 account checks; monthly UI assertions; real-component browser
+fixtures for all six routes, expanded records and actions at 320/390/1440px,
+including final closure dialogs with items and the top-up amount hierarchy. The
+main compact-order browser regression also passed. Exact evidence paths and
+approved references are in `.impeccable/surfaces/finance-siblings.md`.
+
+These checks use isolated synthetic data and perform no live financial mutation.
+Physical iOS Safari, deployed pixels and a pixel-exact comparison are not
+certified. Impeccable context loading was unavailable and the detector timed out
+without output, so no clean global audit is claimed. The final independent
+closure-preflight review returned **ship** after manual inspection of all 24
+captures: the material preflight fix is resolved, with no partial or unresolved
+findings in this scope. Actual deployment remains a separate completion record.

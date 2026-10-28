@@ -1084,3 +1084,42 @@ shared RefundForm's named order-inline presentation, with existing version and
 duplicate guards. Published/sent article warnings remain explicit. Existing
 invoice attachment and payment controls remain in a secondary document disclosure.
 Approved references and behavioral evidence are recorded in the surface brief.
+
+## Approved finance siblings — 2026-10-28
+
+This ordinary Operate extension carries the approved compact orders world into
+monthly accounts, payment reports, wallet top-ups, the financial month report,
+invoices and the related order-management actions. The original logo, navy/ice
+identity, Heebo Hebrew RTL and six real category destinations remain the visual
+authority. It does not establish a new global palette or replace earlier owners.
+
+Runtime CSS is canonical (model B): `app/finance-records.css` owns the local
+`--fin-*` roles for pages, finance dialogs, monthly actions and the item-price
+editor. It derives its ink, muted copy, fine lines, ice surfaces and blue actions
+from the existing orders system. `app/orders-reference.css`,
+`app/orders-approved.css` and `app/orders-unified.css` keep their surrounding
+list, management and navigation scopes. The category shell supplies the single
+active page title; finance panels suppress their repeated title and breadcrumb.
+
+One white record panel contains search, filters, compact aligned desktop rows,
+one expanded record and pagination. At the existing phone breakpoint (767px),
+the same record DOM reflows into identity, amount and status, with full URL values
+and purchase dates wrapping in the detail. Fine separators, compact subtotal/VAT
+lines and a pale total strip continue the orders hierarchy. Heebo, tabular money,
+14px URL values, quiet metadata and explicit blue/outline actions retain their
+existing purpose. Shared Button, Input, Textarea, Select and Dialog remain the
+canonical controls; visible focus, busy/disabled states and reduced-motion
+disclosure rules are scoped here.
+
+**The Top-up Amount Rule.** The requested top-up amount leads the expanded record
+in the large pale-blue band. Current and projected wallet balances are smaller
+secondary facts below it. This explicit user correction supersedes the balance
+emphasis in the earlier approved top-up mock. Method, declared payment date,
+report time and proof/reference form four compact report facts.
+
+Monthly records represent an actual order, with actual purchased sites/dates and
+snapshot net prices. Inline price editing, purchase closure with PDF preflight,
+payment receipt and stage-dependent cancellation are distinct tasks with explicit
+confirmations and recoverable errors. Their behavioral authority is the appended
+finance-sibling section of `UX-CONTRACT.md`, not visual styling. Scope,
+references and checked evidence live in `.impeccable/surfaces/finance-siblings.md`.

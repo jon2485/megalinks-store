@@ -1,3 +1,4 @@
+import {completeOrderPayment} from './split-payment';
 import {orderSummarySql} from './order-summary';
 import {financialGuard,orderGuard} from './monthly-order';
 import {Row,httpUrl,money} from './shared';
@@ -21,7 +22,8 @@ export async function workflowRoutes(r:Request,p:string[],u:Row){const q=new URL
   // Payment evidence is kept in a separate admin-only record, never in orders.
   const payments=u.role==='admin'?(await all("SELECT r.*,u.name AS approved_by_name FROM records r LEFT JOIN users u ON u.id=json_extract(r.data,'$.recorded_by') WHERE r.kind='monthly_payment' ORDER BY r.created DESC LIMIT 1000")).map(parse):[];
   const articles=u.role==='admin'&&q.get('month')?(await all("SELECT a.*,w.name AS website_name,w.url AS website_url,o.number,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a JOIN orders o ON o.id=a.order_id JOIN monthly_charges c ON c.order_id=o.id JOIN websites w ON w.id=a.website_id WHERE c.user_id=? AND c.month=? ORDER BY a.updated",scope,q.get('month'))).map(parse):[];
-  return res({rows,details,account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id),...(u.role==='admin'?{articles,payments}: {})});
+  const order_rows=u.role==='admin'?(await all(`SELECT o.*,${orderSummarySql()},c.month,c.settled,c.amount AS charge_amount,u.name AS user_name,u.email FROM monthly_charges c JOIN orders o ON o.id=c.order_id JOIN users u ON u.id=o.user_id ORDER BY c.month DESC,o.created DESC LIMIT 1000`)).map(parse):[];
+  return res({rows,details,order_rows,account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id),...(u.role==='admin'?{articles,payments}: {})});
  }
  if(p[0]==='admin'&&p[1]==='credit-accounts'){admin(u);if(method==='GET')return res({accounts:await all('SELECT u.id,u.name,u.email,COALESCE(a.enabled,0) AS enabled,COALESCE(a.credit_limit,0) AS credit_limit,COALESCE(a.balance,0) AS balance,COALESCE(a.demo_balance,0) AS demo_balance FROM users u LEFT JOIN credit_accounts a ON a.user_id=u.id ORDER BY u.name')});if(method==='PATCH'){const b:any=await r.json();const target=await one('SELECT id FROM users WHERE id=?',b.user_id);assert(target,'לקוח לא נמצא',404);const limit=Math.round(Number(b.limit_ils)*100);assert(Number.isSafeInteger(limit)&&limit>=0&&limit<=100000000,'מסגרת אינה תקינה');const prior=await one('SELECT * FROM credit_accounts WHERE user_id=?',target.id);assert(!prior||(prior.balance<=limit&&prior.demo_balance<=limit),'המסגרת החדשה נמוכה מהחוב הפתוח',409);await stmt('INSERT INTO credit_accounts(user_id,enabled,credit_limit) VALUES (?,?,?) ON CONFLICT(user_id) DO UPDATE SET enabled=excluded.enabled,credit_limit=excluded.credit_limit',target.id,b.enabled===true?1:0,limit).run();await audit(u,target.id,'הרשאת חשבון חודשי עודכנה',{enabled:b.enabled===true,limit});return res({ok:true});}}
  if(p[0]==='admin'&&p[1]==='monthly'){
@@ -32,6 +34,18 @@ export async function workflowRoutes(r:Request,p:string[],u:Row){const q=new URL
    const reference=String(b.reference||'').trim().slice(0,200),paymentDate=String(b.payment_date||'');
    assert(reference.length>=3,'יש להזין מספר אישור עסקה / אסמכתת תשלום');
    assert(/^\d{4}-\d{2}-\d{2}$/.test(paymentDate)&&!isNaN(Date.parse(paymentDate))&&new Date(paymentDate).toISOString().slice(0,10)===paymentDate&&paymentDate<=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem'}).format(new Date()),'יש להזין תאריך תשלום תקין שאינו בעתיד');
+   if(b.order_id){
+    const raw=await one('SELECT o.* FROM orders o JOIN monthly_charges c ON c.order_id=o.id WHERE o.id=? AND c.user_id=? AND c.month=? AND c.demo=0',b.order_id,b.user_id,b.month);assert(raw,'ההזמנה החודשית לא נמצאה אצל הלקוח',404);
+    const order=parse(raw)!;assert(!order.demo,'לא מתעדים תשלום כספי בהזמנת הדגמה');
+    if(raw.paid)return res({ok:true,duplicate:true});
+    assert(b.expected_amount===raw.total,'סכום ההזמנה השתנה. יש לרענן לפני אישור התשלום',409);
+    if(b.proof_file_id){const f=owns(u,await one('SELECT * FROM files WHERE id=?',b.proof_file_id));assert(['image/png','image/jpeg','image/webp','application/pdf'].includes(f.type),'סוג קובץ אינו נתמך');}
+    const stamp=now();await completeOrderPayment(raw,'monthly-manual-paid:'+raw.id,{actor:u.id,payment_method:'bank_transfer',reference,payment_date:paymentDate,amount_cents:raw.total,proof_file_id:b.proof_file_id||''},[
+     stmt("UPDATE orders SET data=json_set(data,'$.purchase_closed_at',COALESCE(json_extract(data,'$.purchase_closed_at'),?),'$.settlement_payment_method','bank_transfer'),updated=? WHERE id=?",stamp,stamp,raw.id),
+     stmt("UPDATE records SET data=json_set(data,'$.status','approved','$.handled_by',?,'$.handled_at',?),updated=? WHERE id=? AND json_extract(data,'$.status')='pending'",u.id,stamp,stamp,'payment-report:'+raw.id),
+     stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),u.id,raw.id,'תשלום הזמנה חודשית התקבל ואושר',JSON.stringify({reference,amount:raw.total}),stamp)
+    ]);return res({ok:true});
+   }
    const demo=b.demo?1:0,col=demo?'demo_balance':'balance',target=await one('SELECT * FROM users WHERE id=?',b.user_id);assert(target,'לקוח לא נמצא',404);
    const orders=await all('SELECT o.* FROM orders o JOIN monthly_charges c ON c.order_id=o.id WHERE c.user_id=? AND c.month=? AND c.demo=? AND c.settled=0',b.user_id,b.month,demo),amount=(await one('SELECT COALESCE(SUM(amount),0) AS amount FROM monthly_charges WHERE user_id=? AND month=? AND demo=? AND settled=0',b.user_id,b.month,demo))!.amount;
    assert(orders.length&&amount>0,'אין יתרה פתוחה לתשלום בחודש זה',409);if(b.expected_amount!==undefined)assert(Number(b.expected_amount)===amount,'הסכום השתנה; רעננו את החשבון לפני סימון תשלום',409);

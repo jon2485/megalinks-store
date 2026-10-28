@@ -1,4 +1,4 @@
-import {closeOrderForStatement,orderStatementId} from './order-statement';
+import {closeOrderForStatement,orderStatementId,prepareOrderStatement,renderOrderStatementPdf} from './order-statement';
 import {paymentEvidenceRows,orderPaymentEvidence} from './payment-evidence';
 import {orderSummarySql} from './order-summary';
 import type {Row} from './shared';
@@ -18,7 +18,18 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
  if(p[0]==='monthly-open'&&r.method==='GET'){const account=await one('SELECT * FROM credit_accounts WHERE user_id=?',actor.id);assert(account?.enabled,'החשבון אינו מאושר לחשבון חודשי',403);return res({month:businessMonth(),order:await openMonthlyOrder(actor.id,new URL(r.url).searchParams.get('demo')==='1'),closed_order:await lastClosedMonthlyOrder(actor.id,new URL(r.url).searchParams.get('demo')==='1'),account});}
  if(p[0]!=='admin'||p[1]!=='customer-account')return null;admin(actor);
  const target=await one('SELECT * FROM users WHERE id=?',p[2]);assert(target,'הלקוח לא נמצא',404);const action=p[3];
- if(action==='order-statement'){if(r.method==='GET'){const order=await one('SELECT id FROM orders WHERE id=? AND user_id=?',p[4],target.id);assert(order,'ההזמנה לא נמצאה אצל לקוח זה',404);const saved=parse(await one('SELECT * FROM records WHERE id=?',orderStatementId(p[4])));assert(saved?.summary,'יש להפיק ולסגור את ההזמנה תחילה',409);return res({summary:saved.summary});}assert(r.method==='POST','פעולה לא נתמכת',405);const input:any=await r.json();assert(input.confirmed===true,'יש לאשר סגירת ההזמנה לרכישות נוספות');return res(await closeOrderForStatement(target.id,p[4],input.expected_amount,actor.id,new URL(r.url).origin));}
+ if(action==='order-statement'){
+  if(r.method==='GET'){
+   const order=await one('SELECT * FROM orders WHERE id=? AND user_id=?',p[4],target.id);assert(order,'ההזמנה לא נמצאה אצל לקוח זה',404);const preview=new URL(r.url).searchParams.get('preview');
+   if(preview){assert(preview==='1'||preview==='pdf','תצוגה אינה תקינה');const result=await prepareOrderStatement(target.id,order.id,order.total,actor.id,new URL(r.url).origin);
+    if(preview==='pdf'){const bytes=await renderOrderStatementPdf(result.summary,new URL(r.url).origin);return new Response(new Uint8Array(bytes).buffer,{headers:{'Content-Type':'application/pdf','Content-Disposition':'inline; filename="MegaLinks-order-preview.pdf"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});}
+    return res({summary:result.summary,preview:true});
+   }
+   const saved=parse(await one('SELECT * FROM records WHERE id=?',orderStatementId(p[4])));assert(saved?.summary,'יש להפיק ולסגור את ההזמנה תחילה',409);return res({summary:saved.summary});
+  }
+  assert(r.method==='POST','פעולה לא נתמכת',405);const input:any=await r.json();assert(input.confirmed===true,'יש לאשר סגירת ההזמנה לרכישות נוספות');return res(await closeOrderForStatement(target.id,p[4],input.expected_amount,actor.id,new URL(r.url).origin));
+ }
+
 
  if(r.method==='GET'){
   const orders=(await all(`SELECT o.*,${orderSummarySql()},c.month,c.settled FROM orders o LEFT JOIN monthly_charges c ON c.order_id=o.id WHERE o.user_id=? ORDER BY o.created DESC LIMIT 1000`,target.id)).map(parse);
@@ -54,11 +65,14 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
   ops.push(stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',event,actor.id,a.id,'כתבה בוטלה וזוכתה',JSON.stringify({customer_id:target.id,reason,mode:b.mode,amount:gross,destination,demo:!!order.demo}),stamp));await db().batch(ops);return res({ok:true,amount:gross,destination:open?(charge?'monthly':'unpaid'):destination,...(!order.demo&&!open&&destination==='wallet'?{wallet_balance:(await one('SELECT credits FROM users WHERE id=?',target.id))?.credits}:{})});
  }
  if(action==='price'){
+  if(b.order_id)assert(b.order_id===order.id,'הפריט אינו שייך להזמנה הזו',409);
+  if(b.expected_total!==undefined)assert(b.expected_total===order.total,'סכום ההזמנה השתנה. יש לרענן לפני שינוי המחיר',409);
+  assert(!await one("SELECT id FROM records WHERE id=? AND json_extract(data,'$.status') IN ('pending','approved')",'payment-report:'+order.id),'קיים דיווח תשלום להזמנה. יש לטפל בו לפני שינוי המחיר',409);
   assert(!a.publication_refunded&&!a.cancel_pending,'לא ניתן לערוך מחיר של פרסום שבוטל',409);assert(!['card','credits_card'].includes(order.payment),'יש לבטל תשלום משולב ממתין וליצור הזמנה חדשה לפני שינוי מחיר',409);assert(!order.paid&&!order.invoice_file_id&&!order.purchase_closed_at,'הזמנה ששולמה או הופק לה מסמך אינה ניתנת לשינוי מחיר',409);
   const charge=await one('SELECT * FROM monthly_charges WHERE order_id=?',order.id);assert(!charge?.settled,'החשבון החודשי כבר שולם',409);if(charge)assert(!await one('SELECT id FROM records WHERE id=?','monthly:'+charge.month+':'+target.id+':'+charge.demo),'לא ניתן לשנות מחיר לאחר סגירת החודש',409);
   const price=Math.round(Number(b.price_ils)*100);assert(b.price_ils!==''&&Number.isSafeInteger(price)&&price>=0&&price<=100000000,'מחיר לא תקין');const site=await website(a.website_id,true);warnPricing([minimumWarning(site.name,price,site.cost_cents)],b.acknowledge);
   const old=articleAmounts(a),newGross=Math.round(price*(1+Number(order.vat_percent??18)/100)),deltaNet=price-old.publicationNet,deltaGross=newGross-old.publicationGross;
-  const d={...a.data,publication_price:price,unit_price:price+Number(a.editorial_price||0),paid_net_amount:price+old.writingNet,paid_amount:newGross+old.writingGross,writing_net_amount:old.writingNet,writing_gross_amount:old.writingGross,price_reason:reason};
+  const d={...a.data,publication_price:price,unit_price:price+Number(a.editorial_price||0),paid_net_amount:price+old.writingNet,paid_amount:newGross+old.writingGross,writing_net_amount:old.writingNet,writing_gross_amount:old.writingGross,price_reason:reason,price_history:[...(a.price_history||[]),{at:stamp,before:old.publicationNet,after:price,actor_id:actor.id,reason}]};
   ops.push(stmt('UPDATE articles SET data=?,updated=? WHERE id=?',JSON.stringify(d),stamp,a.id),stmt('UPDATE orders SET subtotal=subtotal+?,vat=vat+?,total=total+?,updated=? WHERE id=?',deltaNet,deltaGross-deltaNet,deltaGross,stamp,order.id));
   if(charge){const col=charge.demo?'demo_balance':'balance';ops.push(stmt(`UPDATE credit_accounts SET ${col}=${col}+? WHERE user_id=?`,deltaGross,target.id),stmt('UPDATE monthly_charges SET amount=CASE WHEN settled=0 THEN amount+? ELSE NULL END WHERE order_id=?',deltaGross,order.id));}
   if(charge)ops.push(stmt("UPDATE records SET data=json_set(data,'$.amount',(SELECT COALESCE(SUM(amount),0) FROM monthly_charges WHERE user_id=? AND month=? AND demo=?)) WHERE id=?",target.id,charge.month,charge.demo,'monthly:'+charge.month+':'+target.id+':'+charge.demo));

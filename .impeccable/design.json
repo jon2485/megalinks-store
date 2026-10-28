@@ -946,6 +946,21 @@
         "behaviorOwner": "UX-CONTRACT.md",
         "motion": "existing grid disclosure/chevron; reduced motion supported",
         "approvedReferences": "2026-10-28 conversation mockups and explicit billing copy correction"
+      },
+      "approvedFinanceSiblings": {
+        "scope": "Approved admin finance sibling pages and related monthly-order actions only",
+        "mode": "Operate",
+        "runtimeOwner": "app/finance-records.css",
+        "ownershipModel": "B: runtime CSS canonical; derives local --fin-* roles from the existing orders world without changing global tokens.",
+        "shellOwners": [
+          "app/orders-reference.css",
+          "app/orders-approved.css",
+          "app/orders-unified.css"
+        ],
+        "surfaceBrief": ".impeccable/surfaces/finance-siblings.md",
+        "behaviorOwner": "UX-CONTRACT.md",
+        "authority": "2026-10-28 approved sibling mocks; final user correction makes top-up amount primary and current/projected balances secondary.",
+        "verification": "Build, typecheck, scoped lint, isolated handler and 320/390/1440 browser checks passed. Independent finish review: ship; 24 captures manually inspected, closure preflight resolved, no partial/unresolved findings. No clean detector, pixel-diff or physical iOS claim; deployment tracked separately."
       }
     }
   },
