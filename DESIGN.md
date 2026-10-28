@@ -1051,3 +1051,12 @@ records, counters, detail routes and audited refund/payment actions remain valid
 The status groups move into the status dropdown. A new combined query includes
 all order groups; paid rows retain final-approval month filtering. No mock data,
 identity, status, amount or page count is persisted.
+
+## Compact order disclosures — 2026-10-28
+User supersedes the main list reference with compact rows and animated inline
+expansion. The orders-reference.css owner retains navy/ice/teal and six-category
+navigation. A single responsive disclosure list replaces duplicated desktop and
+mobile records: six aligned desktop columns, three compact phone lines. One order
+opens at a time; the existing AdminOrderDetails owns real financial information
+and actions. Confirmed paid orders read סגורה; per-article publication state is
+separate. Grid expansion and chevron rotation respect reduced motion.

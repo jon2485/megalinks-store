@@ -604,3 +604,11 @@ payment/receipt checks passed. Real component browser fixtures covered all six
 routes at 390px and 1440px, category popup geometry/navigation, filtering/search,
 order-detail navigation, export failure, final month and refund failure/retry.
 No customer records or payment provider actions were changed by verification.
+
+## Compact order disclosures — 2026-10-28
+The whole order summary is one native button with aria-expanded/aria-controls.
+Closed detail regions are inert; visited regions retain their state to animate
+closing. Opening another row closes the previous row. Details load on first open.
+Existing detail navigation remains available through ניהול ההזמנה. Paid closure
+uses paymentConfirmed; cancellation/demo/unpaid precedence remains unchanged.
+Publication states use the canonical stages dictionary alongside each article.
