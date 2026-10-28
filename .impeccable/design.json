@@ -918,6 +918,34 @@
           "finishReview": "In progress; staging approval and deployment pending."
         },
         "proposalBoundary": "The requested three wide seller page mockups and site table rows are generated proposals only, awaiting approval; not part of this implementation."
+      },
+      "approvedCompactOrders": {
+        "scope": "Admin orders list, compact details, payment disclosure and management only",
+        "runtimeOwner": "app/orders-approved.css",
+        "shellOwner": "app/orders-reference.css",
+        "surfaceBrief": ".impeccable/surfaces/orders-approved.md",
+        "mode": "Operate",
+        "colors": {
+          "ink": "#102d53",
+          "copy": "#526d8d",
+          "line": "#d3e4f1",
+          "surface": "#ffffff",
+          "ice": "#edf7fc",
+          "teal": "#007b80"
+        },
+        "typography": {
+          "family": "Heebo, Arial, sans-serif",
+          "body": "15px",
+          "phoneItemUrl": "14px"
+        },
+        "layout": {
+          "phoneSummaryMinHeight": "90px",
+          "phoneItemMinHeight": "48px",
+          "detail": "single white URL/price list; monthly adds date; compact tax columns and total strip"
+        },
+        "behaviorOwner": "UX-CONTRACT.md",
+        "motion": "existing grid disclosure/chevron; reduced motion supported",
+        "approvedReferences": "2026-10-28 conversation mockups and explicit billing copy correction"
       }
     }
   },

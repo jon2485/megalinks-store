@@ -11,9 +11,9 @@ import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
 import {downloadAdminWorkbook} from './admin-export';
 import './orders-reference.css';
-import {AdminOrderDetails} from './customer-orders';
+import {CompactOrderDetails} from './admin-order-approved';
 
-const amount=(cents:number)=>new Intl.NumberFormat('he-IL',{style:'currency',currency:'ILS',minimumFractionDigits:0,maximumFractionDigits:2}).format(Number(cents||0)/100).replace(/\u00a0/g,'');
+const amount=(cents:number)=>new Intl.NumberFormat('he-IL',{style:'currency',currency:'ILS',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(cents||0)/100).replace(/\u00a0/g,'');
 const monthNow=()=>israelDate(new Date().toISOString()).slice(0,7);
 const monthText=(m:string)=>m==='unknown'?'מועד לא תועד':m===monthNow()?'החודש':historyMonthLabel(m);
 const orderDate=(value:string)=>value?new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value)):'לא תועד';
@@ -21,7 +21,7 @@ export function orderRowStatus(o:Row){
  if(orderCancellation(o)==='full')return {label:'בוטלה',tone:'cancelled'};
  if(o.demo)return {label:'הדגמה',tone:'muted'};
  if(!paymentConfirmed(o)&&o.payment_report?.status==='pending')return {label:'ממתינה לאישור',tone:'pending'};
- if(!paymentConfirmed(o))return o.on_account||o.payment==='monthly'||o.billing_month?{label:'חשבון חודשי פתוח',tone:'pending'}:{label:'ממתינה לתשלום',tone:'pending'};
+ if(!paymentConfirmed(o))return o.on_account||o.payment==='monthly'||o.billing_month?{label:'פתוחה חודשית',tone:'pending'}:{label:'ממתינה לתשלום',tone:'pending'};
  return {label:'סגורה',tone:'complete'};
 }
 const initial=(unpaid:boolean)=>({bucket:(unpaid?'process':'all') as AdminOrderFilterBucket,month:unpaid?'':monthNow(),q:'',page:1,scroll:0});
@@ -60,7 +60,7 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
        <strong className="order-compact-number"><bdi>#{String(o.number).replace(/^#/,'')}</bdi></strong><span className="order-compact-client">{o.user_name||o.name}</span><time className="order-compact-date" dateTime={o.created}>{orderDate(o.created)}</time><strong className="order-compact-amount"><bdi>{amount(o.amounts.total)}</bdi></strong><span className={'orders-reference-badge is-'+status.tone}>{status.label}</span><ChevronLeft className="order-expand-chevron" size={18}/>
       </button>
       <div id={'order-inline-'+o.id} className="orders-inline-motion" inert={!open} aria-hidden={!open}><div><div className="orders-inline-body">
-       {visited.includes(o.id)&&<><div className="orders-inline-heading"><h3>פירוט הזמנה #{o.number}</h3><button type="button" className="orders-reference-detail" onClick={()=>detail(o)}>ניהול ההזמנה<ChevronLeft size={16}/></button></div><AdminOrderDetails ctx={ctx} order={o}/></>}
+       {visited.includes(o.id)&&<CompactOrderDetails ctx={ctx} order={o} manage={()=>detail(o)}/>}
       </div></div></div>
      </article>;})}
     </div>

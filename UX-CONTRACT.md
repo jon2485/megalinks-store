@@ -612,3 +612,39 @@ closing. Opening another row closes the previous row. Details load on first open
 Existing detail navigation remains available through ניהול ההזמנה. Paid closure
 uses paymentConfirmed; cancellation/demo/unpaid precedence remains unchanged.
 Publication states use the canonical stages dictionary alongside each article.
+
+## Approved compact order workflow — 2026-10-28
+Sources: the user's explicit 2026-10-28 approval and billing-field correction;
+lib/payment-evidence.ts, lib/order-finance.ts, lib/payment-reports.ts and the
+existing refund API remain authoritative for financial behavior. No financial
+write endpoints or historical amounts/dates are modified.
+
+Canonical owners: AdminOrderHistory owns filters/paging/scroll/disclosure;
+CompactOrderDetails owns the compact URL/price view; ApprovedPaymentDetails owns
+the native payment disclosure; AdminOrderManagement owns the existing
+admin-order/:id route; RefundForm retains mutation/state/version ownership with
+an explicit order-inline presentation. InvoiceAttachment, PaymentOrderActions,
+ReportReview, Radix Select and the existing private file endpoint are reused.
+
+Billing has exactly four facts: order creation with Israel date/time; confirmed
+receipt timestamp with Israel date/time (label תאריך ביצוע התשלום); reference with
+its existing private proof link; final approval month. A customer's declared
+transfer date or report submission time never substitutes for confirmed receipt.
+Unpaid monthly purchases show the purchase dates per item and an unassigned final
+financial month. A paid record missing approval evidence remains explicitly
+undocumented; the UI does not infer a timestamp from updated/created.
+
+Refunds keep the existing full/publication/writing rules and financial history.
+For the inline variant sent/published items require checked stop/removal
+confirmation before submission; external refunds require descriptive documentation.
+The same synchronous lock blocks repeated submits. Failures retain the draft.
+Success remains visible until the explicit return action; history comes from
+actual article refund_history and order activity, including time/method/note.
+Other refund entry points retain their existing pending-stop workflow.
+
+Verification: production build, typecheck and scoped ESLint; 117 existing finance
+API checks; six-route browser regression at 390/1440; new handler checks for the
+four fields, safe URLs, final month, private proof, publication guard and duplicate
+lock; real-component browser coverage at 320/390/1440 for list, regular/monthly
+details, billing and management, including external refund failure/retry.
+Synthetic fixtures perform no live customer or provider writes.

@@ -1060,3 +1060,27 @@ mobile records: six aligned desktop columns, three compact phone lines. One orde
 opens at a time; the existing AdminOrderDetails owns real financial information
 and actions. Confirmed paid orders read סגורה; per-article publication state is
 separate. Grid expansion and chevron rotation respect reduced motion.
+
+## Approved compact order screens — 2026-10-28
+The user approved the supplied regular, monthly, billing, management and initial
+list mockups, then explicitly replaced the billing timestamp labels. These are
+Operate refinements of the existing navy/ice/Heebo system. Runtime owner
+app/orders-approved.css governs the compact detail, payment disclosure and order
+management; app/orders-reference.css retains the surrounding list/filter/category
+shell. Navy #102d53, copy #526d8d, line #d3e4f1, white #ffffff, ice #edf7fc and teal
+#007b80 mirror the runtime scoped --ao-* tokens. No global brand tokens change.
+
+Regular item lines show only a linked URL and the actual remaining net price, with
+a fine divider. Open monthly lines add the purchase date. Desktop and phone share
+one record DOM. The phone summary is about 90px; item lines are 48px minimum, and
+a two-item compact detail remains below 400px at 320/390px. Two subtotal columns
+and one pale total strip replace the earlier large summary blocks. Payment data
+is in a native details disclosure; management uses the existing exact-order route.
+
+The list shows current users.name and the actual order number/date/amount/status.
+Paid orders read סגורה independently of publication; publication states appear
+in management. Management has compact URL/status/net-price/action rows and the
+shared RefundForm's named order-inline presentation, with existing version and
+duplicate guards. Published/sent article warnings remain explicit. Existing
+invoice attachment and payment controls remain in a secondary document disclosure.
+Approved references and behavioral evidence are recorded in the surface brief.

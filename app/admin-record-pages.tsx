@@ -1,16 +1,13 @@
 'use client';
 import React,{useEffect,useRef} from 'react';
-import {ArrowRight,ShieldCheck} from 'lucide-react';
+import {ArrowRight} from 'lucide-react';
 import {useData} from '@/lib/client';
 import {Button} from '@/components/ui/button';
-import {OrderDetails,SupportTicketForm} from './screens';
-import {ReportReview} from './payment-reports';
+import {SupportTicketForm} from './screens';
+import {AdminOrderManagement} from './admin-order-approved';
 import {Heading,ErrorBox,type Ctx} from './workspace';
 
-export function AdminOrderPage({ctx,id}:{ctx:Ctx;id:string}){
- const reports=useData('admin/payment-reports',ctx.revision),report=reports.data?.reports?.find((r:{order_id:string})=>r.order_id===id);
- return <section className="admin-record-page"><Heading title="פירוט ההזמנה" description="פרטי הפרסומים, התשלום והמסמכים של הזמנה זו." actions={<><Button variant="outline" onClick={()=>ctx.go('admin')}><ArrowRight size={17}/>חזרה לעדכונים</Button><Button variant="outline" onClick={()=>ctx.go('admin-orders')}>לכל ההזמנות</Button></>}/><div className="admin-record-surface"><ErrorBox error={reports.error}/>{report&&<section className="admin-exact-report"><div><h2>דיווח תשלום ממתין לבדיקה</h2><p>בדקו את האסמכתא לפני אישור קבלת הכסף.</p></div><Button onClick={()=>ctx.open({kind:'admin-finance',title:'בדיקת דיווח תשלום '+report.number,description:report.user_name,render:(close:()=>void)=><ReportReview ctx={ctx} report={report} close={close}/>})}><ShieldCheck size={17}/>בדיקת הדיווח והאסמכתא</Button></section>}<OrderDetails ctx={ctx} id={id} close={()=>{}}/></div></section>;
-}
+export function AdminOrderPage({ctx,id}:{ctx:Ctx;id:string}){return <AdminOrderManagement ctx={ctx} id={id}/>;}
 export function AdminSupportPage({ctx,id}:{ctx:Ctx;id:string}){
  const state=useData('records/ticket/'+encodeURIComponent(id),ctx.revision),row=state.data?.record;
  const dirty=useRef(false),path=useRef(''),open=ctx.open;

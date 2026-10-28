@@ -1,0 +1,63 @@
+'use client';
+import React,{useState} from 'react';
+import {ArrowRight,ChevronDown,Download,Settings,Paperclip,Search,X} from 'lucide-react';
+import {useData} from '@/lib/client';
+import {exportSpreadsheet} from '@/lib/office';
+import {type Row,stages} from '@/lib/shared';
+import {paymentConfirmed,israelDate} from '@/lib/admin-order-buckets';
+import {effectiveOrderAmounts,remainingArticleNet,orderCancellation} from '@/lib/order-finance';
+import {historyMonthLabel} from '@/lib/order-history';
+import {paymentMethodLabel} from '@/lib/payment-state';
+import {assignedPaymentMonth} from './payment-assignment';
+import {RefundForm} from './refund-dialog';
+import {InvoiceAttachment} from './billing-workspace';
+import {PaymentOrderActions} from './payment-review';
+import {ReportReview} from './payment-reports';
+import type {Ctx} from './workspace';
+import './orders-approved.css';
+
+export const orderNumber=(o:Row)=>'#'+String(o.number||'').replace(/^#+/,'');
+export const orderMoney=(n:number)=>new Intl.NumberFormat('he-IL',{style:'currency',currency:'ILS',minimumFractionDigits:2,maximumFractionDigits:2}).format(Number(n||0)/100);
+const date=(v:string)=>israelDate(v)?new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(v)):'לא תועד';
+export function orderTimestamp(v:string){if(!v||Number.isNaN(+new Date(v)))return 'לא תועד';if(/^\d{4}-\d{2}-\d{2}$/.test(v))return date(v)+' (שעה לא תועדה)';return new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(v));}
+export function paymentReceivedAt(o:Row,evidence?:Row){return paymentConfirmed(o)?evidence?.approved_at||o.paid_date||o.payment_approved_at||o.paid_at||'':'';}
+export function OrderUrl({url}:{url:string}){
+ let href='',label='';try{const u=new URL(/^https?:\/\//i.test(url||'')?url:'https://'+url);if(url&&['http:','https:'].includes(u.protocol)&&u.hostname.includes('.')&&!u.username&&!u.password){href=u.href;label=u.hostname+(u.pathname==='/'?'':u.pathname)+u.search;}}catch{}
+ return href?<a className="approved-order-url" href={href} target="_blank" rel="noopener noreferrer"><bdi dir="ltr">{label}</bdi></a>:<span className="approved-order-url-missing">כתובת האתר לא תועדה</span>;
+}
+function OrderLoad({error,retry}:{error?:string;retry:()=>void}){return <div className="approved-order-load" role={error?'alert':'status'}>{error?<>{error}<button type="button" onClick={retry}>ניסיון נוסף</button></>:'טוען פרטי הזמנה…'}</div>;}
+export function ApprovedPaymentDetails({ctx,order:o,evidence}:{ctx:Ctx;order:Row;evidence?:Row}){
+ const [open,setOpen]=useState(false),state=useData('orders/'+o.id+'/payment-report',ctx.revision,open),report=state.data?.report;
+ const paid=paymentConfirmed(o),month=assignedPaymentMonth(o),stamp=paymentReceivedAt(o,evidence),validReport=report&&(report.status==='approved'||!paid&&report.status==='pending')?report:null,reference=evidence?.reference||validReport?.reference||o.bank_reference||'';
+ return <details className="approved-payment-details" onToggle={e=>setOpen(e.currentTarget.open)}><summary><span>{paid?'פרטי תשלום':'פרטי חיוב'}</span><ChevronDown size={17}/></summary>
+ <dl><div><dt>תאריך ההזמנה</dt><dd><bdi>{orderTimestamp(o.created)}</bdi></dd></div><div><dt>תאריך ביצוע התשלום</dt><dd>{stamp?<bdi>{orderTimestamp(stamp)}</bdi>:paid?'מועד קבלת התשלום לא תועד':'טרם התקבל תשלום מאושר'}</dd></div><div><dt>אסמכתא</dt><dd>{state.error?<span role="alert">לא ניתן לטעון את האסמכתא. <button type="button" onClick={ctx.refresh}>ניסיון נוסף</button></span>:<><bdi>{reference||((state.loading&&!state.data)?'טוען…':'לא צורפה אסמכתא')}</bdi>{validReport?.proof_file_id&&<a className="approved-proof" href={'/api/files/'+encodeURIComponent(validReport.proof_file_id)} target="_blank" rel="noopener noreferrer"><Paperclip size={15}/>צפייה בקובץ</a>}</>}</dd></div><div className="approved-assignment"><dt>חודש שיוך סופי</dt><dd>{month?historyMonthLabel(month):o.demo?'הדגמה — ללא שיוך כספי':paid?'מועד האישור לא תועד — נדרשת בדיקה':'טרם נקבע'}</dd></div></dl>
+ </details>;
+}
+function OrderTotals({order:o}:{order:Row}){const a=effectiveOrderAmounts(o);return <div className="approved-order-totals"><div className="approved-order-tax"><span>לפני מע״מ<strong><bdi>{orderMoney(a.net)}</bdi></strong></span><span>מע״מ {o.vat_percent??18}%<strong><bdi>{orderMoney(a.vat)}</bdi></strong></span></div><div className="approved-order-grand"><strong>{Number(o.paid_refund_total)>0?'סה״כ לאחר זיכויים':paymentConfirmed(o)?'סה״כ שולם':'סה״כ לתשלום'}</strong><strong><bdi>{orderMoney(a.total)}</bdi></strong></div></div>;}
+function exportOrder(o:Row,items:Row[]){const a=effectiveOrderAmounts(o);exportSpreadsheet('order-'+String(o.number).replace(/^#+/,'')+'.xlsx',[['מספר הזמנה',o.number],['תאריך ההזמנה',orderTimestamp(o.created)],[],['URL','תאריך רכישה','מחיר לפני מע״מ'],...items.map(a=>[a.website_url||'',orderTimestamp(a.created||o.created),remainingArticleNet(a,o)/100]),[],['לפני מע״מ',a.net/100],['מע״מ',a.vat/100],['סה״כ',a.total/100]]);}
+export function CompactOrderDetails({ctx,order,manage}:{ctx:Ctx;order:Row;manage:()=>void}){
+ const state=useData('orders/'+order.id,ctx.revision,true,15000),o=state.data?.order,items:Row[]=state.data?.articles||[];
+ if(!o)return <OrderLoad error={state.error} retry={ctx.refresh}/>;
+ const monthly=!paymentConfirmed(o)&&(o.on_account||o.payment==='monthly'||o.billing_month),month=assignedPaymentMonth(o),method=paymentMethodLabel({payment:o.confirmed_payment_method||o.settlement_payment_method||state.data.payment_confirmation?.payment_method||o.payment});
+ return <div className="approved-order-compact" dir="rtl"><div className="approved-order-meta"><span>{monthly?'התחשבנות חודשית · טרם שולם':method||'אמצעי התשלום לא תועד'}{!monthly&&month?' · שיוך: '+historyMonthLabel(month):''}</span><ApprovedPaymentDetails ctx={ctx} order={o} evidence={state.data.payment_confirmation}/></div>
+ {state.error&&<OrderLoad error={state.error} retry={ctx.refresh}/>}
+ <ul className="approved-order-items" aria-label="פריטי ההזמנה">{items.map(a=><li key={a.id}><span><OrderUrl url={a.website_url}/>{monthly&&<time dateTime={a.created||o.created}>{date(a.created||o.created)}</time>}</span><strong><bdi>{orderMoney(remainingArticleNet(a,o))}</bdi></strong></li>)}</ul>{!items.length&&<p className="approved-order-note">אין פריטים בהזמנה.</p>}
+ <OrderTotals order={o}/><footer className="approved-order-footer"><div><button type="button" onClick={manage}><Settings size={18}/>ניהול הזמנה</button><button type="button" onClick={()=>exportOrder(o,items)}><Download size={18}/>ייצוא לאקסל</button></div><small>{monthly?'חודש השיוך הסופי ייקבע לאחר אישור התשלום.':'מחירי הפריטים לפני מע״מ'}</small></footer></div>;
+}
+function ItemHistory({article:a}:{article:Row}){const events:Array<Row>=a.refund_history||[];return <>{events.length?events.map((e,i)=><p key={i}><bdi>{orderTimestamp(e.at)}</bdi> · {e.destination==='wallet'?'זיכוי לקרדיט':e.destination==='external'?'זיכוי חיצוני: '+e.note:'הסרה מהחיוב ללא זיכוי'} · <bdi>{orderMoney(e.amount)}</bdi>{e.reason?' · '+e.reason:''}</p>):(a.publication_refunded||a.writing_refunded)&&<p>{a.refund_reason||a.cancel_reason||'הפריט בוטל'}{a.refunded_at?' · '+orderTimestamp(a.refunded_at):''}</p>}</>;}
+export function AdminOrderManagement({ctx,id}:{ctx:Ctx;id:string}){
+ const state=useData('orders/'+id,ctx.revision,true,15000),reportState=useData('orders/'+id+'/payment-report',ctx.revision),[active,setActive]=useState(''),[busy,setBusy]=useState(false),[query,setQuery]=useState(''),[limit,setLimit]=useState(20);
+ const o=state.data?.order,items:Row[]=state.data?.articles||[],report=reportState.data?.report;
+ if(!o)return <section className="approved-order-management"><button type="button" className="approved-back" onClick={()=>ctx.go('admin-orders')}><ArrowRight size={16}/>חזרה להזמנות</button><OrderLoad error={state.error} retry={ctx.refresh}/></section>;
+ const paid=paymentConfirmed(o),cancelled=orderCancellation(o)==='full',term=query.trim().toLocaleLowerCase(),matching=items.filter(a=>!term||[a.website_url,a.title].some(v=>String(v||'').toLocaleLowerCase().includes(term))),visible=matching.slice(0,limit);
+ return <section className="approved-order-management" dir="rtl"><button type="button" className="approved-back" disabled={busy} onClick={()=>ctx.go('admin-orders')}><ArrowRight size={16}/>חזרה להזמנות</button><header className="approved-manage-header"><div><h1>ניהול הזמנה <bdi>{orderNumber(o)}</bdi></h1><p>{o.user_name||o.name} · {date(o.created)} · {items.length} פריטים</p></div><span className={'approved-state '+(cancelled?'is-cancelled':paid?'is-paid':'is-pending')}>{cancelled?'בוטלה':o.demo?'הדגמה':paid?'סגורה':o.on_account||o.payment==='monthly'?'פתוחה חודשית':'ממתינה לתשלום'}</span><strong><bdi>{orderMoney(effectiveOrderAmounts(o).total)}</bdi></strong></header>
+ {state.error&&<OrderLoad error={state.error} retry={ctx.refresh}/>}
+ {report?.status==='pending'&&!paid&&!['card','credits_card'].includes(o.payment)&&<div className="approved-report-review"><span>דיווח תשלום ממתין לבדיקה</span><button type="button" onClick={()=>ctx.open({kind:'admin-finance',title:'בדיקת דיווח תשלום '+o.number,render:(close:()=>void)=><ReportReview ctx={ctx} report={report} close={close}/>})}>בדיקת הדיווח והאסמכתא</button></div>}
+ {items.length>6&&<div className="approved-management-search"><Search size={17}/><input type="search" aria-label="חיפוש בתוך ההזמנה" placeholder="חיפוש URL או כתבה" value={query} onChange={e=>{setQuery(e.target.value);setLimit(20);}}/>{query&&<button type="button" aria-label="ניקוי חיפוש פריטים" onClick={()=>{setQuery('');setLimit(20);}}><X size={16}/></button>}</div>}
+ <div className="approved-management-head" aria-hidden="true"><span>כתובת אתר</span><span>סטטוס פרסום</span><span>מחיר נטו</span><span>פעולה</span></div>
+ <div className="approved-management-items">{visible.map(a=>{const done=!!(a.publication_refunded&&(!Number(a.editorial_price)||a.writing_refunded)),open=active===a.id;return <article key={a.id}><div className="approved-management-row"><OrderUrl url={a.website_url}/><span className={'approved-publication '+(a.status==='published'?'is-published':'')}>{done?'בוטלה':stages[a.status]||'מצב לא תועד'}</span><strong><bdi>{orderMoney(remainingArticleNet(a,o))}</bdi></strong>{!done&&!cancelled?<button type="button" aria-expanded={open} aria-controls={'approved-refund-'+a.id} disabled={busy||!!active&&!open} onClick={()=>setActive(open?'':a.id)}>{paid?'ביטול וזיכוי':'ביטול והסרה מהחיוב'}</button>:<span className="approved-cancelled-label">בוטל</span>}</div>{open&&<div className="approved-inline-refund" id={'approved-refund-'+a.id}><h2>{paid?'ביטול וזיכוי הפריט':'ביטול הפריט'}</h2><RefundForm key={a.id} ctx={ctx} userId={o.user_id} article={a} order={o} presentation="order-inline" onBusyChange={setBusy} close={()=>{setActive('');ctx.refresh();}}/></div>}</article>;})}</div>
+ {!visible.length&&<p className="approved-order-note">לא נמצאו פריטים להצגה.</p>}{visible.length<matching.length&&<button type="button" className="approved-more" onClick={()=>setLimit(v=>v+20)}>הצגת פריטים נוספים</button>}
+ <details className="approved-management-history"><summary>היסטוריית פעולות<ChevronDown size={17}/></summary>{items.filter(a=>a.refund_history?.length||a.publication_refunded||a.writing_refunded||a.cancel_pending).map(a=><section key={a.id}><OrderUrl url={a.website_url}/><ItemHistory article={a}/>{a.cancel_pending&&<p>בקשת הביטול ממתינה לאישור עצירת הפרסום.</p>}</section>)}{state.data?.activity?.map((e:Row)=><p key={e.id}><bdi>{orderTimestamp(e.created)}</bdi> · {e.actor} · {e.action}</p>)}{!state.data?.activity?.length&&!items.some(a=>a.refund_history?.length||a.publication_refunded||a.writing_refunded||a.cancel_pending)&&<p>טרם נרשמו פעולות.</p>}</details>
+ <small className="approved-order-note">מחירי הפריטים לפני מע״מ</small><details className="approved-management-documents"><summary>פרטי חיוב ומסמכים<ChevronDown size={17}/></summary><ApprovedPaymentDetails ctx={ctx} order={o} evidence={state.data.payment_confirmation}/>{o.invoice_file_id&&<a className="approved-proof" href={'/api/orders/'+encodeURIComponent(id)+'/invoice'}><Download size={16}/>חשבונית / קבלה</a>}<InvoiceAttachment ctx={ctx} id={id} existing={o} onAttached={ctx.refresh}/><PaymentOrderActions ctx={ctx} order={o}/></details>
+ </section>;
+}
