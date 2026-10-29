@@ -854,3 +854,21 @@ actions passed. Build, typecheck, supplier API and the default 27-field save
 contract passed again; see `/tmp/suppliers-only-verdict-{build,tsc,api,browser,save}.txt`.
 The fresh independent verdict pass and supplier-only STAGING deployment remain
 pending. Verification still uses isolated fixtures and the limits above apply.
+
+
+## Floating WhatsApp — video treatment, 2026-10-29
+
+| Capability | Owner and invariant |
+|---|---|
+| Contact action | The native anchor in `app/floating-whatsapp.tsx` retains `https://wa.me/972507508850`, `target="_blank"`, `rel="noopener noreferrer"`, its existing Hebrew accessible name/phone, title and label. Enter follows the same external link. Decorative SVG/rings are hidden from accessibility APIs. |
+| Visibility and clearance | Preserve the existing administrator-shell and knowledge-admin exclusions. `app/knowledge.css` retains its exclusion owner. At mobile checkout the bottom offset remains 104px plus the bottom safe area; ordinary placement uses 20px clearance plus the existing safe-area rules. |
+| Motion lifecycle | Only the decorative orbit/ripple animate on a four-second CSS cycle; the disc and white icon remain stationary. The client effect reads `document.hidden`, pauses decoration on `visibilitychange`, and removes the listener on unmount. |
+| Accessible display states | Keep visible keyboard focus and the Hebrew focus/hover label. Reduced motion removes animation/transitions and interaction movement while retaining static rings. Forced colors hides the rings and uses system colors. Print hides the complete control. |
+| Release boundary | The sole application changes are `app/floating-whatsapp.tsx` and `app/floating-whatsapp.css` over live base `6ba6096a2087d6dc65bce4a0281f3f93b3847c0d`. No dependency, API, schema, environment, data, payment, customer, supplier or catalog behavior changes are included. |
+
+Scoped lint, typecheck, production build, all three required cart/checkout
+suites and the current-production-CSS component browser checks passed. The final
+independent reviewer returned **SHIP** with no material component findings.
+Exact evidence and its synthetic-data, browser and visual limits are in
+`.impeccable/surfaces/floating-whatsapp.md`; this does not certify unrelated
+screens. The current Railway STAGING-only deployment remains pending.

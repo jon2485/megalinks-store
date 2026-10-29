@@ -1237,3 +1237,26 @@ was recaptured after this correction; current build, typecheck, supplier API/
 browser and the default 27-field save contract passed again. No visual tokens or
 component owners change. The independent verdict pass and deployment remain
 pending. Exact evidence is appended to the supplier surface brief.
+
+
+## Floating WhatsApp — video treatment, 2026-10-29
+
+This scoped component refinement inherits the existing MegaLinks world. A glossy
+circular green disc and stationary white WhatsApp icon carry a clockwise
+green/cyan orbit and soft ripple on a four-second cycle. The disc remains 58px on
+desktop and 54px below 768px, with 20px edge clearance and existing safe-area rules;
+the surrounding decoration remains inside the viewport. The existing Hebrew
+hover/focus label and visible keyboard focus retain their roles.
+
+Runtime styling stays in `app/floating-whatsapp.css`, paired with
+`app/floating-whatsapp.tsx`. This treatment introduces no shared visual tokens;
+existing frontmatter, sidecar, global styles and unrelated screens are preserved.
+Reduced motion leaves static rings, forced colors uses system colors without
+rings, hidden documents pause decoration, and print hides the control. Link,
+exclusion and checkout-clearance authority is recorded in `UX-CONTRACT.md`.
+
+The final independent reviewer returned **SHIP** for this component with no
+material findings. Reference, captures, checks and limits are recorded in
+`.impeccable/surfaces/floating-whatsapp.md`. The authorized release target is the
+current Railway STAGING environment only; deployment remains pending at this
+handoff.
