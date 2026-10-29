@@ -1177,3 +1177,63 @@ content-workspace section of `UX-CONTRACT.md`. Final scoped checks passed after
 the reviewer fixes. Independent final review returned **ship** for the two
 material fixes; the prior full review accepted the remaining incumbent-world
 scope. Railway STAGING deployment remains pending at this documentation handoff.
+
+
+## Supplier workspace — 2026-10-29
+
+This ordinary Operate extension carries the existing compact Orders and Editorial
+Desk world into supplier administration. The real MegaLinks logo and chrome,
+navy/ice/white, pale boundaries, Heebo Hebrew RTL and established control
+hierarchy remain the visual authority. Existing frontmatter, tokens and
+`.impeccable/design.json` are preserved. Runtime CSS remains canonical (model B):
+`app/supplier-workspace.css` aliases the established Orders/editorial roles inside
+its supplier scope. The local aliases introduce no global palette or new
+sidecar. Orders, content, finance and customer styles retain their owners.
+
+The shared `ContentCategoryNavigation` supplier variant supplies exactly three
+equal tiles in one row on desktop and phones: ספקים ואתרים, בקשות וחשבוניות
+and התחשבנות. Its cyan selected edge and ice fill reuse the incumbent navigation
+language. Supplier lists use one white bordered work panel with search, authored
+filters, aligned desktop records and compact phone records. One record expands
+inline to reveal its actual sites, request comparison or publication costs;
+closing hides its complete body. Fine separators and tabular amounts keep
+identity, cost, sale and status distinct without introducing a new card system.
+
+The profile/site editor places two independently saved sections side by side on
+desktop and selects between those sections with tabs at the existing local
+1000px breakpoint. Site editing reuses `CatalogWebsiteForm` with its supplier
+presentation; its default catalog presentation and 27-field save contract retain
+their existing owner. Advanced category, WordPress and date controls intentionally
+inherit their canonical platform-native popups. Supplier list filters retain the
+shared authored Select. No new popup owner is established.
+
+Invoice review places invoice facts/actions and the protected document iframe
+in two desktop columns. Below the same 1000px breakpoint, the document uses its
+explicit private PDF link. Real action history uses a native disclosure and an
+honest empty state. Compact publication lines, the existing three-part net/VAT/
+total band, and separate paid/due/reference facts continue the finance language.
+Invoice approval and actual payment remain visibly separate actions. No sample
+names, money, dates or invoice data from the approved references ship as runtime
+records.
+
+Source owners, the five approved references, the current 320/390/1440px capture
+matrix and verification limits are recorded in
+`.impeccable/surfaces/supplier-workspace.md`. Workflow authority is the appended
+supplier section of `UX-CONTRACT.md`. Current scoped build, typecheck, lint and
+supplier checks passed; current content, approved-order and six-finance browser
+regressions also passed. The fresh independent finish review and authorized
+supplier-only Railway STAGING deployment remain pending at this documentation
+handoff. No review verdict or deployed completion is asserted here.
+
+
+### Supplier editor correction verification — 2026-10-29
+
+The selected-site control now occupies its own complete row on phones, preserving
+the readable URL at 390px. The existing supplier form also initializes its site
+assignment from the explicitly selected supplier, so saving an existing site
+chosen from all sites performs the displayed reassignment. The default catalog
+assignment precedence is preserved. The complete 320/390/1440px supplier matrix
+was recaptured after this correction; current build, typecheck, supplier API/
+browser and the default 27-field save contract passed again. No visual tokens or
+component owners change. The independent verdict pass and deployment remain
+pending. Exact evidence is appended to the supplier surface brief.

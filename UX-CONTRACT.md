@@ -775,3 +775,82 @@ two scored fixes, confirming truthful administrative review/sent progress at all
 three widths and pending-cancellation action gating. The prior full review
 accepted the remaining scoped implementation. Deployment is not asserted; the
 authorized release target is the existing Railway STAGING environment only.
+
+
+## Supplier workspace — 2026-10-29
+
+The latest approved supplier update is the complete release scope. Suppliers is
+one primary category with exactly three equal single-row tiles on phones and
+desktop: ספקים ואתרים / בקשות וחשבוניות / התחשבנות. Preserve the existing
+logo, navigation chrome, Heebo RTL and Orders/editorial control language. The
+release must contain only this supplier patch over the exact live STAGING base
+`1ddd946e4581161b422d7555abea5ab878cd637b`; unrelated staging work is excluded.
+
+| Task | Canonical owner | Current contract |
+|---|---|---|
+| Supplier directory and inline sites | `AdminSuppliersWorkspace`; `lib/admin-suppliers.ts`; GET `admin/suppliers` and its detail route | Show actual account/manual origin, active/paused/total site counts and readiness from actual sites, delivery email, recorded cost and procurement verification. One native record button opens or closes complete inline site details; repeated mouse, Enter and Space activation reclose it. Costs remain administrator-only. |
+| Search, filters and paging | Shared `FinanceSearch`, `FinanceSelect`, `FinancePages`, `FinanceEmpty`; `admin-view-state` | Explicit search submission/clear and filter changes reset page and expansion. Directory/detail/settlement responses include request keys to suppress stale filtered results and pages of 20. Requests use local pages of 20 over their canonical response. Transient view/return state uses the existing in-memory owner. Errors, no results and retry remain explicit. |
+| Supplier profile save | Existing `records/supplier` CRUD; `SupplierProfileForm` | Profile save is separate from site save, validates real fields and uses optional `expected_updated_at` for existing suppliers. Compare-and-swap conflicts do not overwrite newer data. Preserve failed drafts and busy/duplicate locks; the existing deletion guards remain authoritative. |
+| Site edit, assignment and visibility | Existing `CatalogWebsiteForm`, supplier presentation only; `pricingApi` | Reuse canonical validation, version checks, warning/confirmation flow, upload, visibility, ownership and save payload. The default catalog presentation and all 27 existing save fields remain unchanged. Keep site/profile saves separate; retain error drafts and protect navigation/tab/site changes with `useAdminDraftGuard`. Advanced category/WordPress/date popups inherit existing platform-native controls; list filters use the shared authored Select. |
+| Supplier requests and price comparison | Existing `admin/seller-requests`; `SupplierRequestReview`; read-only `admin/supplier-request-context` | Present current/requested cost, editable customer sale and resulting difference before VAT. Admin-only context derives cost from the request baseline and sale from the live website. Approval uses the existing pricing API, ownership confirmation and validation; rejection/correction requires its reason. Cancellation requests retain the existing cancellation/refund prerequisite. Future purchases use approved pricing; historical publication costs remain frozen. |
+| Invoice list and review | `SettlementList`, `InvoiceScreen`, `SupplierStatementReview`; existing private file endpoint | Show the real invoice number, month, publication snapshot, recorded net, actual invoice VAT/total, payout readiness and review note. Desktop uses the protected iframe and explicit link; phones use the private link. Never present an attachment as independently verified. Approval confirms invoice review and does not record money paid. |
+| Receipt time and action history | `supplierSettlements`; existing statement upload and audit owners | Prefer stored `invoice_submitted_at`. Only a record currently in `invoice_review` may display current statement `updated`, which the existing upload handler writes on submission. Approved/paid legacy records without the stored submission time remain unknown. History is built only from actual audit rows and stored invoice submission time; it does not infer events from status or updated time. A history without events states that none were recorded. No timestamp writer is changed by this extension. |
+| Actual supplier payment | Existing `admin/seller-requests/statement`; `SupplierStatementReview` | Require an approved invoice, approved encrypted payout details and no pending payout change; include statement version, a real transfer reference and checked confirmation that the transfer actually occurred. Existing atomic version/one-time guards and busy locks remain authoritative. Approval and actual payment are separate actions. Recalculation explains that the current invoice enters history and a new invoice is required. |
+| Settlement truth | `supplierSettlements`; existing immutable publication/statement data | A matching account statement replaces its legacy supplier/month group. Costs use publication or statement snapshots, with explicit missing-cost states. Display real invoice VAT, paid amount, remaining due and reference; never derive invented VAT for a legacy payment. Demo/cancelled records are separated into history. |
+| Legacy manual payments | Existing legacy supplier-payment API and `LegacyPayment` | Preserve the existing net-only flow and label its amount explicitly as net before VAT. Do not route account-statement payments through that legacy path. Existing confirmation, validation, reference and duplicate guards remain in force. |
+| Approved payout disclosure | Existing encrypted profile store; admin-only `admin/suppliers/:id?payout=1` read | Decrypt only after explicit administrator reveal. Do not include decrypted payout details in directory/list responses or decrypt them by default. Payout changes continue through the existing request review lifecycle. |
+
+The three new read routes (`admin/suppliers`, `admin/supplier-settlements` and
+`admin/supplier-request-context`) inherit the existing administrator guard. The
+supplier UI composes shared finance record/fact/search/select/page/empty
+primitives, shared UI controls and the existing draft guard. Existing finance,
+request lifecycle, order, content and customer owners retain their behavior.
+Runtime uses actual records; synthetic examples are confined to verification.
+
+Current verification passed: production build, TypeScript, scoped ESLint with
+zero errors and one existing image-performance advisory; supplier admin API;
+48 D1 supplier lifecycle requests; 967 supplier privacy checks; catalog actions
+and its 27-field save contract; production-component supplier browser coverage
+at 320/390/1440px for all five surfaces. Browser checks cover repeated keyboard/
+mouse disclosure, equal tiles, filters/no results, profile CAS, site failure/
+retry and draft/visibility guards, request decisions, separate invoice/payment
+confirmation and busy lock, real/empty history, payout reveal and reduced motion.
+Current content, approved-order and all six finance browser regressions passed
+at the same widths. Exact logs and captures are in the supplier surface brief.
+
+These are isolated tests using actual components/CSS and synthetic HTTP
+responses, with no live finance, mail, AI or customer writes. The PDF fixture
+checks protected URL/iframe/link integration, not the native PDF plugin.
+Authenticated deployed behavior, physical iOS and automated pixel-exact fidelity
+are not certified. Recovered prior work was lost; earlier verdicts/testing are
+not accepted as evidence for this source. The current checks above were rerun.
+The fresh independent finish review and Railway STAGING release remain pending.
+
+`PRODUCT.md`, a QUALITY BAR card and formal comparison/build state are absent.
+The incompatible Impeccable launcher/detect/comp-diff were not repaired or rerun;
+the current strict premium audit retains broader legacy findings and parser
+false positives. No clean global score, automated comp comparison or whole-app
+certification is claimed. This append preserves pre-existing design/frontmatter/
+sidecar drift without turning it into a new rule or repair gate.
+
+
+### Supplier site reassignment correction — 2026-10-29
+
+In the supplier presentation, a nonempty explicit `defaultSupplier` initializes
+`f.supplier_id` even when the selected existing site belonged to another supplier.
+The normal catalog presentation retains `site.supplier_id || defaultSupplier`.
+Selecting another supplier's site through “שיוך מתוך כל האתרים” and saving therefore
+sends that site's ID with the currently selected supplier's ID through the
+canonical production catalog form/API. Historical order/publication/statement
+snapshots remain unchanged. The selected-site control occupies a full phone row
+so its current URL is readable at 390px.
+
+After this correction, the canonical admin catalog API test reassigns
+`manual-site` to `seller:buyer` and verifies that the frozen statement net remains
+75,000 cents. The real-component browser test selects `other.example`, saves it
+and asserts both the site ID and intended supplier ID in the production form
+payload. The full matrix was recaptured at 320/390/1440px and all supplier browser
+actions passed. Build, typecheck, supplier API and the default 27-field save
+contract passed again; see `/tmp/suppliers-only-verdict-{build,tsc,api,browser,save}.txt`.
+The fresh independent verdict pass and supplier-only STAGING deployment remain
+pending. Verification still uses isolated fixtures and the limits above apply.
