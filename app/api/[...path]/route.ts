@@ -1,3 +1,4 @@
+import {adminContent} from '@/lib/admin-content';
 import {prepareOrderStatement} from '@/lib/order-statement';
 import {completeWalletCard} from '@/lib/wallet-card';
 import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
@@ -448,7 +449,7 @@ if (p[0] === 'cart') {
         if(method==='GET'&&p[2]==='document')return new Response(await articleDocx(a) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':"attachment; filename=article.docx; filename*=UTF-8''"+encodeURIComponent((a.title||'article').slice(0,80)+'.docx'),'Cache-Control':'private, no-store'}});
         if (method === 'GET') {
             const aiConfig = await connection('ai');
-            return response({ ai_generation:await articleGenerationStatus(a.id), ai_available: !!(aiConfig.enabled && aiConfig.secret), article: customerArticle(a,u), order: parse(await one('SELECT * FROM orders WHERE id=?', a.order_id)), website: u.role === 'admin' ? await website(a.website_id, true) : publicWebsite((await one('SELECT * FROM websites WHERE id=?', a.website_id))!), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', a.id),u) });
+            return response({ ai_generation:await articleGenerationStatus(a.id), ai_available: !!(aiConfig.enabled && aiConfig.secret), article: {...customerArticle(a,u),...(u.role==='admin'?{user_name:(await one('SELECT name FROM users WHERE id=?',a.user_id))?.name}:{})}, order: parse(await one('SELECT * FROM orders WHERE id=?', a.order_id)), website: u.role === 'admin' ? await website(a.website_id, true) : publicWebsite((await one('SELECT * FROM websites WHERE id=?', a.website_id))!), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', a.id),u) });
         }
         if(method==='PATCH'||method==='POST'&&['status','writing-request','writing-complete','writing-revisions'].includes(p[2]))assert((await articleGenerationStatus(a.id))?.status!=='writing','המאמר בהכנה. אפשר לערוך או לשלוח אותו לאחר שהכתיבה תסתיים.',409);
         if(['writing-complete','writing-revisions'].includes(p[2])&&method==='POST')return response(await writingAction(a,u,await json(r),new URL(r.url).origin,p[2]));
@@ -523,7 +524,7 @@ if (p[0] === 'cart') {
             if(next==='admin_review'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);}
             if(next==='revisions')assert(maxText(b.note,3000).trim(),'יש לפרט את הסיבה להחזרה לתיקון');
             if(next==='approved')assert(!futureArticleDate(a),'טרם הגיע מועד הכתבה לאישור. הכתבה תיכנס לתור האישורים בתאריך שנבחר',409);
-            const statusData=JSON.parse(a.data);if(next==='admin_review'&&futureArticleDate(a)){next='scheduled';statusData.scheduled_submitted_at=now();statusData.scheduled_from_status=a.status;}
+            const statusData=JSON.parse(a.data);if(next==='admin_review'){statusData.first_submitted_at||=now();statusData.submitted_at=now();statusData.review_requested_at=now();}if(next==='published')statusData.published_at=now();if(next==='admin_review'&&futureArticleDate(a)){next='scheduled';statusData.scheduled_submitted_at=now();statusData.scheduled_from_status=a.status;}
             const url = next === 'published' ? httpUrl(b.url || '') : a.published_url;
             if (next === 'published'){assert(url,'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);assert(!JSON.parse(order!.data).demo,'הדגמה אינה פרסום אמיתי');}
             const publication=publicationPeriod();if(next==='published')statusData.published_month=publication.month;
@@ -548,7 +549,7 @@ if (p[0] === 'cart') {
             assert(!JSON.parse((await one('SELECT data FROM orders WHERE id=?',a.order_id))!.data).demo,'להזמנת הדגמה משתמשים בפורטל הספק בלבד');
             const token = uid() + uid();
             const expires = new Date(Date.now() + 14 * 86400000).toISOString();
-            await db().batch([stmt('INSERT INTO tokens(id,hash,kind,user_id,resource,expires,used) VALUES (?,?,?,?,?,?,?)', uid(), await hash(token), 'supplier', u.id, a.id, expires, 0), stmt("UPDATE articles SET status='sent',version=version+1,updated=? WHERE id=? AND status='approved'", now(), a.id)]);
+            await db().batch([stmt('INSERT INTO tokens(id,hash,kind,user_id,resource,expires,used) VALUES (?,?,?,?,?,?,?)', uid(), await hash(token), 'supplier', u.id, a.id, expires, 0), stmt("UPDATE articles SET status='sent',version=version+1,updated=?,data=json_set(data,'$.supplier_sent_at',?) WHERE id=? AND status='approved'", now(),now(), a.id)]);
             await audit(u, a.id, 'נוצר קישור ספק', { expires });
             return response({ url: new URL('/supplier/' + token, r.url).href, expires });
         }
@@ -770,6 +771,7 @@ if (p[0] === 'cart') {
                 if(b.url)b.url=httpUrl(b.url);
                 if(b.email){const existing=await one("SELECT id FROM records WHERE kind='supplier' AND lower(json_extract(data,'$.email'))=?",b.email);if(existing)return response({id:existing.id,existing:true});}
             }
+            if(kind==='instruction'){b={name:String(b.name||'').trim(),text:String(b.text||'').trim()};assert(b.name&&b.name.length<=200&&b.text&&b.text.length<=20000,'יש למלא שם ותוכן הנחיה תקינים');}
             if(kind==='ticket')assert(b.payment_method!=='bank_transfer'&&!b.amount_cents,'בקשות הטענה נשלחות דרך הארנק');
             if (kind === 'bundle') b = await normalizeBundle(b);
             const id = uid();
@@ -793,12 +795,14 @@ if (p[0] === 'cart') {
                 if (nextStatus === 'answered') assert(String(nextReply || '').trim(), 'יש לכתוב תשובה לפני סימון תשובה התקבלה');
             }
             if(kind==='ticket')for(const key of ['payment_method','amount','amount_cents','reference','proof_file_id','decision','handled_by','handled_at','ledger_id'])delete b[key];
+            if(kind==='instruction'){const expected=b.expected_updated_at;const prompt={name:String(b.name||'').trim(),text:String(b.text||'').trim()};assert(prompt.name&&prompt.name.length<=200&&prompt.text&&prompt.text.length<=20000,'יש למלא שם ותוכן הנחיה תקינים');const changed=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify(prompt),now(),item.id,expected||item.updated).run();assert(changed.meta.changes,'ההנחיה עודכנה במקביל. פתחו אותה מחדש לפני עריכה.',409);await audit(u,item.id,'רשומה עודכנה',{kind});return response({ok:true});}
             const write=stmt('UPDATE records SET data=?,updated=? WHERE id=?', JSON.stringify({ ...JSON.parse(item.data), ...b }), now(), item.id);if(bundleVersion!==null)await db().batch([pricingGuard(bundleVersion),write]);else await write.run();
             await audit(u, item.id, 'עודכנה רשומת ' + kind,kind==='bundle'?{pricing_warning_acknowledged:b.acknowledge===true}:{});
             return response({ ok: true });
         }
         if (method === 'DELETE') {
             if (kind === 'supplier') assert(!(await one("SELECT COUNT(*) AS n FROM websites WHERE json_extract(data,'$.supplier_id')=?", item.id))?.n, 'יש להסיר את שיוך האתרים לפני מחיקת הספק', 409);
+            if(kind==='instruction'){const body=await json(r);const changed=await stmt('DELETE FROM records WHERE id=? AND updated=?',item.id,body.expected_updated_at||item.updated).run();assert(changed.meta.changes,'ההנחיה עודכנה במקביל. פתחו אותה מחדש לפני מחיקה.',409);await audit(u,item.id,'רשומה נמחקה',{kind});return response({ok:true});}
             const write=stmt('DELETE FROM records WHERE id=?',item.id);if(bundleVersion!==null)await db().batch([pricingGuard(bundleVersion),write]);else await write.run();
             return response({ ok: true });
         }
@@ -827,6 +831,12 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
+        if(p[1]==='content'){
+            assert(method==='GET','פעולה לא נתמכת',405);const exported=query.get('export')==='1',result=await adminContent(query,exported);
+            if(!exported)return response(result);
+            const rows=[['כתבה','לקוח','מספר הזמנה','אתר','סטטוס','שליחה לבדיקה','שליחה לספק'],...result.articles.map(a=>[a.title,a.user_name,a.number,a.website_url,a.status,a.submitted_at||'',a.supplier_sent_at||''])];
+            return new Response(framedWorkbook(rows,'כתבות',[50,30,20,45,22,28,28],[],result.articles.length) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="articles.xlsx"','Cache-Control':'private, no-store'}});
+        }
         if(p[1]==='orders'){
             assert(method==='GET','פעולה לא נתמכת',405);const exported=query.get('export')==='1',result=await adminOrders(query,exported);
             if(!exported)return response(result);

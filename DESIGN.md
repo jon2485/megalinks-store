@@ -1140,3 +1140,40 @@ They remain compact and white without repeated subtotal, VAT or grand-total
 blocks. The existing period summary, navy/ice/white palette, Heebo RTL and scoped
 `--fin-*` owners remain authoritative. This is a disclosure repair within the
 incumbent composition, with no new design-system rule.
+
+## Content and publication workspace — 2026-10-29
+
+This ordinary Operate extension carries the approved compact Orders and
+Editorial Desk world into administrative content and publication. The existing
+MegaLinks logo, navy/ice/white, fine pale-blue boundaries and Heebo Hebrew RTL
+remain the visual authority. Runtime CSS is canonical (model B):
+`app/content-workspace.css` bridges the existing orders/editorial roles inside
+the content heading, workspace and named administrative ArticleStudio review.
+It establishes no new global palette, token family or identity; earlier systems
+retain their scopes and the existing frontmatter and sidecar are preserved.
+
+Content and publication is one primary navigation destination. Its five equal
+icon tiles remain in one row on desktop and phones, with the exact labels
+ממתינים לאישור, כל הכתבות, תור פרסום, הנחיות כתיבה and ספריית ידע.
+The cyan selected edge and ice fill reuse the incumbent navigation language.
+The knowledge body retains its existing owner.
+
+One white bordered panel contains search, filters, semantic article records and
+pagination. Aligned desktop columns reflow at 760px into compact phone records
+using the same DOM. A small native chevron button opens compact inline facts;
+four detail columns become two on phones. Title, actual account name, order
+identifier, status and real timestamps form the hierarchy. Financial summaries
+remain in the explicit order destination. Shared finance search/select/paging/
+facts/empty primitives and canonical Button, Dialog, Input and Textarea retain
+their behavior. Visible focus and reduced-motion disclosure rules are scoped.
+
+The existing ArticleStudio remains the editor. Its admin presentation starts in
+preview, folds site requirements into a native disclosure and omits the old
+billing paragraph. A four-stage administrative progress display distinguishes
+approval from actual supplier delivery; customer progress keeps its existing
+owner. Composition, references, evidence and release limits are recorded in
+`.impeccable/surfaces/content-workspace.md`; behavioral rules are in the appended
+content-workspace section of `UX-CONTRACT.md`. Final scoped checks passed after
+the reviewer fixes. Independent final review returned **ship** for the two
+material fixes; the prior full review accepted the remaining incumbent-world
+scope. Railway STAGING deployment remains pending at this documentation handoff.

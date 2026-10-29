@@ -724,3 +724,54 @@ monthly dates and actions without overflow. Fresh independent manual review
 returned **ship** for this scoped correction with no material unresolved findings.
 Evidence and verification limits are in `.impeccable/surfaces/finance-siblings.md`.
 The corrected source has not yet been deployed.
+
+## Content and publication workspace — 2026-10-29
+
+The user's latest content request governs this scope: all actually submitted
+articles belong in All Articles, independently of order and payment screens.
+Content and publication is a primary category with five equal tiles in one row
+on desktop and phones: ממתינים לאישור / כל הכתבות / תור פרסום /
+הנחיות כתיבה / ספריית ידע. The existing knowledge body remains untouched.
+The existing Orders, financial, customer and supplier workflows keep their
+canonical owners and permissions.
+
+| Task | Canonical owner | Current contract |
+|---|---|---|
+| Submitted article archive | `AdminContentWorkspace`; `lib/admin-content.ts`; GET `admin/content` | All Articles includes actually submitted lifecycle states, including returned drafts, requested professional writing and published articles. Unsubmitted customer drafts, unrequested professional writing and a selected future date alone do not qualify. The status select includes Published. Article lists use the actual account `user_name`; they carry no article body, supplier email, price, VAT, payment or other financial detail. |
+| Review queue | The same admin content API, `view=approvals`; existing article workflow | Show actionable `admin_review` records under the existing workable-order, refund and cancellation guards. Opening a record uses the real `admin-article/:id` studio route. |
+| Publication queue and clocks | The same API, `view=publication`; `dispatchArticle`; `releaseScheduledApprovals` | Only sent, unpublished, non-refunded articles with successful/demo or legacy unrecorded delivery qualify. Order by original actual supplier delivery, oldest first: durable `supplier_sent_at`, allocation `created`, then recorded first delivery history. Article edits, reminder times and job `created`/`updated` never replace that clock. Missing clocks stay null and are explicitly undocumented; their rows precede dated rows rather than receiving an invented age. |
+| First submission and review times | Existing article status and writing handlers; scheduled release | Preserve first submission and first writing-request times. Record the current submission/review time on a real transition; scheduled release records its review time. Supplier dispatch writes `supplier_sent_at` once from the allocation timestamp. `lib/content-presentation.ts` formats displayed dates in `Asia/Jerusalem` and shows honest missing-date text. |
+| Search, filters, paging and export | `FinanceSearch`, `FinanceSelect`, `FinancePages`; admin content API | Search the actual title, account name, site URL and order number with literal substring semantics. Submit/clear/filter changes reset paging and expansion. Article lists use server pages of 20; Excel exports the complete filtered result. Instruction paging is local over the canonical records response, which retains its existing 1,000-record limit. Request keys prevent an older response from appearing under a newer filter. |
+| Compact article disclosure | Semantic article records; `FinanceFacts`/`FinanceFact`; `admin-view-state` | The small native chevron button exposes `aria-expanded`/`aria-controls` and supports repeated mouse, Enter and Space activation on both devices. One record opens at a time. Inline facts show title, actual account user, linked order number, submission time and wait; sent articles add supplier and actual delivery time. The order number is the route to financial details. Filter/page/expansion and return-list state are transient in-memory state, without browser persistence. |
+| Article actions | Existing ArticleStudio and article reminder endpoint | View Article remains available. Reminder and its explanatory note appear only for sent, unpublished articles without a pending cancellation. Pending cancellation keeps the explanation and View action while suspending reminder treatment. A published article offers its safe external publication link. A reminder response describes recorded/queued, failed or blocked delivery honestly and never resets the original wait clock. Busy locks prevent duplicate reminder/export requests. |
+| Administrative article review | Existing `ArticleStudio`, editor and API | Preserve real save, Word/text import, images/credits, content/link validation, approve/reject, versions, locks and dirty callbacks. Admin starts in preview; site requirements are folded and the billing paragraph is removed. Back returns to the originating content list. Four administrative stages distinguish editing, approval, supplier possession and publication; `admin_review` must never imply supplier delivery. Customer progress remains unchanged. |
+| Writing instruction CRUD | Canonical `records/instruction` API; shared Dialog, Input and Textarea | Validate a nonblank name and text with the existing 200/20,000-character limits. Use busy/duplicate locks, retained failed drafts, close/Escape discard confirmation and an unload guard. Updates and deletes compare `expected_updated_at`; a concurrent change returns 409 and requires reopening. The canonical AI generation prompt reads instruction text for new generations. Changes do not rewrite existing articles or send the instruction to clients or suppliers. |
+
+GET `admin/content` sits inside the existing `admin(u)` branch; instruction
+records retain their existing administrator guard. The list projection is
+deliberately content-only. No new financial mutation, dependency, schema
+migration or environment setting is introduced by this content work.
+
+The two material reviewer fixes are implemented: pending-cancellation records
+show neither a reminder button nor reminder note, and administrative approval
+progress no longer reads as supplier delivery. Final production build,
+typecheck, scoped new-file ESLint, content API, 83 scheduling checks and real
+studio-handler tests passed after those fixes. The final production-component
+browser run passed at 320/390/1440px for all four content routes, review/sent
+administrative progress, cancellation gating, equal single-row tiles, repeated
+keyboard/mouse disclosure, filters, instruction recovery and reduced motion.
+Earlier regression evidence also passed for all six finance siblings, approved
+orders, 923 supplier privacy checks, 127 writing checks and supplier mail.
+Exact sources, logs, captures and limits are in
+`.impeccable/surfaces/content-workspace.md`.
+
+Verification uses isolated synthetic data and performs no live email, AI,
+customer or financial writes. Physical iOS Safari, authenticated deployed
+pixels, whole-application certification and an automated pixel diff are outside
+this evidence. The context launcher was unavailable; the premium static audit
+reported legacy/global findings and a content parser warning, so no clean global
+detector result is claimed. Independent final review returned **ship** for the
+two scored fixes, confirming truthful administrative review/sent progress at all
+three widths and pending-cancellation action gating. The prior full review
+accepted the remaining scoped implementation. Deployment is not asserted; the
+authorized release target is the existing Railway STAGING environment only.
