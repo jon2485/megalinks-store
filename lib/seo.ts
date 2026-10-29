@@ -15,7 +15,7 @@ const privateRoots = new Set([
     'orders','articles','links','dashboard','strategies','wallet','monthly','customers',
     'profile','files','support','api','notifications','supplier-workspace','supplier-finance',
 ]);
-const nestedRoots = new Set(['article','admin-article','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge','admin-order','admin-support']);
+const nestedRoots = new Set(['article','admin-article','admin-supplier','admin-supplier-invoice','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge','admin-order','admin-support']);
 const hubTabs = new Set(['articles','orders','payments','selling','customers','profile','files','support','api','notifications','monthly']);
 
 export function isWorkspacePath(parts:string[]) {
@@ -31,7 +31,7 @@ export function isIndexablePath(path:string){return INDEXABLE_PATHS.some(p=>p===
 export function clientPageSeo(view:string) {
     const path=view==='catalog'?'/':view==='terms'?'/terms':null;
     if(path){const metadata=publicMetadata(path);return {title:(metadata.title as {absolute:string}).absolute,description:metadata.description!,canonical:SITE_URL+path,robots:'index, follow'};}
-    const adminTitle=view.startsWith('admin-order/')?'פירוט ההזמנה':view.startsWith('admin-article/')?'טיפול בכתבה':view.startsWith('admin-support/')?'פרטי הפנייה':view.startsWith('admin-knowledge/')?'עורך מדריכים וידע':adminAreas.flatMap(a=>a.pages.map(([page,label])=>({page,label}))).find(item=>item.page===view)?.label;
+    const adminTitle=view.startsWith('admin-supplier-invoice/')?'בדיקת חשבונית ספק':view.startsWith('admin-supplier/')?'פרטי ספק ואתר':view.startsWith('admin-order/')?'פירוט ההזמנה':view.startsWith('admin-article/')?'טיפול בכתבה':view.startsWith('admin-support/')?'פרטי הפנייה':view.startsWith('admin-knowledge/')?'עורך מדריכים וידע':adminAreas.flatMap(a=>a.pages.map(([page,label])=>({page,label}))).find(item=>item.page===view)?.label;
     return {title:(adminTitle||(view.startsWith('admin')?'ניהול המערכת':'המרחב האישי'))+' | MegaLinks',description:'כניסה למרחב האישי ולניהול פרסומים ב־MegaLinks.',canonical:null,robots:'noindex, nofollow, noarchive'};
 }
 export const privateRobots = {index:false,follow:false,noarchive:true};

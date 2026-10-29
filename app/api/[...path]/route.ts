@@ -1,3 +1,4 @@
+import {supplierDirectory,supplierDetail,supplierSettlements,supplierRequestContext} from '@/lib/admin-suppliers';
 import {adminContent} from '@/lib/admin-content';
 import {prepareOrderStatement} from '@/lib/order-statement';
 import {completeWalletCard} from '@/lib/wallet-card';
@@ -795,6 +796,7 @@ if (p[0] === 'cart') {
                 if (nextStatus === 'answered') assert(String(nextReply || '').trim(), 'יש לכתוב תשובה לפני סימון תשובה התקבלה');
             }
             if(kind==='ticket')for(const key of ['payment_method','amount','amount_cents','reference','proof_file_id','decision','handled_by','handled_at','ledger_id'])delete b[key];
+            if(kind==='supplier'){const expected=b.expected_updated_at;delete b.expected_updated_at;if(expected!==undefined){const write=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify({...JSON.parse(item.data),...b}),now(),item.id,expected).run();assert(write.meta.changes,'פרטי הספק השתנו במקביל. טענו מחדש לפני שמירה.',409);await audit(u,item.id,'עודכנה רשומת supplier');return response({ok:true});}}
             if(kind==='instruction'){const expected=b.expected_updated_at;const prompt={name:String(b.name||'').trim(),text:String(b.text||'').trim()};assert(prompt.name&&prompt.name.length<=200&&prompt.text&&prompt.text.length<=20000,'יש למלא שם ותוכן הנחיה תקינים');const changed=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify(prompt),now(),item.id,expected||item.updated).run();assert(changed.meta.changes,'ההנחיה עודכנה במקביל. פתחו אותה מחדש לפני עריכה.',409);await audit(u,item.id,'רשומה עודכנה',{kind});return response({ok:true});}
             const write=stmt('UPDATE records SET data=?,updated=? WHERE id=?', JSON.stringify({ ...JSON.parse(item.data), ...b }), now(), item.id);if(bundleVersion!==null)await db().batch([pricingGuard(bundleVersion),write]);else await write.run();
             await audit(u, item.id, 'עודכנה רשומת ' + kind,kind==='bundle'?{pricing_warning_acknowledged:b.acknowledge===true}:{});
@@ -831,6 +833,9 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
+        if(p[1]==='suppliers'){assert(method==='GET','פעולה לא נתמכת',405);return response(p[2]?await supplierDetail(decodeURIComponent(p[2]),query):await supplierDirectory(query));}
+        if(p[1]==='supplier-request-context'){assert(method==='GET','פעולה לא נתמכת',405);return response(await supplierRequestContext(query.get('id')||''));}
+        if(p[1]==='supplier-settlements'){assert(method==='GET','פעולה לא נתמכת',405);return response(await supplierSettlements(query));}
         if(p[1]==='content'){
             assert(method==='GET','פעולה לא נתמכת',405);const exported=query.get('export')==='1',result=await adminContent(query,exported);
             if(!exported)return response(result);

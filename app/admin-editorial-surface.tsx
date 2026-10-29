@@ -10,7 +10,7 @@ import './admin-editorial.css';
 export function AdminEditorialSurface({ctx,view,active,children}:{ctx:Ctx;view:string;active:boolean;children:React.ReactNode}) {
  if(!active)return <>{children}</>;
  const area=adminArea(view),page=area?.pages.find(([id])=>id===view)?.[1];
- const detail=view.startsWith('admin-order/')?'פירוט הזמנה':view.startsWith('admin-customer-account/')?'תיק לקוח':view.startsWith('admin-article/')?'עריכת כתבה':view.startsWith('admin-support/')?'פרטי פנייה':view.startsWith('admin-knowledge/')?'עריכת מאמר':view.startsWith('admin-pricebook/')?'מחירון הלקוח':page;
+ const detail=view.startsWith('admin-supplier-invoice/')?'בדיקת חשבונית':view.startsWith('admin-supplier/')?'פרטי ספק ואתר':view.startsWith('admin-order/')?'פירוט הזמנה':view.startsWith('admin-customer-account/')?'תיק לקוח':view.startsWith('admin-article/')?'עריכת כתבה':view.startsWith('admin-support/')?'פרטי פנייה':view.startsWith('admin-knowledge/')?'עריכת מאמר':view.startsWith('admin-pricebook/')?'מחירון הלקוח':page;
  const link=(event:React.MouseEvent<HTMLAnchorElement>,target:string)=>{if(event.button||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();ctx.go(target);};
  return <EditorialTableContext.Provider value><div className="admin-editorial-surface" data-admin-route={view}>
   <a className="admin-v172-skip" href="#admin-workspace-content">דילוג לתוכן הניהול</a>

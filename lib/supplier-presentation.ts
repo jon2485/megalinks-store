@@ -1,0 +1,5 @@
+export const supplierReadiness:Record<string,string>={ready:'מוכן לפרסום',email:'חסר מייל לפרסום',cost:'חסרה עלות לאתר',contract:'נדרש אימות הסכם',paused:'כל האתרים מושהים',empty:'טרם שויכו אתרים'};
+export const supplierRequestKinds:Record<string,string>={create:'הוספת אתר',edit:'עדכון פרטים / מחיר',pause:'השהיית אתר',remove:'הסרת אתר',cancel_article:'ביטול פרסום',payout:'עדכון פרטי תשלום'};
+export const supplierRequestStates:Record<string,string>={pending:'ממתינה לבדיקה',approved:'אושרה',rejected:'נדחתה',cancelled:'בוטלה'};
+export const supplierStatementStates:Record<string,string>={awaiting_invoice:'ממתין לחשבונית',invoice_review:'חשבונית בבדיקה',approved:'מאושר לתשלום',rejected:'נדרשת חשבונית מתוקנת',paid:'שולם',cancelled:'בוטל',open_period:'ממתין לסיכום חודשי',missing_cost:'חסרה עלות מתועדת',awaiting_payment:'ממתין לתיעוד תשלום',demo:'הדגמה'};
+export const supplierTone=(s:string)=>['approved','ready','paid'].includes(s)?'success':['rejected','missing_cost'].includes(s)?'danger':['pending','awaiting_invoice','invoice_review','contract','cost','email','paused'].includes(s)?'pending':'muted';
