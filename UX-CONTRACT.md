@@ -872,3 +872,35 @@ independent reviewer returned **SHIP** with no material component findings.
 Exact evidence and its synthetic-data, browser and visual limits are in
 `.impeccable/surfaces/floating-whatsapp.md`; this does not certify unrelated
 screens. The current Railway STAGING-only deployment remains pending.
+
+## Approved reference refinement and administrator suspension — 2026-10-30
+
+Existing privacy, finance, invoice, ownership and draft contracts remain in force.
+Customer order reference composition keeps `effectiveOrderAmounts`, remaining
+historical item amounts, refund status and actual payment dates as owners.
+Document view and download both use the existing owned order invoice endpoint.
+The metadata/Excel disclosure preserves all prior information and export rows.
+Content facts link to the exact order and article; reminders retain their current
+eligibility and server handler. Supplier header actions use existing editor IDs.
+FinanceRecord's optional sibling actions do not replace the disclosure button or
+its aria-expanded/aria-controls/hidden-body behavior.
+
+The explicit administrator instruction permits suspending an existing website
+independently of malformed legacy website/logo URLs, sale fields or unrelated
+pricing changes. `lib/catalog-bulk.ts` treats an existing-row patch containing
+only `active:false` as visibility-only. It preserves all website columns and data
+except active/revision, retains admin authorization, row-version CAS, atomic batch
+and audit logging, and omits unrelated pricing validation/guard only for an entire
+suspension-only batch. Mixed batches retain their pricing guard. The supplier
+suspension action does not load pricing metadata or require its success. Activation
+and full edits retain their previous validation. Invalid URL edits identify the
+website, logo or numbered example-article field; version and role errors remain
+accurate. Source: explicit user instruction of 30.10.2026, existing catalog-bulk
+admin/CAS/audit contract and catalog active filtering. No existing article,
+historical order cost, supplier dispatch or supplier statement changes.
+
+Verification owners: tests/catalog-suspension.mjs (real isolated Worker/D1),
+tests/customer-finance-glass.mjs (amount/refund/document/export contracts),
+tests/customer-order-reference-browser.mjs (real React/Radix desktop/390/320),
+and existing content/supplier/finance browser suites. These use synthetic fixtures;
+they do not send real reminders, charge payments or mutate live customer records.

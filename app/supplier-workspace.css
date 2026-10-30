@@ -38,3 +38,74 @@
 
 .supplier-site-row .supplier-inventory-summary{display:block;margin-top:4px;font-size:12px;color:var(--supplier-muted,#526b87);line-height:1.6}
 .supplier-procurement select{width:100%;min-height:44px}
+
+/* 2026-10-30: approved supplier directory, aligned price/cost columns. */
+.admin-design-v172 .admin-editorial-surface .supplier-heading .content-tiles a{min-height:82px}
+.admin-design-v172 .admin-editorial-surface .supplier-panel-heading h2{font-weight:800;color:var(--sup-ink);font-size:26px}
+.supplier-directory>.supplier-list-head,.supplier-directory .supplier-site-row,.supplier-directory .supplier-site-head{grid-template-columns:minmax(200px,2fr) minmax(110px,1fr) minmax(110px,1fr) minmax(90px,.9fr) 145px;gap:12px}
+.supplier-directory .supplier-site-head{display:none}
+.supplier-directory .supplier-profile-line{margin-bottom:8px}
+.supplier-directory .supplier-inline>h3{font-size:14px;color:var(--sup-copy);margin:8px 0}
+.admin-design-v172 .admin-editorial-surface .supplier-directory .supplier-row-name{font-size:17px;font-weight:800;color:var(--sup-ink)}
+.supplier-directory .supplier-row-name small{font-size:13px;line-height:1.65;font-weight:400}
+.supplier-directory .supplier-site-row{min-height:72px;padding:10px 0;font-size:16px}
+.admin-design-v172 .admin-editorial-surface .supplier-directory .supplier-site-url>a{font-size:17px;font-weight:750;text-decoration-thickness:1px}
+.supplier-directory .supplier-site-url .supplier-inventory-summary{display:block;font-size:14px;font-weight:400;color:var(--sup-copy);line-height:1.6;margin-top:2px}
+.supplier-inventory-meta{display:flex;flex-wrap:wrap;align-items:center;gap:5px 10px;margin-top:3px;font-size:13px}
+.supplier-inventory-meta>span{border-inline-end:1px solid var(--sup-line);padding-inline-end:10px}
+.supplier-inventory-meta mark{background:#ddf7fc;border-radius:4px;padding:0 6px;color:#007e9d;white-space:nowrap}
+.supplier-directory .supplier-site-prices{display:contents}
+.supplier-directory .supplier-site-price{grid-column:2;grid-row:1}
+.supplier-directory .supplier-site-cost{grid-column:3;grid-row:1}
+.supplier-directory .supplier-site-state{grid-column:4;grid-row:1}
+.supplier-directory .supplier-site-actions{grid-column:5;grid-row:1;justify-content:flex-end;gap:9px}
+.supplier-directory .supplier-site-prices>span>small{display:none}
+.supplier-directory .supplier-site-prices bdi{white-space:nowrap;font-variant-numeric:tabular-nums}
+.supplier-directory .supplier-site-actions button{min-height:38px}
+.supplier-directory .supplier-site-actions button[aria-haspopup]{min-width:36px;width:36px}
+.supplier-directory .supplier-status{font-size:13px;font-weight:650;padding:5px 14px}
+.admin-design-v172 .admin-editorial-surface .supplier-directory .supplier-actions button{border-radius:7px;font-size:15px;color:#0077e8;border-color:#bdd8ed;background:#fff;min-height:42px}
+.admin-design-v172 .admin-editorial-surface .supplier-directory .supplier-actions button:hover{background:#eaf5ff;border-color:#0872d5}
+@media(max-width:760px){
+ .admin-design-v172 .admin-editorial-surface .supplier-heading .content-tiles a{min-height:75px;font-size:12px;line-height:1.5}
+ .admin-design-v172 .admin-editorial-surface .supplier-panel-heading h2{font-size:22px}
+ .supplier-directory .supplier-filters .finance-select{flex-basis:100%;width:100%}
+ .admin-design-v172 .admin-editorial-surface .supplier-directory .supplier-row-name{font-size:16px}
+ .supplier-directory .supplier-row-name small{font-size:12px}
+ .supplier-directory .supplier-site-row{grid-template-columns:minmax(0,1fr) 108px;grid-template-areas:'url actions' 'prices actions';gap:4px 10px;padding:10px 0;min-height:100px}
+ .supplier-directory .supplier-site-url{grid-area:url;padding-top:23px;position:relative;text-align:start}
+ .admin-design-v172 .admin-editorial-surface .supplier-directory .supplier-site-url>a{font-size:15px}
+ .supplier-directory .supplier-site-url .supplier-inventory-summary{font-size:12px;line-height:1.6}
+ .supplier-directory .supplier-site-prices{grid-area:prices;display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:4px 9px;flex-wrap:wrap;font-size:12px;line-height:1.6}
+ .supplier-directory .supplier-site-prices>span>small{display:inline;font-size:12px;color:var(--sup-copy)}
+ .supplier-directory .supplier-site-state{grid-column:1;grid-row:1;align-self:start;justify-self:start;position:relative;z-index:1;margin-top:0}
+ .supplier-directory .supplier-site-state .supplier-status{font-size:11px;padding:3px 11px;line-height:1.4}
+ .supplier-directory .supplier-site-actions{grid-area:actions;align-self:start;justify-content:flex-end;padding-top:3px;gap:5px}
+ .supplier-directory .supplier-site-actions button{font-size:13px;min-height:36px;padding-inline:10px}
+ .supplier-directory .supplier-site-actions button[aria-haspopup]{min-width:28px;width:28px;padding-inline:0}
+ .supplier-inventory-meta{font-size:11px;gap:3px 6px}
+ .supplier-inventory-meta>span{padding-inline-end:6px}
+ .supplier-directory .supplier-profile-line .supplier-actions{gap:8px}
+ .admin-design-v172 .admin-editorial-surface .supplier-directory .supplier-actions button{font-size:13px;min-height:39px}
+}
+.supplier-privacy-note{display:block;font-size:12px;line-height:1.7;color:var(--sup-copy);margin-top:-2px}
+.supplier-directory .supplier-profile-line{padding-bottom:7px}
+@media(max-width:760px){.supplier-privacy-note{font-size:11px}}
+
+/* Directory headers retain the canonical disclosure, with safe sibling actions. */
+.supplier-directory .finance-record-heading{display:flex;align-items:center;gap:18px;padding:12px 18px;background:var(--sup-ice)}
+.suppliers-workspace .supplier-directory .finance-record-heading>.finance-record-trigger{display:flex;align-items:center;justify-content:space-between;flex:1;min-width:0;min-height:60px;padding:0;gap:14px;background:transparent}
+.supplier-directory .finance-record-heading .finance-record-trigger>span:not(.supplier-row-name){display:none}
+.supplier-directory .finance-record-heading-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.supplier-directory .finance-record-heading-actions button{min-height:42px}
+.supplier-directory .finance-record-heading .supplier-row-name{flex:1}
+.supplier-directory .finance-record-heading .finance-record-chevron{align-self:center;margin:0}
+.supplier-directory .finance-record-heading .supplier-row-name small{font-size:13px}
+@media(max-width:760px){
+ .supplier-directory .finance-record-heading{display:block;padding:12px}
+ .suppliers-workspace .supplier-directory .finance-record-heading>.finance-record-trigger{width:100%;min-height:70px;align-items:start}
+ .supplier-directory .finance-record-heading .finance-record-chevron{align-self:start;margin-top:5px}
+ .supplier-directory .finance-record-heading .supplier-row-name small{font-size:12px}
+ .supplier-directory .finance-record-heading-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+ .supplier-directory .finance-record-heading-actions button{font-size:13px;min-height:40px}
+}

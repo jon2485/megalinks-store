@@ -1,0 +1,85 @@
+/* Approved 2026-10-30 reference. Only the existing customer order dialog opts in. */
+[data-slot=dialog-content]:has(.customer-order-glass.customer-order-reference){
+ --customer-finance-ink:#071f4b;--customer-finance-muted:#485b78;--customer-finance-accent:#007e88;--customer-finance-line:#cfe5ef;
+ width:calc(100vw - 32px);max-width:720px;max-height:calc(100dvh - 32px);border-radius:17px;
+ border:1px solid #ffffffeb;background:linear-gradient(135deg,#f8fcfff5,#f4fbfff0 66%,#e9f7ffed);
+ box-shadow:0 20px 65px #102c4a24;font-family:Heebo,Arial,sans-serif;
+}
+body:has(.customer-order-reference) [data-slot=dialog-overlay]{background:#29455d52;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+[data-slot=dialog-content]:has(.customer-order-glass.customer-order-reference)>[data-slot=dialog-close]{top:23px;left:22px;right:auto;width:44px;height:44px;border:1px solid #d8eaf6;background:#ffffffdd;color:#071f4b}
+.customer-order-reference .customer-order-glass-heading{position:relative;margin:0 26px;padding:24px 0 16px;padding-inline-end:58px;border-bottom:1px solid var(--customer-finance-line)}
+[data-slot=dialog-content] .customer-order-reference .customer-order-glass-heading h2{font-size:28px!important;font-weight:800!important;line-height:1.35!important}
+[data-slot=dialog-content] .customer-order-reference .customer-order-glass-heading p{font-size:15px!important;margin:5px 0 0;line-height:1.7!important}
+.customer-order-reference .customer-order-glass-heading>.customer-finance-status{display:table;min-width:76px;margin-top:12px;padding:5px 14px;border-radius:11px;font-size:14px;font-weight:700;background:#d8f0ea;color:#006a72}
+.customer-order-reference .customer-order-glass-heading>.is-pending{background:#fff0d7;color:#86510d}
+.customer-order-reference .customer-order-glass-heading>.is-cancelled{background:#fff0f3;color:#9a3045}
+.customer-order-reference .customer-order-glass-body{padding:12px 26px 0}
+.customer-order-reference .customer-order-glass-items{display:block;max-height:300px;overflow-y:auto;overscroll-behavior:contain;margin:0;padding:0 18px;border:1px solid var(--customer-finance-line);border-radius:12px;background:#ffffffdf}
+.customer-order-reference .customer-order-glass-items>li{grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px 16px;margin:0;padding:18px 1px;min-height:70px;border:0;border-bottom:1px solid var(--customer-finance-line);border-radius:0;background:transparent}
+.customer-order-reference .customer-order-glass-items>li:last-child{border-bottom:0}
+.customer-order-reference .site-reference:has(a)>strong{display:none}
+.customer-order-reference .site-reference a{display:inline-flex;flex-direction:row-reverse;align-items:center;gap:8px;font-size:17px;font-weight:700;color:#00758a;line-height:1.55}
+.customer-order-reference .site-reference a svg{width:18px;height:18px;flex-shrink:0;color:#007bff}
+.customer-order-reference .customer-order-glass-item-price strong{font-size:20px;font-weight:750;color:var(--customer-finance-ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.customer-order-reference .customer-order-glass-facts{grid-template-columns:repeat(3,minmax(0,1fr));gap:0;margin:12px 0 0!important;padding:16px 4px;border:1px solid var(--customer-finance-line);border-radius:12px;background:#ffffffdf;text-align:center}
+.customer-order-reference .customer-order-glass-facts>div{display:block;width:auto;padding:0 10px;border-inline-end:1px solid var(--customer-finance-line)}
+.customer-order-reference .customer-order-glass-facts>div:last-child{border:0}
+[data-slot=dialog-content] .customer-order-reference .customer-order-glass-facts dt{max-width:none;width:auto;white-space:normal;font-size:14px!important;line-height:1.55!important}
+[data-slot=dialog-content] .customer-order-reference .customer-order-glass-facts dd{margin:7px 0 0;width:auto;max-width:none;white-space:normal;font-size:15px!important;font-weight:500!important;line-height:1.65!important}
+.customer-reference-payment{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:31px;padding:2px 12px;border:1px solid #bce8db;border-radius:9px;color:#008269;background:#eaf8f2;font-size:14px;font-weight:700;white-space:nowrap}
+.customer-reference-payment.is-pending{background:#fff6e8;color:#86510d;border-color:#f5dcaf}
+.customer-order-reference .customer-order-glass-totals{gap:0;margin:12px 0 0!important;padding:5px 12px 10px;border:1px solid var(--customer-finance-line);border-radius:12px;background:#ffffffdf}
+.customer-order-reference .customer-order-glass-totals>div{padding:10px 10px;border-bottom:1px solid var(--customer-finance-line)}
+[data-slot=dialog-content] .customer-order-reference .customer-order-glass-totals :is(dt,dd){font-size:16px!important;line-height:1.6!important}
+[data-slot=dialog-content] .customer-order-reference .customer-order-glass-totals dd{font-weight:600!important;color:var(--customer-finance-ink)!important}
+.customer-order-reference .customer-order-glass-totals>div:last-child{border:0;border-radius:9px;background:#e3f5ff;margin-top:4px;padding:11px 13px}
+[data-slot=dialog-content] .customer-order-reference .customer-order-glass-totals>div:last-child :is(dt,dd){font-size:23px!important;font-weight:800!important;line-height:1.4!important}
+.customer-reference-more{margin-top:5px;font-size:13px;color:var(--customer-finance-muted)}
+.customer-reference-more>summary{cursor:pointer;min-height:34px;padding:7px 0;list-style-position:inside}
+.customer-reference-more ul{display:grid;gap:10px;list-style:none;margin:0;padding:0}
+.customer-reference-more li{display:grid;gap:3px;padding-bottom:8px;border-bottom:1px solid var(--customer-finance-line)}
+.customer-reference-more>button{margin:8px 0 4px}
+.customer-order-reference .customer-order-glass-actions{gap:12px;padding:14px 26px max(22px,env(safe-area-inset-bottom))}
+.customer-order-reference .customer-order-glass-actions :is(a,button){min-height:52px;padding:11px 16px;border:1px solid #007bff;border-radius:9px;background:#ffffffd9;font-size:17px!important;font-weight:700!important;color:#007bff;line-height:1.5}
+.customer-order-reference .customer-order-glass-actions>a.customer-finance-primary{flex:1.7;border-color:#007bff;background:#007bff;box-shadow:none;color:#fff}
+.customer-order-reference .customer-order-glass-actions :is(a,button):hover{background:#e4f4ff}
+.customer-order-reference .customer-order-glass-actions>a.customer-finance-primary:hover{background:#0069db}
+.customer-order-reference .customer-order-glass-actions :is(a,button):active{transform:translateY(1px)}
+.customer-order-reference :is(button,a,summary):focus-visible{outline:3px solid #0872d5;outline-offset:3px}
+@media(min-width:700px){.customer-order-reference .customer-order-glass-heading>.customer-finance-status{position:absolute;left:0;bottom:14px;margin:0}}
+@media(max-width:699px){
+ [data-slot=dialog-content]:has(.customer-order-glass.customer-order-reference){width:calc(100vw - 20px);max-height:calc(100dvh - 20px);border-radius:16px}
+ [data-slot=dialog-content]:has(.customer-order-glass.customer-order-reference)>[data-slot=dialog-close]{top:16px;left:16px}
+ .customer-order-reference .customer-order-glass-heading{margin-inline:18px;padding-top:28px;padding-bottom:14px}
+ [data-slot=dialog-content] .customer-order-reference .customer-order-glass-heading h2{font-size:25px!important}
+ [data-slot=dialog-content] .customer-order-reference .customer-order-glass-heading p{font-size:13px!important}
+ .customer-order-reference .customer-order-glass-body{padding:12px 18px 0}
+ .customer-order-reference .customer-order-glass-items{padding-inline:12px;max-height:240px}
+ .customer-order-reference .customer-order-glass-items>li{min-height:64px;padding-block:16px;gap:8px}
+ .customer-order-reference .site-reference a{font-size:15px;gap:6px}
+ .customer-order-reference .customer-order-glass-item-price strong{font-size:18px}
+ .customer-order-reference .customer-order-glass-facts{grid-template-columns:repeat(3,minmax(0,1fr));padding:15px 2px}
+ .customer-order-reference .customer-order-glass-facts>div{padding-inline:5px}
+ [data-slot=dialog-content] .customer-order-reference .customer-order-glass-facts dt{font-size:12px!important}
+ [data-slot=dialog-content] .customer-order-reference .customer-order-glass-facts dd{font-size:13px!important}.customer-order-reference .customer-order-glass-facts dd bdi{white-space:nowrap}
+ .customer-reference-payment{font-size:12px;padding-inline:8px}
+ .customer-order-reference .customer-order-glass-totals{padding-inline:7px}
+ [data-slot=dialog-content] .customer-order-reference .customer-order-glass-totals :is(dt,dd){font-size:16px!important}
+ [data-slot=dialog-content] .customer-order-reference .customer-order-glass-totals>div:last-child :is(dt,dd){font-size:22px!important}
+ .customer-order-reference .customer-order-glass-actions{padding:13px 18px max(18px,env(safe-area-inset-bottom));gap:10px;flex-wrap:nowrap}
+ .customer-order-reference .customer-order-glass-actions>*{flex-basis:0}
+ .customer-order-reference .customer-order-glass-actions :is(a,button){font-size:14px!important;padding-inline:7px;min-height:50px}
+}
+@media(max-width:350px){
+ .customer-order-reference .customer-order-glass-body{padding-inline:12px}
+ .customer-order-reference .customer-order-glass-heading{margin-inline:12px}
+ .customer-order-reference .site-reference a{font-size:13px}
+ .customer-order-reference .customer-order-glass-item-price strong{font-size:16px}
+ .customer-order-reference .customer-order-glass-actions{padding-inline:12px}
+ [data-slot=dialog-content] .customer-order-reference .customer-order-glass-facts dd{font-size:12px!important}[data-slot=dialog-content] .customer-order-reference .customer-order-glass-totals>div:last-child dt{font-size:18px!important;white-space:nowrap}
+}
+@media(prefers-reduced-transparency:reduce){[data-slot=dialog-content]:has(.customer-order-glass.customer-order-reference){background:#f4fbff;-webkit-backdrop-filter:none;backdrop-filter:none}}
+@media(prefers-reduced-motion:reduce){.customer-order-reference .customer-order-glass-actions :is(a,button){transition:none;transform:none}}
+@media(forced-colors:active){[data-slot=dialog-content]:has(.customer-order-glass.customer-order-reference),.customer-order-reference :is(.customer-order-glass-items,.customer-order-glass-facts,.customer-order-glass-totals){background:Canvas!important;border-color:CanvasText}.customer-order-reference .customer-order-glass-actions :is(a,button){background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}
+.customer-order-reference .customer-order-glass-item-site .site-reference{direction:rtl;justify-items:start}
+.customer-order-reference .customer-order-glass-item-site .site-reference>a{justify-self:start;width:fit-content;max-width:100%}

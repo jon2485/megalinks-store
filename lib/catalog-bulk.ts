@@ -9,11 +9,12 @@ const lists=['tags','features','example_articles','recommended_topics','content_
 const allowed=new Set([...texts,...flags,...numbers,...lists,'supplier_id','supplier_email','stock_total','sort_order','pixel_price_ils']);
 export async function saveCatalogBatch(user:Row,input:Row){
  admin(user);assert(Array.isArray(input.rows)&&input.rows.length>0&&input.rows.length<=100,'יש לשלוח בין שורה אחת ל־100 שורות');
- const meta=await catalogPricingMeta(),warnings:string[]=[];if(input.pricing_version!==undefined)assert(input.pricing_version===meta.pricing_version,'התמחור השתנה במקביל. רעננו לפני שמירה; הטיוטה נשמרה',409);const dynamicKeys=meta.pricing_tiers.map(t=>'tier_'+t.id+'_ils');
+ const pausingOnly=input.rows.every((r:Row)=>r&&r.create!==true&&r.values&&Object.keys(r.values).length===1&&r.values.active===false);
+ const meta=await catalogPricingMeta(),warnings:string[]=[];if(!pausingOnly&&input.pricing_version!==undefined)assert(input.pricing_version===meta.pricing_version,'התמחור השתנה במקביל. רעננו לפני שמירה; הטיוטה נשמרה',409);const dynamicKeys=meta.pricing_tiers.map(t=>'tier_'+t.id+'_ils');
  const existing=new Map((await all('SELECT * FROM websites')).map(w=>[w.id,w]));
  const suppliers=new Map((await all("SELECT * FROM records WHERE kind='supplier'")).map(w=>[w.id,parse(w)!]));
  const seen=new Set<string>(),seenUrls=new Set<string>(),stamp=now(),statements=[],ids:string[]=[];
- const url=(v:any)=>{try{return httpUrl(String(v||''));}catch{throw new ApiError(400,'כתובת האתר או התמונה אינה תקינה');}};
+ const url=(v:unknown,label:string)=>{try{return httpUrl(String(v||''));}catch{throw new ApiError(400,label+' אינה תקינה. יש להזין קישור מלא שמתחיל ב־https:// או http://' );}};
  for(let i=0;i<input.rows.length;i++){
   const r=input.rows[i];assert(r&&typeof r==='object'&&!Array.isArray(r),`שורה ${i+1}: נתונים לא תקינים`);
   const startStatements=statements.length;
@@ -22,15 +23,21 @@ export async function saveCatalogBatch(user:Row,input:Row){
   if(prev)assert(r.expected_updated===prev.updated,`שורה ${i+1}: האתר עודכן במקביל. רעננו את הטבלה לפני השמירה`,409);
   const values=r.values;assert(values&&typeof values==='object'&&!Array.isArray(values),'פרטי השורה חסרים');
   for(const key of Object.keys(values))assert(allowed.has(key)||dynamicKeys.includes(key),'שדה לא נתמך: '+key);
+  // Suspension is a visibility action. Preserve legacy URLs, images and all
+  // commercial fields byte-for-byte; only the record revision can block it.
+  if(prev&&Object.keys(values).length===1&&values.active===false){
+   statements.push(stmt("UPDATE websites SET name=CASE WHEN updated=? THEN name ELSE NULL END,active=0,data=json_set(data,'$.active',json('false')),updated=? WHERE id=?",r.expected_updated,stamp,id));
+   ids.push(id);continue;
+  }
   const d:Row=prev?JSON.parse(prev.data):{active:true,procurement_verified:false,features:[],tags:[],language:'he',turnaround_days:3};
   if(prev)Object.assign(d,{name:prev.name,url:prev.url,category:prev.category,active:!!prev.active,price_ils:prev.price/100});
   for(const k of texts)if(k in values){assert(typeof values[k]==='string'&&values[k].length<=(k.includes('notes')||k==='publishing_restrictions'?6000:1000),'טקסט לא תקין בשדה '+k);d[k]=values[k].trim();}
   for(const k of flags)if(k in values){assert(typeof values[k]==='boolean','ערך כן/לא לא תקין');d[k]=values[k];}
-  for(const k of lists)if(k in values){assert(Array.isArray(values[k])&&values[k].length<=100&&values[k].every((v:any)=>typeof v==='string'&&v.length<=1000),'רשימה לא תקינה');d[k]=values[k];}
-  assert(d.name&&d.url&&d.category,`שורה ${i+1}: שם, כתובת וקטגוריה הם חובה`);d.url=url(d.url);if(d.logo_url)d.logo_url=url(d.logo_url);
+  for(const k of lists)if(k in values){assert(Array.isArray(values[k])&&values[k].length<=100&&values[k].every((v:unknown)=>typeof v==='string'&&v.length<=1000),'רשימה לא תקינה');d[k]=values[k];}
+  assert(d.name&&d.url&&d.category,`שורה ${i+1}: שם, כתובת וקטגוריה הם חובה`);d.url=url(d.url,'כתובת האתר');if(d.logo_url)d.logo_url=url(d.logo_url,'כתובת תמונת הלוגו');
   const canonical=(value:string)=>{try{const u=new URL(value);return u.hostname.toLowerCase().replace(/^www\./,'')+u.pathname.replace(/\/$/,'')+u.search;}catch{return '';}};const normalized=canonical(d.url);if(!prev||canonical(prev.url)!==normalized){assert(!seenUrls.has(normalized),'אותה כתובת אתר מופיעה פעמיים בקבוצה',409);seenUrls.add(normalized);assert(![...existing.values()].some(w=>w.id!==id&&canonical(w.url)===normalized),'כבר קיים אתר עם הכתובת הזו. ערכו את האתר הקיים במקום להוסיף כפילות',409);}
-  if('example_articles' in values)d.example_articles=values.example_articles.map(url);
-  const amount=(v:any)=>{assert(v!==''&&v!==null&&typeof v!=='boolean','יש להזין מחיר');const n=Math.round(Number(v)*100);assert(Number.isSafeInteger(n)&&n>=0&&n<=100000000,'מחיר חייב להיות מספר לא שלילי');return n;};
+  if('example_articles' in values)d.example_articles=values.example_articles.map((value:string,index:number)=>url(value,'כתובת מאמר לדוגמה '+(index+1)));
+  const amount=(v:unknown)=>{assert(v!==''&&v!==null&&typeof v!=='boolean','יש להזין מחיר');const n=Math.round(Number(v)*100);assert(Number.isSafeInteger(n)&&n>=0&&n<=100000000,'מחיר חייב להיות מספר לא שלילי');return n;};
   const price=amount('price_ils' in values?values.price_ils:d.price_ils);
   d.price_cents=price;delete d.price_ils;
   if('cost_ils' in values)d.cost_cents=values.cost_ils===''?undefined:amount(values.cost_ils);
@@ -60,6 +67,6 @@ export async function saveCatalogBatch(user:Row,input:Row){
  }
  statements.push(stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),user.id,'catalog','עריכת קטלוג מרוכזת',JSON.stringify({ids,count:ids.length,pricing_warning_acknowledged:input.acknowledge===true,warnings:warnings.filter(Boolean)}),stamp));
  warnPricing(warnings,input.acknowledge);
- try{await db().batch([pricingGuard(meta.pricing_version),...statements]);}catch(e){if(String(e).includes('pricing_state.version')||String(e).includes('NOT NULL constraint failed: websites.name'))throw new ApiError(409,'אתר עודכן במקביל. השמירה נעצרה ללא שינוי בקבוצה הזו');throw e;}
+ try{await db().batch([...(pausingOnly?[]:[pricingGuard(meta.pricing_version)]),...statements]);}catch(e){if(String(e).includes('pricing_state.version')||String(e).includes('NOT NULL constraint failed: websites.name'))throw new ApiError(409,'אתר עודכן במקביל. השמירה נעצרה ללא שינוי בקבוצה הזו');throw e;}
  return {saved:ids.length,rows:ids.map(id=>({id,updated:stamp}))};
 }

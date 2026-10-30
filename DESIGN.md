@@ -1260,3 +1260,48 @@ material findings. Reference, captures, checks and limits are recorded in
 `.impeccable/surfaces/floating-whatsapp.md`. The authorized release target is the
 current Railway STAGING environment only; deployment remains pending at this
 handoff.
+
+## Approved order, content and supplier reference boards — 2026-10-30
+
+The user approved the three desktop/phone boards (MegaLinks glass order modal,
+RTL content dashboard and Hebrew supplier dashboard) with explicit preservation
+of their colors, fonts, compact hierarchy, equal icon tabs and all actions.
+This scoped refinement supersedes the earlier order-dialog and content-detail
+composition only; it changes no domain policy, global token or other route.
+
+Runtime CSS remains canonical (model B). `app/customer-order-reference.css`
+extends the existing customer finance dialog through `.customer-order-reference`:
+Heebo, navy #071f4b, copy #485b78, lines #cfe5ef, white translucent panels,
+blue #007bff document actions, #e3f5ff total band and green #d8f0ea closed status.
+The 720px dialog has 17px desktop/16px phone corners, a 28px/25px bold title,
+20px/18px item amounts and a 23px/22px bold total. Three payment facts remain
+in three columns at 320px. The existing canonical Radix dialog retains focus,
+Escape, bounded internal scroll and focus restoration. Full item metadata and
+Excel export remain reachable through the additional-details disclosure; invoice
+view/download point to the existing owned document. No invoice is fabricated.
+
+`app/content-workspace.css` retains the content scope: 32px/27px Heebo bold page
+titles, five equal icon tabs, cyan #08bfd3 selected edge, 16px/14px bold record
+titles and three/two detail columns on desktop/phone. Original search, authored
+Select, paging, exact-order/article links and supplier-reminder handlers remain.
+
+`app/supplier-workspace.css` retains the supplier scope and three equal tabs.
+Site URL, retail, supplier cost, state and actions align in that RTL order.
+Inventory retains its real remaining/total values in pale cyan and the explicit
+monthly-settlement explanation. The canonical FinanceRecord permits safe sibling
+header actions for an expanded supplier, preventing nested interactive controls.
+Its original non-action variant and all financial sibling behavior are retained.
+Phone records preserve full URLs and separate the edit action from status.
+
+No synthetic preview records, changed global fonts, replacement logo, screenshot
+asset, new dependency or new financial calculation is shipped by this refinement.
+
+Validation for this scoped approval passed: TypeScript, scoped ESLint, production
+build, content/supplier APIs, actual suspension regression, customer finance
+contract, required cart/checkout checks and content/supplier/six-finance browser
+matrices at 320/390/1440. Customer dialog checks include invoice links, export,
+full metadata, long-list search, unpaid, Escape/focus restoration and reduced
+motion. The premium static audit still reports inherited whole-project findings;
+the scoped mechanical design scan has advisories and no primary findings.
+These are local fixture results, not certification of every live admin button,
+physical iOS Safari or pixel-identical rendering on every device.
