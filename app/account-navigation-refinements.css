@@ -181,3 +181,10 @@
  .azure-catalog.catalog-approved-home .catalog-results-actions[role=group] .catalog-action-button>svg{width:21px;height:21px;flex-shrink:0}
  .azure-catalog.catalog-approved-home .catalog-results-actions[role=group] .catalog-add-site{flex:0 0 auto;width:auto;margin-inline-start:auto}
 }
+
+.client-hub{scroll-margin-top:var(--account-scroll-offset,80px)}
+.account-return-bar{position:sticky;top:var(--account-scroll-offset,80px);z-index:20;display:flex;justify-content:flex-end;margin:8px 0;pointer-events:none}
+.account-return-bar button{pointer-events:auto;display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:8px 12px;border:1px solid var(--account-line,#cfe2ef);border-radius:10px;background:#fff;color:var(--account-ink,#09234b);font:600 14px/1.5 Heebo,Arial,sans-serif;cursor:pointer}
+.account-return-bar button:hover{background:#e7f4ff}
+.account-return-bar button:focus-visible{outline:2px solid #0872d5;outline-offset:3px}
+.client-hub.approved-account .client-hub-content{min-height:calc(100svh - var(--account-scroll-offset,80px) - 72px);scroll-margin-top:calc(var(--account-scroll-offset,80px) + 56px)}

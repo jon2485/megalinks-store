@@ -22,3 +22,19 @@
 @media(prefers-reduced-motion:reduce){.suppliers-workspace .finance-record-body{animation:none}.suppliers-workspace .finance-record-chevron{transition:none}}
 
 @media(max-width:760px){.supplier-editor-site-tools .finance-select{flex:1 1 100%;width:100%}.supplier-editor-site-tools>button{max-width:100%}}
+
+/* Keep status out of the actions column, including narrow phones and long URLs. */
+@media(max-width:760px){
+ .supplier-site-row{grid-template-columns:minmax(0,1fr) max-content;grid-template-areas:'url actions' 'state actions' 'prices prices';gap:5px 10px}
+ .supplier-site-state{justify-self:start}
+ .supplier-site-actions{justify-self:end;align-self:start;gap:6px;min-width:0}
+ .supplier-site-actions button{min-height:38px;min-width:0}
+ .supplier-site-actions button[aria-haspopup]{width:38px;min-width:38px}
+}
+@media(max-width:360px){
+ .supplier-request-detail .supplier-panel-heading{flex-wrap:wrap;gap:8px}
+ .supplier-request-detail .supplier-panel-heading h2{flex-basis:100%}
+}
+
+.supplier-site-row .supplier-inventory-summary{display:block;margin-top:4px;font-size:12px;color:var(--supplier-muted,#526b87);line-height:1.6}
+.supplier-procurement select{width:100%;min-height:44px}

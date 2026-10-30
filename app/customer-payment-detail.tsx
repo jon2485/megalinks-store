@@ -1,5 +1,4 @@
 'use client';
-import PaymentAssignment from './payment-assignment';
 import React from 'react';
 import {Calculator,Check,Clock3,CreditCard,Download,Eye,FileText,Link2} from 'lucide-react';
 import {money,type Row} from '@/lib/shared';
@@ -54,7 +53,7 @@ export default function CustomerPaymentDetail({ctx,order:o,items}:{ctx:Ctx;order
    {!facts.paid&&!o.demo&&!facts.cancelled&&<CustomerPaymentReport ctx={ctx} order={o} compact/>}
   </section>
   <section className="order-payment-section order-payment-summary" aria-label="סיכום התשלום">
-   <h3><Calculator size={22} aria-hidden="true"/>סיכום התשלום:</h3><PaymentAssignment order={o}/>
+   <h3><Calculator size={22} aria-hidden="true"/>סיכום התשלום:</h3>
    <dl><div><dt>לפני מע״מ</dt><dd><bdi>{money(amounts.net)}</bdi></dd></div><div><dt>מע״מ ({o.vat_percent??18}%)</dt><dd><bdi>{money(amounts.vat)}</bdi></dd></div><div className="order-payment-total"><dt>סה״כ כולל מע״מ</dt><dd><bdi>{money(amounts.total)}</bdi></dd></div></dl>
    {refunded>0&&<p className="order-payment-note">זיכוי שתועד: <bdi>{money(refunded)}</bdi>. הסכומים המוצגים מעודכנים לאחר הזיכוי.</p>}
   </section>

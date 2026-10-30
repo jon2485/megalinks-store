@@ -6,7 +6,7 @@ import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {AlertDialog,AlertDialogAction,AlertDialogCancel,AlertDialogContent,AlertDialogDescription,AlertDialogFooter,AlertDialogHeader,AlertDialogTitle} from '@/components/ui/alert-dialog';
 import {api} from '@/lib/client';
-import {siteApplicationFields as fields,siteImageTypes,siteApplicationError,siteApplicationErrors,type SiteApplicationValues,type SiteApplicationKey,type SiteApplicationField} from '@/lib/site-application';
+import {siteApplicationFields as fields,siteImageTypes,siteApplicationError,siteApplicationErrors,normalizeSiteUrl,normalizeSiteApplication,type SiteApplicationValues,type SiteApplicationKey,type SiteApplicationField} from '@/lib/site-application';
 import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
 import {useSiteJourneyMotion} from './site-journey-motion';
@@ -51,6 +51,7 @@ export default function SiteForm({ctx,site,close,onDismissGuard}:{ctx:Ctx;site?:
  const advance=()=>{
   if(lock.current||motion.locked.current)return;
   const key=fields[index].key,nextError=siteApplicationError(key,values,hasLogo);setErrors(e=>({...e,[key]:nextError}));if(nextError){focusField(key);return;}
+  if(key==='url'||key==='example_url')setValues(v=>({...v,[key]:normalizeSiteUrl(v[key])}));
   setFurthest(n=>Math.max(n,index+1));if(index===fields.length-1){go('review');return;}
   const next=index+1;if(fields[next].group!==group&&!motion.prepare())return;setIndex(next);
  };
@@ -59,7 +60,7 @@ export default function SiteForm({ctx,site,close,onDismissGuard}:{ctx:Ctx;site?:
  const openEdit=()=>{if(!go('edit',-1))return;fromReview.current=true;setDraft({...values});setEditFile(null);setEditPreview('');setErrors({});};
  const saveEdit=()=>{
   if(lock.current||motion.locked.current||!draft)return;const next=siteApplicationErrors(draft,!!(editFile||file||site?.logo_id));setErrors(next);const first=Object.keys(next)[0] as SiteApplicationKey|undefined;if(first){focusField(first,true);return;}
-  if(!go('review'))return;setValues({...draft});setDraft(null);if(editFile){setFile(editFile);setPreview(URL.createObjectURL(editFile));saved.current='';setEditFile(null);setEditPreview('');}
+  if(!go('review'))return;setValues(normalizeSiteApplication(draft));setDraft(null);if(editFile){setFile(editFile);setPreview(URL.createObjectURL(editFile));saved.current='';setEditFile(null);setEditPreview('');}
  };
  const cancelEdit=()=>{if(site&&!fromReview.current){requestClose();return;}if(!go('review'))return;setDraft(null);setEditFile(null);setEditPreview('');setErrors({});};
  const submit=async()=>{
@@ -67,7 +68,7 @@ export default function SiteForm({ctx,site,close,onDismissGuard}:{ctx:Ctx;site?:
   if(first){setDraft({...values});setPage('edit');focusField(first,true);return;}
   lock.current=true;setBusy(true);setError('');
   try{let logo_id=site?.logo_id||'';if(file){if(!saved.current){const form=new FormData();form.append('file',file);saved.current=(await api('files','POST',form)).id;}logo_id=saved.current;}
-   await ctx.run(()=>api('selling/sites','POST',{...values,kind:site?'edit':'create',site_id:site?.id,logo_id}),site?'בקשת העדכון נשלחה לבדיקה':'האתר נשלח לבדיקה');success.current=true;motion.prepare();setPage('success');
+   await ctx.run(()=>api('selling/sites','POST',{...normalizeSiteApplication(values),kind:site?'edit':'create',site_id:site?.id,logo_id}),site?'בקשת העדכון נשלחה לבדיקה':'האתר נשלח לבדיקה');success.current=true;motion.prepare();setPage('success');
   }catch(e){setError((e as Error).message);requestAnimationFrame(()=>document.getElementById('site-submit-error')?.focus());}finally{lock.current=false;setBusy(false);}
  };
  const input=(field:SiteApplicationField,edit=false)=>{
@@ -75,7 +76,7 @@ export default function SiteForm({ctx,site,close,onDismissGuard}:{ctx:Ctx;site?:
   const described=[errors[key]?id+'-error':'',field.hint?id+'-hint':''].filter(Boolean).join(' ')||undefined;
   if(key==='logo')return <label className="journey-upload" htmlFor={id}><span className="journey-upload-symbol">{image?<img src={image} alt="תצוגה מקדימה של תמונת האתר"/>:<ImagePlus size={28} aria-hidden="true"/>}</span><span><strong>{selected?.name||(site?.logo_id?'החלפת תמונת האתר':'בחירת לוגו או תמונה')}</strong><small>PNG · JPG · WEBP</small></span><input id={id} className="journey-file-input" name="logo" type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} aria-invalid={!!errors.logo} aria-describedby={described} onChange={event=>chooseFile(event.target.files?.[0]||null,edit,event)}/></label>;
   const common={id,name:key,disabled:busy,value:source[key],maxLength:field.max,placeholder:field.placeholder,'aria-invalid':!!errors[key],'aria-describedby':described,onChange:(event:React.ChangeEvent<HTMLInputElement|HTMLTextAreaElement>)=>change(key,event.target.value,edit)};
-  return field.type==='textarea'?<Textarea {...common} className="journey-input resize-none" rows={3}/>:<Input {...common} className="journey-input" type={field.type} dir={['url','email','number'].includes(field.type)?'ltr':'rtl'} min={field.type==='number'?0:undefined} step={field.type==='number'?'0.01':undefined} inputMode={field.type==='number'?'decimal':undefined} autoComplete="off" required={!field.optional}/>;
+  return field.type==='textarea'?<Textarea {...common} className="journey-input resize-none" rows={3}/>:<Input {...common} className="journey-input" type={field.type} dir={['url','email','number'].includes(field.type)?'ltr':'rtl'} min={field.type==='number'?0:undefined} step={field.type==='number'?'0.01':undefined} inputMode={field.type==='number'?'decimal':undefined} autoComplete="off" autoCapitalize={field.type==='url'?'none':undefined} spellCheck={field.type==='url'?false:undefined} onBlur={event=>{if(key==='url'||key==='example_url'){try{change(key,normalizeSiteUrl(event.currentTarget.value),edit);}catch{setErrors(e=>({...e,[key]:'יש להזין כתובת אתר תקינה, למשל example.co.il.'}));}}}} required={!field.optional}/>;
  };
  const feedback=(field:SiteApplicationField,edit=false)=>{const id='site-'+(edit?'edit-':'')+field.key;return <>{field.hint&&<small className="journey-helper" id={id+'-hint'}>{field.hint}</small>}<p id={id+'-error'} className="journey-error" role={errors[field.key]?'alert':undefined}>{errors[field.key]||''}</p></>;};
  const answer=(field:SiteApplicationField)=>field.key==='logo'?(file?.name||'תמונת האתר שנבחרה'):field.key==='price_ils'?values.price_ils+' ₪ לפני מע״מ':values[field.key]||'ללא הנחיות נוספות';

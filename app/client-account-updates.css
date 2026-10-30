@@ -128,3 +128,9 @@
 @supports not (backdrop-filter:blur(1px)){.client-hub.approved-account .ml-updates{background:#f4faff}}
 @media(prefers-reduced-transparency:reduce){.client-hub.approved-account .ml-updates{background:#f4faff;backdrop-filter:none;-webkit-backdrop-filter:none}}
 @media(forced-colors:active){.client-hub.approved-account .ml-updates,.client-hub.approved-account .ml-update{background:Canvas;border-color:CanvasText;box-shadow:none;backdrop-filter:none}}
+
+/* Days divide one continuous update list; events keep their existing actions. */
+.ml-update-day{display:flex;align-items:center;gap:14px;margin:26px 0 4px;color:var(--account-ink);font-size:17px;font-weight:800;line-height:1.5}
+.ml-update-day:first-child{margin-top:0}
+.ml-update-day:after{content:"";height:1px;flex:1;background:var(--account-line)}
+.ml-update-day time{font:inherit;color:inherit}

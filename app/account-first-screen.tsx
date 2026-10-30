@@ -1,6 +1,7 @@
 'use client';
 import React,{useEffect,useRef} from 'react';
 import {ChevronsDown} from 'lucide-react';
+import {scrollAccountTo} from './account-scroll';
 export default function AccountFirstScreen({children}:{children:React.ReactNode}){
  const ref=useRef<HTMLDivElement>(null);
  useEffect(()=>{
@@ -12,6 +13,6 @@ export default function AccountFirstScreen({children}:{children:React.ReactNode}
   visible();const intersection=typeof IntersectionObserver==='undefined'?null:new IntersectionObserver(visible);intersection?.observe(root);document.addEventListener('visibilitychange',visible);window.addEventListener('scroll',visible,{passive:true});
   return()=>{observer?.disconnect();intersection?.disconnect();window.removeEventListener('resize',measure);window.removeEventListener('scroll',visible);document.removeEventListener('visibilitychange',visible);};
  },[]);
- const scroll=()=>{const content=document.getElementById('client-hub-page-content');if(!content)return;content.focus({preventScroll:true});content.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});};
+ const scroll=()=>scrollAccountTo('client-hub-page-content');
  return <div ref={ref} className="account-mobile-first-screen">{children}<button type="button" className="account-scroll-cue" aria-label="גלילה לתוכן העמוד" onClick={scroll}><ChevronsDown size={24} aria-hidden="true"/></button></div>;
 }

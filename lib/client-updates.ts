@@ -5,6 +5,12 @@ import {paymentMethodLabel} from './payment-state';
 export type ClientUpdate={id:string;kind:'published'|'payment'|'credit'|'cancelled'|'revision';date:string;dateLabel:string;title:string;status:string;articleId?:string;orderId?:string;orderNumber?:string;siteName?:string;image?:string;logo?:string;url?:string;amount?:number;method?:string;note?:string};
 export function updateDate(value:unknown){const n=Date.parse(String(value||''));return Number.isFinite(n)?n:0;}
 export function displayUpdateDate(value:string){return updateDate(value)?new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value)):'לא תועד';}
+function localDay(value:Date){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);return ['year','month','day'].map(type=>parts.find(p=>p.type===type)?.value).join('-');}
+export function updateDay(value:string,at=new Date()){
+ const date=new Date(value);if(!Number.isFinite(date.getTime()))return {key:'unknown',label:'תאריך לא תועד'};
+ const key=localDay(date),today=localDay(at),yesterday=localDay(new Date(Date.parse(today+'T12:00:00Z')-86400000));
+ return {key,label:key===today?'היום':key===yesterday?'אתמול':key.slice(8)+'.'+key.slice(5,7)+'.'+key.slice(2,4)};
+}
 export function buildClientUpdates(articles:Row[],orders:Row[],transactions:Row[],notifications:Row[]):ClientUpdate[]{
  const result:ClientUpdate[]=[];
  for(const a of articles){
