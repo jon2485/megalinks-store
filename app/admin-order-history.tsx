@@ -19,6 +19,7 @@ const monthText=(m:string)=>m==='unknown'?'מועד לא תועד':m===monthNow(
 const orderDate=(value:string)=>value?new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value)):'לא תועד';
 export function orderRowStatus(o:Row){
  if(orderCancellation(o)==='full')return {label:'בוטלה',tone:'cancelled'};
+ if(Number(o.cancel_pending_count)>0)return {label:'בקשת ביטול',tone:'pending'};
  if(o.demo)return {label:'הדגמה',tone:'muted'};
  if(!paymentConfirmed(o)&&o.payment_report?.status==='pending')return {label:'ממתינה לאישור',tone:'pending'};
  if(!paymentConfirmed(o))return o.on_account||o.payment==='monthly'||o.billing_month?{label:'פתוחה חודשית',tone:'pending'}:{label:'ממתינה לתשלום',tone:'pending'};

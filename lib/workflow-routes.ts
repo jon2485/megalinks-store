@@ -8,6 +8,7 @@ import {closeCustomerMonth,statementData,statementId} from './monthly-statement'
 import {monthlyRows,closeMonth} from './monthly';
 import {sendQueuedMail,queueMail} from './mail';
 import {checkLink} from './checks';
+import {requireUnusedReference} from './payment-reference';
 const res=(data:any,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 export async function workflowRoutes(r:Request,p:string[],u:Row){const q=new URL(r.url).searchParams,method=r.method;
  if(p[0]==='notifications'&&method==='GET')return res({notifications:(await all("SELECT * FROM jobs WHERE kind='email' ORDER BY created DESC LIMIT 200")).map(parse).filter(j=>j!.to===u.email&&j!.user_id===u.id&&!j!.attach_article&&!j!.supplier_sequence&&!j!.supplier_stock_total).map(j=>({id:j!.id,subject:j!.subject,text:j!.text,button:j!.button,status:j!.status,created:j!.created}))});
@@ -41,6 +42,7 @@ export async function workflowRoutes(r:Request,p:string[],u:Row){const q=new URL
     if(raw.paid)return res({ok:true,duplicate:true});
     assert(b.expected_amount===raw.total,'סכום ההזמנה השתנה. יש לרענן לפני אישור התשלום',409);
     if(b.proof_file_id){const f=owns(u,await one('SELECT * FROM files WHERE id=?',b.proof_file_id));assert(['image/png','image/jpeg','image/webp','application/pdf'].includes(f.type),'סוג קובץ אינו נתמך');}
+    await requireUnusedReference(reference,raw.id,b.confirm_duplicate_reference);
     const stamp=now();await completeOrderPayment(raw,'monthly-manual-paid:'+raw.id,{actor:u.id,payment_method:'bank_transfer',reference,payment_date:paymentDate,amount_cents:raw.total,proof_file_id:b.proof_file_id||''},[
      stmt("UPDATE orders SET data=json_set(data,'$.purchase_closed_at',COALESCE(json_extract(data,'$.purchase_closed_at'),?),'$.settlement_payment_method','bank_transfer'),updated=? WHERE id=?",stamp,stamp,raw.id),
      stmt("UPDATE records SET data=json_set(data,'$.status','approved','$.handled_by',?,'$.handled_at',?),updated=? WHERE id=? AND json_extract(data,'$.status')='pending'",u.id,stamp,stamp,'payment-report:'+raw.id),

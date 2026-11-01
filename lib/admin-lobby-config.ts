@@ -9,4 +9,6 @@ export const lobbyGroups=[
  {id:'catalog',label:'מחירים וסנכרון',queues:['prices','pricing_review','sync'],page:'lobby-prices',action:'בדיקת העדכונים',tabs:[['lobby-prices','שינויי מחירים'],['admin-websites','אתרים וסנכרון'],['admin-pricing','רמות והנחות']]},
  {id:'issues',label:'מסמכים וחיבורים',queues:['invoices','mail','connections'],page:'admin-invoices',action:'פתיחת הטיפול',tabs:[['admin-invoices','מסמכים חסרים'],['admin-notifications','דיוור'],['admin-jobs','תקלות חיבור'],['admin-connections','הגדרות החיבור']],tone:'warning'},
 ] as const;
+/** Records with their own full admin page, opened there rather than inside a queue panel. */
+export const lobbyFullPage=(page:string)=>page.startsWith('admin-order/')||page.startsWith('admin-support/');
 export function lobbyGroupForPage(page:string){return lobbyGroups.find(g=>g.page===page||g.tabs.some(([p])=>p===page));}

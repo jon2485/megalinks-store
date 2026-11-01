@@ -22,6 +22,7 @@ import {writingBriefFile} from '@/lib/writing-brief-file';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
+import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
 import {adminUpdates,handleAdminUpdate,reopenAdminUpdate} from '@/lib/admin-updates';
 import {israelDate} from '@/lib/admin-order-buckets';
@@ -263,7 +264,7 @@ async function handle(r: Request,access:ResponseAccess) {
         if (method==='GET') return response({delivery:u.role==='admin'?job:supplierDelivery(job),article:{id:article.id,title:article.title,content:await supplierContent(article.content,'/api/supplier-inbox/'+encodeURIComponent(job.id)+'?inline='),image_id:article.image_id,image_credit:article.image_credit,image_credit_url:article.image_credit_url,secondary_image_id:article.secondary_image_id,secondary_image_credit:article.secondary_image_credit,meta_description:article.meta_description,client_notes:article.client_notes,scheduled:article.scheduled||'',status:article.status,cancel_pending:!!article.cancel_pending}});
         if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); const url=job.demo?'':httpUrl(b.url||''); assert(job.demo || url,'יש להזין קישור לפרסום'); if(!job.demo){const w=await website(article.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);}
             const publication=publicationPeriod();await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?) WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,publication.stamp,publication.month,article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
-            if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
+            if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':u.role==='admin'?'מנהל דיווח על פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
     }
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
     if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
@@ -407,7 +408,8 @@ if (p[0] === 'cart') {
             const paymentDate=String(b.payment_date||'');assert(/^\d{4}-\d{2}-\d{2}$/.test(paymentDate)&&!isNaN(Date.parse(paymentDate))&&new Date(paymentDate).toISOString().slice(0,10)===paymentDate&&paymentDate<=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem'}).format(new Date()),'יש להזין תאריך קבלת תשלום תקין');
             if(b.expected_total!==undefined)assert(Number(b.expected_total)===order.total,'סכום ההזמנה השתנה; יש לרענן לפני האישור',409);
             assert(maxText(b.reference, 300).length > 2, 'יש להזין אסמכתת תשלום');
-            await completeOrderPayment(order,'manual-paid:'+order.id,{reference:maxText(b.reference,300),payment_date:paymentDate,payment_method:'bank_transfer',amount_cents:order.total,actor:u.id});
+            await requireUnusedReference(maxText(b.reference,300),order.id,b.confirm_duplicate_reference);
+            const closedAt=now();await completeOrderPayment(order,'manual-paid:'+order.id,{reference:maxText(b.reference,300),payment_date:paymentDate,payment_method:'bank_transfer',amount_cents:order.total,actor:u.id},[stmt("UPDATE records SET data=json_set(data,'$.status','approved','$.handled_by',?,'$.handled_at',?),updated=? WHERE id=? AND json_extract(data,'$.status')='pending'",u.id,closedAt,closedAt,'payment-report:'+order.id)]);
             await audit(u, order.id, 'תשלום אומת ידנית', { method:'bank_transfer' });
             return response({ ok: true });
         }

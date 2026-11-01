@@ -3,7 +3,7 @@ import React,{lazy,Suspense,useEffect,useRef,useState} from 'react';
 import {Search,RefreshCw,FileText,Send,CreditCard,Wallet,XCircle,MessageSquare,CalendarDays,RefreshCcw,Folder,ArrowRight,ChevronLeft,AlertTriangle,ChevronDown,X} from 'lucide-react';
 import {useData} from '@/lib/client';
 import {when,type Row} from '@/lib/shared';
-import {lobbyGroups,lobbyGroupForPage} from '@/lib/admin-lobby-config';
+import {lobbyGroups,lobbyGroupForPage,lobbyFullPage} from '@/lib/admin-lobby-config';
 import {adminArea} from '@/lib/admin-navigation';
 import type {Ctx} from './workspace';
 import {adminQueueSections,useAdminAttention} from './admin-attention';
@@ -17,7 +17,7 @@ export default function AdminLobby({ctx}:{ctx:Ctx}){
  const searchInput=useRef<HTMLInputElement>(null);
  const active=lobbyGroups.find(g=>g.id===selected)!,queues:Row[]=state.data?.queues||[];const searchState=useData('admin/control-center/search?q='+encodeURIComponent(debounced),ctx.revision,debounced.length>=2,0),searching=search.trim().length>=2;
  const guard=(action:()=>void)=>{if(!dirty.current){action();return;}ctx.open({title:'יש שינויים שלא נשמרו',description:'שמרו את הכתבה לפני מעבר למסך אחר, או אשרו יציאה ללא שמירה.',render:(close:()=>void)=><div className="lobby-row-actions"><button className="lobby-primary" onClick={()=>{dirty.current=false;close();action();}}>יציאה ללא שמירה</button><button className="lobby-outline" onClick={close}>המשך עריכה</button></div>});};
- const go=(target:string)=>guard(()=>{const g=lobbyGroupForPage(target);if(g)setSelected(g.id);setPage(target);setSearch('');});
+ const go=(target:string)=>guard(()=>{if(lobbyFullPage(target)){ctx.go(target);return;}const g=lobbyGroupForPage(target);if(g)setSelected(g.id);setPage(target);setSearch('');});
  const localCtx:Ctx={...ctx,adminMode:true,go};
  const choose=(id:string)=>guard(()=>{const g=lobbyGroups.find(g=>g.id===id)!;setSelected(id);setPage(g.page);setSearch('');});
  const selectQueue=(id:string)=>guard(()=>{choose(id);setQueueOpen(false);if(queueToggle.current?.getClientRects().length)queueToggle.current.focus();});
