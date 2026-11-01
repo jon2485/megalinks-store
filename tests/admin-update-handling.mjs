@@ -5,6 +5,12 @@ async function req(path,body,expected=200){const r=await f.request('/api/admin/c
 try{
  const open=await req('?state=open'),event=open.updates.find(r=>r.kind==='support')||open.updates[0];assert.equal(open.updates.length,20);assert(event.version);
  for(const identity of [null,'buyer','supplier']){const r=await f.mf.dispatchFetch('http://admin.test/api/admin/control-center/updates',{method:'POST',headers:{'Content-Type':'application/json',...(identity?{'oai-authenticated-user-id':identity,'oai-authenticated-user-email':identity+'@example.test'}:{})},body:JSON.stringify({id:event.id,version:event.version})});assert.equal(r.status,identity?403:401);}
+ // Lane view: every open update lands in exactly one lane, counts match rows, oldest waits first, and information is newest first.
+ const laned=await req('?view=lanes&limit_urgent=500&limit_content=500&limit_service=500&limit_info=500'),laneRows=Object.values(laned.lanes).flatMap(l=>l.rows);
+ assert.deepEqual(Object.keys(laned.lanes).sort(),['content','info','service','urgent']);assert.equal(laneRows.length,open.total);assert.equal(new Set(laneRows.map(r=>r.id)).size,open.total);
+ for(const [lane,{total,rows}] of Object.entries(laned.lanes)){assert.equal(total,rows.length);const times=rows.map(r=>+new Date(r.happened_at));assert.deepEqual(times,[...times].sort((a,b)=>lane==='info'?b-a:a-b),lane+' order');}
+ assert(laned.lanes.info.rows.every(r=>r.needs_action===0));assert(['urgent','content','service'].every(l=>laned.lanes[l].rows.every(r=>r.needs_action===1)));assert(laneRows.every(r=>r.version));
+ const short=await req('?view=lanes&limit_content=1');assert(short.lanes.content.rows.length<=1);assert.equal(short.lanes.content.total,laned.lanes.content.total);
  await req('',{id:event.id,version:'stale'},409);assert.equal((await req('?state=handled')).total,0);
  const marked=await req('',{id:event.id,version:event.version});await req('',{id:event.id,version:event.version});assert.equal((await req('?state=handled')).total,1,'repeated mark is idempotent');assert.equal((await req('?state=open')).total,open.total-1);assert(!(await req('?state=open')).updates.some(r=>r.id===event.id));
  let history=await req('?state=handled');assert.equal(history.updates[0].history_id,marked.history_id);assert(history.updates[0].can_reopen);assert.equal(history.updates[0].handled_by_name,'owner@example.test');assert(history.updates[0].handled_at);

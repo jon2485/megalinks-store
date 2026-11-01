@@ -1305,3 +1305,24 @@ motion. The premium static audit still reports inherited whole-project findings;
 the scoped mechanical design scan has advisories and no primary findings.
 These are local fixture results, not certification of every live admin button,
 physical iOS Safari or pixel-identical rendering on every device.
+
+## Work-center triage layout — approved 2026-11-01
+
+The owner approved `docs/proposals/work-center/` (desktop and phone) and asked for
+explicit feedback on every control. This supersedes the guide notification-list
+composition for the work center only; orders and month close keep the guide system.
+`app/admin-work-center.css` is the runtime owner (model B), scoped to `.wc` inside
+`.admin-design-v172`. Shared header, dock, Heebo and navy identity are unchanged.
+
+Open updates are grouped into urgent, content, service and information lanes, with
+a sticky four-part jump bar. Rows wait oldest-first; information is newest-first
+and sits with the remaining queues in a side rail, which drops below the lanes at
+1240px. Only the urgent lane is loud: solid `#b81f3f`. Content uses `#0a66c2`, service
+`#00757f`, information `#55687f`; primary actions are navy `#071f4b`. Lane color always
+appears with a text label. Waits of 24 hours or more get a red pill.
+
+Control feedback: hover, pressed, focus and disabled on all controls; busy text and
+a spinner on mark, reopen, refresh, search, load-more and opening; a green confirmed
+row plus toast after marking; an inline retry message on the failing row. Reduced
+motion removes movement. Rows adapt to their own container width, so the record title
+stays readable beside the rail.
