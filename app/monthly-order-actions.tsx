@@ -18,7 +18,6 @@ const endpoint=(order:Row)=>'admin/customer-account/'+encodeURIComponent(order.u
 export function CloseMonthlyOrder({ctx,order,close}:{ctx:Ctx;order:Row;close:()=>void}){
  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[result,setResult]=useState<Row|null>(null),lock=useRef(false);
  const detail=useData('orders/'+order.id,ctx.revision),currentOrder=detail.data?.order?{...order,...detail.data.order}:order,amount=orderMoney(effectiveOrderTotal(currentOrder));
- const subject='הזמנה חודשית מספר '+String(order.number).replace(/^#+/,'')+' נסגרה לתשלום';
  return <div className="om-dialog" dir="rtl" aria-busy={busy}>
   <DialogSlip amount={effectiveOrderTotal(currentOrder)} who={order.user_name||order.name} number={orderNumber(order)}/>
   {result?<><div className="om-result is-ok" role="status"><strong>ההזמנה נסגרה לרכישות</strong><span>{result.mail_status==='succeeded'?'המייל עם הסיכום נמסר לשירות הדיוור.':'המייל ממתין לשליחה. אפשר לבדוק ולנסות שוב במסך התראות ודיוור.'}</span>{result.pdf_status==='pending'&&<span>ה־PDF ממתין להפקה. אפשר לנסות להוריד אותו מתוך ההזמנה.</span>}<span>התשלום עדיין לא אושר. כשהכסף יתקבל יש לדווח על קבלת התשלום.</span></div><div className="om-dialog-actions"><OrderExport label="הורדת סיכום ההזמנה" run={async()=>{const r=await api(endpoint(order));const {downloadStatementPdf}=await import('@/lib/statement-pdf');await downloadStatementPdf(r.summary);}}/><button type="button" className="om-btn is-primary" onClick={close}>סיום</button></div></>:<>
