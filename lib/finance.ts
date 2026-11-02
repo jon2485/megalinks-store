@@ -1,4 +1,5 @@
 import {createWalletCard} from './wallet-card';
+import {dateRangeClause} from './admin-date-range';
 import {connection} from './server';
 import {orderSummarySql,fullyCancelledOrderSql} from './order-summary';
 import {env} from 'cloudflare:workers';
@@ -11,6 +12,7 @@ const topupWhere="(r.kind='wallet_topup' OR (r.kind='ticket' AND json_extract(r.
 const topupStatus="COALESCE(json_extract(r.data,'$.decision'),'pending')";
 const output=(data:any,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 const text=(value:any,max=200)=>String(value||'').trim().slice(0,max);
+function monthRange(query:URLSearchParams,field:string){const month=query.get('month')||'';if(!month)return null;assert(/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'חודש לא תקין');const to=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0,12)).toISOString().slice(0,10);return dateRangeClause(field,month+'-01',to);}
 async function safeMail(id:string,userId:string,data:Row){try{return await queueMail(id,userId,data);}catch{return {status:'failed'};}}
 export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Request)=>Promise<Row>){
  const query=new URL(r.url).searchParams,origin=new URL(r.url).origin;
@@ -29,9 +31,10 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
    if(!scope){filters.push('r.user_id=?');args.push(u.id);}
    const state=query.get('status');if(state&&state!=='all'){assert(['pending','approved','rejected','cancelled','awaiting_gateway'].includes(state),'סטטוס לא תקין');filters.push(topupStatus+'=?');args.push(state);}
    const search=text(query.get('search'));if(search){filters.push("(u.name||' '||u.email||' '||COALESCE(json_extract(r.data,'$.reference'),'')) LIKE ? ESCAPE '\\'");args.push('%'+search.replace(/[\\%_]/g,'\\$&')+'%');}
-   const where=filters.join(' AND '),total=await one('SELECT COUNT(*) AS n FROM records r JOIN users u ON u.id=r.user_id WHERE '+where,...args);
-   const rows=await all('SELECT r.*,u.name AS user_name,u.email,u.credits AS balance,actor.name AS handled_by_name,f.type AS proof_type,j.status AS mail_status FROM records r JOIN users u ON u.id=r.user_id LEFT JOIN users actor ON actor.id=json_extract(r.data,\'$.handled_by\') LEFT JOIN files f ON f.id=json_extract(r.data,\'$.proof_file_id\') LEFT JOIN jobs j ON j.id=\'email:decision:\'||r.id WHERE '+where+' ORDER BY r.created DESC LIMIT 30 OFFSET ?',...args,(page-1)*30);
-   const summary=await one(`SELECT SUM(CASE WHEN ${topupStatus}='pending' THEN 1 ELSE 0 END) AS pending,SUM(CASE WHEN ${topupStatus}='pending' THEN json_extract(r.data,'$.amount_cents') ELSE 0 END) AS pending_amount,SUM(CASE WHEN ${topupStatus}='approved' THEN 1 ELSE 0 END) AS approved,SUM(CASE WHEN ${topupStatus}='rejected' THEN 1 ELSE 0 END) AS rejected FROM records r WHERE ${topupWhere}${scope?'':' AND r.user_id=?'}`,...(scope?[]:[u.id]));
+   const month=monthRange(query,'r.created');if(month){filters.push(month.sql);args.push(...month.args);}
+   const where=filters.join(' AND '),limit=scope&&query.get('all')==='1'?5000:30,total=await one('SELECT COUNT(*) AS n FROM records r JOIN users u ON u.id=r.user_id WHERE '+where,...args);
+   const rows=await all('SELECT r.*,u.name AS user_name,u.email,u.credits AS balance,actor.name AS handled_by_name,f.type AS proof_type,j.status AS mail_status FROM records r JOIN users u ON u.id=r.user_id LEFT JOIN users actor ON actor.id=json_extract(r.data,\'$.handled_by\') LEFT JOIN files f ON f.id=json_extract(r.data,\'$.proof_file_id\') LEFT JOIN jobs j ON j.id=\'email:decision:\'||r.id WHERE '+where+' ORDER BY r.created DESC LIMIT ? OFFSET ?',...args,limit,(page-1)*30);
+   const summary=await one(`SELECT SUM(CASE WHEN ${topupStatus}='pending' THEN 1 ELSE 0 END) AS pending,SUM(CASE WHEN ${topupStatus}='pending' THEN json_extract(r.data,'$.amount_cents') ELSE 0 END) AS pending_amount,SUM(CASE WHEN ${topupStatus}='approved' THEN 1 ELSE 0 END) AS approved,SUM(CASE WHEN ${topupStatus}='approved' THEN json_extract(r.data,'$.amount_cents') ELSE 0 END) AS approved_amount,SUM(CASE WHEN ${topupStatus}='rejected' THEN 1 ELSE 0 END) AS rejected,COUNT(*) AS total FROM records r WHERE ${topupWhere}${scope?'':' AND r.user_id=?'}${month?' AND '+month.sql:''}`,...(scope?[]:[u.id]),...(month?month.args:[]));
    return output({requests:rows.map(row=>({...parse(row),decision:parse(row)?.decision||'pending'})),total:total?.n||0,page,summary});
   }
   if(r.method==='POST'&&!p[1]){
@@ -74,11 +77,12 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   const status=query.get('status')||'missing';assert(['all','missing','attached','unpaid'].includes(status),'סטטוס לא תקין');
   const eligible="(o.paid=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1 AND c.demo=0)) AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND o.status<>'cancelled'"+' AND NOT '+fullyCancelledOrderSql();
   const has="COALESCE(json_extract(o.data,'$.invoice_file_id'),'')<>''";
+  const documentDate="COALESCE(NULLIF(json_extract(o.data,'$.paid_at'),''),o.created)",month=monthRange(query,documentDate);if(month){filters.push(month.sql);args.push(...month.args);}
   if(status==='missing')filters.push('('+eligible+') AND NOT ('+has+')');if(status==='attached')filters.push(has);if(status==='unpaid')filters.push('NOT ('+eligible+') AND NOT ('+has+')');
   const where=filters.length?' WHERE '+filters.join(' AND '):'',page=Math.max(1,Math.floor(Number(query.get('page'))||1));
   const base=' FROM orders o JOIN users u ON u.id=o.user_id';const total=await one('SELECT COUNT(*) AS n'+base+where,...args);
-  const rows=await all('SELECT o.*,'+orderSummarySql()+',u.name AS user_name,u.email,actor.name AS attached_by_name,f.name AS invoice_filename'+base+" LEFT JOIN users actor ON actor.id=json_extract(o.data,'$.invoice_attached_by') LEFT JOIN files f ON f.id=json_extract(o.data,'$.invoice_file_id')"+where+' ORDER BY o.created DESC LIMIT 30 OFFSET ?',...args,(page-1)*30);
-  const summary=await one(`SELECT SUM(CASE WHEN ${eligible} AND NOT (${has}) THEN 1 ELSE 0 END) AS missing,SUM(CASE WHEN ${has} THEN 1 ELSE 0 END) AS attached,COUNT(*) AS total FROM orders o`);
+  const rows=await all('SELECT o.*,'+orderSummarySql()+',u.name AS user_name,u.email,actor.name AS attached_by_name,f.name AS invoice_filename'+base+" LEFT JOIN users actor ON actor.id=json_extract(o.data,'$.invoice_attached_by') LEFT JOIN files f ON f.id=json_extract(o.data,'$.invoice_file_id')"+where+' ORDER BY o.created DESC LIMIT ? OFFSET ?',...args,query.get('all')==='1'?5000:30,(page-1)*30);
+  const summary=await one(`SELECT SUM(CASE WHEN ${eligible} AND NOT (${has}) THEN 1 ELSE 0 END) AS missing,SUM(CASE WHEN ${has} THEN 1 ELSE 0 END) AS attached,SUM(CASE WHEN NOT (${eligible}) AND NOT (${has}) THEN 1 ELSE 0 END) AS unpaid,COUNT(*) AS total FROM orders o${month?' WHERE '+month.sql:''}`,...(month?month.args:[]));
   return output({orders:rows.map(parse),total:total?.n||0,page,summary});
  }
  return null;

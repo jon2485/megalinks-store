@@ -1,27 +1,47 @@
 'use client';
 import React,{useState} from 'react';
-import {ChevronLeft} from 'lucide-react';
-import {Button} from '@/components/ui/button';
+import {CalendarDays,SlidersHorizontal} from 'lucide-react';
 import {useData} from '@/lib/client';
+import {exportSpreadsheet} from '@/lib/office';
 import type {Row} from '@/lib/shared';
 import {historyMonthLabel} from '@/lib/order-history';
 import {effectiveOrderTotal,orderCancellation} from '@/lib/order-finance';
 import {paymentConfirmed} from '@/lib/admin-order-buckets';
-import {FinancePage,FinanceSearch,FinanceSelect,FinanceStatus,FinanceRecord,FinanceItems,FinancePages,FinanceEmpty} from './finance-records';
-import {MonthlyOrderActions} from './monthly-order-actions';
+import {MonthlyOrderActions,CloseMonthlyOrder,ReceiveMonthlyPayment} from './monthly-order-actions';
 import {orderMoney,orderNumber} from './order-presentation';
+import {OrderPanel} from './admin-order-panel';
+import {OrderAction,OrderExport,OrderFilter,OrderPager,OrderPublication,OrderRecord,OrderSearch,OrderSites,OrderSummary,OrderViews} from './order-list-parts';
 import type {Ctx} from './workspace';
 
 export function monthlyStatus(order:Row){return orderCancellation(order)==='full'?'cancelled':paymentConfirmed(order)?'paid':order.purchase_closed_at||order.monthly_closed||order.payment_report_status==='pending'?'closed':'open';}
-const labels:Record<string,string>={open:'פתוחה לרכישות',closed:'נסגרה לתשלום',paid:'סגורה · שולמה',cancelled:'בוטלה'};
-function MonthlyOrderDetails({ctx,row}:{ctx:Ctx;row:Row}){
- const state=useData('orders/'+row.id,ctx.revision,true,15000),order=state.data?.order?{...row,...state.data.order}:null;
- if(!order)return <FinanceEmpty loading={state.loading} error={state.error} retry={ctx.refresh}/>;
- return <><FinanceEmptyError error={state.error} retry={ctx.refresh}/><FinanceItems order={order} items={state.data?.articles||[]} dates/><div className="finance-action-row"><Button variant="outline" onClick={()=>ctx.go('admin-order/'+order.id)}>לפרטי ההזמנה<ChevronLeft size={16}/></Button><MonthlyOrderActions ctx={ctx} order={order}/></div></>;
-}
-function FinanceEmptyError({error,retry}:{error:string;retry:()=>void}){return error?<FinanceEmpty error={error} retry={retry}/>:null;}
+const labels:Record<string,string>={open:'פתוחה לרכישות',closed:'נסגרה לתשלום',paid:'שולמה',cancelled:'בוטלה'},tones:Record<string,string>={open:'month',closed:'report',paid:'ok',cancelled:'cancelled'};
+const notes:Record<string,string>={open:'אפשר להוסיף רכישות',closed:'ממתינה לתשלום',paid:'',cancelled:''};
+const accounts=(n:number)=>n===1?'חשבון אחד':n===2?'שני חשבונות':n+' חשבונות';
 export function MonthlyView({ctx,initialFilter='all',realOnly=false}:{ctx:Ctx;initialFilter?:string;realOnly?:boolean}){
- const state=useData('monthly?view=orders',ctx.revision,true,15000),[month,setMonth]=useState('all'),[search,setSearch]=useState(''),[filter,setFilter]=useState(initialFilter==='open'?'unpaid':initialFilter),[open,setOpen]=useState(''),[page,setPage]=useState(1);
- const all:Row[]=state.data?.order_rows||[],term=search.trim().toLocaleLowerCase(),months=[...new Set(all.map(o=>o.month||o.billing_month))].sort().reverse(),rows=all.filter(o=>(!realOnly||!o.demo)&&(month==='all'||(o.month||o.billing_month)===month)&&(!term||[o.number,o.user_name,o.name,o.email,o.site_search].some(v=>String(v||'').toLocaleLowerCase().includes(term)))&&(filter==='all'||filter==='unpaid'&&!paymentConfirmed(o)&&monthlyStatus(o)!=='cancelled'||monthlyStatus(o)===filter)),shown=Math.min(page,Math.max(1,Math.ceil(rows.length/30)));
- return <FinancePage title="חשבונות חודשיים" description="הזמנה חודשית אחת לכל לקוח, עם פירוט האתרים שנוספו אליה." className="finance-monthly-page"><div className="finance-filters"><FinanceSearch value={search} onChange={v=>{setSearch(v);setPage(1);}}/><FinanceSelect label="חודש החשבון" value={month} onChange={v=>{setMonth(v);setPage(1);}} options={{all:'כל החודשים',...Object.fromEntries(months.map(m=>[m,historyMonthLabel(m)]))}}/><FinanceSelect label="סטטוס חשבון חודשי" value={filter} onChange={v=>{setFilter(v);setPage(1);}} options={{all:'כל הסטטוסים',unpaid:'טרם שולמו',open:'פתוחות לרכישות',closed:'נסגרו לתשלום',paid:'שולמו',cancelled:'בוטלו'}}/></div><div className="finance-list-heading" aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>חודש</span><span>פריטים</span><span>סכום כולל מע״מ</span><span>מצב</span><span/></div>{rows.length?rows.slice((shown-1)*30,shown*30).map(o=>{const status=monthlyStatus(o);return <FinanceRecord key={o.id} id={o.id} label={'פירוט חשבון חודשי '+orderNumber(o)} open={open===o.id} onToggle={()=>setOpen(current=>current===o.id?'':o.id)} summary={<><span className="finance-record-number"><bdi>{orderNumber(o)}</bdi></span><span className="finance-record-name">{o.user_name||o.name}<small className="finance-phone-only">{historyMonthLabel(o.month||o.billing_month)}{o.demo?' · הדגמה':''}</small></span><span className="finance-record-date">{historyMonthLabel(o.month||o.billing_month)}</span><span className="finance-record-count">{o.article_count||0}</span><strong className="finance-record-amount"><bdi>{orderMoney(effectiveOrderTotal(o))}</bdi></strong><FinanceStatus tone={status==='paid'?'success':status==='cancelled'?'danger':'pending'}>{o.demo?'הדגמה · ':''}{labels[status]}</FinanceStatus></>}><MonthlyOrderDetails ctx={ctx} row={o}/></FinanceRecord>;}):<FinanceEmpty loading={state.loading} error={state.error} retry={ctx.refresh}>אין הזמנות חודשיות בתצוגה הזו.</FinanceEmpty>}{rows.length>0&&state.error&&<FinanceEmpty error={state.error} retry={ctx.refresh}/>}<FinancePages total={rows.length} page={shown} onChange={setPage}/>{all.length===1000&&<p className="finance-count-note">מוצגות עד 1,000 ההזמנות האחרונות. לפירוט ישן יותר ניתן לפתוח את תיק הלקוח.</p>}</FinancePage>;
+ const state=useData('monthly?view=orders',ctx.revision,true,15000),[month,setMonth]=useState('all'),[search,setSearch]=useState(''),[filter,setFilter]=useState(initialFilter==='all'||initialFilter==='open'?'unpaid':initialFilter),[open,setOpen]=useState(''),[page,setPage]=useState(1);
+ const all:Row[]=state.data?.order_rows||[],term=search.trim().toLocaleLowerCase(),months=[...new Set(all.map(o=>o.month||o.billing_month))].sort().reverse();
+ const scoped=all.filter(o=>(!realOnly||!o.demo)&&(month==='all'||(o.month||o.billing_month)===month)&&(!term||[o.number,o.user_name,o.name,o.email,o.site_search].some(v=>String(v||'').toLocaleLowerCase().includes(term))));
+ const rows=scoped.filter(o=>filter==='all'||filter==='unpaid'&&!paymentConfirmed(o)&&monthlyStatus(o)!=='cancelled'||monthlyStatus(o)===filter),shown=Math.min(page,Math.max(1,Math.ceil(rows.length/30)));
+ const real=scoped.filter(o=>!o.demo),sum=(status:string)=>real.filter(o=>monthlyStatus(o)===status).reduce((n,o)=>n+effectiveOrderTotal(o),0),count=(status:string)=>real.filter(o=>monthlyStatus(o)===status).length,unpaid=scoped.filter(o=>!paymentConfirmed(o)&&monthlyStatus(o)!=='cancelled').length;
+ const view=(v:string)=>{setFilter(v);setPage(1);setOpen('');};
+ const exportRows=()=>exportSpreadsheet('monthly-'+(month==='all'?'all':month)+'.xlsx',[['הזמנה','לקוח','דוא״ל','חודש','פריטים','סכום כולל מע״מ','מצב'],...rows.map(o=>[orderNumber(o),o.user_name||o.name,o.email||'',historyMonthLabel(o.month||o.billing_month),Number(o.article_count||0),effectiveOrderTotal(o)/100,(o.demo?'הדגמה · ':'')+labels[monthlyStatus(o)]])]);
+ const dialog=(o:Row,closing:boolean)=>ctx.open({kind:'admin-finance',title:closing?'סגירת חודש':'דיווח על קבלת תשלום',render:(close:()=>void)=>closing?<CloseMonthlyOrder ctx={ctx} order={o} close={close}/>:<ReceiveMonthlyPayment ctx={ctx} order={o} close={close}/>});
+ return <section className="orders-match-screen om-finance" dir="rtl"><div className="om-top-actions"><OrderExport run={exportRows} disabled={!rows.length}/></div><div className="orders-reference-panel">
+  <OrderSummary items={[['פתוח לרכישות',<bdi key="o">{orderMoney(sum('open'))}</bdi>,count('open')?'month':undefined,accounts(count('open'))],['נסגר, ממתין לתשלום',<bdi key="c">{orderMoney(sum('closed'))}</bdi>,count('closed')?'report':undefined,accounts(count('closed'))],['שולם',<bdi key="p">{orderMoney(sum('paid'))}</bdi>,count('paid')?'ok':undefined,accounts(count('paid'))]]}/>
+  <div className="orders-reference-toolbar om-toolbar"><OrderSearch label="חיפוש לקוח, מספר הזמנה או אתר" value={search} onChange={v=>{setSearch(v);setPage(1);}}/><OrderFilter label="חודש החשבון" icon={<CalendarDays size={20}/>} value={month} onChange={v=>{setMonth(v);setPage(1);}} options={{all:'כל החודשים',...Object.fromEntries(months.map(m=>[m,historyMonthLabel(m)]))}}/><OrderFilter label="סינון לפי מצב" icon={<SlidersHorizontal size={20}/>} value={['open','closed','cancelled'].includes(filter)?filter:'any'} onChange={v=>view(v==='any'?'all':v)} options={{any:'כל המצבים',open:'פתוחות לרכישות',closed:'נסגרו לתשלום',cancelled:'בוטלו'}}/></div>
+  <OrderViews label="איזה חשבונות להציג" value={filter} onChange={view} views={[['unpaid','טרם שולמו',unpaid],['paid','שולמו'],['all','הכול']]}/>
+  {!state.data&&!state.error?<div className="orders-reference-loading" role="status">טוען חשבונות…</div>:state.error&&!rows.length?<div className="orders-reference-error" role="alert"><p>{state.error}</p><button type="button" onClick={ctx.refresh}>ניסיון נוסף</button></div>:!rows.length?<div className="orders-reference-empty"><h3>אין חשבונות בתצוגה הזו</h3><p>אפשר לשנות את החודש או את המצב, או לנקות את החיפוש.</p></div>:<>
+   <div className="om-head" aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>מצב החשבון</span><span>פרסום</span><span>סכום</span><span/><span/></div>
+   <div className="om-list" aria-label="רשימת החשבונות החודשיים">{rows.slice((shown-1)*30,shown*30).map(o=>{const status=monthlyStatus(o),isOpen=open===o.id,live=!o.demo,monthName=historyMonthLabel(o.month||o.billing_month);return <OrderRecord key={o.id} id={o.id} label={orderNumber(o)} open={isOpen} onToggle={()=>setOpen(isOpen?'':o.id)} panel={<OrderPanel ctx={ctx} order={o} manage={()=>ctx.go('admin-order/'+o.id)} actions={merged=><MonthlyOrderActions ctx={ctx} order={{...o,...merged}}/>}/>}>
+     <div className="om-id"><strong><bdi>{orderNumber(o)}</bdi></strong><time>{monthName}</time></div>
+     <div className="om-who"><b>{o.user_name||o.name}</b><span className="is-monthly">{o.demo?'הדגמה':'הזמנה חודשית'}</span></div>
+     <OrderSites order={o}/>
+     <div className="om-pay"><span className={'om-pill is-'+tones[status]}>{labels[status]}</span>{notes[status]&&<small>{notes[status]}</small>}</div>
+     <div className="om-pub"><OrderPublication o={o}/></div>
+     <div className="om-amount"><bdi>{orderMoney(effectiveOrderTotal(o))}</bdi></div>
+     {live&&status==='open'?<OrderAction primary label="סגירת חודש" onClick={()=>dialog(o,true)}/>:live&&status==='closed'?<OrderAction primary label="דיווח קבלת תשלום" onClick={()=>dialog(o,false)}/>:<OrderAction label="ניהול הזמנה" href={'/admin-order/'+o.id} onClick={()=>ctx.go('admin-order/'+o.id)}/>}
+    </OrderRecord>;})}</div>
+  </>}
+  <OrderPager total={rows.length} page={shown} size={30} onChange={setPage}/>{all.length===1000&&<p className="om-note">מוצגות עד 1,000 ההזמנות האחרונות. לפירוט ישן יותר ניתן לפתוח את תיק הלקוח.</p>}
+ </div></section>;
 }

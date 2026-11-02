@@ -1,37 +1,53 @@
 'use client';
 import React,{useRef,useState} from 'react';
-import {ChevronLeft,Download} from 'lucide-react';
+import {CalendarDays} from 'lucide-react';
 import {useData} from '@/lib/client';
-import {money,type Row} from '@/lib/shared';
+import type {Row} from '@/lib/shared';
 import {israelDate} from '@/lib/admin-order-buckets';
 import {validReportDay} from '@/lib/admin-date-range';
+import {historyMonthLabel} from '@/lib/order-history';
 import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
 import type {Ctx} from './workspace';
 import {orderDate} from './customer-order-screen';
-import {Button} from '@/components/ui/button';
-import {FinancePage,FinanceRecord,FinanceFacts,FinanceFact,FinanceItems,FinancePages,FinanceEmpty} from './finance-records';
-import {orderMoney,orderNumber,orderTimestamp} from './order-presentation';
+import {orderMoney,orderNumber} from './order-presentation';
 import {downloadAdminWorkbook} from './admin-export';
-function defaultRange(){const today=israelDate(new Date().toISOString()),month=today.slice(0,7),end=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0,12)).toISOString().slice(0,10);return {from:month+'-01',to:end,basis:'payment'};}
-const cost=(value:number|null)=>value===null?'חסרה עלות':money(value);
+import {OrderPanel} from './admin-order-panel';
+import {orderPaymentState} from './admin-order-history';
+import {OrderAction,OrderExport,OrderFilter,OrderPager,OrderRecord,OrderSites,OrderSummary,OrderViews,recentMonths} from './order-list-parts';
+function monthRange(back=0){const today=israelDate(new Date().toISOString()),first=new Date(Date.UTC(Number(today.slice(0,4)),Number(today.slice(5,7))-1-back,1,12)),month=first.toISOString().slice(0,7),end=new Date(Date.UTC(first.getUTCFullYear(),first.getUTCMonth()+1,0,12)).toISOString().slice(0,10);return {from:month+'-01',to:end,basis:'payment'};}
+const defaultRange=()=>monthRange();
+const rangeOf=(month:string)=>{const end=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0,12)).toISOString().slice(0,10);return {from:month+'-01',to:end,basis:'payment'};};
+const amountOrMissing=(value:number|null)=>value===null?'חסרה':<bdi>{orderMoney(value)}</bdi>;
+function OrderProfit({o}:{o:Row}){return <section className="om-wide"><h3>רווחיות ההזמנה</h3><div className="om-flow"><span>הכנסה לפני מע״מ<b><bdi>{orderMoney(o.income_net)}</bdi></b></span><span className={o.cost_net===null?'is-warning':undefined}>עלות לפני מע״מ<b>{amountOrMissing(o.cost_net)}</b></span><span className={o.profit_net===null?'is-warning':Number(o.profit_net)<0?'is-loss':'is-after'}>רווח לפני מס<b>{o.profit_net===null?'לא הושלם':<bdi>{orderMoney(o.profit_net)}</bdi>}</b></span></div>{o.cost_net===null&&<p className="om-note">{o.cost_known>0?<>עלות ידועה: <bdi>{orderMoney(o.cost_known)}</bdi>. </>:null}חסרים {o.cost_missing} רכיבי עלות, ולכן הרווח לא הושלם.</p>}</section>;}
 export default function AdminMonthClose({ctx}:{ctx:Ctx}){
- const [applied,setApplied]=useState(()=>({...adminViewState('month-close',defaultRange()),basis:'payment'})),[draft,setDraft]=useState(applied),[error,setError]=useState(''),[rangeError,setRangeError]=useState(false),[exporting,setExporting]=useState(false),[page,setPage]=useState(1),[open,setOpen]=useState(''),lock=useRef(false),fromInput=useRef<HTMLInputElement>(null),toInput=useRef<HTMLInputElement>(null);
+ const [applied,setApplied]=useState(()=>({...adminViewState('month-close',defaultRange()),basis:'payment'})),[draft,setDraft]=useState(applied),[error,setError]=useState(''),[rangeError,setRangeError]=useState(false),[page,setPage]=useState(1),[open,setOpen]=useState(''),[view,setView]=useState('all'),fromInput=useRef<HTMLInputElement>(null),toInput=useRef<HTMLInputElement>(null);
  const params=new URLSearchParams(applied),state=useData('admin/month-close?'+params,ctx.revision),data=state.data,current=!!data&&data.from===applied.from&&data.to===applied.to&&data.basis===applied.basis;
- const summary=current?data.summary:null,orders:Row[]=current?data.orders:[],maxPage=Math.max(1,Math.ceil(orders.length/20)),shownPage=Math.min(page,maxPage);
- const show=()=>{if(!validReportDay(draft.from)||!validReportDay(draft.to)||draft.from>draft.to){setRangeError(true);(!validReportDay(draft.from)?fromInput:toInput).current?.focus();setError('יש לבחור טווח תקין: תאריך הסיום לא יכול להיות לפני תאריך ההתחלה.');return;}setRangeError(false);setError('');setOpen('');setPage(1);setApplied({...draft});saveAdminViewState('month-close',{...draft});};
- const exportReport=async()=>{if(lock.current)return;lock.current=true;setExporting(true);setError('');try{await downloadAdminWorkbook('admin/month-close?'+new URLSearchParams({...applied,export:'1'}),'month-close-'+applied.from+'-'+applied.to+'.xlsx');}catch(e){setError((e as Error).message);}finally{setExporting(false);lock.current=false;}};
- return <FinancePage title="סגירת חודש" description="תשלומים שאושרו סופית בתקופה שנבחרה." className="finance-month-close-page">
-  <form className="finance-report-range" noValidate onSubmit={e=>{e.preventDefault();show();}}>
-   <label><span>מתאריך</span><input ref={fromInput} aria-invalid={rangeError} aria-describedby={rangeError?"month-range-error":undefined} type="date" value={draft.from} onChange={e=>setDraft(d=>({...d,from:e.target.value}))}/></label><label><span>עד תאריך</span><input ref={toInput} aria-invalid={rangeError} aria-describedby={rangeError?"month-range-error":undefined} type="date" value={draft.to} onChange={e=>setDraft(d=>({...d,to:e.target.value}))}/></label>
-   <Button type="submit">הצגת סיכום</Button><Button type="button" variant="outline" disabled={!current||exporting} onClick={exportReport}><Download size={17}/>{exporting?'מייצא…':'ייצוא לאקסל'}</Button>
-  </form>
-  {(error||state.error)&&<div className="finance-empty" role="alert"><p id="month-range-error">{error||state.error}</p>{state.error&&<Button variant="outline" onClick={ctx.refresh}>ניסיון נוסף</Button>}</div>}
-  {!current&&!state.error?<FinanceEmpty loading retry={ctx.refresh}/>:summary&&<>
-   <section className="finance-report-summary" aria-label="סיכום התקופה"><dl className="finance-report-metrics"><div><dt>הכנסות כולל מע״מ</dt><dd><bdi>{orderMoney(summary.total)}</bdi></dd></div><div><dt>עלויות לפני מע״מ</dt><dd>{summary.cost_net===null?'חסרים נתונים':<bdi>{orderMoney(summary.cost_net)}</bdi>}</dd></div><div><dt>רווח מחושב לפני מס</dt><dd>{summary.profit_net===null?'לא ניתן להשלים':<bdi>{orderMoney(summary.profit_net)}</bdi>}</dd></div></dl><p>הכנסות לפני מע״מ: <bdi>{orderMoney(summary.net)}</bdi> · מע״מ: <bdi>{orderMoney(summary.vat)}</bdi></p><p><bdi>{orderDate(applied.from)} – {orderDate(applied.to)}</bdi> · לפי מועד אישור התשלום הסופי בשעון ישראל</p>
-    {summary.cost_missing>0&&<p role="status">חסרים {summary.cost_missing} רכיבי עלות. עלויות ידועות: <bdi>{orderMoney(summary.cost_known)}</bdi>. הרווח יושלם לאחר עדכון הנתונים.</p>}{data.missing_payment_dates>0&&<p>{data.missing_payment_dates} הזמנות ללא מועד אישור מתועד אינן משויכות לטווח הזה.</p>}
-   </section><div className="finance-list-heading" aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>אישור תשלום</span><span>הכנסה נטו</span><span>עלות</span><span>רווח</span><span/></div>
-   {orders.length?orders.slice((shownPage-1)*20,shownPage*20).map(o=><FinanceRecord key={o.id} id={o.id} label={'פירוט סיכום הזמנה '+orderNumber(o)} open={open===o.id} onToggle={()=>setOpen(current=>current===o.id?'':o.id)} summary={<><span className="finance-record-number"><bdi>{orderNumber(o)}</bdi></span><span className="finance-record-name">{o.user_name||o.name}<small className="finance-phone-only">{orderDate(o.paid_date||o.paid_at)}</small></span><span className="finance-record-date"><bdi>{orderDate(o.paid_date||o.paid_at)}</bdi></span><strong className="finance-record-amount"><bdi>{orderMoney(o.income_net)}</bdi></strong><span className="finance-record-cost"><span className="finance-phone-only">עלות: </span><bdi>{cost(o.cost_net)}</bdi><span className="finance-phone-only"> · רווח: <bdi>{cost(o.profit_net)}</bdi></span></span><strong className="finance-record-profit"><bdi>{cost(o.profit_net)}</bdi></strong></>}><FinanceItems order={o} items={o.items||[]} dates={!!(o.on_account||o.payment==='monthly'||o.billing_month)} presentation="month-report"/><FinanceFacts><FinanceFact label="תאריך ההזמנה"><bdi>{orderTimestamp(o.created)}</bdi></FinanceFact><FinanceFact label="תאריך ביצוע התשלום"><bdi>{orderTimestamp(o.paid_date||o.paid_at)}</bdi></FinanceFact><FinanceFact label="אמצעי תשלום">{o.payment_label}</FinanceFact><FinanceFact label="הכנסה לפני מע״מ"><bdi>{orderMoney(o.income_net)}</bdi></FinanceFact><FinanceFact label="עלות לפני מע״מ"><bdi>{cost(o.cost_net)}</bdi></FinanceFact><FinanceFact label="רווח לפני מס"><bdi>{cost(o.profit_net)}</bdi></FinanceFact><FinanceFact label="דוא״ל"><bdi>{o.user_email||'לא תועד'}</bdi></FinanceFact><FinanceFact label="טלפון"><bdi>{o.user_phone||'לא תועד'}</bdi></FinanceFact></FinanceFacts><Button variant="outline" onClick={()=>ctx.go('admin-order/'+o.id)}>לפרטי ההזמנה<ChevronLeft size={16}/></Button></FinanceRecord>):<FinanceEmpty retry={ctx.refresh}>אין הזמנות ששולמו ואושרו בטווח שנבחר.</FinanceEmpty>}
-   <FinancePages page={shownPage} total={orders.length} onChange={value=>{setOpen('');setPage(value);}} size={20}/><p className="finance-count-note">השיוך לחודש נקבע לפי מועד אישור התשלום. העלויות נלקחות מהתיעוד בעת הרכישה. החישוב אינו כולל הוצאות עסקיות שלא תועדו.</p>
+ const summary=current?data.summary:null,allOrders:Row[]=current?data.orders:[],missingCost=allOrders.filter(o=>o.cost_net===null).length,orders=view==='missing'?allOrders.filter(o=>o.cost_net===null):allOrders,maxPage=Math.max(1,Math.ceil(orders.length/20)),shownPage=Math.min(page,maxPage);
+ const apply=(range:typeof draft)=>{setRangeError(false);setError('');setOpen('');setPage(1);setView('all');setDraft(range);setApplied({...range});saveAdminViewState('month-close',{...range});};
+ const show=()=>{if(!validReportDay(draft.from)||!validReportDay(draft.to)||draft.from>draft.to){setRangeError(true);(!validReportDay(draft.from)?fromInput:toInput).current?.focus();setError('יש לבחור טווח תקין: תאריך הסיום לא יכול להיות לפני תאריך ההתחלה.');return;}apply(draft);};
+ const exportReport=()=>downloadAdminWorkbook('admin/month-close?'+new URLSearchParams({...applied,export:'1'}),'month-close-'+applied.from+'-'+applied.to+'.xlsx');
+ const thisMonth=monthRange(0),lastMonth=monthRange(1),selected=applied.from===thisMonth.from&&applied.to===thisMonth.to?'this':applied.from===lastMonth.from&&applied.to===lastMonth.to?'last':'other',months=recentMonths(),fullMonth=months.find(m=>rangeOf(m).from===applied.from&&rangeOf(m).to===applied.to);
+ return <section className="orders-match-screen om-finance" dir="rtl"><div className="om-top-actions"><OrderExport run={exportReport} disabled={!current}/></div><div className="orders-reference-panel">
+  <div className="om-period"><OrderViews label="בחירת תקופה" value={selected} onChange={v=>apply(v==='this'?thisMonth:lastMonth)} views={[['this','החודש'],['last','החודש הקודם']]}/><OrderFilter label="בחירת חודש" icon={<CalendarDays size={20}/>} value={fullMonth||'custom'} onChange={v=>{if(v!=='custom')apply(rangeOf(v));}} options={{custom:'טווח מותאם',...Object.fromEntries(months.map(m=>[m,historyMonthLabel(m)]))}}/></div>
+  <details className="om-range" open={rangeError||undefined}><summary>טווח תאריכים אחר</summary><form noValidate onSubmit={e=>{e.preventDefault();show();}}><label><span>מתאריך</span><input ref={fromInput} aria-invalid={rangeError} aria-describedby={rangeError?"month-range-error":undefined} type="date" value={draft.from} onChange={e=>setDraft(d=>({...d,from:e.target.value}))}/></label><label><span>עד תאריך</span><input ref={toInput} aria-invalid={rangeError} aria-describedby={rangeError?"month-range-error":undefined} type="date" value={draft.to} onChange={e=>setDraft(d=>({...d,to:e.target.value}))}/></label><button type="submit" className="om-btn is-primary">הצגת סיכום</button></form></details>
+  {(error||state.error)&&<div className="orders-reference-error" role="alert"><p id="month-range-error">{error||state.error}</p>{state.error&&<button type="button" onClick={ctx.refresh}>ניסיון נוסף</button>}</div>}
+  {!current&&!state.error?<div className="orders-reference-loading" role="status">טוען סיכום…</div>:summary&&<>
+   <OrderSummary items={[['הכנסות כולל מע״מ',<bdi key="t">{orderMoney(summary.total)}</bdi>,'strong'],['הכנסות לפני מע״מ',<bdi key="n">{orderMoney(summary.net)}</bdi>],['מע״מ',<bdi key="v">{orderMoney(summary.vat)}</bdi>],['עלויות לפני מע״מ',<bdi key="c">{orderMoney(summary.cost_net??summary.cost_known)}</bdi>,summary.cost_net===null?'report':undefined,summary.cost_net===null?'חלקי, חסרות עלויות':undefined],['רווח לפני מס',summary.profit_net===null?'לא הושלם':<bdi key="p">{orderMoney(summary.profit_net)}</bdi>,summary.profit_net===null?'report':'ok']]}/>
+   <p className="om-note"><bdi>{orderDate(applied.from)} – {orderDate(applied.to)}</bdi> · לפי מועד אישור התשלום הסופי בשעון ישראל. לא כולל הוצאות עסקיות שלא תועדו.{data.missing_payment_dates>0&&<> {data.missing_payment_dates} הזמנות ללא מועד אישור מתועד אינן משויכות לטווח.</>}</p>
+   <OrderViews label="איזה הזמנות להציג" value={view} onChange={v=>{setView(v);setPage(1);setOpen('');}} views={[['all','כל ההזמנות',allOrders.length],['missing','חסרה עלות',missingCost]]}/>
+   {!orders.length?<div className="orders-reference-empty"><h3>אין הזמנות בתצוגה הזו</h3><p>לא נמצאו הזמנות ששולמו ואושרו בטווח שנבחר.</p></div>:<>
+    <div className="om-head" aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>עלות ורווח</span><span>הכנסה נטו</span><span/><span/></div>
+    <div className="om-list" aria-label="הזמנות בתקופה">{orders.slice((shownPage-1)*20,shownPage*20).map(o=>{const isOpen=open===o.id,pay=orderPaymentState(o);return <OrderRecord key={o.id} id={o.id} label={orderNumber(o)} open={isOpen} onToggle={()=>setOpen(isOpen?'':o.id)} panel={<OrderPanel ctx={ctx} order={o} manage={()=>ctx.go('admin-order/'+o.id)} section={()=><OrderProfit o={o}/>}/>}>
+      <div className="om-id"><strong><bdi>{orderNumber(o)}</bdi></strong><time>{orderDate(o.paid_date||o.paid_at)}</time></div>
+      <div className="om-who"><b>{o.user_name||o.name}</b><span>{o.on_account||o.payment==='monthly'||o.billing_month?<span className="is-monthly">הזמנה חודשית</span>:'הזמנה רגילה'}</span></div>
+      <OrderSites order={o}/>
+      <div className="om-pay"><span className={'om-pill is-'+pay.tone}>{pay.label}</span>{pay.note&&<small>{pay.note}</small>}</div>
+      <div className="om-pub om-profit-cell">{o.cost_net===null?<span className="om-pill is-report">חסרה עלות</span>:<><small>עלות <bdi>{orderMoney(o.cost_net)}</bdi></small><b className={Number(o.profit_net)<0?'is-loss':undefined}>רווח <bdi>{o.profit_net===null?'—':orderMoney(o.profit_net)}</bdi></b></>}</div>
+      <div className="om-amount"><bdi>{orderMoney(o.income_net)}</bdi></div>
+      <OrderAction label="ניהול הזמנה" href={'/admin-order/'+o.id} onClick={()=>ctx.go('admin-order/'+o.id)}/>
+     </OrderRecord>;})}</div>
+    <OrderPager page={shownPage} total={orders.length} size={20} onChange={value=>{setOpen('');setPage(value);}}/>
+   </>}
   </>}
- </FinancePage>;
+ </div></section>;
 }

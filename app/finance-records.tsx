@@ -8,6 +8,7 @@ import type {Row} from '@/lib/shared';
 import {effectiveOrderAmounts,remainingArticleNet} from '@/lib/order-finance';
 import {OrderUrl,orderMoney,orderTimestamp} from './order-presentation';
 import './finance-records.css';
+import './finance-modern.css';
 
 export function FinancePage({title,description,children,actions,className=''}:{title:string;description:string;children:React.ReactNode;actions?:React.ReactNode;className?:string}){
  return <section dir="rtl" className={'finance-page '+className}><header className="finance-heading"><div><h2>{title}</h2><p>{description}</p></div>{actions}</header>{children}</section>;
