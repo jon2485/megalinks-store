@@ -60,6 +60,16 @@
 - **נתוני דמה:** קיימים רק במסד המקומי (`C:/Users/User/megalinks-tools/local-state`), לא בקוד. לדוגמה: #1016 ו-#1017 סומנו כשולמו, והזמנות נוספות נוצרו ללקוח qa-monthly.
 - **כתובת מקומית `127.0.0.1:5180`:** מופיעה רק בסקריפטי בדיקה מחוץ לפרויקט. לוודא שלא נכנסה לקוד.
 
+## עיצוב Apex (03.11.2026)
+- **ענף:** `design/orders-apex-20261102`. commit `f42047d`. לא בוצע push.
+- **מה הוחלט:** במחשב בסגנון Apex: סרגל צד כהה קבוע, פס עליון לבן עם התראות ויציאה, והזמנות בכרטיסים נפרדים עם פס צבע לפי מצב. בטלפון הפתיחה בסגנון Pulse: חלון שעולה מלמטה. חלון הסינון מסנן עם כפתורי בחירה.
+- **קבצים:** `app/orders-apex.css`, `app/admin-apex-shell.css` (חדשים), `app/order-list-parts.tsx` (`OrderFilters`, `OrderSheet`, `RecordPanel`, `usePhone`), `app/admin-order-history.tsx`, `app/admin-finance.tsx`, `app/monthly-admin.tsx`, `app/payment-reports.tsx`, `app/admin-shell.tsx`, `app/workspace.tsx`.
+- **לא גמור:**
+  - המסכים שמחוץ להזמנות מקבלים רק את המעטפת החדשה (סרגל צד ופס עליון). את התוכן שלהם עוד לא עיצבתי מחדש.
+  - כפתור "יציאה" מוביל ל-`/signout-with-chatgpt`. בשרת המקומי הכתובת הזו לא קיימת, ולכן היציאה נבדקת רק ב-Staging.
+  - צבע ההדגשה ירוק כמו ב-Apex. אפשר להחליף לצבעי המותג.
+- **ההדמיות:** ב-`docs/proposals/apex-style` וב-`docs/proposals/pulse-style`. התיקיות לא עולות ל-git.
+
 ## השלב הבא
 - **הועלה ל-Staging (02.11.2026):** push של הענף עד `a9e16b6`, ופריסה `5864ba84` בשירות `megalinks-web` הצליחה.
   - נבדק: `/healthz` מחזיר 200, דפים מוגנים מפנים לכניסה, ובלוג אין שגיאות.
