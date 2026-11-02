@@ -20,6 +20,7 @@ import {writingBriefLink} from '@/lib/writing-brief-validation';
 import {contentStages} from '@/lib/content-presentation';
 import {writingAction} from '@/lib/writing-actions';
 import {writingBriefFile} from '@/lib/writing-brief-file';
+import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
@@ -448,6 +449,7 @@ if (p[0] === 'cart') {
         if(p[2]==='customer'&&method==='POST')return response(await assignArticleCustomer(a,u,await json(r)));
         if(method!=='GET'){const purchase=parse(await one('SELECT * FROM orders WHERE id=?',a.order_id));assert(purchase&&canWorkOrder(purchase),'יש להשלים את התשלום לפני טיפול ושליחת כתבות',409);}
         if(method!=='GET')assert(!JSON.parse(a.data).cancel_pending,'הכתבה ממתינה לביטול; לא ניתן להמשיך לטפל בה',409);
+        if(method==='GET'&&p[2]==='writing-brief.docx'){admin(u);const file=await writingBriefDocx(a.id);return new Response(file.bytes as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename="'+file.filename+'"','Cache-Control':'private, no-store'}});}
         if(method==='GET'&&p[2]==='writing-brief.pdf'){admin(u);const file=await writingBriefFile(a.id,new URL(r.url).origin);return new Response(file.bytes as BodyInit,{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="'+file.filename+'"','Cache-Control':'private, no-store'}});}
         if(method==='GET'&&p[2]==='document'&&u.role!=='admin'&&writingSubmitted(a))assert(writingCustomerEditor(a),'הטקסט עדיין בטיפול אצל עורך התוכן',409);
         if(method==='GET'&&p[2]==='document')return new Response(await articleDocx(a) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':"attachment; filename=article.docx; filename*=UTF-8''"+encodeURIComponent((a.title||'article').slice(0,80)+'.docx'),'Cache-Control':'private, no-store'}});
@@ -464,8 +466,7 @@ if (p[0] === 'cart') {
             assert(canWorkOrder(order),'נדרש תשלום לפני הזמנת כתיבה');
             assert(['draft','writing','revisions'].includes(a.status),'הכתבה כבר בתהליך אישור או פרסום',409);
             assert(Number(b.version)===a.version,'הפרטים עודכנו במקביל. טענו מחדש לפני שליחה',409);
-            assert(data.topic?.trim(),'יש להזין נושא לכתבה');
-            assert(data.target_url&&data.anchor?.trim(),'יש להזין כתובת קישור ואת המילים שיופיעו כקישור');
+            assert(data.anchor?.trim(),'יש להזין ביטוי מפתח');assert(data.target_url,'יש להזין קישור');
             for(const key of ['target_url','target_url_2']){const link=writingBriefLink(data[key]);assert(!link.error,(key==='target_url'?'כתובת הקישור לשילוב במאמר: ':'הקישור הנוסף: ')+link.error);data[key]=link.url;}if(data.target_url_2)assert(data.anchor_2?.trim(),'יש להזין את המילים של הקישור הנוסף');
             assert(!data.image_id||data.image_credit?.trim(),'יש להוסיף קרדיט לתמונה הראשית');
             assert(!data.secondary_image_id||data.secondary_image_credit?.trim(),'יש להוסיף קרדיט לתמונה המשנית');
@@ -473,7 +474,7 @@ if (p[0] === 'cart') {
             if(data.writing_request_fingerprint===fingerprint&&a.status==='writing')return response({version:a.version,unchanged:true});
             data.writing_request_fingerprint=fingerprint;data.writing_requested_at=now();data.writing_first_requested_at||=data.writing_requested_at;data.words=Number(data.editorial_words)||400;
             data.writing_brief_snapshot=Object.fromEntries(['topic','brand','audience','style','keywords','notes','target_url','anchor','target_url_2','anchor_2','client_notes','image_id','image_credit','image_credit_url','secondary_image_id','secondary_image_credit','document_id','editorial_words','publish_without_review','writing_requested_at'].map(key=>[key,data[key]??'']));
-            const result=await stmt("UPDATE articles SET title=?,data=?,status='writing',version=version+1,updated=? WHERE id=? AND version=?",maxText(data.topic,300),JSON.stringify(data),now(),a.id,a.version).run();
+            const result=await stmt("UPDATE articles SET title=?,data=?,status='writing',version=version+1,updated=? WHERE id=? AND version=?",maxText(data.topic?.trim()||a.title,300),JSON.stringify(data),now(),a.id,a.version).run();
             assert(result.meta.changes,'הפרטים עודכנו במקביל',409);
             await audit(u,a.id,'פרטי הכתיבה נשלחו לכותב',{words:data.words});
             let mail_status='requested';try{mail_status=(await writingRequestMail({...a,data:JSON.stringify(data),version:a.version+1},new URL(r.url).origin))?.status||'requested';}catch{mail_status='failed';}
