@@ -1,0 +1,72 @@
+/* Admin shell, Apex-style (02.11.2026): dark side menu on wide screens, white top bar with
+   notifications and sign-out, dark header and dock on phones. Scoped to .admin-apex. */
+.admin-apex{--sx-side:#0b0f14;--sx-side-2:#131a22;--sx-line:#1c232c;--sx-ink:#cbd5e1;--sx-mute:#64748b;--sx-on:#34d399;--sx-on-bg:#10251c;--sx-w:268px}
+.admin-side-brand,.admin-side-user,.admin-signout{display:none}
+
+@media(min-width:1101px){
+ /* Side menu: fixed to the right edge, full height, on every admin screen. */
+ body .admin-apex.admin-apex.admin-design-v172.admin-design-v172 .admin-v172-navigation{display:block!important;position:fixed;top:0;bottom:0;inset-inline-start:0;width:var(--sx-w);height:100vh;max-height:none!important;margin:0!important;z-index:55;background:var(--sx-side);border-inline-end:1px solid var(--sx-line)}
+ .admin-apex.admin-design-v172 .admin-v172-menu{height:100%;max-height:none;display:flex;flex-direction:column;padding:14px 12px 10px;background:none;border:0;border-radius:0;box-shadow:none;color:var(--sx-ink);scrollbar-color:#2a3340 transparent}
+ .admin-apex .admin-side-brand{display:block;padding:6px 8px 14px;margin-bottom:6px;border-bottom:1px solid var(--sx-line)}
+ .admin-apex .admin-side-brand .brand-logo{display:block;width:170px}
+ .admin-apex.admin-design-v172 .admin-v172-brand{display:none}
+ .admin-apex .admin-v172-menu .admin-v172-search{background:var(--sx-side-2);border:1px solid var(--sx-line);border-radius:9px;color:var(--sx-mute);min-height:38px}
+ .admin-apex .admin-v172-menu .admin-v172-search input{background:none;color:#e2e8f0;font-size:13.5px}
+ .admin-apex .admin-v172-menu .admin-v172-search input::placeholder{color:var(--sx-mute)}
+ .admin-apex .admin-v172-menu .admin-v172-menu-section h2{color:var(--sx-mute);font-size:11.5px;font-weight:700;letter-spacing:0;padding:14px 10px 6px;margin:0}
+ .admin-apex .admin-v172-menu .admin-v172-area{border:0;background:none;padding:0;margin:0}
+ .admin-apex .admin-v172-menu a{color:var(--sx-ink)}
+ .admin-apex.admin-apex .admin-v172-menu .admin-v172-area-link,.admin-apex .admin-v172-menu .admin-v172-area>a,.admin-apex .admin-v172-menu .admin-v172-area summary{display:flex;align-items:center;gap:11px;min-height:38px;padding:0 10px;border:0;border-radius:8px;background:none;color:var(--sx-ink);font-size:14px;font-weight:500;box-shadow:none}
+ .admin-apex .admin-v172-menu .admin-v172-area-link:hover,.admin-apex .admin-v172-menu .admin-v172-area>a:hover{background:var(--sx-side-2);color:#fff}
+ .admin-apex .admin-v172-menu [aria-current=page]{background:var(--sx-on-bg)!important;color:var(--sx-on)!important;font-weight:700!important}
+ .admin-apex .admin-v172-menu [aria-current=page] svg{color:var(--sx-on)}
+ .admin-apex .admin-v172-menu .admin-v172-area a:not(.admin-v172-area-link){min-height:32px;font-size:13.5px;color:#9aa8ba;padding-inline-start:41px}
+ .admin-apex .admin-v172-menu .admin-menu-utilities{margin-top:12px;padding-top:10px;border-top:1px solid var(--sx-line)}
+ .admin-apex .admin-v172-menu .admin-menu-utilities a{display:flex;align-items:center;gap:10px;min-height:36px;padding:0 10px;border:0;border-radius:8px;background:none;color:#9aa8ba;font-size:13.5px}
+ .admin-apex .admin-v172-menu .admin-menu-utilities a:hover{background:var(--sx-side-2);color:#fff}
+ .admin-apex .admin-v172-menu .admin-v172-results a{color:var(--sx-ink);border-color:var(--sx-line);background:none}
+ .admin-apex .admin-v172-menu .admin-v172-results small,.admin-apex .admin-v172-menu .admin-v172-results p{color:var(--sx-mute)}
+ .admin-apex .admin-side-user{display:flex;align-items:center;gap:10px;margin-top:auto;padding:12px 8px 4px;border-top:1px solid var(--sx-line)}
+ .admin-apex .admin-side-avatar{width:34px;height:34px;flex:none;border-radius:99px;background:#16a34a;color:#fff;display:grid;place-items:center;font-weight:800;font-size:13px}
+ .admin-apex .admin-side-user>span:nth-child(2){display:grid;min-width:0;line-height:1.25}
+ .admin-apex .admin-side-user b{color:#fff;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .admin-apex .admin-side-user small{color:var(--sx-mute);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .admin-apex .admin-side-user a{margin-inline-start:auto;width:34px;height:34px;flex:none;border-radius:8px;display:grid;place-items:center;color:#9aa8ba}
+ .admin-apex .admin-side-user a:hover{background:var(--sx-side-2);color:#fca5a5}
+ /* Content and top bar move clear of the side menu. */
+ .admin-apex.admin-design-v172>.workspace-page-content{padding-inline-start:var(--sx-w)!important;box-sizing:border-box}
+ body .admin-apex.admin-apex.admin-design-v172.admin-design-v172>.workspace-page-content>main{display:block!important;margin-inline:0!important;max-width:none!important;width:auto!important;padding:24px 28px 48px!important}
+ .admin-apex.admin-design-v172>.workspace-page-content>main>.admin-workspace-body{max-width:1400px;margin-inline:auto}
+ .admin-apex.admin-design-v172>section:not(.admin-mobile-dock),.admin-apex.admin-design-v172>footer{margin-inline-start:var(--sx-w)}
+ .admin-apex .admin-glass-header{margin-inline-start:var(--sx-w);min-height:62px;padding:10px 28px;background:#fff!important;border-bottom:1px solid #e5e7eb;box-shadow:none;backdrop-filter:none;color:#0f172a}
+ .admin-apex .admin-glass-header::before,.admin-apex .admin-glass-header::after{display:none}
+ .admin-apex .admin-glass-brand,.admin-apex .admin-glass-header .admin-all-areas{display:none}
+ .admin-apex .admin-glass-account{margin-inline-start:auto;display:flex;align-items:center;gap:8px}
+ .admin-apex .admin-glass-header .workspace-greeting,.admin-apex .admin-glass-header .workspace-greeting-text{color:#0f172a}
+ .admin-apex .admin-glass-header .workspace-notification-button{width:40px;height:40px;border-radius:9px;color:#334155}
+ .admin-apex .admin-glass-header .workspace-notification-button:hover{background:#f1f5f9}
+ .admin-apex .admin-signout{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 12px;border:1px solid #e5e7eb;border-radius:9px;color:#334155;font-size:14px;font-weight:650;text-decoration:none}
+ .admin-apex .admin-signout:hover{border-color:#f2c9ce;color:#b91c1c;background:#fff5f5}
+ .admin-apex .workspace-page-content,.admin-apex{background:#f6f7f9}
+}
+@media(max-width:1100px){
+ .admin-apex .admin-glass-header{background:var(--sx-side)!important;border-bottom:1px solid var(--sx-line);box-shadow:none}
+ .admin-apex .admin-glass-header::after{display:none}
+ .admin-apex .admin-glass-account .admin-signout{display:none}
+ .admin-apex .admin-mobile-dock{background:var(--sx-side)!important;border-top:1px solid var(--sx-line);box-shadow:0 -6px 20px rgb(0 0 0/.18);backdrop-filter:none}
+ .admin-apex .admin-mobile-dock a{color:var(--sx-ink)}
+ .admin-apex .admin-mobile-dock a[aria-current=page]{color:var(--sx-on)}
+ .admin-apex .admin-mobile-dock .admin-dock-indicator{background:var(--sx-on-bg);box-shadow:none}
+ /* Sign-out inside the phone menu sheet */
+ .admin-apex .admin-glass-menu .admin-menu-utilities::after{content:none}
+}
+.admin-v172-navigation .admin-menu-signout{display:none!important}
+.admin-glass-menu .admin-menu-signout{color:#b91c1c!important}
+@media(min-width:1101px){
+ .admin-apex.admin-apex .admin-v172-menu :is(a,summary)[aria-current=page],.admin-apex.admin-apex .admin-v172-menu .admin-v172-area.is-active>:is(a,summary){background:var(--sx-on-bg)!important;color:var(--sx-on)!important;border-color:transparent!important;box-shadow:none!important}
+ .admin-apex.admin-apex .admin-v172-menu :is(a,summary){background-color:transparent;border-color:transparent;box-shadow:none}
+ .admin-apex .admin-v172-menu .admin-v172-attention{background:#dc2626;color:#fff;border:0;box-shadow:none}
+ .admin-apex .admin-v172-menu .admin-v172-attention.is-dot{background:#34d399}
+ .admin-apex .admin-v172-menu .admin-v172-menu-section{border:0!important;margin:0;padding:0}
+ .admin-apex .admin-v172-menu .admin-v172-menu-section+.admin-v172-menu-section{border-top:1px solid var(--sx-line)!important;margin-top:8px}
+}

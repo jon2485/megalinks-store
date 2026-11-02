@@ -1,7 +1,6 @@
 'use client';
 import React,{useCallback,useEffect,useRef,useState} from 'react';
 import {Search,Download,X,CalendarDays,ChevronDown,ChevronLeft,ChevronRight,ChevronUp,Loader2,SlidersHorizontal,XCircle} from 'lucide-react';
-import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
 import {api,useData} from '@/lib/client';
 import {adminViewState,saveAdminViewState,takeAdminViewState} from '@/lib/admin-view-state';
 import {paymentConfirmed,israelDate,ORDER_ABANDONED_DAYS,type AdminOrderFilterBucket} from '@/lib/admin-order-buckets';
@@ -13,7 +12,7 @@ import {downloadAdminWorkbook} from './admin-export';
 import './orders-reference.css';
 import './orders-modern.css';
 import {OrderPanel} from './admin-order-panel';
-import {orderSites,OrderPublication as Publication} from './order-list-parts';
+import {OrderFilter,OrderFilters,orderSites,OrderPublication as Publication,RecordPanel} from './order-list-parts';
 import {orderMoney} from './order-presentation';
 import {ReportReview} from './payment-reports';
 
@@ -69,8 +68,7 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
    <h2 id="orders-list-title" className="om-hidden">רשימת הזמנות</h2>
    <form className="orders-reference-toolbar om-toolbar" noValidate role="search" onSubmit={e=>{e.preventDefault();if(!composing)commit({q:draft.trim()});}}>
     <div className="orders-reference-search"><Search size={21} aria-hidden="true"/><input ref={input} type="search" maxLength={120} aria-label="חיפוש לקוח, מספר הזמנה או אתר" placeholder="חיפוש לקוח, מספר הזמנה או אתר" value={draft} onCompositionStart={()=>setComposing(true)} onCompositionEnd={e=>{setDraft(e.currentTarget.value);setComposing(false);}} onChange={e=>setDraft(e.target.value)}/>{draft&&<button type="button" aria-label="ניקוי חיפוש הזמנות" onClick={()=>{setDraft('');commit({q:''});input.current?.focus();}}><X size={17}/></button>}</div>
-    <div className="orders-reference-month-filter"><Select dir="rtl" value={saved.month||'all'} onValueChange={v=>commit({month:v==='all'?'':v})}><SelectTrigger aria-label="סינון לפי חודש"><span><CalendarDays size={20}/><SelectValue/></span></SelectTrigger><SelectContent position="popper" align="start" sideOffset={5} className="orders-reference-options"><SelectItem value="all">כל החודשים</SelectItem>{months.map(m=><SelectItem key={m} value={m}>{monthText(m)}</SelectItem>)}</SelectContent></Select></div>
-    <div className="orders-reference-month-filter om-status-filter"><Select dir="rtl" value={saved.bucket==='closed'||saved.bucket==='archive'?saved.bucket:'any'} onValueChange={v=>commit({bucket:(v==='any'?'active':v) as AdminOrderFilterBucket})}><SelectTrigger aria-label="סינון לפי מצב"><span><SlidersHorizontal size={20}/><SelectValue/></span></SelectTrigger><SelectContent position="popper" align="start" sideOffset={5} className="orders-reference-options"><SelectItem value="any">כל המצבים</SelectItem><SelectItem value="closed">סגורות</SelectItem><SelectItem value="archive">בוטלו והדגמות</SelectItem></SelectContent></Select></div>
+    <OrderFilters active={(saved.month?1:0)+(saved.bucket==='closed'||saved.bucket==='archive'?1:0)}><OrderFilter label="סינון לפי חודש" icon={<CalendarDays size={20}/>} value={saved.month||'all'} onChange={v=>commit({month:v==='all'?'':v})} options={{all:'כל החודשים',...Object.fromEntries(months.map(m=>[m,monthText(m)]))}}/><OrderFilter label="סינון לפי מצב" icon={<SlidersHorizontal size={20}/>} value={saved.bucket==='closed'||saved.bucket==='archive'?saved.bucket:'any'} onChange={v=>commit({bucket:(v==='any'?'active':v) as AdminOrderFilterBucket})} options={{any:'כל המצבים',closed:'סגורות',archive:'בוטלו והדגמות'}}/></OrderFilters>
    </form>
    <div className="om-chips" role="group" aria-label="איזה הזמנות להציג">{chips.map(([key,label])=>{const n=Number(counts[key]||0);return <button type="button" key={key} className={'is-'+key} aria-pressed={saved.bucket===key||(key==='active'&&(saved.bucket==='closed'||saved.bucket==='archive'))} onClick={()=>commit({bucket:key})}>{label}{key!=='active'&&state.data&&n>0&&<b>{n}</b>}</button>;})}</div>
    {(error||state.error)&&<div className="orders-reference-error" role="alert"><p>{error||state.error}</p><button type="button" onClick={ctx.refresh}>ניסיון נוסף</button></div>}
@@ -88,7 +86,7 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
        <a className={'om-btn om-action'+(cancelAsk||askReview?' is-primary':'')+(busy?' is-opening':'')} href={'/admin-order/'+o.id} aria-busy={busy||undefined} onClick={e=>{e.stopPropagation();if(!plain(e))return;e.preventDefault();if(askReview)review(o);else detail(o);}}><span>{label}</span>{busy?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:<ChevronLeft size={16} aria-hidden="true"/>}</a>
        <button type="button" className="om-expand" aria-label={(open?'סגירת פירוט הזמנה ':'פירוט הזמנה ')+o.number} aria-expanded={open} aria-controls={'order-inline-'+o.id} onClick={e=>{e.stopPropagation();setExpanded(open?'':o.id);}}>{open?<ChevronUp size={19} aria-hidden="true"/>:<ChevronDown size={19} aria-hidden="true"/>}</button>
       </div>
-      {open&&<div id={'order-inline-'+o.id}><OrderPanel ctx={ctx} order={o} manage={()=>detail(o)}/></div>}
+      {open&&<RecordPanel id={'order-inline-'+o.id} title={<>הזמנה <bdi>#{String(o.number).replace(/^#/,'')}</bdi></>} badge={<span className={'om-pill is-'+pay.tone}>{pay.label}</span>} onClose={()=>setExpanded('')}><OrderPanel ctx={ctx} order={o} manage={()=>detail(o)}/></RecordPanel>}
      </article></React.Fragment>;})}
     </div>
    </>}

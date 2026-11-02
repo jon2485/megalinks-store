@@ -1,0 +1,131 @@
+/* Orders and finance area, Apex-style refresh (approved mock 02.11.2026).
+   Scoped to .orders-apex, which workspace.tsx sets only on the six orders-area screens. */
+.orders-apex,.admin-apex:has(.orders-apex){--ax-bg:#f6f7f9;--ax-card:#fff;--ax-line:#e5e7eb;--ax-line-2:#eef0f3;--ax-ink:#0f172a;--ax-copy:#5b6878;--ax-mute:#8a96a6;--ax-brand:#0a7f4f;--ax-brand-2:#10b981;--ax-brand-tint:#e8f7f0;--ax-dark:#0b0f14;--ax-red:#dc2626;--ax-red-tint:#fdecec;--ax-amber:#b45309;--ax-amber-tint:#fef4e2;--ax-violet:#6d3fd8;--ax-violet-tint:#f2ecfe;--ax-blue:#2563eb;--ax-blue-tint:#e9f0fe;--ax-r:12px}
+.orders-apex .orders-match-screen,.admin-apex:has(.orders-apex) .orders-unified-heading{font-family:Heebo,Arial,sans-serif}
+.orders-apex .orders-match-screen .num,.orders-apex .orders-match-screen bdi{font-variant-numeric:tabular-nums}
+
+/* Heading and sub-category tabs */
+.admin-apex:has(.orders-apex) .orders-unified-heading h1{font-size:28px;font-weight:800;letter-spacing:-.02em;color:var(--ax-ink)}
+.admin-apex:has(.orders-apex) .orders-unified-heading p{color:var(--ax-copy)}
+.admin-apex:has(.orders-apex) .orders-category-tiles{display:flex;flex-wrap:wrap;gap:4px;padding:4px;background:#eceef2;border-radius:11px;width:max-content;max-width:100%}
+.admin-apex.admin-apex:has(.orders-apex) .orders-category-tiles>a{position:relative;display:inline-flex;flex-direction:row;align-items:center;gap:8px;min-height:38px;height:38px;padding:0 14px;border:0;border-radius:8px;background:transparent;box-shadow:none;color:var(--ax-copy);font-size:14px;font-weight:650;text-decoration:none}
+.admin-apex:has(.orders-apex) .orders-category-tiles a svg{width:17px;height:17px}
+.admin-apex:has(.orders-apex) .orders-category-tiles a:hover{background:rgb(255 255 255/.6);color:var(--ax-ink)}
+.admin-apex.admin-apex:has(.orders-apex) .orders-category-tiles>a[aria-current=page]{background:#fff!important;color:var(--ax-ink)!important;border-color:transparent!important;box-shadow:0 1px 2px rgb(15 23 42/.12)!important}
+.admin-apex.admin-apex:has(.orders-apex) .orders-category-tiles>a[aria-current=page] svg{color:var(--ax-brand)}
+.admin-apex:has(.orders-apex) .orders-category-tiles a .admin-v172-attention,.admin-apex:has(.orders-apex) .orders-category-chips a .admin-v172-attention{position:static;transform:none}
+.admin-apex:has(.orders-apex) .orders-category-chips{display:none}
+
+/* Panel, toolbar and views */
+.orders-apex .orders-match-screen .orders-reference-panel{background:var(--ax-card);border:1px solid var(--ax-line);border-radius:var(--ax-r);box-shadow:0 1px 2px rgb(15 23 42/.04)}
+.orders-apex .orders-match-screen .om-toolbar{gap:10px}
+.orders-apex .orders-match-screen .orders-reference-search{height:40px;border:1px solid var(--ax-line);border-radius:9px;background:#fff;box-shadow:none}
+.orders-apex .orders-match-screen .orders-reference-search:focus-within{border-color:var(--ax-brand-2);box-shadow:0 0 0 3px rgb(16 185 129/.15)}
+.orders-apex .orders-match-screen .orders-reference-search input{font-size:14px}
+.orders-apex .orders-match-screen .orders-reference-month-filter [data-slot=select-trigger],.orders-apex .orders-match-screen .orders-reference-month-filter button[role=combobox]{height:40px;border:1px dashed #c5ccd6;border-radius:9px;background:#fff;box-shadow:none;font-weight:650;font-size:14px;color:#334155}
+.orders-apex .om-filters-inline{display:contents}
+.orders-apex .om-filters-button{display:none}
+.orders-apex .orders-match-screen .om-chips{display:inline-flex;flex-wrap:wrap;gap:3px;padding:3px;background:#eef0f3;border-radius:10px;border:0}
+.orders-apex .orders-match-screen .om-chips button{min-height:34px;height:34px;padding:0 13px;border:0;border-radius:8px;background:transparent;box-shadow:none;color:var(--ax-copy);font-size:13.5px;font-weight:650}
+.orders-apex .orders-match-screen .om-chips button[aria-pressed=true]{background:#fff;color:var(--ax-ink);box-shadow:0 1px 2px rgb(15 23 42/.12)}
+.orders-apex .orders-match-screen .om-chips button b{background:#e2e6ec;color:#334155;border-radius:6px;min-width:20px;height:20px;font-size:11.5px}
+.orders-apex .orders-match-screen .om-chips button[aria-pressed=true] b{background:var(--ax-brand-tint);color:var(--ax-brand)}
+.orders-apex .orders-match-screen .om-chips button.is-attention b{background:var(--ax-red);color:#fff}
+
+/* Rows as separated cards with a status edge */
+.orders-apex .orders-match-screen .om-head{color:var(--ax-mute);font-size:12.5px;font-weight:600}
+.orders-apex .orders-match-screen .om-list{display:grid;gap:10px}
+.orders-apex .orders-match-screen .om-order{background:#fff;border:1px solid var(--ax-line);border-inline-start:4px solid #cfd5dd;border-radius:var(--ax-r);box-shadow:0 1px 2px rgb(15 23 42/.05),0 2px 8px rgb(15 23 42/.04);overflow:hidden}
+.orders-apex .orders-match-screen .om-order:hover{border-color:#cfd6df}
+.orders-apex .orders-match-screen .om-order.is-open{box-shadow:0 8px 24px rgb(15 23 42/.10);border-color:#c9d1db}
+.orders-apex .orders-match-screen .om-order.is-open>.om-row{background:#f3fbf7}
+.orders-apex .orders-match-screen .om-order:has(>.om-row .om-pill.is-ok){border-inline-start-color:var(--ax-brand-2)}
+.orders-apex .orders-match-screen .om-order:has(>.om-row .om-pill.is-month){border-inline-start-color:#8b5cf6}
+.orders-apex .orders-match-screen .om-order:has(>.om-row .om-pill.is-report),.orders-apex .orders-match-screen .om-order:has(>.om-row .om-pill.is-pending){border-inline-start-color:#f59e0b}
+.orders-apex .orders-match-screen .om-order:has(>.om-row .om-pill.is-unreported){border-inline-start-color:#94a3b8}
+.orders-apex .orders-match-screen .om-order:has(>.om-row .om-pill.is-cancelled),.orders-apex .orders-match-screen .om-order:has(>.om-row .om-cancel-note){border-inline-start-color:var(--ax-red)}
+.orders-apex .orders-match-screen .om-pill{border-radius:6px;font-weight:700}
+.orders-apex .orders-match-screen .om-pill.is-ok{background:var(--ax-brand-tint);color:var(--ax-brand)}
+.orders-apex .orders-match-screen .om-pill.is-month{background:var(--ax-violet-tint);color:var(--ax-violet)}
+.orders-apex .orders-match-screen .om-pill.is-report,.orders-apex .orders-match-screen .om-pill.is-pending{background:var(--ax-amber-tint);color:var(--ax-amber)}
+.orders-apex .orders-match-screen .om-pill.is-cancelled{background:var(--ax-red-tint);color:var(--ax-red)}
+.orders-apex .orders-match-screen .om-btn{border-radius:9px;font-weight:650}
+.orders-apex .orders-match-screen .om-btn.is-primary,.orders-apex .om-sheet .om-btn.is-primary{background:var(--ax-brand);border-color:var(--ax-brand);color:#fff}
+.orders-apex .orders-match-screen .om-btn.is-primary:hover,.orders-apex .om-sheet .om-btn.is-primary:hover{background:#086a42}
+.orders-apex .orders-match-screen .om-expand{border-radius:8px}
+.orders-apex .orders-match-screen .om-order.is-open .om-expand{background:var(--ax-dark);border-color:var(--ax-dark);color:#fff}
+.orders-apex .orders-match-screen .om-pips i.is-on{background:var(--ax-brand-2)}
+.orders-apex .orders-match-screen .orders-reference-pagination [aria-current=page]{background:var(--ax-brand);border-color:var(--ax-brand);color:#fff}
+
+/* Bottom sheet (phones only: the filter button and RecordPanel open it there) */
+.om-sheet-layer{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;justify-content:flex-end}
+.om-sheet-scrim{position:absolute;inset:0;background:rgb(10 12 16/.42);animation:om-sheet-fade .18s ease-out}
+.om-sheet{position:relative;display:flex;flex-direction:column;max-height:88vh;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -18px 50px rgb(0 0 0/.22);font-family:Heebo,Arial,sans-serif;color:#0f172a;animation:om-sheet-up .22s cubic-bezier(.2,.8,.2,1)}
+.om-sheet::before{content:"";width:42px;height:4px;border-radius:99px;background:#d6d9de;margin:8px auto 2px;flex:none}
+.om-sheet-head{display:flex;align-items:center;gap:10px;padding:6px 16px 12px;border-bottom:1px solid #eef0f3}
+.om-sheet-head h3{margin:0;font-size:17px;font-weight:800}
+.om-sheet-head>button{margin-inline-start:auto;width:38px;height:38px;border-radius:10px;border:1px solid #e5e7eb;background:#fff;display:grid;place-items:center;color:#334155}
+.om-sheet-body{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;padding:14px 16px 18px;display:grid;gap:16px;align-content:start}
+.om-sheet-foot{display:grid;padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid #eef0f3}
+.om-sheet-foot .om-btn{min-height:48px;justify-content:center;font-size:15px}
+.om-sheet-field{margin:0;padding:0;border:0;min-width:0}
+.om-sheet-field legend{padding:0;margin-bottom:8px;font-size:13px;font-weight:700;color:#5b6878}
+.om-sheet-options{display:flex;flex-wrap:wrap;gap:8px}
+.om-sheet-options button{min-height:40px;padding:0 14px;border:1px solid #e5e7eb;border-radius:99px;background:#fff;font:inherit;font-size:14px;font-weight:650;color:#0f172a;cursor:pointer}
+.om-sheet-options button[aria-pressed=true]{border-color:#0a7f4f;background:#e8f7f0;color:#0a7f4f}
+body.om-sheet-lock{overflow:hidden}
+@keyframes om-sheet-up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+@keyframes om-sheet-fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.om-sheet,.om-sheet-scrim{animation:none}}
+/* The order panel inside a sheet: no card chrome of its own. */
+.om-sheet .om-panel{border:0;box-shadow:none;padding:0;margin:0;background:none}
+
+@media(max-width:760px){
+ .admin-apex:has(.orders-apex) .orders-unified-heading h1{font-size:23px}
+ .admin-apex:has(.orders-apex) .orders-category-tiles{display:none}
+ .admin-apex:has(.orders-apex) .orders-category-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:12px -16px 0;padding:0 16px 2px}
+ .admin-apex:has(.orders-apex) .orders-category-chips::-webkit-scrollbar{display:none}
+ .admin-apex:has(.orders-apex) .orders-category-chips a{flex:none;display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:0 14px;border-radius:99px;border:1px solid var(--ax-line);background:#fff;color:#334155;font-size:14px;font-weight:650;text-decoration:none;white-space:nowrap}
+ .admin-apex:has(.orders-apex) .orders-category-chips a[aria-current=page]{background:var(--ax-dark);border-color:var(--ax-dark);color:#fff}
+ .orders-apex .om-filters-inline{display:none}
+ .orders-apex .om-filters-button{display:inline-flex;align-items:center;justify-content:center;gap:7px;position:relative;flex:none;min-height:42px;padding:0 14px;border:1px solid var(--ax-line);border-radius:10px;background:#fff;font:inherit;font-size:14px;font-weight:700;color:#0f172a;cursor:pointer}
+ .orders-apex .om-filters-button b{position:absolute;top:-7px;inset-inline-start:-7px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--ax-brand);color:#fff;font-size:11px;display:grid;place-items:center}
+ .orders-apex .orders-match-screen .om-toolbar{display:flex!important;flex-wrap:nowrap;align-items:center;gap:8px}
+ .orders-apex .orders-match-screen .om-toolbar .orders-reference-search{flex:1;min-width:0;height:42px}
+ .orders-apex .orders-match-screen .om-chips{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100%}
+ .orders-apex .orders-match-screen .om-chips::-webkit-scrollbar{display:none}
+ .orders-apex .orders-match-screen .om-chips button{flex:none}
+ .orders-apex .orders-match-screen .om-list{gap:12px}
+ .orders-apex .orders-match-screen .om-order{border-radius:14px}
+ /* Orders list row on phones: three short lines, the whole card opens the sheet. */
+ .orders-apex .orders-match-screen .om-row:has(>.om-id){display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"id amount" "who pay" "pub act";gap:6px 10px;padding:12px 14px;min-height:0}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-id{grid-area:id;display:flex;align-items:baseline;gap:8px}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-who{grid-area:who;display:flex;align-items:baseline;gap:8px;min-width:0}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-who b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-sites{display:none}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-pay{grid-area:pay;justify-self:end;text-align:end}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-pay small{display:none}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-pub{grid-area:pub;align-self:center;min-width:0}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-amount{grid-area:amount;font-size:16px}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-action{grid-area:act;justify-self:end;min-height:34px;padding:0 12px;font-size:13px}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-action:not(.is-primary){display:none}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-expand{display:none}
+}
+@media(max-width:760px){
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-who span{flex:none;font-size:12.5px;white-space:nowrap}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-pub{width:auto}
+ .orders-apex .orders-match-screen .om-row:has(>.om-id)>.om-pub .om-progress{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+ /* Compact item rows inside the order sheet */
+ .om-sheet .om-panel section{padding:0 0 14px}
+ .om-sheet .om-panel section+section{padding-top:14px}
+ .om-sheet .om-item{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"site money" "pill cancel";gap:4px 10px;padding:10px 0}
+ .om-sheet .om-item-site{display:grid;gap:2px;min-width:0}
+ .om-sheet .om-item-site .om-url{font-size:14.5px;font-weight:700}
+ .om-sheet .om-item-date{display:none}
+ .om-sheet .om-article{font-size:13px;min-width:0}
+ .om-sheet .om-article span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .om-sheet .om-item>.om-pill{align-self:center}
+ .om-sheet .om-item>strong{align-self:start;font-size:15px}
+ .om-sheet .om-danger{min-height:34px;padding:0 12px;font-size:13px;align-self:center}
+ .om-sheet .om-panel-foot{position:sticky;bottom:-18px;margin:0 -16px -18px;padding:12px 16px;background:#fff;border-top:1px solid #eef0f3}
+}
