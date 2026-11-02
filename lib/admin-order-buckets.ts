@@ -2,7 +2,9 @@ import type {Row} from './shared';
 import {orderCancellation} from './order-finance';
 export const adminOrderBuckets={monthly:'הזמנות חודשיות פתוחות',closed:'הזמנות סגורות',process:'הזמנות בתהליך',archive:'ביטולים והדגמות'} as const;
 export type AdminOrderBucket=keyof typeof adminOrderBuckets;
-export const adminOrderFilterLabels={all:'כל הסטטוסים',...adminOrderBuckets};
+export const adminOrderFilterLabels={all:'כל הסטטוסים',...adminOrderBuckets,cancel:'בקשות ביטול',active:'כל ההזמנות',attention:'לטיפול',reports:'דיווחים לבדיקה',awaiting:'ממתינות לתשלום',abandoned:'הזמנות שנזנחו'};
+/** An unpaid regular order with no payment report counts as abandoned after this many days. */
+export const ORDER_ABANDONED_DAYS=14;
 export type AdminOrderFilterBucket=keyof typeof adminOrderFilterLabels;
 export const paymentConfirmed=(o:Row)=>!o.demo&&!!(o.paid||o.settled||o.payment_settled);
 /** Purchase closure, month PDF and customer reports never prove receipt of money. */

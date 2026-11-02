@@ -1326,3 +1326,36 @@ a spinner on mark, reopen, refresh, search, load-more and opening; a green confi
 row plus toast after marking; an inline retry message on the failing row. Reduced
 motion removes movement. Rows adapt to their own container width, so the record title
 stays readable beside the rail.
+
+## Orders list — approved 2026-11-01
+
+The owner approved `docs/proposals/orders/` with later corrections. This supersedes
+the compact table and status select of the main orders list only. `app/orders-modern.css`
+owns `.om-*` inside `.orders-match-screen`; `app/admin-order-panel.tsx` owns the opened
+order. The low category strip applies on this screen only; the five sibling finance pages
+keep their tiles. Each order is its own white record with payment and publication shown
+separately. Four view buttons (all, attention, awaiting payment, monthly) open on attention;
+closed and cancelled sit in a status select beside the month.
+
+Payment colors: paid green `#17694f`/`#e7f6f0`, reported awaiting approval yellow
+`#6f5400`/`#fff1b8`, unreported and abandoned gray `#4f5d6e`/`#e4e9ef`, monthly violet
+`#5f3dc4`/`#efe9fd`, cancelled and demo outlined. Every color appears with a text label.
+
+## Finance screens rebuilt on the orders list — 2026-11-01
+
+The owner rejected a reskin and asked each screen to be specified and rebuilt like the
+orders list. Monthly accounts, month close, invoices and top-ups now render
+`.orders-match-screen` with the shared `app/order-list-parts.tsx` and `.om-*` styles in
+`app/orders-modern.css`. Orders open `OrderPanel`: items, payment, customer and actions,
+with an optional page section. Payment reports keep the framed layout with only the low
+category strip from `app/finance-modern.css`.
+
+- Monthly accounts answer who owes what. Row action: close the month, or record payment.
+- Month close answers income, VAT, cost and profit for a period. The panel adds order
+  profitability; partial cost is shown with its gap, never hidden.
+- Invoices answer which paid orders lack a document. The panel adds invoice details and
+  the attachment form inline.
+- Top-ups separate what was reported, what approval changes and the decision. A decided
+  request stays open with its result until closed.
+
+Same payment colors as the orders list. Yellow appears only when something actually waits.
