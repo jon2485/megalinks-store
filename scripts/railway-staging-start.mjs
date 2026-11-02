@@ -30,7 +30,7 @@ if(config.d1_databases[0].database_id!=="00000000-0000-4000-8000-000000000000" |
 // The Node gateway authenticates every request, including static assets.
 // Let Wrangler serve built assets before the application Worker; vinext does
 // not resolve /_next/static/chunks through its dynamic route handler.
-if(config.assets)config.assets.run_worker_first=false;
+if(config.assets){config.assets.run_worker_first=false;config.assets.binding='ASSETS';}
 config.d1_databases[0].migrations_dir = resolve("drizzle");
 writeFileSync(configPath, JSON.stringify(config));
 // Wrangler does not automatically expose process.env to the Worker. Only these
