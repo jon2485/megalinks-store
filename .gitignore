@@ -47,3 +47,6 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+# Local design mocks and screenshots with fictional data
+docs/proposals/
