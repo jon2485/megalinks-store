@@ -11,7 +11,7 @@ export const INDEXABLE_PATHS = ['/', '/terms', '/knowledge'] as const;
 const privateRoots = new Set([
     ...adminAreas.flatMap(area=>area.pages.map(([page])=>page)),
     ...lobbyGroups.flatMap(group=>[group.page,...group.tabs.map(([page])=>page)]),
-    'admin-pricing','admin-pricebooks','offers','cart','checkout','bulk','purchased',
+    'admin-approvals','admin-publication','admin-writing','admin-pricing','admin-pricebooks','offers','cart','checkout','bulk','purchased',
     'orders','articles','links','dashboard','strategies','wallet','monthly','customers',
     'profile','files','support','api','notifications','supplier-workspace','supplier-finance',
 ]);

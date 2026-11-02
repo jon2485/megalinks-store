@@ -21,7 +21,7 @@ type Group={id:string;label:string;icon:React.ElementType;items:Entry[]};
 export function navigationGroups(ctx:Ctx):Group[]{
  if(ctx.adminMode&&ctx.user?.role==='admin')return [
   {id:'knowledge-admin',label:'מדריכים וידע',icon:BookOpen,items:[['admin-knowledge','מדריכים וידע',BookOpen]]},
-  {id:'work',label:'סביבת הניהול',icon:LayoutDashboard,items:adminAreas.map(a=>[a.id,a.label,navAdmin.find(n=>n[0]===a.id)?.[2]||Settings] as Entry)},
+  {id:'work',label:'סביבת הניהול',icon:LayoutDashboard,items:adminAreas.map(a=>[a.id==='admin-approvals'?'admin-articles':a.id,a.label,navAdmin.find(n=>n[0]===a.id)?.[2]||Settings] as Entry)},
   {id:'account',label:'סביבת הלקוח',icon:Globe,items:[['catalog','מעבר לקטלוג הלקוח',Globe],['purchased','אזור הלקוח',FileText]]}
  ];
  const account:Entry[]=[];

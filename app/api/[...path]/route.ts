@@ -17,6 +17,7 @@ import {geminiRequest,GeminiRequestError} from '@/lib/gemini-request';
 import {availableGeminiModels} from '@/lib/gemini-model-list';
 import {GEMINI_DEFAULT_MODEL,GEMINI_MODEL_FORMAT_ERROR,normalizeGeminiModel,validGeminiModel,geminiModelFailure} from '@/lib/gemini-model';
 import {writingBriefLink} from '@/lib/writing-brief-validation';
+import {contentStages} from '@/lib/content-presentation';
 import {writingAction} from '@/lib/writing-actions';
 import {writingBriefFile} from '@/lib/writing-brief-file';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
@@ -841,7 +842,7 @@ if (p[0] === 'cart') {
         if(p[1]==='content'){
             assert(method==='GET','פעולה לא נתמכת',405);const exported=query.get('export')==='1',result=await adminContent(query,exported);
             if(!exported)return response(result);
-            const rows=[['כתבה','לקוח','מספר הזמנה','אתר','סטטוס','שליחה לבדיקה','שליחה לספק'],...result.articles.map(a=>[a.title,a.user_name,a.number,a.website_url,a.status,a.submitted_at||'',a.supplier_sent_at||''])];
+            const rows=[['כתבה','לקוח','מספר הזמנה','אתר','ספק','מצב','שליחה לבדיקה','שליחה לספק'],...result.articles.map(a=>[a.title||a.topic,a.user_name,a.number,a.website_url,a.supplier_name,contentStages[a.stage]?.label||a.status,a.submitted_at||'',a.supplier_sent_at||''])];
             return new Response(framedWorkbook(rows,'כתבות',[50,30,20,45,22,28,28],[],result.articles.length) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="articles.xlsx"','Cache-Control':'private, no-store'}});
         }
         if(p[1]==='orders'){

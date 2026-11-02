@@ -1,3 +1,4 @@
+import {supplierLateSql} from './writing-workflow';
 import {monthlySupplierArticle} from './supplier-inventory';
 import {one,all,setting,now,parse,stmt,assert,audit} from './server';
 import type {Row} from './shared';
@@ -5,6 +6,8 @@ import {fullyCancelledOrderSql} from './order-summary';
 import {adminAreas} from './admin-navigation';
 import {adminPageQueues} from './admin-attention';
 import {adminUnionCtes} from './admin-sql';
+import {adminOpenActionCount} from './admin-updates';
+import {adminOrdersAttentionCount} from './admin-order-data';
 export async function reviewPriceChange(id:string,u:Row){const row=await one("SELECT * FROM activity WHERE id=? AND json_type(data,'$.before_price') IS NOT NULL",id);assert(row,'עדכון המחיר לא נמצא',404);await stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)','price-reviewed:'+id,'price_review',u.id,JSON.stringify({activity_id:id}),now(),now()).run();await audit(u,id,'עדכון מחיר נבדק');return {ok:true};}
 const actionable=`NOT ${fullyCancelledOrderSql()} AND (o.paid=1 OR COALESCE(json_extract(o.data,'$.demo'),0)=1 OR COALESCE(json_extract(o.data,'$.on_account'),0)=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1))`;
 export async function adminControlCenter(){
@@ -13,8 +16,8 @@ export async function adminControlCenter(){
   ['seller_invoices','חשבוניות ספקים','admin-seller-requests','חשבוניות שממתינות לבדיקה','seller_statements ss',"ss.status='invoice_review'",'ss.updated'],
   ['payment_reports','דיווחי תשלום לאישור','admin-payment-reports','פרטי תשלום שנשלחו על ידי לקוחות',"records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id')","r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND json_extract(r.data,'$.payment_method')='bank_transfer' AND o.payment NOT IN ('card','credits_card') AND o.paid=0 AND o.status<>'cancelled'",'r.created'],
   ['content','כתבות לאישור','admin-approvals','בדיקת התוכן ואישור המשך הטיפול',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND a.status='admin_review' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated'],
-  ['writing','כתיבה מקצועית','admin-articles','כתבות שנמצאות בכתיבה',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND json_extract(a.data,'$.writing_requested_at') IS NOT NULL AND COALESCE(json_extract(a.data,'$.editorial'),0)=1 AND (a.status='writing' OR (a.status='revisions' AND json_extract(a.data,'$.writing_returned_at') IS NULL)) AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated'],
-  ['publication','מוכנות לשליחה','admin-articles','כתבות מאושרות שטרם נשלחו לספק',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND a.status='approved' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated'],
+  ['writing','כתיבה מקצועית','admin-writing','כתבות שמחכות לכותב התוכן',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND json_extract(a.data,'$.writing_requested_at') IS NOT NULL AND COALESCE(json_extract(a.data,'$.editorial'),0)=1 AND (a.status='writing' OR (a.status='revisions' AND json_extract(a.data,'$.writing_returned_at') IS NULL)) AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated'],
+  ['publication','מוכנות לשליחה','admin-publication','כתבות מאושרות שטרם נשלחו לספק',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND a.status='approved' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated'],
   ['bank','תשלומים לבדיקה','admin-orders','אימות קבלת העברות בנקאיות','orders o',"NOT EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending') AND o.paid=0 AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0",'o.created'],
   ['topups','הטענות יתרה','admin-topups','בקשות שממתינות לאימות ואישור','records r',"(r.kind='wallet_topup' OR (r.kind='ticket' AND json_extract(r.data,'$.payment_method')='bank_transfer' AND json_extract(r.data,'$.amount_cents')>0)) AND COALESCE(json_extract(r.data,'$.decision'),'pending')='pending'",'r.created'],
   ['invoices','מסמכים חסרים','admin-invoices','הזמנות ששולמו ללא חשבונית או קבלה','orders o',"(o.paid=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1 AND c.demo=0)) AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND o.status<>'cancelled' AND COALESCE(json_extract(o.data,'$.invoice_file_id'),'')=''"+' AND NOT '+fullyCancelledOrderSql(),'o.created'],
@@ -23,8 +26,8 @@ export async function adminControlCenter(){
   ['delivery','תקלות פרסום','admin-publication','שליחות לספק שנכשלו או נחסמו','jobs j',"j.kind='supplier_publication' AND j.status IN ('failed','blocked')",'j.updated'],
   ['mail','דיוור לטיפול','admin-notifications','הודעות שנכשלו או מחכות לחיבור','jobs j',"j.kind='email' AND j.status IN ('failed','blocked')",'j.updated'],
  ];
- definitions.push(['revisions','כתבות שחזרו לתיקון','admin-articles','בדיקת ההערות והמשך הטיפול',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND a.status='revisions' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,'a.updated']);
- const taskKey:Record<string,string>={seller_requests:"'seller-request:'||sr.id",seller_invoices:"'seller-invoice:'||ss.id",payment_reports:"'order:'||o.id",content:"'article:'||a.id",writing:"'article:'||a.id",publication:"'article:'||a.id",revisions:"'article:'||a.id",bank:"'order:'||o.id",topups:"'record:'||r.id",invoices:"'order:'||o.id",cancellations:"'article:'||a.id",support:"'record:'||r.id",delivery:"'job:'||j.id",mail:"'job:'||j.id"};
+ definitions.push(['late','כתבות באיחור אצל הספק','admin-publication','נמסרו לספק לפני יותר מ־3 ימים ועדיין לא פורסמו',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND ${supplierLateSql()}`,'a.updated']);
+ const taskKey:Record<string,string>={seller_requests:"'seller-request:'||sr.id",seller_invoices:"'seller-invoice:'||ss.id",payment_reports:"'order:'||o.id",content:"'article:'||a.id",writing:"'article:'||a.id",publication:"'article:'||a.id",late:"'article:'||a.id",bank:"'order:'||o.id",topups:"'record:'||r.id",invoices:"'order:'||o.id",cancellations:"'article:'||a.id",support:"'record:'||r.id",delivery:"'article:'||json_extract(j.data,'$.article_id')",mail:"'job:'||j.id"};
  const taskSources=definitions.map(([id,,,,from,where])=>`SELECT '${id}' AS queue_id,${taskKey[id]} AS task_key FROM ${from} WHERE ${where}`);
  const queues=await Promise.all(definitions.map(async([id,label,page,description,from,where,date])=>{const row=await one(`SELECT COUNT(*) AS count,MIN(${date}) AS oldest FROM ${from} WHERE ${where}`);return {id,label,page,description,count:Number(row?.count||0),oldest:row?.oldest||null};}));
  const sync=await setting('sheets_sync_state',{});const syncAttention=['needs_review','invalid','partial','failed','received'].includes(sync.status);
@@ -60,5 +63,7 @@ export async function adminControlCenter(){
  const scopes=[...memberships].flatMap(([scope,ids])=>[...ids].map(id=>`('${scope}','${id}')`));
  const counts=await all(`WITH ${adminUnionCtes('tasks',taskSources)}, scopes(scope,queue_id) AS (VALUES ${scopes.join(',')}) SELECT scopes.scope,COUNT(DISTINCT tasks.task_key) AS count FROM scopes JOIN tasks USING(queue_id) GROUP BY scopes.scope`);
  const attention_counts=Object.fromEntries([...memberships].map(([scope])=>[scope,Number(counts.find(row=>row.scope===scope)?.count||0)]));
+ // Badges for these two screens count the rows those screens show.
+ attention_counts.admin=attention_counts['area:admin']=await adminOpenActionCount();attention_counts['admin-orders']=await adminOrdersAttentionCount();
  return {queues,attention_counts,cancellations,content,support:support.map(parse),prices:prices.map(parse),reports:reports.map(parse),email_ready:emailReady,updated:now()};
 }

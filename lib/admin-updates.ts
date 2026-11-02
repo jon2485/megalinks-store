@@ -1,7 +1,9 @@
+import {supplierLateSql,writingQueueSql} from './writing-workflow';
 import {all,one,stmt,parse,hash,now,assert,audit} from './server';
 import type {Row} from './shared';
 import {fullyCancelledOrderSql} from './order-summary';
 import {adminUnionCtes} from './admin-sql';
+import {ORDER_ABANDONED_DAYS} from './admin-order-buckets';
 
 // Source events remain read-only; manual handling is separate metadata.
 export function adminUpdatesCte(){
@@ -9,10 +11,11 @@ export function adminUpdatesCte(){
  const articleBase='articles a JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id LEFT JOIN websites w ON w.id=a.website_id';
  const branches=[
   `SELECT 'seller-request:'||r.id AS id,'seller' AS kind,r.id AS resource_id,'' AS number,u.name AS user_name,COALESCE(json_extract(r.proposal,'$.name'),'') AS website_name,r.kind AS detail,r.updated AS happened_at,NULL AS amount,'בקשת ספק לבדיקה' AS title,'ממתינה לאישור' AS status,'בדיקת הבקשה' AS action,'admin-seller-request/'||r.id AS page,1 AS needs_action FROM seller_requests r JOIN users u ON u.id=r.user_id WHERE r.status='pending'`,
-  `SELECT 'seller-invoice:'||s.id,'seller',s.id,'',u.name,'',s.month,s.updated,s.net,'חשבונית ספק לבדיקה','ממתינה לבדיקה','בדיקת החשבונית','admin-seller-requests',1 FROM seller_statements s JOIN users u ON u.id=s.user_id WHERE s.status='invoice_review'`,
+  `SELECT 'seller-invoice:'||s.id,'seller',s.id,'',u.name,'',s.month,s.updated,s.net,'חשבונית ספק לבדיקה','ממתינה לבדיקה','בדיקת החשבונית','admin-supplier-invoice/'||s.id,1 FROM seller_statements s JOIN users u ON u.id=s.user_id WHERE s.status='invoice_review'`,
   `SELECT 'article:'||a.id AS id,'article' AS kind,a.id AS resource_id,o.number,u.name AS user_name,COALESCE(w.name,'') AS website_name,COALESCE(NULLIF(a.title,''),json_extract(a.data,'$.topic'),'כתבה ללא כותרת') AS detail,a.updated AS happened_at,NULL AS amount,'כתבה חדשה לבדיקה' AS title,'ממתינה לאישור' AS status,'בדיקת הכתבה' AS action,'admin-article/'||a.id AS page,1 AS needs_action FROM ${articleBase} WHERE ${allowed} AND a.status='admin_review' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,
   `SELECT 'publication:'||a.id,'publication',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(a.title,''),'כתבה ללא כותרת'),a.updated,NULL,'כתבה ממתינה לפרסום','מוכנה לשליחה','פתיחת הכתבה','admin-article/'||a.id,1 FROM ${articleBase} WHERE ${allowed} AND a.status='approved' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,
-  `SELECT 'revisions:'||a.id,'revisions',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(a.title,''),'כתבה ללא כותרת'),a.updated,NULL,'כתבה חזרה עם הערות','נדרשים תיקונים','צפייה בכתבה ובהערות','admin-article/'||a.id,1 FROM ${articleBase} WHERE ${allowed} AND a.status='revisions' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0`,
+  `SELECT 'writing:'||a.id,'writing',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(json_extract(a.data,'$.topic'),''),NULLIF(a.title,''),'כתבה ללא כותרת'),a.updated,NULL,'כתבה לכותב התוכן',CASE WHEN json_extract(a.data,'$.writing_revision_requested_at') IS NOT NULL THEN 'תיקונים מהלקוח' ELSE 'בקשת כתיבה' END,'כתיבת המאמר','admin-article/'||a.id,1 FROM ${articleBase} WHERE ${allowed} AND ${writingQueueSql()}`,
+  `SELECT 'late:'||a.id,'late',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(a.title,''),'כתבה ללא כותרת'),a.updated,NULL,'כתבה באיחור אצל הספק','עברו 3 ימים','מעקב מול הספק','admin-publication',1 FROM ${articleBase} WHERE ${allowed} AND ${supplierLateSql()}`,
   `SELECT 'report:'||r.id,'bank',r.id,o.number,u.name,'',COALESCE(json_extract(r.data,'$.reference'),''),r.updated,json_extract(r.data,'$.amount_cents'),'דיווח תשלום לבדיקה','ממתין לאישור','פתיחת ההזמנה','admin-order/'||o.id,1 FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=r.user_id WHERE r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND json_extract(r.data,'$.payment_method')='bank_transfer' AND o.payment NOT IN ('card','credits_card') AND o.paid=0 AND o.status<>'cancelled'`,
   `SELECT 'bank:'||o.id,'bank',o.id,o.number,u.name,'',COALESCE(json_extract(o.data,'$.bank_reference'),''),o.created,o.total,'העברה בנקאית ממתינה לבדיקה','ממתין לאישור','פתיחת ההזמנה','admin-order/'||o.id,1 FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND NOT ${fullyCancelledOrderSql()} AND NOT EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending')`,
   `SELECT 'support:'||r.id,'support',r.id,COALESCE(json_extract(r.data,'$.order_number'),''),u.name,'',COALESCE(json_extract(r.data,'$.name'),'פנייה ללא נושא'),r.updated,NULL,'פנייה דורשת טיפול','פנייה פתוחה','פתיחת הפנייה','admin-support/'||r.id,1 FROM records r JOIN users u ON u.id=r.user_id WHERE r.kind='ticket' AND COALESCE(json_extract(r.data,'$.status'),'open') NOT IN ('closed','resolved','completed','cancelled','answered') AND NOT (COALESCE(json_extract(r.data,'$.payment_method'),'')='bank_transfer' AND COALESCE(json_extract(r.data,'$.amount_cents'),0)>0)`,
@@ -42,23 +45,28 @@ export async function reopenAdminUpdate(user:Row,body:Row){
  assert(row&&await eventVersion(row)===h.version,'האירוע המקורי השתנה. ההתראה נשארה בהיסטוריה',409);
  await stmt("DELETE FROM records WHERE id=? AND kind='admin_update_handled'",raw.id).run();await audit(user,raw.id,'התראה הוחזרה לטיפול',{event_id:row.id});return {ok:true};
 }
-const laneSql=`CASE kind WHEN 'cancellation' THEN 'urgent' WHEN 'delivery' THEN 'urgent' WHEN 'bank' THEN 'urgent' WHEN 'topup' THEN 'urgent' WHEN 'article' THEN 'content' WHEN 'publication' THEN 'content' WHEN 'revisions' THEN 'content' WHEN 'support' THEN 'service' WHEN 'seller' THEN 'service' ELSE 'info' END`;
+const laneSql=`CASE kind WHEN 'cancellation' THEN 'urgent' WHEN 'delivery' THEN 'urgent' WHEN 'bank' THEN 'urgent' WHEN 'topup' THEN 'urgent' WHEN 'article' THEN 'content' WHEN 'publication' THEN 'content' WHEN 'writing' THEN 'content' WHEN 'late' THEN 'content' WHEN 'support' THEN 'service' WHEN 'seller' THEN 'service' ELSE 'info' END`;
 const laneLimits={urgent:20,content:5,service:5,info:3} as const;
 const withVersion=async(row:Row):Promise<Row>=>({...row,page:String(row.id).startsWith('seller-request:')?'admin-seller-request/'+encodeURIComponent(String(row.resource_id)):row.page,version:await eventVersion(row)});
 // Open updates per work lane: oldest waiting first, information newest first. Counts come from the same rows as the list.
 async function adminUpdateLanes(query:URLSearchParams){
  const open=`SELECT * FROM feed WHERE NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`;
  const q=(query.get('q')||'').trim().slice(0,120),args=[q,'%'+q.replace(/[\\%_]/g,c=>'\\'+c)+'%'];
- const cte=`${adminUpdatesCte()},selected AS (SELECT *,${laneSql} AS lane FROM (${open}) WHERE (?='' OR (title||' '||user_name||' '||number||' '||website_name||' '||detail) LIKE ? ESCAPE '\\')),ranked AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY lane ORDER BY CASE WHEN lane='info' THEN -julianday(happened_at) ELSE julianday(happened_at) END,id) AS lane_rank FROM selected)`;
+ const cte=`${adminUpdatesCte()},selected AS (SELECT *,${laneSql} AS lane FROM (${open}) WHERE id NOT LIKE 'bank:%' AND (?='' OR (title||' '||user_name||' '||number||' '||website_name||' '||detail) LIKE ? ESCAPE '\\')),ranked AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY lane ORDER BY CASE WHEN lane='info' THEN -julianday(happened_at) ELSE julianday(happened_at) END,id) AS lane_rank FROM selected)`;
  const limits=Object.fromEntries((Object.keys(laneLimits) as (keyof typeof laneLimits)[]).map(lane=>[lane,Math.max(1,Math.min(500,Math.trunc(Number(query.get('limit_'+lane)))||laneLimits[lane]))])) as Record<keyof typeof laneLimits,number>;
- const [rows,totals,handled]=await Promise.all([
+ const [rows,totals,handled,abandoned]=await Promise.all([
   all(`WITH ${cte} SELECT * FROM ranked WHERE lane_rank<=CASE lane WHEN 'urgent' THEN ? WHEN 'content' THEN ? WHEN 'service' THEN ? ELSE ? END ORDER BY lane,lane_rank`,...args,limits.urgent,limits.content,limits.service,limits.info),
   all(`WITH ${cte} SELECT lane,COUNT(*) AS n FROM selected GROUP BY lane`,...args),
-  one("SELECT COUNT(*) AS n FROM records WHERE kind='admin_update_handled'")
+  one("SELECT COUNT(*) AS n FROM records WHERE kind='admin_update_handled'"),one(`WITH ${adminUpdatesCte()} SELECT COUNT(*) AS n FROM feed WHERE id LIKE 'bank:%' AND julianday(happened_at)<julianday('now')-${ORDER_ABANDONED_DAYS}`)
  ]);
  const updates=await Promise.all(rows.map(withVersion));
  const lanes=Object.fromEntries(Object.keys(laneLimits).map(lane=>[lane,{total:Number(totals.find(t=>t.lane===lane)?.n||0),rows:updates.filter(r=>r.lane===lane)}]));
- return {lanes,filters:{q},limits,counts:{handled:Number(handled?.n||0)}};
+ return {lanes,filters:{q},limits,abandoned:Number(abandoned?.n||0),counts:{handled:Number(handled?.n||0)}};
+}
+/** The number shown on the work-center badge: exactly the rows of the three action lanes. */
+export async function adminOpenActionCount(){
+ const row=await one(`WITH ${adminUpdatesCte()} SELECT COUNT(*) AS n FROM feed WHERE needs_action=1 AND id NOT LIKE 'bank:%' AND NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`);
+ return Number(row?.n||0);
 }
 export async function adminUpdates(query:URLSearchParams){
  if(query.get('view')==='lanes')return adminUpdateLanes(query);
