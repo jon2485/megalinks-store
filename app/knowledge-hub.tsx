@@ -24,7 +24,7 @@ export default function KnowledgeHub({initial,initialQuery='',initialCategory=''
   <KnowledgeWaves/>
   <nav className="knowledge-breadcrumb" aria-label="מיקום באתר"><a href="/">דף הבית</a><span>/</span><span aria-current="page">מדריכים וידע</span></nav>
   <header className="knowledge-hub-hero">
-   <h1><span>מדריכים וידע.</span><span className="knowledge-hub-accent">כלים לפרסום חכם.</span></h1>
+   <h1><span>מה לבדוק לפני</span><span className="knowledge-hub-accent">שבוחרים אתר לכתבה.</span></h1>
    <p>מדריכים קצרים שיעזרו לכם לבחור אתר, לכתוב בריף ולתכנן תקציב.</p>
   </header>
   <div className="knowledge-filters">

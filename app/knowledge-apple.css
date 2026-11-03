@@ -70,3 +70,21 @@
 }
 @media(prefers-reduced-motion:reduce){.knowledge-site .knowledge-card,.knowledge-site .knowledge-card *,.knowledge-site .knowledge-categories button{transition-duration:.01ms!important}.knowledge-site .knowledge-card:hover{transform:none!important}.knowledge-site .knowledge-card:hover .knowledge-card-media img{transform:none!important}}
 @media(forced-colors:active){.knowledge-site .knowledge-card{border:1px solid CanvasText!important}.knowledge-site .knowledge-hub .knowledge-categories button.is-active{outline:2px solid Highlight}}
+/* In-article next step: one card early in the article, same material as the catalog card */
+.knowledge-site .knowledge-step{display:grid;grid-template-columns:44px minmax(0,1fr) auto;align-items:center;gap:14px;margin:26px 0;padding:16px 18px;border-radius:20px;background:linear-gradient(135deg,#eef7ff,#e9fbfb);box-shadow:0 0 0 1px #1673e61f;font-family:Heebo,Arial,sans-serif}
+.knowledge-site .knowledge-step-icon{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;color:#fff;background:linear-gradient(180deg,#2f8cff,#1673e6);box-shadow:inset 0 1px 0 #ffffff59,0 8px 16px -10px #1673e6b3}
+.knowledge-site .knowledge-step strong{display:block;font-size:17px;font-weight:800;color:var(--ka-ink);line-height:1.35}
+.knowledge-site .knowledge-step p{margin:2px 0 0;font-size:15px;line-height:1.55;color:var(--ka-muted)}
+.knowledge-site .knowledge-step .knowledge-button{white-space:nowrap}
+/* About the authors, at the end of the article */
+.knowledge-site .knowledge-about{display:flex;align-items:center;gap:14px;margin-top:32px;padding:16px 18px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px var(--ka-line);font-family:Heebo,Arial,sans-serif}
+.knowledge-site .knowledge-about-logo{flex:0 0 auto;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;color:#fff;font-weight:800;font-size:18px;background:linear-gradient(135deg,#00c8c8,#1673e6)}
+.knowledge-site .knowledge-about strong{font-size:16px;font-weight:800;color:var(--ka-ink)}
+.knowledge-site .knowledge-about p{margin:2px 0 0;font-size:14px;line-height:1.6;color:var(--ka-muted)}
+/* Quiet WhatsApp link for readers not ready to choose yet */
+.knowledge-site :is(.knowledge-cta-whatsapp,.knowledge-toc-whatsapp){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;font-family:Heebo,Arial,sans-serif;font-size:14px;font-weight:700;color:#1d7d45;border-radius:12px;transition:background-color .2s,transform .12s ease-out}
+.knowledge-site :is(.knowledge-cta-whatsapp,.knowledge-toc-whatsapp):active{transform:scale(.97)}
+.knowledge-site .knowledge-toc-whatsapp{width:100%;margin-top:6px}
+.knowledge-site>.megalinks-footer{margin-top:48px}
+@media(hover:hover) and (pointer:fine){.knowledge-site :is(.knowledge-cta-whatsapp,.knowledge-toc-whatsapp):hover{background:#e5f5eb}}
+@media(max-width:650px){.knowledge-site .knowledge-step{grid-template-columns:44px minmax(0,1fr)}.knowledge-site .knowledge-step .knowledge-button{grid-column:1/-1;justify-content:center;width:100%}}

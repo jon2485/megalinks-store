@@ -44,7 +44,7 @@ try {
  check(home.text.includes('/brand/megalinks-social.png')&&home.text.includes('summary_large_image'),'branded Open Graph image and large Twitter card');
  check(!home.text.includes('postflow-studio.elian-tetruashvili.chatgpt.site'),'no old-site canonical or schema URLs');
  const hub=await get('/knowledge');
- check(hub.text.includes('כלים לפרסום חכם.')&&!hub.text.includes('knowledge-hub-hero\"><div>'),'approved illustration-free knowledge masthead');
+ check(hub.text.includes('שבוחרים אתר לכתבה.')&&!hub.text.includes('knowledge-hub-hero\"><div>'),'approved illustration-free knowledge masthead');
  check(hub.text.includes('property="og:image"')&&hub.text.includes('/brand/megalinks-social.png'),'knowledge hub has fallback sharing image');
  const share=await get('/brand/megalinks-social.png');check(share.response.status===200&&share.response.headers.get('content-type')?.includes('image/png'),'social image is served as PNG');
  check(home.text.includes('href="/terms"'),'crawlable legal link');
