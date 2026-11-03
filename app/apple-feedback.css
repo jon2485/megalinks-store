@@ -122,9 +122,13 @@
 .azure-catalog.catalog-approved-home .catalog-home-category-trigger[data-state=open] svg:last-child{transform:rotate(180deg)}
 .azure-catalog.catalog-approved-home .catalog-inline-search:focus-within{box-shadow:inset 0 0 0 1.5px var(--af-blue),0 0 0 4px #1673e61f!important}
 .azure-catalog.catalog-approved-home .catalog-inline-search .catalog-inline-search-input[data-slot=input]{border:0!important;background:transparent!important;box-shadow:none!important}
-.azure-catalog.catalog-approved-home .catalog-inline-search .catalog-home-search-trigger[data-slot=button]{border:0!important;border-radius:50%!important;background:#f2f6fb!important;color:var(--af-ink)!important;transition:transform .12s ease-out,background-color .2s,color .2s}
+/* One shape only: the search well is fully round (a circle when closed, a pill when open) and the icon sits in it without its own box */
+.azure-catalog.catalog-approved-home .catalog-inline-search{border-radius:999px!important;overflow:hidden}
+.azure-catalog.catalog-approved-home .catalog-inline-search .catalog-home-search-trigger[data-slot=button]{border:0!important;border-radius:999px!important;background:transparent!important;box-shadow:none!important;color:var(--af-ink)!important;transition:transform .12s ease-out,color .2s}
 .azure-catalog.catalog-approved-home .catalog-inline-search .catalog-home-search-trigger[data-slot=button]:active{transform:scale(.88)}
-.azure-catalog.catalog-approved-home .catalog-inline-search:focus-within .catalog-home-search-trigger[data-slot=button]{background:var(--af-blue)!important;color:#fff!important}
+.azure-catalog.catalog-approved-home .catalog-inline-search .catalog-home-search-trigger[data-slot=button]:focus-visible{outline:none!important}
+.azure-catalog.catalog-approved-home .catalog-inline-search .catalog-inline-search-input[data-slot=input]:focus,.azure-catalog.catalog-approved-home .catalog-inline-search .catalog-inline-search-input[data-slot=input]:focus-visible{outline:none!important;box-shadow:none!important;border:0!important}
+.azure-catalog.catalog-approved-home .catalog-inline-search:focus-within .catalog-home-search-trigger[data-slot=button]{color:var(--af-blue)!important}
 .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-action-button[data-slot=button]{border:0!important;color:var(--af-ink)!important;background:linear-gradient(180deg,#fff,#f5f9fd)!important;
  box-shadow:inset 0 0 0 1px #0b28501a,inset 0 1px 0 #fff,0 1px 2px #0b28500f,0 6px 16px -10px #0b285033!important;transition:transform .12s ease-out,box-shadow .3s var(--af-ease),color .2s}
 .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-action-button[data-slot=button]:active{transform:scale(.96)}
@@ -139,7 +143,7 @@
 .azure-catalog.catalog-approved-home .catalog-home-cta svg{transition:transform .35s var(--af-ease)}
 @media(hover:hover) and (pointer:fine){
  .azure-catalog.catalog-approved-home :is(.catalog-home-category-trigger,.catalog-inline-search):hover{box-shadow:0 0 0 1px #1673e640,0 2px 4px #0b28500f,0 10px 22px -12px #1673e659!important}
- .azure-catalog.catalog-approved-home .catalog-inline-search .catalog-home-search-trigger[data-slot=button]:hover{background:#e6f0fd!important;color:var(--af-blue)!important}
+ .azure-catalog.catalog-approved-home .catalog-inline-search .catalog-home-search-trigger[data-slot=button]:hover{color:var(--af-blue)!important}
  .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-action-button[data-slot=button]:hover{color:var(--af-blue)!important;transform:translateY(-1px);box-shadow:inset 0 0 0 1px #1673e659,inset 0 1px 0 #fff,0 2px 4px #0b28500f,0 12px 24px -12px #1673e666!important}
  .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-sort-trigger:hover>svg{transform:rotate(-90deg)}
  .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-action-button:not(.catalog-sort-trigger):hover>svg{transform:translateY(-2px)}
