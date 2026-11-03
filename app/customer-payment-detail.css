@@ -10,6 +10,25 @@
 .customer-payment-detail .order-payment-section h3{display:flex;align-items:center;gap:9px;margin:0 0 12px;padding:0 0 12px;border-bottom:1px solid var(--payment-line);background:none;color:var(--payment-ink);font-size:20px;font-weight:750;line-height:1.5;}
 .customer-payment-detail .order-payment-section h3>svg{flex-shrink:0;color:var(--payment-blue);}
 .customer-payment-detail .order-payment-sites,.customer-payment-detail .order-payment-document{grid-column:1/-1;}
+/* Payment facts and totals fold under one compact toggle; the panel grows downward when opened. */
+.customer-payment-detail .order-payment-more{grid-column:1/-1;min-width:0;interpolate-size:allow-keywords;}
+.customer-payment-detail .order-payment-more-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:52px;padding:8px 18px;border:1px solid var(--payment-line);border-radius:14px;background:#fff;color:var(--payment-ink);font-size:15px;font-weight:650;list-style:none;cursor:pointer;user-select:none;transition:background-color .2s,transform .12s ease-out;}
+.customer-payment-detail .order-payment-more-toggle::-webkit-details-marker{display:none;}
+.customer-payment-detail .order-payment-more-toggle:active{transform:scale(.99);}
+.customer-payment-detail .order-payment-more-toggle:focus-visible{outline:3px solid #006fc6;outline-offset:3px;}
+.customer-payment-detail .order-payment-more-label,.customer-payment-detail .order-payment-more-total{display:inline-flex;align-items:center;gap:9px;}
+.customer-payment-detail .order-payment-more-label svg{color:var(--payment-blue);}
+.customer-payment-detail .order-payment-more-total bdi{font-weight:750;}
+.customer-payment-detail .order-payment-more-total svg{color:var(--payment-muted);transition:transform .4s cubic-bezier(.32,.72,0,1);}
+.customer-payment-detail .order-payment-more[open] .order-payment-more-total svg{transform:rotate(180deg);}
+.customer-payment-detail .order-payment-more::details-content{block-size:0;overflow:hidden;transition:block-size .45s cubic-bezier(.32,.72,0,1),content-visibility .45s allow-discrete;}
+.customer-payment-detail .order-payment-more[open]::details-content{block-size:auto;}
+.customer-payment-detail .order-payment-more-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;padding-top:12px;}
+.customer-payment-detail .order-payment-more[open] .order-payment-more-body{animation:order-payment-unfold .45s cubic-bezier(.32,.72,0,1) both;}
+@keyframes order-payment-unfold{from{opacity:0;transform:translateY(-8px)}}
+@media(hover:hover){.customer-payment-detail .order-payment-more-toggle:hover{background:#f4f9ff;}}
+@media(max-width:800px){.customer-payment-detail .order-payment-more-body{grid-template-columns:minmax(0,1fr);gap:12px;}}
+@media(prefers-reduced-motion:reduce){.customer-payment-detail .order-payment-more::details-content,.customer-payment-detail .order-payment-more-total svg{transition:none;}.customer-payment-detail .order-payment-more-body{animation:none!important;}}
 .customer-payment-detail .order-payment-sites ul{list-style:none;padding:0;margin:0;}
 .customer-payment-detail .order-payment-sites li{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:18px;padding:8px 0;min-width:0;}
 .customer-payment-detail .order-payment-sites li+li{border-top:1px solid var(--payment-line);margin-top:10px;padding-top:16px;}

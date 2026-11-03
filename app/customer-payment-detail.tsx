@@ -1,6 +1,6 @@
 'use client';
-import React from 'react';
-import {Calculator,Check,Clock3,CreditCard,Download,Eye,FileText,Link2} from 'lucide-react';
+import React,{useState} from 'react';
+import {Calculator,Check,ChevronDown,Clock3,CreditCard,Download,Eye,FileText,Link2} from 'lucide-react';
 import {money,type Row} from '@/lib/shared';
 import {effectiveOrderAmounts,orderCancellation,remainingArticleNet} from '@/lib/order-finance';
 import {paymentMethodLabel} from '@/lib/payment-state';
@@ -27,6 +27,8 @@ export function customerPaymentFacts(o:Row){
 export default function CustomerPaymentDetail({ctx,order:o,items}:{ctx:Ctx;order:Row;items:Row[]}){
  const facts=customerPaymentFacts(o),amounts=effectiveOrderAmounts(o),refunded=Number(o.paid_refund_total)||0;
  const invoiceUrl='/api/orders/'+encodeURIComponent(o.id)+'/invoice';
+ // Payment facts and totals fold away; they start open only when the customer still has a payment to report.
+ const [paymentOpen,setPaymentOpen]=useState(!facts.paid&&!o.demo&&!facts.cancelled);
  return <div className="customer-payment-detail" dir="rtl">
   <section className="order-payment-section order-payment-sites" aria-label="האתרים בהזמנה">
    <h3><Link2 size={22} aria-hidden="true"/>האתרים בהזמנה</h3>
@@ -39,6 +41,9 @@ export default function CustomerPaymentDetail({ctx,order:o,items}:{ctx:Ctx;order
     </li>;
    })}</ul>:<p className="order-payment-note">אין פריטים להצגה בהזמנה זו.</p>}
   </section>
+  <details className="order-payment-more" open={paymentOpen} onToggle={e=>setPaymentOpen(e.currentTarget.open)}>
+  <summary className="order-payment-more-toggle"><span className="order-payment-more-label"><CreditCard size={18} aria-hidden="true"/>פרטי התשלום וסיכום</span><span className="order-payment-more-total"><bdi>{money(amounts.total)}</bdi><ChevronDown size={18} aria-hidden="true"/></span></summary>
+  <div className="order-payment-more-body">
   <section className="order-payment-section order-payment-facts" aria-label="פרטי התשלום">
    <h3><CreditCard size={22} aria-hidden="true"/>פרטי התשלום</h3>
    <dl>
@@ -57,6 +62,8 @@ export default function CustomerPaymentDetail({ctx,order:o,items}:{ctx:Ctx;order
    <dl><div><dt>לפני מע״מ</dt><dd><bdi>{money(amounts.net)}</bdi></dd></div><div><dt>מע״מ ({o.vat_percent??18}%)</dt><dd><bdi>{money(amounts.vat)}</bdi></dd></div><div className="order-payment-total"><dt>סה״כ כולל מע״מ</dt><dd><bdi>{money(amounts.total)}</bdi></dd></div></dl>
    {refunded>0&&<p className="order-payment-note">זיכוי שתועד: <bdi>{money(refunded)}</bdi>. הסכומים המוצגים מעודכנים לאחר הזיכוי.</p>}
   </section>
+  </div>
+  </details>
   <section className="order-payment-section order-payment-document" aria-label="מסמכי ההזמנה">
    <div className="order-payment-document-name"><FileText size={30} aria-hidden="true"/><div><h3>{facts.documentTitle}</h3><p>{o.invoice_file_id?'המסמך שצורף להזמנה · PDF':'טרם צורף מסמך להזמנה'}{o.invoice_file_id&&o.invoice_document_number&&<> · <bdi>{o.invoice_document_number}</bdi></>}</p></div></div>
    {o.invoice_file_id&&<div className="order-payment-document-actions"><a className="order-payment-action is-primary" href={invoiceUrl+'?view=inline'} target="_blank" rel="noopener noreferrer"><Eye size={19} aria-hidden="true"/>{o.invoice_document_type==='receipt'?'צפייה בקבלה':'צפייה בחשבונית'}<span className="sr-only"> בחלון חדש</span></a><a className="order-payment-action" href={invoiceUrl} download><Download size={19} aria-hidden="true"/>הורדה</a></div>}

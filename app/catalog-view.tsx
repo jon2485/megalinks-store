@@ -26,6 +26,7 @@ import './approved-customer-glass.css';
 import {CartFeedbackButton} from './cart-add-feedback';
 import './catalog-action-feedback.css';
 import './catalog-product-glass.css';
+import './catalog-card-apple.css';
 import './catalog-mobile-hero.css';
 
 export function CatalogTopBar({ ctx, cartCount }: { ctx: Ctx; cartCount: number }) {
@@ -51,35 +52,42 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
     const hasDiscount = Number(site.regular_price_cents) > Number(site.price_cents) && Number(site.price_cents) >= 0;
     const discountPercent = hasDiscount ? Math.floor((site.regular_price_cents - site.price_cents) / site.regular_price_cents * 1000) / 10 : 0;
     const domain = site.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    return <Card dir="rtl" className="publication-catalog-card @container group relative gap-0 overflow-hidden rounded-[28px] border-2 border-orange-200/70 bg-white py-0 shadow-[0_0_0_1px_#fed7aa66,0_0_18px_2px_#fb923c24,0_8px_24px_#fb923c12] transition-shadow hover:shadow-[0_0_0_1px_#fed7aa99,0_0_22px_3px_#fb923c30,0_10px_28px_#fb923c18]">
-
-        <div className="publication-card-top flex items-center justify-between gap-3 px-5 pt-5"><span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-600"><IsraelFlag/>ישראל</span>{!managing && <Button variant="ghost" size="icon" onClick={onFavorite} aria-label={(favorite ? 'הסרת ' : 'שמירת ') + site.name + ' במועדפים'} aria-pressed={favorite} className={'size-10 rounded-full border border-slate-200 bg-slate-50 '+(favorite?'text-rose-500':'text-slate-500 hover:text-rose-500')}><Heart size={23} fill={favorite?'currentColor':'none'}/></Button>}</div>
-        <CardContent className="flex flex-1 flex-col px-5 pb-5 pt-5">
-            <div className="publication-card-logo mx-auto flex h-28 w-full max-w-64 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm">{site.logo_url && !logoFailed ? <img src={site.logo_url} alt={site.name} loading="lazy" className="h-full w-full object-contain" onError={() => setLogoFailed(true)}/> : <span className="text-2xl font-bold text-slate-800">{site.name}</span>}</div>
-            <div className="mt-3 flex items-center justify-center gap-2"><h2 className="!text-2xl font-extrabold leading-snug text-slate-950">{site.name}</h2></div>
-            <a href={site.url} target="_blank" rel="noreferrer" dir="ltr" className="mt-1.5 block truncate text-center text-sm text-slate-500 underline-offset-4 hover:text-teal-700 hover:underline" title={site.url}><span>{domain}</span><ExternalLink className="ml-1 inline size-4"/></a>
-            <div className="publication-card-tags mt-4 flex min-h-8 flex-wrap items-center justify-center gap-2"><span className={tagStyle}>{categories[site.category] || site.category}</span>{site.features?.includes('dofollow') && <span dir="ltr" className={tagStyle}>Dofollow</span>}{site.is_on_sale && <span className={tagStyle}>מבצע</span>}</div>
-            <div className="publication-card-metrics publication-card-glass-metrics" role="group" aria-label="מדדי האתר והערות לפרסום">
-                <dl><dd>{site.dr ?? '—'}</dd><dt dir="ltr">DR</dt></dl>
-                <dl><dd>{site.ur ?? '—'}</dd><dt dir="ltr">UR</dt></dl>
+    // Apple-style card (approved 03.11.2026): numbers stand alone with a one-line explanation instead of a 0-100 bar.
+    const [metricTip, setMetricTip] = useState<'DR' | 'UR' | null>(null);
+    // An open explanation closes on any press outside its own "i" button.
+    useEffect(() => {
+        if (!metricTip) return;
+        const close = (event: PointerEvent) => { const own = event.target instanceof Element ? event.target.closest('.pc-info')?.getAttribute('data-site') : null; if (own !== String(site.id)) setMetricTip(null); };
+        document.addEventListener('pointerdown', close);
+        return () => document.removeEventListener('pointerdown', close);
+    }, [metricTip]);
+    const metricHelp = { DR: 'חוזק הדומיין כולו (Domain Rating). ככל שהוא גבוה יותר, הקישור מעביר יותר כוח.', UR: 'חוזק העמוד הספציפי (URL Rating), כלומר העמוד שבו תפורסם הכתבה.' } as const;
+    return <Card dir="rtl" className={'publication-catalog-card pc-apple' + (hasDiscount ? ' pc-on-sale' : '')}>
+        <div className="pc-head">
+            <div className="pc-logo">{site.logo_url && !logoFailed ? <img src={site.logo_url} alt={site.name} loading="lazy" onError={() => setLogoFailed(true)}/> : <span>{site.name}</span>}</div>
+            <div className="pc-name"><h2>{site.name}</h2><a href={site.url} target="_blank" rel="noreferrer" dir="ltr" title={site.url}><span>{domain}</span><ExternalLink size={13} aria-hidden="true"/></a></div>
+            {!managing && <button type="button" className="pc-fav" onClick={onFavorite} aria-label={(favorite ? 'הסרת ' : 'שמירת ') + site.name + ' במועדפים'} aria-pressed={favorite}><Heart size={18} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true"/></button>}
+        </div>
+        <div className="pc-chips">{site.is_on_sale && <span className="pc-chip pc-chip-deal">מבצע</span>}<span className="pc-chip pc-chip-cat"><LayoutGrid size={13} aria-hidden="true"/>{categories[site.category] || site.category}</span>{site.features?.includes('dofollow') && <span className="pc-chip pc-chip-do"><Check size={13} aria-hidden="true"/>קישור <bdi dir="ltr">Dofollow</bdi></span>}<span className="pc-chip"><IsraelFlag/>ישראל</span></div>
+        <div className="pc-metrics" role="group" aria-label="מדדי האתר">
+            {(['DR', 'UR'] as const).map(key => <div className="pc-metric" key={key}><b>{(key === 'DR' ? site.dr : site.ur) ?? '—'}</b><span className="pc-metric-key"><bdi dir="ltr">{key}</bdi><button type="button" className="pc-info" data-site={site.id} aria-label={'מה זה ' + key + '?'} aria-expanded={metricTip === key} onClick={() => setMetricTip(metricTip === key ? null : key)}>i</button></span><span className="pc-tip" role="tooltip"><b dir="ltr">{key}:</b> {metricHelp[key]}</span></div>)}
+        </div>
+        <div className="pc-notes-row">
                 <Popover open={notesOpen} onOpenChange={setNotesOpen}>
-                    <PopoverTrigger asChild><button type="button" className="publication-notes-action" disabled={!notes.length} aria-label={'הערות לפרסום — ' + site.name} title={notes.length ? 'פתיחת הערות לפרסום' : 'לא פורסמו הערות לפרסום באתר זה'}><MessageSquareText className="publication-notes-icon" size={22} aria-hidden="true"/><span>הערות<br/>לפרסום</span><ChevronLeft className="publication-notes-chevron" size={17} aria-hidden="true"/></button></PopoverTrigger>
+                    <PopoverTrigger asChild><button type="button" className="pc-notes" disabled={!notes.length} aria-label={'הערות לפרסום — ' + site.name} title={notes.length ? 'פתיחת הערות לפרסום' : 'לא פורסמו הערות לפרסום באתר זה'}><span><MessageSquareText size={17} aria-hidden="true"/>הערות לפרסום</span><ChevronLeft className="pc-notes-chevron" size={16} aria-hidden="true"/></button></PopoverTrigger>
                     <PopoverContent dir="rtl" side="top" align="end" sideOffset={10} collisionPadding={12} className="publication-notes-popover" aria-labelledby={notesTitleId}>
                         <header><h3 id={notesTitleId}>הערות לפרסום</h3><button type="button" className="publication-notes-close" aria-label="סגירת הערות לפרסום" onClick={()=>setNotesOpen(false)}><X size={18} aria-hidden="true"/></button></header>
                         <div className="publication-notes-copy">{notes.map((note,index)=><p key={index}>{note}</p>)}</div>
                         <button type="button" className="publication-notes-done" onClick={()=>setNotesOpen(false)}>הבנתי</button>
                     </PopoverContent>
                 </Popover>
-            </div>
-            <div className="publication-card-pricing mt-5 flex flex-col items-center justify-center gap-2 rounded-2xl border-2 border-emerald-200 bg-gradient-to-br from-teal-50 to-slate-50 px-3 py-6 text-center" aria-label="מחיר הפרסום">
-                {hasDiscount && <div className="flex flex-wrap items-center justify-center gap-1.5 rounded-full border border-slate-300 bg-slate-100 px-3 py-1.5 text-slate-500"><span className="text-sm font-semibold">מחיר מחירון:</span><s className="text-lg font-semibold tabular-nums decoration-red-500 decoration-[2px]"><bdi>{money(site.regular_price_cents)}</bdi></s></div>}
-                <span className="text-lg font-bold text-[#14698b]">{priceLabel||(site.price_source==='personal'?'המחיר שלך':hasDiscount ? 'המחיר שלך' : 'מחיר לכתבה')}</span>
-                <strong className="max-w-full break-words text-3xl font-extrabold leading-tight tracking-tight text-slate-950 tabular-nums @min-[320px]:text-4xl"><bdi>{money(site.price_cents)}</bdi></strong>
-                {hasDiscount && <span className="mt-2 rounded-full border-2 border-emerald-200 bg-emerald-100 px-4 py-1.5 text-base font-bold text-emerald-950 shadow-sm">{discountPercent > 0 ? `${discountPercent.toLocaleString('he-IL', { maximumFractionDigits: 1 })}% הנחה` : 'פחות מ־0.1% הנחה'}</span>}
-                <p className="text-sm text-slate-600">לכתבה · לפני מע״מ</p>
-            </div>
-            <div className="publication-card-actions mt-auto grid grid-cols-[.8fr_1.2fr] gap-3 pt-4 @max-[290px]:grid-cols-1"><a href={site.url} target="_blank" rel="noreferrer" className={'inline-flex items-center justify-between gap-2 ' + actionStyle}><span className="flex-1 text-center">לאתר</span><span className="grid size-7 shrink-0 place-items-center"><ArrowLeft size={16}/></span></a><CartFeedbackButton websiteId={site.id} enabled={!managing&&!customAction} onClick={customAction?.onClick||(() => ctx.open({kind:managing?'website':'order',site,title:managing?'עריכת מבצע — ' + site.name:'פרסום כתבה ב־' + site.name}))} className={'justify-between gap-2 ' + cartActionStyle} label={customAction?.label||(managing?(site.is_on_sale?'עריכת מבצע':'הוספת מבצע'):'הוספה לסל')} icon={managing||customAction?<Pencil size={16}/>:<ShoppingCart size={16}/>}/></div>
-        </CardContent>
+        </div>
+        <div className="pc-buy" aria-label="מחיר הפרסום">
+            <span className="pc-price-label">{priceLabel||(site.price_source==='personal'?'המחיר שלך':hasDiscount ? 'המחיר שלך' : 'מחיר לכתבה')}</span>
+            {hasDiscount && <div className="pc-sale"><span className="pc-off"><bdi dir="ltr">{discountPercent > 0 ? `−${discountPercent.toLocaleString('he-IL', { maximumFractionDigits: 1 })}%` : '<0.1%'}</bdi></span><s aria-label="מחיר מחירון"><bdi>{money(site.regular_price_cents)}</bdi></s></div>}
+            <div className="pc-price"><strong><bdi>{money(site.price_cents)}</bdi></strong><small>{hasDiscount ? <>חיסכון של <bdi>{money(site.regular_price_cents - site.price_cents)}</bdi> · לפני מע״מ</> : 'לכתבה · לפני מע״מ'}</small></div>
+            <div className="pc-actions"><CartFeedbackButton websiteId={site.id} enabled={!managing&&!customAction} onClick={customAction?.onClick||(() => ctx.open({kind:managing?'website':'order',site,title:managing?'עריכת מבצע — ' + site.name:'פרסום כתבה ב־' + site.name}))} className="pc-add" label={customAction?.label||(managing?(site.is_on_sale?'עריכת מבצע':'הוספת מבצע'):'הוספה לסל')} icon={managing||customAction?<Pencil size={15}/>:<Plus size={15}/>}/><a href={site.url} target="_blank" rel="noreferrer" className="pc-site" aria-label={'מעבר לאתר ' + site.name} title="לאתר"><ExternalLink size={18} aria-hidden="true"/></a></div>
+        </div>
     </Card>;
 }
 

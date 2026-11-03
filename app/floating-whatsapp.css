@@ -1,25 +1,28 @@
 .floating-whatsapp {
- --wa-size: 58px;
+ --wa-size: 60px;
  --wa-orbit-duration: 4s;
  position: fixed;
  right: max(20px, env(safe-area-inset-right));
- bottom: calc(20px + env(safe-area-inset-bottom));
+ bottom: calc(24px + env(safe-area-inset-bottom));
  z-index: 35;
  display: flex;
  align-items: center;
  justify-content: center;
  width: var(--wa-size);
  height: var(--wa-size);
- border: 1px solid #a8f6bd80;
+ border: 0;
  border-radius: 50%;
  color: #fff;
- background: radial-gradient(circle at 33% 23%, #3bea75 0%, #1bc654 34%, #0a963d 66%, #04652d 100%);
- box-shadow: inset 0 1px 2px #d8ffe5b3, inset 0 -3px 6px #034d294d, 0 5px 16px #064c2b40;
+ /* Apple-style material: soft vertical gradient, lit top edge, a white halo and a tinted shadow. */
+ background: linear-gradient(180deg, #3ee07c, #1fb85a);
+ box-shadow: inset 0 1px 0 #ffffff66, 0 0 0 6px #ffffffb3, 0 14px 30px -10px #1fb85ab3;
  cursor: pointer;
  text-decoration: none;
  isolation: isolate;
- transition: transform 180ms ease-out, filter 180ms ease-out;
+ transition: transform 140ms ease-out, box-shadow 300ms cubic-bezier(.32,.72,0,1), filter 180ms ease-out;
 }
+/* The travelling light is replaced by the still halo above. */
+.floating-whatsapp .floating-whatsapp__orbit { display: none; }
 
 /* The icon and disc stay still; only the green/cyan light travels around them. */
 .floating-whatsapp__orbit {
@@ -81,7 +84,7 @@
 
 .floating-whatsapp:focus-visible { outline: 3px solid #0876bf; outline-offset: 5px; }
 .floating-whatsapp:focus-visible .floating-whatsapp__label { opacity: 1; }
-.floating-whatsapp:active { transform: scale(.96); }
+.floating-whatsapp:active { transform: scale(.93); transition-duration: 80ms; }
 .floating-whatsapp[data-motion-paused='true'] .floating-whatsapp__orbit::before,
 .floating-whatsapp[data-motion-paused='true'] .floating-whatsapp__orbit::after { animation-play-state: paused; }
 
@@ -95,12 +98,12 @@ body:has(.admin-unified-shell) .floating-whatsapp { display: none; }
 }
 
 @media (hover: hover) {
- .floating-whatsapp:hover { transform: translateY(-2px); filter: brightness(1.04); }
+ .floating-whatsapp:hover { transform: translateY(-2px); filter: brightness(1.04); box-shadow: inset 0 1px 0 #ffffff73, 0 0 0 6px #ffffffcc, 0 18px 36px -12px #1fb85acc; }
  .floating-whatsapp:hover .floating-whatsapp__label { opacity: 1; }
 }
 
 @media (max-width: 767px) {
- .floating-whatsapp { --wa-size: 54px; right: max(20px, env(safe-area-inset-right)); }
+ .floating-whatsapp { --wa-size: 52px; right: max(16px, env(safe-area-inset-right)); bottom: calc(18px + env(safe-area-inset-bottom)); box-shadow: inset 0 1px 0 #ffffff66, 0 0 0 4px #ffffffb3, 0 10px 24px -10px #1fb85ab3; }
  body:has(.checkout-action-bar) .floating-whatsapp { bottom: calc(104px + env(safe-area-inset-bottom)); }
 }
 

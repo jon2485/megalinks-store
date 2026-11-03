@@ -1,0 +1,383 @@
+/* Personal area, Apple-style refinement of the approved design (03.11.2026).
+   Same layout, colors and actions. Only buttons, tabs, update cards and press feedback change. */
+.client-hub.approved-account.personal-apple{--pa-ease:cubic-bezier(.32,.72,0,1);--pa-blue:#1673e6;--pa-ink:#0b1b2f;--pa-muted:#4f5d6e;--pa-line:rgba(11,40,80,.09)}
+
+/* Primary buttons: soft gradient, lit top edge, tinted layered shadow, press on pointer-down */
+.client-hub.approved-account.personal-apple .client-hub-welcome button,
+.client-hub.approved-account.personal-apple .personal-desktop-sites.personal-sites-cta{position:relative;isolation:isolate;overflow:hidden;border:0;font-family:Heebo,Arial,sans-serif;font-weight:700;transition:transform .14s ease-out,box-shadow .3s var(--pa-ease),filter .2s}
+.client-hub.approved-account.personal-apple .client-hub-welcome button::after,
+.client-hub.approved-account.personal-apple .personal-desktop-sites.personal-sites-cta::after{content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;background:linear-gradient(180deg,#ffffff47,#fff0 52%);pointer-events:none}
+.client-hub.approved-account.personal-apple .client-hub-welcome button{min-height:52px;padding:0 26px;border-radius:16px;font-size:17px;gap:10px;background:linear-gradient(180deg,#ffa04a,#f26a1b);
+  box-shadow:inset 0 1px 0 #ffffff73,inset 0 -1px 0 #8c280040,0 1px 2px #a03c0040,0 12px 28px -10px #f26a1bb3}
+.client-hub.approved-account.personal-apple .client-hub-welcome button svg{width:24px;height:24px;padding:4px;border-radius:8px;background:#ffffff38;box-shadow:inset 0 1px 0 #ffffff59;transition:transform .4s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .personal-desktop-sites.personal-sites-cta{width:auto;min-height:48px;padding:0 20px;border-radius:14px;font-size:16px;color:#fff;background:linear-gradient(180deg,#14a3a8,#0b7f86);
+  box-shadow:inset 0 1px 0 #ffffff59,inset 0 -1px 0 #0032374d,0 1px 2px #003c4140,0 10px 24px -10px #0b7f86b3}
+.client-hub.approved-account.personal-apple :is(.client-hub-welcome button,.personal-desktop-sites.personal-sites-cta):active{transform:scale(.97);transition-duration:.08s}
+
+/* Glass secondary buttons */
+.client-hub.approved-account.personal-apple :is(.ml-updates-heading button,.ml-updates-more,.account-return-bar button,.ml-update-action [data-variant=outline],.ml-update-action [data-variant=default]){
+  border:0;border-radius:13px;color:var(--pa-ink);font-weight:600;background:linear-gradient(180deg,#fff,#f5f9fd);
+  box-shadow:inset 0 0 0 1px #0b28501a,inset 0 1px 0 #fff,0 1px 2px #0b28500f,0 4px 12px -6px #0b28501f;transition:transform .12s ease-out,box-shadow .25s,color .2s}
+.client-hub.approved-account.personal-apple :is(.ml-updates-heading button,.ml-updates-more,.account-return-bar button,.ml-update-action [data-slot=button]):active{transform:scale(.96);transition-duration:.08s}
+.client-hub.approved-account.personal-apple .ml-update-action [data-slot=button] svg{transition:transform .35s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .ml-updates-heading button svg{transition:transform .6s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .ml-updates-heading button:active svg{transform:rotate(-180deg)}
+
+/* Category tabs: one white glass bar, raised selected segment, sliding underline */
+.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]{gap:4px!important;padding:6px;border-radius:18px;overflow:visible;background:#ffffffd1;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:0 0 0 1px #ffffffcc,0 1px 2px #0b28500d,0 12px 32px -16px #0b28502e}
+.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]>button{min-height:62px;padding:0 12px;border:0;border-radius:13px;font-family:Heebo,Arial,sans-serif!important;font-size:16px!important;font-weight:600!important;color:var(--pa-ink);background:transparent;
+  transition:background .3s var(--pa-ease),color .25s,box-shadow .3s var(--pa-ease),transform .12s ease-out}
+.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]>button:hover{background:#f3f8fe!important;color:var(--pa-blue)!important;box-shadow:none!important;translate:none;filter:none}
+.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]>button:active{transform:scale(.97)}
+.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]>button[aria-current=page]{color:var(--pa-blue)!important;background:linear-gradient(180deg,#eef5ff,#e3eefc)!important;box-shadow:inset 0 0 0 1px #1673e624!important}
+.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]>button svg{transition:transform .4s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]>button[aria-current=page] svg{transform:translateY(-1px) scale(1.06)}
+.client-hub.approved-account.personal-apple .client-hub-tabs .account-sliding-marker{height:3px;background:var(--pa-blue);transition:transform .45s var(--pa-ease),width .45s var(--pa-ease)}
+
+/* Updates: each update is a card that keeps its content and action together */
+.client-hub.approved-account.personal-apple .ml-updates{border-radius:24px;padding:30px 28px}
+.client-hub.approved-account.personal-apple .ml-updates-heading h2{letter-spacing:-.01em}
+.client-hub.approved-account.personal-apple .ml-updates-heading button{width:44px;padding:0;justify-content:center;font-size:0;gap:0}
+.client-hub.approved-account.personal-apple .ml-update-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.client-hub.approved-account.personal-apple .ml-update-day{grid-column:1/-1;margin:14px 0 0;font-size:16px}
+.client-hub.approved-account.personal-apple .ml-update-day:first-child{margin-top:0}
+.client-hub.approved-account.personal-apple .ml-update{grid-template-columns:52px minmax(0,1fr);grid-template-rows:1fr auto;align-items:start;gap:14px;padding:18px!important;border:0;border-radius:20px;background:#fff;
+  box-shadow:0 0 0 1px var(--pa-line),0 1px 2px #0b28500a;transition:transform .35s var(--pa-ease),box-shadow .35s var(--pa-ease);animation:pa-rise .6s var(--pa-ease) both}
+.client-hub.approved-account.personal-apple .ml-update-revision{box-shadow:0 0 0 1.5px #1673e64d,0 12px 26px -18px #1673e699}
+.client-hub.approved-account.personal-apple .ml-update-image{width:52px;height:52px;border-radius:14px;box-shadow:inset 0 0 0 1px #0b28500d;transition:transform .45s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .ml-update-image img{padding:7px}
+.client-hub.approved-account.personal-apple .ml-update-image.is-thumbnail img{padding:0}
+.client-hub.approved-account.personal-apple .ml-update-heading{gap:6px 10px;margin-bottom:8px}
+.client-hub.approved-account.personal-apple .ml-update-status{height:26px;padding:0 10px;border-radius:999px;background:#e8f1fd;font-size:13px;font-weight:700}
+.client-hub.approved-account.personal-apple :is(.ml-update-payment,.ml-update-credit) .ml-update-status,.client-hub.approved-account.personal-apple .ml-update-published .ml-update-status{background:#e5f5eb;color:#1d7d45}
+.client-hub.approved-account.personal-apple .ml-update-cancelled .ml-update-status{background:#fdecea;color:#c4302b}
+.client-hub.approved-account.personal-apple .ml-update-revision .ml-update-status{background:#fff2df;color:#9a5800}
+.client-hub.approved-account.personal-apple .ml-update time{font-size:12px}
+.client-hub.approved-account.personal-apple .ml-update h3{font-size:17px!important;line-height:1.45}
+.client-hub.approved-account.personal-apple .ml-update-facts{gap:4px 18px;margin-top:6px}
+.client-hub.approved-account.personal-apple .ml-update-facts>div{font-size:13px}
+.client-hub.approved-account.personal-apple .ml-update-action{grid-column:1/-1;max-width:none;align-self:end}
+.client-hub.approved-account.personal-apple .ml-update-action [data-slot=button]{width:100%;justify-content:center;min-height:44px}
+.client-hub.approved-account.personal-apple .ml-update-revision .ml-update-action [data-slot=button]{color:#fff;background:linear-gradient(180deg,#2a86f0,var(--pa-blue));box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0a3c8c40,0 8px 20px -8px #1673e6b3}
+@keyframes pa-rise{from{opacity:0;transform:translateY(8px)}}
+
+@media(hover:hover) and (pointer:fine){
+ .client-hub.approved-account.personal-apple :is(.client-hub-welcome button,.personal-desktop-sites.personal-sites-cta):hover{translate:none;filter:none;transform:translateY(-1px)}
+ .client-hub.approved-account.personal-apple .client-hub-welcome button:hover{box-shadow:inset 0 1px 0 #ffffff80,inset 0 -1px 0 #8c280040,0 2px 4px #a03c0033,0 18px 36px -12px #f26a1bcc}
+ .client-hub.approved-account.personal-apple .client-hub-welcome button:hover svg{transform:rotate(90deg)}
+ .client-hub.approved-account.personal-apple :is(.ml-updates-heading button,.ml-updates-more,.account-return-bar button,.ml-update-action [data-variant=outline],.ml-update-action [data-variant=default]):hover{translate:none;filter:none;color:var(--pa-blue);box-shadow:inset 0 0 0 1px #1673e659,inset 0 1px 0 #fff,0 2px 4px #0b28500f,0 8px 18px -8px #1673e659}
+ .client-hub.approved-account.personal-apple .ml-update-revision .ml-update-action [data-slot=button]:hover{color:#fff;filter:brightness(1.05)}
+ .client-hub.approved-account.personal-apple .ml-update-action [data-slot=button]:hover svg{transform:translateX(-4px)}
+ .client-hub.approved-account.personal-apple .ml-update:hover{transform:translateY(-3px);box-shadow:0 0 0 1px #1673e62e,0 18px 34px -18px #0b285059}
+ .client-hub.approved-account.personal-apple .ml-update:hover .ml-update-image{transform:scale(1.05) rotate(-2deg)}
+}
+@media(max-width:1180px){.client-hub.approved-account.personal-apple .ml-update-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:760px){
+ .client-hub.approved-account.personal-apple .ml-updates{padding:22px 16px;border-radius:20px}
+ .client-hub.approved-account.personal-apple .ml-update-list{grid-template-columns:minmax(0,1fr);gap:12px}
+ .client-hub.approved-account.personal-apple .ml-update{grid-template-columns:48px minmax(0,1fr);padding:16px!important}
+ .client-hub.approved-account.personal-apple .ml-update-image{width:48px;height:48px}
+ .client-hub.approved-account.personal-apple .client-hub-welcome button{min-height:48px;padding:0 14px;font-size:15px;border-radius:14px}
+}
+@media(prefers-reduced-motion:reduce){
+ .client-hub.approved-account.personal-apple :is(.ml-update,.ml-update *,.client-hub-tabs *,.client-hub-welcome button,.client-hub-welcome button *){animation:none!important;transition:none!important;transform:none!important}
+}
+@media(prefers-reduced-transparency:reduce){.client-hub.approved-account.personal-apple .client-hub-tabs[aria-label]{background:#fff;backdrop-filter:none;-webkit-backdrop-filter:none}}
+
+/* Phone launchpad (approved 3x2 grid stays): press feedback, a soft pill behind the selected item, lit teal button */
+@media(max-width:767px){
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button{border-radius:14px;transition:background .3s var(--pa-ease),color .2s,transform .12s ease-out}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button:active{transform:scale(.94);background:#eef5fb}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button[aria-current=page]{background:#e9f6f7}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button svg{transition:transform .4s var(--pa-ease)}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button[aria-current=page] svg{transform:translateY(-1px) scale(1.08)}
+ .client-hub.approved-account.personal-apple .personal-launchpad .personal-sites-cta{border:0;border-radius:14px;background:linear-gradient(180deg,#14a3a8,#0b7f86);box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #003c4140,0 10px 22px -12px #0b7f86b3;transition:transform .12s ease-out}
+ .client-hub.approved-account.personal-apple .personal-launchpad .personal-sites-cta:active{transform:scale(.97)}
+}
+
+/* ---------- Shared surfaces for the articles, orders, balance and customers tabs ---------- */
+.client-hub.approved-account.personal-apple :is(.purchased-atmosphere,.simple-customer-orders.customer-orders-glass,.customers-workspace,.billing-balance-card,.customer-finance-topups,.customer-finance-transactions){
+  border:0!important;border-radius:24px!important;background:#fffffff2!important;box-shadow:0 0 0 1px #ffffffe6,0 1px 2px #0b28500a,0 24px 48px -24px #0b28502e!important}
+.client-hub.approved-account.personal-apple :is(.approved-articles-title,.simple-customer-orders>h2,.customers-list-title,.customer-finance-topups h2,.customer-finance-transactions h2){letter-spacing:-.01em}
+
+/* Search fields: a soft filled well instead of a hard outline; the ring appears on focus */
+.client-hub.approved-account.personal-apple .purchased-search input.purchased-search-input,
+.client-hub.approved-account.personal-apple .customer-search{border:0!important;border-radius:14px!important;background:#f2f6fb!important;box-shadow:inset 0 0 0 1px #0b285012!important;transition:box-shadow .25s,background .25s}
+.client-hub.approved-account.personal-apple .purchased-search input.purchased-search-input:focus,
+.client-hub.approved-account.personal-apple .customer-search:focus-within{background:#fff!important;box-shadow:inset 0 0 0 1.5px #1673e6,0 0 0 4px #1673e61f!important;outline:none}
+.client-hub.approved-account.personal-apple .customer-search input:focus-visible{outline:none}
+
+/* Primary actions: the same lit blue as the update cards */
+.client-hub.approved-account.personal-apple :is(.purchase-action-buttons :is(button,a):not([data-variant=outline]),.billing-balance-actions [data-slot=button]:not([data-variant=outline]),.customer-primary){
+  border:0!important;border-radius:12px!important;color:#fff!important;background:linear-gradient(180deg,#2a86f0,#1673e6)!important;
+  box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0a3c8c40,0 8px 20px -10px #1673e6b3!important;transition:transform .12s ease-out,box-shadow .3s var(--pa-ease),filter .2s}
+/* Secondary actions: glass */
+.client-hub.approved-account.personal-apple :is(.purchase-action-buttons [data-variant=outline],.billing-balance-actions [data-variant=outline],.customer-edit,.customer-finance-transactions [data-variant=outline]){
+  border:0!important;border-radius:12px!important;color:var(--pa-ink)!important;background:linear-gradient(180deg,#fff,#f5f9fd)!important;
+  box-shadow:inset 0 0 0 1px #0b28501a,inset 0 1px 0 #fff,0 1px 2px #0b28500f,0 4px 12px -6px #0b28501f!important;transition:transform .12s ease-out,box-shadow .25s,color .2s}
+.client-hub.approved-account.personal-apple :is(.purchase-action-buttons :is(button,a),.billing-balance-actions [data-slot=button],.customer-primary,.customer-edit,.customer-finance-transactions [data-variant=outline]):active{transform:scale(.96);transition-duration:.08s}
+
+/* Articles: stage filter as one segmented control on desktop (the approved phone layout stays) */
+@media(min-width:761px){
+ .client-hub.approved-account.personal-apple .purchased-atmosphere [data-slot=tabs-list]{gap:4px!important;padding:5px!important;border-radius:16px;background:#0b28500d}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{border:0!important;border-radius:12px!important;background:transparent!important;box-shadow:none!important;color:var(--pa-muted)!important;font-family:Heebo,Arial,sans-serif!important;
+   transition:background .3s var(--pa-ease),color .2s,box-shadow .3s var(--pa-ease),transform .12s ease-out!important}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger:hover{background:#ffffff8c!important;color:var(--pa-ink)!important}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger:active{transform:scale(.97)}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger[data-state=active]{background:#fff!important;color:var(--pa-ink)!important;font-weight:700!important;box-shadow:0 1px 3px #0b285024,0 0 0 .5px #0b28500f!important}
+ .client-hub.approved-account.personal-apple .purchased-atmosphere .account-sliding-marker{height:3px;background:var(--pa-blue);transition:transform .45s var(--pa-ease),width .45s var(--pa-ease)}
+}
+@media(min-width:761px){.client-hub.approved-account.personal-apple [data-state=active] .purchased-stage-number{background:var(--pa-blue)!important;color:#fff!important;box-shadow:0 2px 6px -1px #1673e680}}
+/* Article rows: a grouped list with soft hover and rounded status chips */
+.client-hub.approved-account.personal-apple .approved-article-rows{border:0;border-radius:18px;box-shadow:0 0 0 1px var(--pa-line)}
+.client-hub.approved-account.personal-apple .purchase-modern-card{transition:background .2s}
+.client-hub.approved-account.personal-apple .purchase-modern-card:nth-child(even){background:#fbfdff!important}
+.client-hub.approved-account.personal-apple .purchase-modern-logo{border-radius:12px!important;background:#fff!important;box-shadow:inset 0 0 0 1px #0b28500f,0 4px 10px -6px #0b285033!important;transition:transform .45s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .purchase-modern-badges span{border-radius:999px;font-weight:700}
+.client-hub.approved-account.personal-apple .purchase-order-pill{font-weight:700;font-variant-numeric:tabular-nums}
+
+/* Orders: rounded rows that lift, tinted status chips */
+.client-hub.approved-account.personal-apple .simple-order-card{border:0!important;border-radius:16px!important;background:#fff!important;box-shadow:0 0 0 1px var(--pa-line)!important;overflow:hidden;transition:box-shadow .35s var(--pa-ease),transform .35s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .simple-order-row:active{transform:scale(.995)}
+.client-hub.approved-account.personal-apple .simple-order-number{font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.client-hub.approved-account.personal-apple .simple-order-status{border:0!important;border-radius:999px!important;font-weight:700}
+.client-hub.approved-account.personal-apple .simple-order-status.is-open{background:#e8f1fd!important;color:var(--pa-blue)!important}
+.client-hub.approved-account.personal-apple .simple-order-status.is-closed{background:#e5f5eb!important;color:#1d7d45!important}
+.client-hub.approved-account.personal-apple .approved-order-columns{border-radius:14px 14px 0 0;background:#f2f6fb}
+
+/* Balance: the number carries the weight; transactions become soft grouped rows */
+.client-hub.approved-account.personal-apple .billing-balance-card .tracking-tight{letter-spacing:-.02em!important;font-variant-numeric:tabular-nums}
+.client-hub.approved-account.personal-apple .approved-balance-art{border-radius:18px;box-shadow:inset 0 1px 0 #fff,0 8px 18px -10px #1673e666}
+.client-hub.approved-account.personal-apple .wallet-transaction-card{border:0!important;border-radius:16px!important;box-shadow:0 0 0 1px var(--pa-line)!important;transition:transform .35s var(--pa-ease),box-shadow .35s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .wallet-transaction-icon{border-radius:12px!important}
+.client-hub.approved-account.personal-apple .wallet-transaction-amount{border-radius:14px!important;font-variant-numeric:tabular-nums}
+.client-hub.approved-account.personal-apple .account-empty-state svg{color:var(--pa-blue)}
+
+/* Customers */
+.client-hub.approved-account.personal-apple .customer-list-row{transition:background .2s}
+.client-hub.approved-account.personal-apple .customers-list-head{border-radius:14px;background:#f2f6fb}
+
+@media(hover:hover) and (pointer:fine){
+ .client-hub.approved-account.personal-apple :is(.purchase-action-buttons :is(button,a):not([data-variant=outline]),.billing-balance-actions [data-slot=button]:not([data-variant=outline]),.customer-primary):hover{translate:none;filter:brightness(1.05);transform:translateY(-1px);box-shadow:inset 0 1px 0 #ffffff66,0 2px 4px #0a3c8c33,0 12px 26px -12px #1673e6cc!important}
+ .client-hub.approved-account.personal-apple :is(.purchase-action-buttons [data-variant=outline],.billing-balance-actions [data-variant=outline],.customer-edit,.customer-finance-transactions [data-variant=outline]):hover{translate:none;filter:none;color:var(--pa-blue)!important;box-shadow:inset 0 0 0 1px #1673e659,inset 0 1px 0 #fff,0 2px 4px #0b28500f,0 8px 18px -8px #1673e659!important}
+ .client-hub.approved-account.personal-apple .purchase-modern-card:hover{background:#f4f9ff!important}
+ .client-hub.approved-account.personal-apple .purchase-modern-card:hover .purchase-modern-logo{transform:scale(1.05) rotate(-2deg)}
+ .client-hub.approved-account.personal-apple :is(.simple-order-card,.wallet-transaction-card):hover{transform:translateY(-2px);box-shadow:0 0 0 1px #1673e62e,0 14px 28px -18px #0b285059!important}
+ .client-hub.approved-account.personal-apple .customer-list-row:hover{background:#f4f9ff}
+}
+@media(max-width:760px){
+ .client-hub.approved-account.personal-apple :is(.purchased-atmosphere,.simple-customer-orders.customer-orders-glass,.customers-workspace,.billing-balance-card,.customer-finance-topups,.customer-finance-transactions){border-radius:20px!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .client-hub.approved-account.personal-apple :is(.purchase-modern-card,.purchase-modern-logo,.simple-order-card,.wallet-transaction-card,.purchase-action-buttons *,.billing-balance-actions *,.customer-primary,.customer-edit){transition:none!important;transform:none!important}
+}
+
+/* ---------- Articles v2: every article is its own card, larger logo and type ---------- */
+.client-hub.approved-account.personal-apple .approved-article-rows{gap:14px!important;border:0!important;border-radius:0!important;box-shadow:none!important;overflow:visible!important}
+.client-hub.approved-account.personal-apple .purchase-modern-card,
+.client-hub.approved-account.personal-apple .purchase-modern-card:nth-child(even){border:0!important;border-radius:20px!important;background:#fff!important;
+  box-shadow:0 0 0 1px var(--pa-line),0 1px 2px #0b28500a,0 10px 24px -18px #0b285040!important;transition:transform .35s var(--pa-ease),box-shadow .35s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .purchase-modern-card:last-child{border-bottom:0!important}
+.client-hub.approved-account.personal-apple .purchase-modern-logo{width:72px!important;height:72px!important;border-radius:18px!important;padding:8px!important}
+.client-hub.approved-account.personal-apple .purchase-modern-site{grid-template-columns:72px minmax(0,1fr)!important;gap:4px 14px!important}
+.client-hub.approved-account.personal-apple .purchase-modern-site h3{font-size:16px!important;line-height:1.45}
+.client-hub.approved-account.personal-apple .purchase-modern-site a{font-size:14px!important;color:#3d5978!important}
+.client-hub.approved-account.personal-apple .purchase-modern-story h4{font-size:19px!important;line-height:1.5!important;letter-spacing:-.005em;margin-bottom:8px!important}
+.client-hub.approved-account.personal-apple .purchase-modern-story p{font-size:14px!important;line-height:1.7!important;color:#4f5d6e!important}
+.client-hub.approved-account.personal-apple .purchase-modern-badges span{font-size:13px;padding:4px 12px}
+.client-hub.approved-account.personal-apple .purchase-order-pill{padding:6px 12px!important;border-radius:999px!important;background:#f2f6fb!important;font-size:15px!important}
+.client-hub.approved-account.personal-apple .purchase-action-buttons :is(button,a){min-height:46px!important;font-size:14px!important}
+@media(min-width:761px){
+ .client-hub.approved-account.personal-apple .approved-article-columns{display:none!important}
+ .client-hub.approved-account.personal-apple .purchase-modern-content{grid-template-columns:minmax(230px,1fr) minmax(280px,1.6fr) auto minmax(230px,1fr)!important;gap:28px!important;padding:24px 26px!important;min-height:0!important}
+}
+@media(hover:hover) and (pointer:fine){
+ .client-hub.approved-account.personal-apple .purchase-modern-card:hover{background:#fff!important;transform:translateY(-2px);box-shadow:0 0 0 1px #1673e62e,0 18px 34px -20px #0b285066!important}
+}
+@media(max-width:760px){
+ .client-hub.approved-account.personal-apple .purchase-modern-logo{width:56px!important;height:56px!important;border-radius:14px!important;padding:6px!important}
+ .client-hub.approved-account.personal-apple .purchase-modern-site{grid-template-columns:56px minmax(0,1fr)!important}
+ .client-hub.approved-account.personal-apple .purchase-modern-story h4{font-size:17px!important}
+ .client-hub.approved-account.personal-apple .purchase-modern-content{padding:18px 16px!important}
+}
+
+/* ---------- Phone: the launchpad keeps its place but matches the desktop tab bar ---------- */
+@media(max-width:767px){
+ .client-hub.approved-account.personal-apple .mobile-personal-menu-content.personal-launchpad.personal-launchpad-inline{border:0;border-radius:22px;padding:8px;background:#ffffffd9;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+   box-shadow:0 0 0 1px #ffffffcc,0 1px 2px #0b28500d,0 12px 32px -16px #0b28502e}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav{gap:6px;padding:0}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button{color:var(--pa-ink);font-weight:600}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button[aria-current=page]{color:var(--pa-blue);background:linear-gradient(180deg,#eef5ff,#e3eefc);box-shadow:inset 0 0 0 1px #1673e624}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button:active{background:#eef5ff}
+ .client-hub.approved-account.personal-apple .personal-launchpad .account-sliding-marker{height:3px;background:var(--pa-blue);transition:transform .45s var(--pa-ease),width .45s var(--pa-ease)}
+ .client-hub.approved-account.personal-apple .personal-launchpad nav button[aria-current=page]::after{background:var(--pa-blue)}
+ .client-hub.approved-account.personal-apple .personal-launchpad-support{border-top-color:var(--pa-line);color:var(--pa-muted);border-radius:0 0 14px 14px}
+ .client-hub.approved-account.personal-apple .personal-launchpad .personal-sites-cta{margin-top:8px;min-height:50px;font-weight:700}
+
+ /* Article stages v3: one inset grouped list of four rows (icon, label, count), like iOS Settings */
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [aria-label="סינון לפי מצב הכתבה"]{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important;padding:4px!important;border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:0 0 0 1px var(--pa-line),0 1px 2px #0b28500a!important;overflow:hidden}
+ .client-hub.approved-account.personal-apple .purchased-atmosphere .account-sliding-marker,
+ .client-hub.approved-account.personal-apple .purchased-stage-trigger[data-state=active]::after{display:none!important}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger{position:relative;display:grid!important;grid-template-columns:30px minmax(0,1fr) auto!important;grid-template-rows:auto!important;align-items:center!important;justify-content:stretch!important;column-gap:12px!important;row-gap:0!important;
+   min-height:52px!important;padding:8px 12px!important;border-radius:14px!important;background:transparent!important;color:var(--pa-ink)!important;box-shadow:none!important;text-align:right;
+   font-family:Heebo,Arial,sans-serif!important;transition:background .25s var(--pa-ease),color .2s,transform .12s ease-out!important}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger+[data-slot=tabs-trigger]::before{content:"";position:absolute;top:0;inset-inline:54px 12px;height:1px;background:var(--pa-line)}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger:active{transform:scale(.98);background:#f2f6fb!important}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger[data-state=active]{background:linear-gradient(180deg,#eef5ff,#e3eefc)!important;color:var(--pa-blue)!important}
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger].purchased-stage-trigger[data-state=active]::before,
+ .client-hub.approved-account.personal-apple .personal-redesign.purchased-atmosphere [data-slot=tabs-trigger][data-state=active]+[data-slot=tabs-trigger]::before{opacity:0}
+ .client-hub.approved-account.personal-apple .personal-redesign .purchased-stage-icon{grid-column:1!important;grid-row:1!important;display:grid!important;place-items:center!important;width:30px!important;height:30px!important;border-radius:9px!important;background:#eef3f9!important;color:var(--pa-muted)!important}
+ .client-hub.approved-account.personal-apple .personal-redesign [data-state=active] .purchased-stage-icon{background:var(--pa-blue)!important;color:#fff!important}
+ .client-hub.approved-account.personal-apple .personal-redesign .purchased-stage-icon svg{width:17px!important;height:17px!important}
+ .client-hub.approved-account.personal-apple .personal-redesign .purchased-stage-label{grid-column:2!important;grid-row:1!important;font-family:Heebo,Arial,sans-serif!important;font-size:16px!important;font-weight:500!important;line-height:1.4!important}
+ .client-hub.approved-account.personal-apple .personal-redesign [data-state=active] .purchased-stage-label{font-weight:700!important}
+ .client-hub.approved-account.personal-apple .personal-redesign .purchased-stage-number{grid-column:3!important;grid-row:1!important;justify-self:end!important;display:grid!important;place-items:center;min-width:30px!important;height:26px!important;padding:0 9px!important;border-radius:999px!important;
+   font-family:Heebo,Arial,sans-serif!important;font-size:14px!important;font-weight:700!important;line-height:1!important;background:#eef3f9!important;color:var(--pa-muted)!important;font-variant-numeric:tabular-nums}
+ .client-hub.approved-account.personal-apple .personal-redesign [data-state=active] .purchased-stage-number{background:var(--pa-blue)!important;color:#fff!important}
+
+ /* Hero: the purchase button keeps its place and gets the desktop look on one line */
+ .client-hub.approved-account.personal-apple .client-hub-welcome{width:auto!important;flex-shrink:0}
+ .client-hub.approved-account.personal-apple .client-hub-welcome button{width:auto!important;min-height:46px!important;padding:0 16px 0 14px!important;border-radius:14px!important;font-size:15px!important;white-space:nowrap!important;gap:8px!important;
+   background:linear-gradient(180deg,#ffad5c,#f8772a)!important;box-shadow:inset 0 1px 0 #ffffff80,0 1px 2px #a03c0033,0 10px 22px -10px #f8772ab3!important}
+ .client-hub.approved-account.personal-apple .client-hub-welcome button svg{width:22px;height:22px}
+
+ /* Back to top: hidden at the top, a small floating glass button once the page is scrolled */
+ .client-hub.approved-account.personal-apple .account-return-bar{position:fixed;left:max(16px,env(safe-area-inset-left));bottom:calc(26px + env(safe-area-inset-bottom));top:auto;z-index:34;margin:0;
+   opacity:0;transform:translateY(14px) scale(.9);transition:opacity .25s,transform .45s var(--pa-ease)}
+ .client-hub.approved-account.personal-apple .account-return-bar[data-visible=true]{opacity:1;transform:none}
+ .client-hub.approved-account.personal-apple .account-return-bar:not([data-visible=true]) button{pointer-events:none}
+ .client-hub.approved-account.personal-apple .account-return-bar button{width:44px;height:44px;min-height:44px;padding:0;justify-content:center;border-radius:50%;font-size:0;gap:0;background:#ffffffd9;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+ .client-hub.approved-account.personal-apple .account-return-bar button svg{width:20px;height:20px}
+}
+
+/* Greeting under the page title: the site font, calm weights */
+.client-hub.approved-account.personal-apple .client-hub-greeting>span{font-family:Heebo,Arial,sans-serif!important;font-weight:600!important;letter-spacing:-.005em}
+.client-hub.approved-account.personal-apple .client-hub-greeting>p,.client-hub.approved-account.personal-apple .account-desktop-subtitle{font-family:Heebo,Arial,sans-serif!important;font-weight:400!important;color:#4f5d6e!important}
+
+/* ---------- Open order: a receipt made of inset grouped sections ---------- */
+.client-hub.approved-account.personal-apple .customer-payment-detail{gap:12px;padding:6px 14px 16px;font-family:Heebo,Arial,sans-serif}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-section{padding:6px 18px;border:0;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--pa-line),0 1px 2px #0b28500a}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-section h3{margin:0 -18px;padding:12px 18px 10px;border-bottom:1px solid var(--pa-line);font-size:15px;font-weight:700;color:var(--pa-muted);letter-spacing:0}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-section h3>svg{width:18px;height:18px;color:var(--pa-blue)}
+/* Each site: name and link on the right, amount on the left, date and note as one quiet line */
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"site amount" "date amount" "note note";gap:2px 14px;padding:12px 0;margin:0}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li+li{margin-top:0;padding-top:12px;border-top:1px solid var(--pa-line)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-site{grid-area:site;display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px}
+.client-hub.approved-account.personal-apple .customer-payment-detail .site-reference{flex-direction:row;align-items:baseline;flex-wrap:wrap;gap:2px 10px}
+.client-hub.approved-account.personal-apple .customer-payment-detail .site-reference strong{font-size:16px}
+.client-hub.approved-account.personal-apple .customer-payment-detail .site-reference a{font-size:13px;text-decoration:none;color:#3d6ea8}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-purchase-date{grid-area:date;flex-direction:row;gap:6px;border:0;padding:0}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li .order-payment-purchase-date :is(span,time){font-size:13px;color:var(--pa-muted)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-item-amount{grid-area:amount;align-self:center;align-items:flex-end;gap:0;border:0;padding:0;text-align:left}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-item-amount>span{font-size:11px!important;color:var(--pa-muted)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-item-amount strong{font-size:17px;font-weight:700}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-note{grid-area:note;margin:4px 0 0;font-size:13px;line-height:1.6}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-cancellation{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:999px;background:#fdecea;font-weight:700}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li.is-cancelled :is(.site-reference strong,.order-payment-item-amount strong){color:#8a93a0}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li.is-cancelled .order-payment-item-amount strong{text-decoration:line-through}
+/* Facts and totals: hairline key/value rows, the total as the strongest line */
+.client-hub.approved-account.personal-apple .customer-payment-detail dl>div{padding:11px 0}
+.client-hub.approved-account.personal-apple .customer-payment-detail dl>div+div{border-top-color:var(--pa-line)}
+.client-hub.approved-account.personal-apple .customer-payment-detail dt{font-size:14px;color:var(--pa-muted)}
+.client-hub.approved-account.personal-apple .customer-payment-detail dd{font-size:15px;font-weight:600}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-status{border:0;border-radius:999px;font-weight:700}
+.client-hub.approved-account.personal-apple .customer-payment-detail dl>.order-payment-total{margin:4px -18px 0;padding:14px 18px;border-radius:0;border-top:1px solid var(--pa-line);background:linear-gradient(180deg,#f5f9ff,#eef5ff)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-summary{padding-bottom:0;overflow:hidden}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-total :is(dt,dd){font-size:18px;font-weight:800;color:var(--pa-ink)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-total dd{color:var(--pa-blue)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-document{padding:14px 18px;background:#fff}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-document h3{margin:0;padding:0;border:0;font-size:16px;color:var(--pa-ink)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-action{border:0;border-radius:12px;color:var(--pa-ink);background:linear-gradient(180deg,#fff,#f5f9fd);box-shadow:inset 0 0 0 1px #0b28501a,inset 0 1px 0 #fff,0 4px 12px -6px #0b28501f;transition:transform .12s ease-out,box-shadow .25s,color .2s}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-action.is-primary{color:#fff;background:linear-gradient(180deg,#2a86f0,#1673e6);box-shadow:inset 0 1px 0 #ffffff59,0 8px 20px -10px #1673e6b3}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-action:active{transform:scale(.96)}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li{animation:pa-rise .45s var(--pa-ease) both}
+@media(max-width:480px){
+ .client-hub.approved-account.personal-apple .customer-payment-detail{padding:4px 8px 12px}
+ .client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-section{padding:4px 14px}
+ .client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-section h3{margin:0 -14px;padding:11px 14px 9px;font-size:14px}
+ .client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li{grid-template-columns:minmax(0,1fr) auto;gap:2px 10px}
+ .client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-site{grid-column:auto}
+ .client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-item-amount{padding:0}
+ .client-hub.approved-account.personal-apple .customer-payment-detail dl>.order-payment-total{margin:4px -14px 0;padding:13px 14px}
+}
+
+/* ---------- Account details ---------- */
+.client-hub.approved-account.personal-apple .account-settings-card{border-radius:24px;box-shadow:0 0 0 1px #ffffffe6,0 1px 2px #0b28500a,0 24px 48px -24px #0b28502e}
+.client-hub.approved-account.personal-apple .account-settings-heading{display:flex;align-items:center;gap:16px;border-bottom-color:var(--pa-line)}
+.client-hub.approved-account.personal-apple .account-settings-heading>svg{box-sizing:content-box;width:26px;height:26px;padding:15px;border-radius:50%;color:#fff;background:linear-gradient(160deg,#2a86f0,#14a3a8);box-shadow:inset 0 1px 0 #ffffff59,0 10px 22px -10px #1673e6b3}
+.client-hub.approved-account.personal-apple .account-settings-heading h2{font-size:24px;font-weight:800;letter-spacing:-.01em}
+.client-hub.approved-account.personal-apple .account-settings-email{display:flex;align-items:center;gap:14px;border-radius:16px;background:#f2f6fb;box-shadow:inset 0 0 0 1px #0b285012}
+.client-hub.approved-account.personal-apple .account-settings-email>svg{box-sizing:content-box;padding:9px;border-radius:12px;background:#fff;color:var(--pa-blue);box-shadow:0 2px 6px -2px #0b285033}
+.client-hub.approved-account.personal-apple .account-settings-fields label>span{font-size:14px;font-weight:600;color:var(--pa-muted)}
+.client-hub.approved-account.personal-apple .account-settings-fields input{border:0!important;border-radius:14px!important;background:#f2f6fb!important;box-shadow:inset 0 0 0 1px #0b285012!important;transition:box-shadow .25s,background .25s}
+.client-hub.approved-account.personal-apple .account-settings-fields input:focus{background:#fff!important;box-shadow:inset 0 0 0 1.5px #1673e6,0 0 0 4px #1673e61f!important;outline:none}
+.client-hub.approved-account.personal-apple .account-settings-actions [data-slot=button]{border:0!important;border-radius:14px;font-weight:700;transition:transform .12s ease-out,box-shadow .3s var(--pa-ease),color .2s}
+.client-hub.approved-account.personal-apple .account-settings-actions [data-slot=button]:active{transform:scale(.97)}
+.client-hub.approved-account.personal-apple .account-settings-save{color:#fff!important;background:linear-gradient(180deg,#2a86f0,#1673e6)!important;box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0a3c8c40,0 10px 22px -10px #1673e6b3!important}
+.client-hub.approved-account.personal-apple .account-settings-signout{color:#c4302b!important;background:linear-gradient(180deg,#fff,#fff7f6)!important;box-shadow:inset 0 0 0 1px #c4302b2e,inset 0 1px 0 #fff,0 4px 12px -6px #c4302b2e!important}
+/* The exit icon sits after the words (left in RTL) and leans out on hover */
+.client-hub.approved-account.personal-apple .account-settings-signout svg{order:2;transform:scaleX(-1);transition:transform .35s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .account-settings-save svg{transition:transform .35s var(--pa-ease)}
+/* Secondary account links: glass tiles with a tinted icon */
+.client-hub.approved-account.personal-apple .client-hub-account-links button{justify-content:flex-start;gap:12px;min-height:60px;padding:10px 14px;border:0;border-radius:18px;font-weight:600;background:#ffffffe6;
+  box-shadow:0 0 0 1px var(--pa-line),0 1px 2px #0b28500a;transition:transform .12s ease-out,box-shadow .35s var(--pa-ease),color .2s}
+.client-hub.approved-account.personal-apple .client-hub-account-links button svg{box-sizing:content-box;padding:8px;border-radius:11px;background:#eef5ff;color:var(--pa-blue);transition:transform .45s var(--pa-ease)}
+.client-hub.approved-account.personal-apple .client-hub-account-links button:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){
+ .client-hub.approved-account.personal-apple .account-settings-actions [data-slot=button]:hover{translate:none;filter:none;transform:translateY(-1px)}
+ .client-hub.approved-account.personal-apple .account-settings-signout:hover svg{transform:scaleX(-1) translateX(4px)}
+ .client-hub.approved-account.personal-apple .account-settings-save:hover svg{transform:scale(1.1)}
+ .client-hub.approved-account.personal-apple .client-hub-account-links button:hover{translate:none;filter:none;transform:translateY(-2px);color:var(--pa-blue);box-shadow:0 0 0 1px #1673e62e,0 14px 28px -18px #0b285059}
+ .client-hub.approved-account.personal-apple .client-hub-account-links button:hover svg{transform:scale(1.08) rotate(-4deg)}
+}
+@media(max-width:760px){
+ .client-hub.approved-account.personal-apple .account-settings-card{border-radius:20px}
+ .client-hub.approved-account.personal-apple .account-settings-heading>svg{width:22px;height:22px;padding:12px}
+ .client-hub.approved-account.personal-apple .account-settings-heading h2{font-size:21px}
+}
+@media(prefers-reduced-motion:reduce){
+ .client-hub.approved-account.personal-apple :is(.account-return-bar,.account-settings-actions *,.client-hub-account-links *,.customer-payment-detail li){transition:none!important;animation:none!important}
+}
+
+/* ---------- Round 4 ---------- */
+/* Payment toggle: same surface as the other sections */
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-more-toggle{border:0;border-radius:18px;box-shadow:0 0 0 1px var(--pa-line),0 1px 2px #0b28500a}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-more[open] .order-payment-more-toggle{background:linear-gradient(180deg,#f5f9ff,#eef5ff);box-shadow:inset 0 0 0 1px #1673e624}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-more-total bdi{color:var(--pa-blue)}
+
+/* A fully cancelled order carries a red band across its top; cancelled sites carry a red edge */
+.client-hub.approved-account.personal-apple .simple-order-card:has(.simple-order-status.is-cancelled){box-shadow:0 0 0 1px #c4302b33,0 10px 24px -18px #c4302b66!important}
+.client-hub.approved-account.personal-apple .simple-order-card:has(.simple-order-status.is-cancelled)::before{content:"ההזמנה בוטלה";display:block;padding:6px 18px;background:linear-gradient(180deg,#e5484d,#c4302b);color:#fff;font:700 13px/1.5 Heebo,Arial,sans-serif;letter-spacing:.01em;box-shadow:inset 0 1px 0 #ffffff40}
+.client-hub.approved-account.personal-apple .simple-order-status.is-cancelled{background:#fdecea!important;color:#c4302b!important}
+/* A cancelled site inside an order: only a thin, clear line on that row */
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li.is-cancelled{position:relative;padding-inline-start:12px}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-sites li.is-cancelled::before{content:"";position:absolute;inset-inline-start:0;top:12px;bottom:12px;width:2px;border-radius:2px;background:#e5484d}
+.client-hub.approved-account.personal-apple .customer-payment-detail .order-payment-cancellation{height:auto;padding:0;background:none;font-weight:600}
+
+/* Sign-out: the arrow alone slides outward on hover */
+.client-hub.approved-account.personal-apple .account-settings-signout svg :is(path,polyline,line){transition:transform .35s var(--pa-ease)}
+@media(hover:hover) and (pointer:fine){
+ .client-hub.approved-account.personal-apple .account-settings-signout:hover svg{transform:scaleX(-1)}
+ .client-hub.approved-account.personal-apple .account-settings-signout:hover svg :is(path:nth-child(1),path:nth-child(2),polyline,line){transform:translateX(3px)}
+}
+
+/* Update cards: each action takes the color of its kind, like the mockup */
+.client-hub.approved-account.personal-apple .ml-update .ml-update-action [data-slot=button]{color:#fff;border:0}
+.client-hub.approved-account.personal-apple .ml-update-published .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#2a86f0,#1673e6);box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0a3c8c40,0 8px 20px -10px #1673e6b3}
+.client-hub.approved-account.personal-apple :is(.ml-update-credit,.ml-update-payment) .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#2fc06b,#1a9a52);box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0c4f2a40,0 8px 20px -10px #1a9a52b3}
+.client-hub.approved-account.personal-apple .ml-update-cancelled .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#ef5a50,#c4302b);box-shadow:inset 0 1px 0 #ffffff4d,0 1px 2px #6b141040,0 8px 20px -10px #c4302bb3}
+.client-hub.approved-account.personal-apple .ml-update-revision .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#ffb547,#f08c00);box-shadow:inset 0 1px 0 #ffffff66,0 1px 2px #6b3d0040,0 8px 20px -10px #f08c00b3}
+.client-hub.approved-account.personal-apple .ml-update-revision{box-shadow:0 0 0 1.5px #f08c0059,0 12px 26px -18px #f08c0099}
+@media(hover:hover) and (pointer:fine){.client-hub.approved-account.personal-apple .ml-update .ml-update-action [data-slot=button]:hover{color:#fff;filter:brightness(1.06);transform:translateY(-1px)}}
+
+/* Update cards: the key facts read like a receipt, label small on top and value bold under it */
+.client-hub.approved-account.personal-apple .ml-update-status{height:28px;font-size:14px}
+.client-hub.approved-account.personal-apple .ml-update time{font-size:13px;color:#5d6877}
+.client-hub.approved-account.personal-apple .ml-update-site{font-size:14px;font-weight:600;color:#3d5978;margin:0 0 2px}
+.client-hub.approved-account.personal-apple .ml-update h3{font-size:19px!important;font-weight:800;line-height:1.4;color:var(--pa-ink)}
+.client-hub.approved-account.personal-apple .ml-update-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px;margin-top:12px}
+.client-hub.approved-account.personal-apple .ml-update-facts>div{display:grid;gap:2px;padding:9px 12px;border-radius:12px;background:#f4f7fb;font-size:inherit}
+.client-hub.approved-account.personal-apple .ml-update-facts dt{font-size:12px;font-weight:600;color:#5d6877}
+.client-hub.approved-account.personal-apple .ml-update-facts dd{font-size:16px;font-weight:800;color:var(--pa-ink);font-variant-numeric:tabular-nums}
+.client-hub.approved-account.personal-apple .ml-update-note{font-size:14px;color:#3d5978;padding:8px 12px;border-radius:12px;background:#fdf3f2}
