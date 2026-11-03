@@ -4,6 +4,7 @@ import {KnowledgeArticleView} from '../../knowledge-components';
 import {publishedKnowledge,publicKnowledgeList} from '@/lib/knowledge-server';
 import {knowledgeMetadata,knowledgeOrigin} from '@/lib/knowledge-seo';
 import '../../knowledge.css';
+import '../../knowledge-apple.css';
 import {knowledgePath} from '@/lib/knowledge';
 export const dynamic='force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{slug:string}>}){const {slug}=await params;const article=await publishedKnowledge(slug);return article?knowledgeMetadata(article):{title:'המאמר לא נמצא',robots:{index:false,follow:false}};}

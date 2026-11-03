@@ -25,7 +25,7 @@ export default function KnowledgeHub({initial,initialQuery='',initialCategory=''
   <nav className="knowledge-breadcrumb" aria-label="מיקום באתר"><a href="/">דף הבית</a><span>/</span><span aria-current="page">מדריכים וידע</span></nav>
   <header className="knowledge-hub-hero">
    <h1><span>מדריכים וידע.</span><span className="knowledge-hub-accent">כלים לפרסום חכם.</span></h1>
-   <p>מדריכים, טיפים ותובנות שיעזרו לכם לפרסם נכון.</p>
+   <p>מדריכים קצרים שיעזרו לכם לבחור אתר, לכתוב בריף ולתכנן תקציב.</p>
   </header>
   <div className="knowledge-filters">
    <form className="knowledge-search" role="search" noValidate onSubmit={e=>{e.preventDefault();void load(query,category);}}>

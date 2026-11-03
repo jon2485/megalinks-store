@@ -1,0 +1,69 @@
+/* Knowledge pages, Apple-style (03.11.2026): same card material and controls as the catalog and offers.
+   Whole card is one target, bottom row pinned, filter chips scroll on phones, the closing CTA lists what the catalog gives. */
+.knowledge-site{--ka-ink:#0b1b2f;--ka-muted:#4f5d6e;--ka-faint:#7b8796;--ka-line:rgba(11,40,80,.09);--ka-blue:#1673e6;--ka-ease:cubic-bezier(.32,.72,0,1)}
+/* Cards */
+.knowledge-site .knowledge-card{position:relative;border:0!important;border-radius:24px!important;background:#fff!important;box-shadow:0 0 0 1px var(--ka-line),0 1px 2px #0b28500a,0 12px 28px -20px #0b285040!important;transition:transform .35s var(--ka-ease),box-shadow .35s var(--ka-ease)}
+.knowledge-site .knowledge-hub .knowledge-card:not(.is-featured),.knowledge-site .knowledge-related .knowledge-card{display:flex;flex-direction:column;padding:10px;gap:12px}
+.knowledge-site .knowledge-card-media{border-radius:18px!important;overflow:hidden;isolation:isolate}
+.knowledge-site .knowledge-card-media img{transition:transform .6s var(--ka-ease)!important}
+.knowledge-site .knowledge-card-copy{display:flex;flex-direction:column;flex:1;min-width:0}
+.knowledge-site .knowledge-hub .knowledge-card.is-featured{padding:12px;align-items:stretch}
+.knowledge-site .knowledge-hub .knowledge-card.is-featured .knowledge-card-copy{justify-content:center;padding:14px 10px}
+.knowledge-site .knowledge-card h2{letter-spacing:-.01em}
+.knowledge-site .knowledge-card h2 a{color:var(--ka-ink)}
+/* One hit target: the title link stretches over the whole card */
+.knowledge-site .knowledge-card h2 a::after{content:'';position:absolute;inset:0;border-radius:24px;z-index:1}
+.knowledge-site .knowledge-card h2 a:focus-visible{outline:none}
+.knowledge-site .knowledge-card:has(h2 a:focus-visible){outline:3px solid #0079cb;outline-offset:3px}
+.knowledge-site .knowledge-card-bottom{margin-top:auto!important;align-items:center}
+.knowledge-site .knowledge-meta{display:inline-flex;align-items:center;gap:6px;color:var(--ka-faint)}
+.knowledge-site .knowledge-read-link{position:relative;z-index:2;font-weight:700;color:var(--ka-blue)}
+.knowledge-site .knowledge-read-link svg{transition:transform .35s var(--ka-ease)}
+.knowledge-site .knowledge-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.knowledge-site .knowledge-eyebrow{display:inline-flex;align-items:center;height:24px;padding:0 10px!important;border-radius:999px!important;background:#eef5ff!important;color:var(--ka-blue)!important;font-size:12px!important;font-weight:700!important}
+.knowledge-site .knowledge-featured-chip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:999px;background:linear-gradient(180deg,#ffb55a,#f58a1f);color:#fff;font-size:12px;font-weight:700;box-shadow:inset 0 1px 0 #ffffff66}
+.knowledge-site .knowledge-related .knowledge-card .knowledge-chips{margin-bottom:2px}
+.knowledge-site .knowledge-related .knowledge-eyebrow{background:transparent!important;padding:0!important;height:auto}
+/* Filters: filled chips with a lit selection, one scrolling row on phones */
+.knowledge-site .knowledge-hub .knowledge-categories{gap:8px}
+.knowledge-site .knowledge-hub .knowledge-categories button{min-height:40px;padding-inline:18px!important;border:0!important;border-radius:999px!important;background:#fff!important;color:var(--ka-muted)!important;font-weight:700;box-shadow:0 0 0 1px var(--ka-line),0 2px 6px -4px #0b285026!important;transition:background-color .25s,color .2s,box-shadow .3s var(--ka-ease),transform .12s ease-out!important}
+.knowledge-site .knowledge-hub .knowledge-categories button:active:not(:disabled){transform:scale(.96)!important}
+.knowledge-site .knowledge-hub .knowledge-categories button.is-active{background:linear-gradient(180deg,#2f8cff,#1673e6)!important;color:#fff!important;box-shadow:inset 0 1px 0 #ffffff59,0 8px 18px -10px #1673e6b3!important}
+.knowledge-site .knowledge-search:focus-within{box-shadow:0 0 0 4px #1673e626,0 7px 20px #0875a30d!important}
+/* Closing CTA */
+.knowledge-site .knowledge-cta{display:grid!important;grid-template-columns:minmax(0,1fr) auto;gap:20px;align-items:center;border-radius:24px!important;background:linear-gradient(135deg,#eef7ff,#e9fbfb)!important;box-shadow:0 0 0 1px #1673e61f}
+.knowledge-site .knowledge-cta-points{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0;padding:0;list-style:none}
+.knowledge-site .knowledge-cta-points li{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:#ffffffc7;color:var(--ka-ink);font-size:13px;font-weight:700;box-shadow:0 0 0 1px var(--ka-line)}
+.knowledge-site .knowledge-cta-points svg{color:#1d7d45}
+.knowledge-site .knowledge-cta-actions{display:grid;gap:8px;min-width:220px}
+.knowledge-site .knowledge-cta-secondary{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:12px;border:0;background:#fff;color:var(--ka-ink);font-weight:700;box-shadow:inset 0 0 0 1px #0b28501a,0 4px 12px -6px #0b28501f;transition:transform .12s ease-out,color .2s}
+.knowledge-site .knowledge-cta-secondary:active{transform:scale(.97)}
+.knowledge-site .knowledge-button{transition:transform .12s ease-out,box-shadow .3s var(--ka-ease),filter .2s}
+.knowledge-site .knowledge-button:active{transform:scale(.97)}
+/* Article page: TOC and side CTA as the same material */
+.knowledge-site .knowledge-toc{border:0!important;border-radius:24px!important;background:#fff!important;box-shadow:0 0 0 1px var(--ka-line),0 12px 28px -20px #0b285040!important}
+.knowledge-site .knowledge-toc nav a{border-radius:12px;transition:background-color .2s,color .2s}
+.knowledge-site .knowledge-toc nav a svg{transition:transform .35s var(--ka-ease)}
+.knowledge-site .knowledge-toc-cta{border-radius:18px!important}
+.knowledge-site .knowledge-category-label{border-radius:999px!important;background:#eef5ff!important;color:var(--ka-blue)!important;font-weight:700}
+.knowledge-site .knowledge-article-cover{border-radius:24px!important;box-shadow:0 0 0 1px var(--ka-line)}
+@media(hover:hover) and (pointer:fine){
+ .knowledge-site .knowledge-card:hover{transform:translateY(-4px)!important;box-shadow:0 0 0 1px #1673e62e,0 24px 40px -24px #0b285073!important}
+ .knowledge-site .knowledge-card:hover .knowledge-card-media img{transform:scale(1.04)!important}
+ .knowledge-site .knowledge-card:hover h2 a{color:var(--ka-blue)}
+ .knowledge-site .knowledge-card:hover .knowledge-read-link svg{transform:translateX(-4px)}
+ .knowledge-site .knowledge-hub .knowledge-categories button:not(.is-active):hover:not(:disabled){color:var(--ka-ink)!important;box-shadow:0 0 0 1px #1673e640,0 6px 14px -8px #0b285040!important;transform:none!important}
+ .knowledge-site .knowledge-cta-secondary:hover{color:var(--ka-blue)}
+ .knowledge-site .knowledge-toc nav a:hover{background:#f4f7fb}
+ .knowledge-site .knowledge-toc nav a:hover svg{transform:translateX(-3px)}
+}
+@media(max-width:650px){
+ .knowledge-site .knowledge-hub .knowledge-categories{flex-wrap:nowrap!important;justify-content:flex-start!important;overflow-x:auto;scrollbar-width:none;padding:4px 2px 8px;margin-inline:-2px;scroll-snap-type:x proximity}
+ .knowledge-site .knowledge-hub .knowledge-categories::-webkit-scrollbar{display:none}
+ .knowledge-site .knowledge-hub .knowledge-categories button{flex:0 0 auto;scroll-snap-align:start}
+ .knowledge-site .knowledge-cta{grid-template-columns:minmax(0,1fr);text-align:right}
+ .knowledge-site .knowledge-cta-actions{width:100%}
+ .knowledge-site .knowledge-cta-actions a{width:100%;justify-content:center}
+}
+@media(prefers-reduced-motion:reduce){.knowledge-site .knowledge-card,.knowledge-site .knowledge-card *,.knowledge-site .knowledge-categories button{transition-duration:.01ms!important}.knowledge-site .knowledge-card:hover{transform:none!important}.knowledge-site .knowledge-card:hover .knowledge-card-media img{transform:none!important}}
+@media(forced-colors:active){.knowledge-site .knowledge-card{border:1px solid CanvasText!important}.knowledge-site .knowledge-hub .knowledge-categories button.is-active{outline:2px solid Highlight}}
