@@ -15,7 +15,7 @@ const privateRoots = new Set([
     'orders','articles','links','dashboard','strategies','wallet','monthly','customers',
     'profile','files','support','api','notifications','supplier-workspace','supplier-finance',
 ]);
-const nestedRoots = new Set(['article','admin-article','admin-supplier','admin-supplier-invoice','admin-seller-request','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge','admin-order','admin-support']);
+const nestedRoots = new Set(['article','admin-article','admin-supplier','admin-supplier-invoice','admin-seller-request','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge','admin-order','admin-support','order-confirmed']);
 const hubTabs = new Set(['articles','orders','payments','selling','customers','profile','files','support','api','notifications','monthly']);
 
 export function isWorkspacePath(parts:string[]) {
