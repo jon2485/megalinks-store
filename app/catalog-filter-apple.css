@@ -7,9 +7,6 @@
 html body .catalog-sort-dialog[data-slot=dialog-content][dir=rtl],html body .catalog-category-sheet[data-slot=popover-content]{display:flex!important;flex-direction:column;gap:0;width:100%!important;max-width:none!important;padding:0 16px!important;border:0!important;background:#fffffff7!important;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);color:var(--cf-ink)!important;font-family:Heebo,Arial,sans-serif!important;box-shadow:0 -10px 40px -10px #0b285040!important;overflow-y:auto!important;overscroll-behavior:contain;text-align:right}
 /* Phone: bottom sheet */
 html body .catalog-sort-dialog[data-slot=dialog-content][dir=rtl]{position:fixed!important;inset:auto 0 0 0!important;top:auto!important;left:0!important;right:0!important;--tw-translate-x:0!important;--tw-translate-y:0!important;translate:0 0!important;transform:none!important;max-height:88dvh!important;border-radius:26px 26px 0 0!important;animation:cf-up .45s var(--cf-ease)!important}
-html body [data-radix-popper-content-wrapper]:has(>.catalog-category-sheet){position:fixed!important;inset:auto 0 0 0!important;top:auto!important;left:0!important;right:0!important;transform:none!important;min-width:0!important;z-index:60!important}
-html body .catalog-category-sheet[data-slot=popover-content]{max-height:88dvh!important;border-radius:26px 26px 0 0!important;animation:cf-up .45s var(--cf-ease)!important}
-body:has(.catalog-category-sheet[data-state=open])::before{content:'';position:fixed;inset:0;z-index:59;background:#061c4166;pointer-events:none}
 .catalog-sheet-grab{flex:0 0 auto;width:40px;height:5px;margin:8px auto 4px;border-radius:5px;background:#d5dde6}
 .catalog-sheet-head{display:grid!important;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:4px 2px 8px!important;margin:0!important;border:0!important}
 .catalog-sheet-head strong,.catalog-sheet-head [data-slot=dialog-title]{margin:0;text-align:center;font:800 19px/1.3 Heebo,Arial,sans-serif!important;color:var(--cf-ink)!important}
@@ -83,12 +80,11 @@ html body :is(.catalog-sort-dialog .catalog-sort-reset,.catalog-sort-dialog .cat
 .catalog-active-total{margin-inline-start:auto;font:700 14px Heebo,Arial,sans-serif;color:var(--cf-muted)}
 /* Desktop: side panel */
 @media(min-width:900px){
- html body .catalog-sort-dialog[data-slot=dialog-content][dir=rtl],html body .catalog-category-sheet[data-slot=popover-content]{width:420px!important;height:100dvh!important;max-height:100dvh!important;border-radius:0 26px 26px 0!important;box-shadow:10px 0 40px -20px #0b285066!important;animation:cf-side .45s var(--cf-ease)!important}
+ html body .catalog-sort-dialog[data-slot=dialog-content][dir=rtl]{width:420px!important;height:100dvh!important;max-height:100dvh!important;border-radius:0 26px 26px 0!important;box-shadow:10px 0 40px -20px #0b285066!important;animation:cf-side .45s var(--cf-ease)!important}
  html body .catalog-sort-dialog[data-slot=dialog-content][dir=rtl]{inset:0 auto 0 0!important;right:auto!important}
- html body [data-radix-popper-content-wrapper]:has(>.catalog-category-sheet){inset:0 auto 0 0!important;right:auto!important;width:420px!important}
  .catalog-sheet-grab{display:none}
  .catalog-sheet-head{padding-top:18px!important}
- html body :is(.catalog-sort-dialog .catalog-sort-footer,.catalog-category-sheet .catalog-sheet-foot){margin-top:auto!important}
+ html body .catalog-sort-dialog .catalog-sort-footer{margin-top:auto!important}
 }
 @media(hover:hover) and (pointer:fine){
  .catalog-cat-chip:not([data-on=true]):hover,.catalog-price-quick button:hover{box-shadow:0 0 0 1px #1673e640,0 6px 14px -8px #0b285040}
@@ -103,3 +99,20 @@ html body .catalog-category-sheet .catalog-sheet-grab{flex:0 0 auto!important;wi
 html body .catalog-category-sheet .catalog-cat-chips{display:flex!important;flex-wrap:wrap!important;gap:7px!important;max-height:none!important;overflow:visible!important;padding:0!important;grid-template-columns:none!important}
 html body .catalog-category-sheet label.catalog-cat-chip{display:inline-flex!important;align-items:center!important;gap:6px!important;width:auto!important;height:38px!important;padding:0 13px!important;margin:0!important;border:0!important;border-radius:999px!important;background:#fff!important;color:var(--cf-ink)!important;box-shadow:0 0 0 1px var(--cf-line)!important;font:700 14px Heebo,Arial,sans-serif!important}
 html body .catalog-category-sheet label.catalog-cat-chip[data-on=true]{background:linear-gradient(180deg,#2f8cff,#1673e6)!important;color:#fff!important;box-shadow:inset 0 1px 0 #ffffff59,0 6px 14px -8px #1673e6b3!important}
+/* Categories: bottom sheet on phones only */
+@media(max-width:899px){
+html body [data-radix-popper-content-wrapper]:has(>.catalog-category-sheet){position:fixed!important;inset:auto 0 0 0!important;top:auto!important;left:0!important;right:0!important;transform:none!important;min-width:0!important;z-index:60!important}
+html body .catalog-category-sheet[data-slot=popover-content]{max-height:88dvh!important;border-radius:26px 26px 0 0!important;animation:cf-up .45s var(--cf-ease)!important}
+body:has(.catalog-category-sheet[data-state=open])::before{content:'';position:fixed;inset:0;z-index:59;background:#061c4166;pointer-events:none}
+}
+/* Categories on desktop: a dropdown anchored under its button, three tidy columns with the count at the row's end */
+@media(min-width:900px){
+ html body .catalog-category-sheet[data-slot=popover-content]{width:min(640px,calc(100vw - 32px))!important;max-height:min(70vh,620px)!important;padding:0 18px!important;border-radius:22px!important;box-shadow:0 0 0 1px #0b285014,0 24px 50px -20px #0b285066!important;transform-origin:var(--radix-popover-content-transform-origin);animation:cf-pop .3s var(--cf-ease)!important}
+ html body .catalog-category-sheet .catalog-sheet-grab{display:none!important}
+ html body .catalog-category-sheet .catalog-sheet-head{padding-top:14px!important}
+ html body .catalog-category-sheet .catalog-cat-chips{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
+ html body .catalog-category-sheet label.catalog-cat-chip{justify-content:flex-start!important;width:100%!important;height:42px!important;border-radius:12px!important;padding:0 12px!important}
+ html body .catalog-category-sheet label.catalog-cat-chip::after{margin-inline-start:auto}
+ html body .catalog-category-sheet .catalog-sheet-foot{margin:14px -18px 0!important;padding:12px 18px 14px!important;grid-template-columns:auto 240px!important;justify-content:space-between}
+}
+@keyframes cf-pop{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}

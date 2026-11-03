@@ -144,7 +144,7 @@ export default function PremiumCatalog({ ctx, search, onSearch, loading = false 
     const filtered = useMemo(() => beforeCategories.filter(site => inCategories(site, selectedCategories)).sort((a,b) => sort === 'low' ? a.price_cents - b.price_cents : sort === 'high' ? b.price_cents - a.price_cents : sort === 'name' ? a.name.localeCompare(b.name, 'he') : sort === 'rec' ? (Number(a.sort_order ?? 1e9) - Number(b.sort_order ?? 1e9)) || Number(b.dr || 0) - Number(a.dr || 0) : Number(b.dr || 0) - Number(a.dr || 0)), [beforeCategories, selectedCategories, sort]);
     const categoryCounts = useMemo(() => Object.fromEntries(Object.keys(categories).map(id => [id, beforeCategories.filter(site => inCategories(site, [id])).length])) as Record<string, number>, [beforeCategories]);
     const draftCount = useMemo(() => beforeCategories.filter(site => inCategories(site, draftCategories)).length, [beforeCategories, draftCategories]);
-    const popularCategories = useMemo(() => Object.keys(categories).sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0)).slice(0, 4), [categoryCounts]);
+    const popularCategories = useMemo(() => Object.keys(categories).sort((a, b) => (categoryCounts[b] || 0) - (categoryCounts[a] || 0)).slice(0, 3), [categoryCounts]);
     const priceCeiling = useMemo(() => Math.max(1000, Math.ceil(Math.max(0, ...available.map(site => Number(site.price_cents) || 0)) / 100000) * 1000), [available]);
     const priceBins = useMemo(() => { const bins = Array(12).fill(0); for (const site of available) bins[Math.min(11, Math.floor((Number(site.price_cents) || 0) / 100 / priceCeiling * 12))]++; return bins; }, [available, priceCeiling]);
     const [categoryQuery, setCategoryQuery] = useState('');
