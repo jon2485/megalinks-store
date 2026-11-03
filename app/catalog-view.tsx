@@ -85,7 +85,7 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
         <div className="pc-buy" aria-label="מחיר הפרסום">
             <span className="pc-price-label">{priceLabel||(site.price_source==='personal'?'המחיר שלך':hasDiscount ? 'המחיר שלך' : 'מחיר לכתבה')}</span>
             {hasDiscount && <div className="pc-sale"><span className="pc-off"><bdi dir="ltr">{discountPercent > 0 ? `−${discountPercent.toLocaleString('he-IL', { maximumFractionDigits: 1 })}%` : '<0.1%'}</bdi></span><s aria-label="מחיר מחירון"><bdi>{money(site.regular_price_cents)}</bdi></s></div>}
-            <div className="pc-price"><strong><bdi>{money(site.price_cents)}</bdi></strong><small>{hasDiscount ? <>חיסכון של <bdi>{money(site.regular_price_cents - site.price_cents)}</bdi> · לפני מע״מ</> : 'לכתבה · לפני מע״מ'}</small></div>
+            <div className="pc-price"><strong><bdi>{money(site.price_cents)}</bdi></strong><small>{hasDiscount ? <><span className="pc-saving">חיסכון של <bdi>{money(site.regular_price_cents - site.price_cents)}</bdi></span> · לפני מע״מ</> : 'לכתבה · לפני מע״מ'}</small></div>
             <div className="pc-actions"><CartFeedbackButton websiteId={site.id} enabled={!managing&&!customAction} onClick={customAction?.onClick||(() => ctx.open({kind:managing?'website':'order',site,title:managing?'עריכת מבצע — ' + site.name:'פרסום כתבה ב־' + site.name}))} className="pc-add" label={customAction?.label||(managing?(site.is_on_sale?'עריכת מבצע':'הוספת מבצע'):'הוספה לסל')} icon={managing||customAction?<Pencil size={15}/>:<Plus size={15}/>}/><a href={site.url} target="_blank" rel="noreferrer" className="pc-site" aria-label={'מעבר לאתר ' + site.name} title="לאתר"><ExternalLink size={18} aria-hidden="true"/></a></div>
         </div>
     </Card>;

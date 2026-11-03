@@ -128,6 +128,9 @@
 .cart-checkout-refresh .reference-sale-row s{font-size:13px!important;color:#7b8796!important;font-variant-numeric:tabular-nums}
 .cart-checkout-refresh .reference-discount{display:inline-flex!important;align-items:center;height:20px;padding:0 7px!important;border:0!important;border-radius:999px!important;background:#e5f5eb!important;color:#1d7d45!important;font-size:11px!important;font-weight:800!important}
 .cart-checkout-refresh .reference-price-current.is-on-sale strong{color:#1d7d45!important}
+/* Discounts in the order summary are a gain, so green like every other saving (red reads as a penalty) */
+.cart-checkout-refresh .purchase-discount-row :is(dt,dd,bdi){color:#1d7d45!important}
+.cart-checkout-refresh .purchase-discount-row dd{font-weight:700!important}
 /* Writing and customer: a disclosure that grows downward, the choice shown while closed */
 .cart-checkout-refresh .cart-writing-toggle{display:flex!important;align-items:center;justify-content:space-between;gap:10px}
 .cart-checkout-refresh .cart-writing-toggle-end{display:inline-flex;align-items:center;gap:8px}

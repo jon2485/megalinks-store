@@ -49,8 +49,9 @@
 .publication-catalog-card.pc-apple .pc-price{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 8px}
 .publication-catalog-card.pc-apple .pc-price strong{font-size:26px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
 .publication-catalog-card.pc-apple .pc-price small{font-size:12px;color:var(--pc-faint)}
-.publication-catalog-card.pc-apple.pc-on-sale .pc-price strong,.publication-catalog-card.pc-apple.pc-on-sale .pc-price small{color:#1d7d45}
-.publication-catalog-card.pc-apple.pc-on-sale .pc-price small{font-weight:600}
+/* Savings read in green; the VAT note stays the same quiet grey as on every card */
+.publication-catalog-card.pc-apple.pc-on-sale .pc-price strong{color:#1d7d45}
+.publication-catalog-card.pc-apple .pc-saving{color:#1d7d45;font-weight:700}
 .publication-catalog-card.pc-apple .pc-actions{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:8px;margin-top:4px}
 .publication-catalog-card.pc-apple .pc-add.catalog-cart-feedback{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;flex-direction:row-reverse;align-items:center;justify-content:center;gap:8px;height:48px;min-height:48px;padding:0 14px;border:0;border-radius:14px;color:#fff;font-size:15px;font-weight:700;
  background:linear-gradient(180deg,#ffa04a,#f26a1b);box-shadow:inset 0 1px 0 #ffffff73,inset 0 -1px 0 #8c280040,0 1px 2px #a03c0040,0 10px 22px -10px #f26a1bb3;transition:transform .14s ease-out,box-shadow .3s var(--pc-ease),filter .2s}
