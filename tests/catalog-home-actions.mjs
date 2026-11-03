@@ -66,7 +66,7 @@ const categoryPanel = find(tree, n => n.props?.className?.includes('catalog-home
 const categoryLabels = nodes(categoryPanel).filter(n => n.type === 'label');
 assert.equal(categoryLabels.length, 18, 'all real categories available');
 find(categoryLabels.find(n => text(n) === 'טכנולוגיה'), n => n.props?.onCheckedChange).props.onCheckedChange(true);
-tree = render(); label(tree, 'הצגת אתרים').props.onClick();
+tree = render(); find(tree, n => n.props?.onClick && n.props?.className === 'catalog-sheet-primary').props.onClick();
 tree = render(); assert.deepEqual(ids(tree), ['a']);
 label(tree, 'הכול').props.onClick(); tree = render(); assert.deepEqual(ids(tree), ['a', 'b']);
 label(tree, 'סינון ומיון').props.onClick(); tree = render();
