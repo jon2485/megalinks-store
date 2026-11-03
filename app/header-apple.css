@@ -15,7 +15,7 @@ html body .workspace-site-header.workspace-site-header-compact .workspace-top-na
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-panel{min-width:340px!important;padding:8px!important;border:0!important;border-radius:20px!important;background:#fffffff2!important;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 0 0 1px #0b285014,0 24px 50px -20px #0b285066!important;color:var(--ha-ink)!important;transform-origin:top center}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-caption{display:none!important}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-links{display:grid!important;gap:2px!important}
-html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-panel.personal-glass-menu .workspace-top-navigation-links{grid-template-columns:repeat(2,minmax(0,1fr))!important;min-width:400px}
+html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-panel.personal-glass-menu .workspace-top-navigation-links{grid-template-columns:repeat(2,minmax(0,1fr))!important;min-width:460px}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link{display:grid!important;grid-template-columns:40px minmax(0,1fr) auto!important;align-items:center!important;gap:12px!important;width:100%;min-height:56px!important;padding:8px 10px!important;border:0!important;border-radius:14px!important;background:transparent!important;color:var(--ha-ink)!important;text-align:right;font-family:Heebo,Arial,sans-serif!important;box-shadow:none!important;transition:background-color .2s,transform .12s ease-out!important}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link:active{transform:scale(.98)}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link[aria-current=page]{background:#eef5ff!important}
@@ -132,3 +132,19 @@ html body .header-apple-sheet .workspace-notification-button{position:relative!i
 html body .header-apple-sheet .workspace-mobile-drawer-link::before,html body .header-apple-sheet .workspace-mobile-drawer-link::after{content:none!important}
 html body .header-apple-sheet .workspace-mobile-close{display:grid!important;place-items:center;visibility:visible!important;opacity:1!important;position:static!important}
 html body .header-apple-sheet :is(.workspace-mobile-drawer-links,.workspace-mobile-drawer-group){background:transparent!important;box-shadow:none!important}
+/* The account menu holds identity only (balance, account settings, sign out); destinations live under "אזור אישי" */
+.account-apple-menu[data-slot=popover-content]{width:340px}
+.account-apple-grid:has(>li:only-child){grid-template-columns:1fr}
+html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link-copy>span{white-space:nowrap}
+/* Personal panel: wide enough for two columns, nothing clipped */
+html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-panel.personal-glass-menu{width:500px!important;min-width:500px!important;max-width:calc(100vw - 32px)!important;overflow:visible!important}
+html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-panel.personal-glass-menu .workspace-top-navigation-links{min-width:0!important;width:100%!important}
+/* Destination colors inside the header carry the same weight as the base tile rule */
+html body .workspace-site-header.workspace-site-header-compact :is([data-page=offers],[data-page="purchased/orders"]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#ffa04a,#f26a1b)!important}
+html body .workspace-site-header.workspace-site-header-compact :is([data-page=knowledge],[data-page=purchased],[data-page="purchased/support"]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important}
+html body .workspace-site-header.workspace-site-header-compact [data-page="purchased/payments"] .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#2fc06b,#1a9a52)!important}
+html body .workspace-site-header.workspace-site-header-compact [data-page="purchased/customers"] .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#8b7cff,#5b4fe0)!important}
+html body .workspace-site-header.workspace-site-header-compact :is([data-page="purchased/profile"],[data-page=admin],[data-page=supplier-workspace]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#9aa7b6,#6c7a8b)!important}
+html body .header-apple-sheet :is([data-page=offers]) .mobile-glass-icon{background:linear-gradient(180deg,#ffa04a,#f26a1b)!important}
+html body .header-apple-sheet :is([data-page=knowledge],[data-page=purchased]) .mobile-glass-icon{background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important}
+html body .header-apple-sheet :is([data-page=admin],[data-page=supplier-workspace]) .mobile-glass-icon{background:linear-gradient(180deg,#9aa7b6,#6c7a8b)!important}

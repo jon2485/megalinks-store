@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Bell, ChevronDown, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
@@ -13,6 +13,10 @@ export function WorkspaceAccountControls({ ctx, compactGreeting = false, menu = 
     const name = typeof ctx.user?.name === 'string' ? ctx.user.name.trim() : '';
     const balance = ctx.user?.credits_available ?? ctx.user?.credits;
     const pending = ctx.pendingApprovals || 0;
+    // Only one header menu is open at a time: the nav announces when it opens, and this menu announces itself too
+    const [open, setOpen] = useState(false);
+    useEffect(() => { const close = (e: Event) => { if ((e as CustomEvent).detail !== 'account') setOpen(false); }; window.addEventListener('header-menu-open', close); return () => window.removeEventListener('header-menu-open', close); }, []);
+    const toggle = (next: boolean) => { setOpen(next); if (next) window.dispatchEvent(new CustomEvent('header-menu-open', { detail: 'account' })); };
     const greeting = <>
         {!compactGreeting && <span className="workspace-greeting-avatar" aria-hidden="true">{name.slice(0, 1) || 'מ'}</span>}
         <span className="workspace-greeting-text">{compactGreeting ? <><span>{name ? <>שלום, <bdi>{name}</bdi></> : 'שלום וברוכים הבאים'}</span>{balance != null && <small className="workspace-greeting-balance">יתרה {shekels(balance)}</small>}</> : <><bdi>{name || 'החשבון שלי'}</bdi>{balance != null && <small className="workspace-greeting-balance">יתרה {shekels(balance)}</small>}</>}</span>
@@ -21,12 +25,12 @@ export function WorkspaceAccountControls({ ctx, compactGreeting = false, menu = 
     return <div className="workspace-account-controls">
         {ctx.user && (compactGreeting || !menu.length
             ? <button type="button" className="workspace-greeting" onClick={() => ctx.go('profile')} aria-label="פתיחת הגדרות החשבון" title={name ? `שלום ${name}` : 'שלום וברוכים הבאים'}>{greeting}</button>
-            : <Popover>
+            : <Popover open={open} onOpenChange={toggle}>
                 <PopoverTrigger asChild><button type="button" className="workspace-greeting" aria-label="תפריט החשבון" title={name ? `שלום ${name}` : 'החשבון שלי'}>{greeting}</button></PopoverTrigger>
                 <PopoverContent align="end" sideOffset={12} className="account-apple-menu" dir="rtl">
                     <div className="account-apple-head"><span className="account-apple-avatar" aria-hidden="true">{name.slice(0, 1) || 'מ'}</span><span><strong><bdi>{name || 'החשבון שלי'}</bdi></strong>{ctx.user?.email && <small dir="ltr">{ctx.user.email}</small>}</span></div>
-                    {balance != null && <div className="account-apple-balance"><span>יתרה לשימוש<strong>{shekels(balance)}</strong></span><button type="button" onClick={() => ctx.go('purchased/payments')}>טעינת יתרה</button></div>}
-                    <ul className="account-apple-grid">{menu.map(([page, label, Icon]) => <li key={page}><button type="button" data-page={page} onClick={() => ctx.go(page)}><span className="account-apple-tile" aria-hidden="true"><Icon size={18}/></span><span>{label}</span>{page === 'purchased' && pending > 0 && <span className="account-apple-count">{pending}</span>}{page === 'purchased/orders' && counts.orders > 0 && <span className="account-apple-count is-quiet">{counts.orders}</span>}</button></li>)}</ul>
+                    {balance != null && <div className="account-apple-balance"><span>יתרה לשימוש<strong>{shekels(balance)}</strong></span><button type="button" onClick={() => { setOpen(false); ctx.go('purchased/payments'); }}>טעינת יתרה</button></div>}
+                    <ul className="account-apple-grid">{menu.map(([page, label, Icon]) => <li key={page}><button type="button" data-page={page} onClick={() => { setOpen(false); ctx.go(page); }}><span className="account-apple-tile" aria-hidden="true"><Icon size={18}/></span><span>{label}</span>{page === 'purchased' && pending > 0 && <span className="account-apple-count">{pending}</span>}{page === 'purchased/orders' && counts.orders > 0 && <span className="account-apple-count is-quiet">{counts.orders}</span>}</button></li>)}</ul>
                     <a className="account-apple-signout" href="/signout-with-chatgpt?return_to=/" target="_top"><LogOut size={17} aria-hidden="true"/>יציאה מהחשבון</a>
                 </PopoverContent>
             </Popover>)}

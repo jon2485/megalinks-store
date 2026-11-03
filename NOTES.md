@@ -188,6 +188,13 @@
   - עברו הבדיקות account-glass-navigation, catalog-home-actions, catalog-home-layout, customer-account-actions ו-cart-add-feedback.
   - `admin-workspace-navigation-contract` ו-`client-hub` נכשלות גם בלי השינוי (dirtyNavigation, build), כך שהכשל לא נגרם ממנו.
 - **עוד לא נבדק:** מצב לא מחובר ("כניסה למערכת") וכותרת הניהול. לא נעשה push.
+- **תיקון אחרי משוב (03.11.2026):**
+  - שמונת היעדים נשארו רק תחת "אזור אישי". תפריט החשבון מכיל עכשיו רק פרטי זהות: שם, יתרה, "טעינת יתרה", "פרטי חשבון" ויציאה.
+  - בכל פעם פתוח רק תפריט אחד, באמצעות האירוע `header-menu-open`.
+  - חלון "אזור אישי" הורחב ל-500px, כך ששתי העמודות כבר לא נחתכות. לכל יעד נוסף צבע משלו.
+- **אב-טיפוס לחיץ לקטגוריות ולסינון:**
+  - המקור שמור ב-`docs/proposals/apple-catalog-filter`, והגרסה החיה ב-https://claude.ai/artifact/TPPNEyZW3EJSRHUn4JjAxA.
+  - עוד לא אושר ליישום.
 
 ## השלב הבא
 - **הועלה ל-Staging (02.11.2026):** push של הענף עד `a9e16b6`, ופריסה `5864ba84` בשירות `megalinks-web` הצליחה.
