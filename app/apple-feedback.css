@@ -114,6 +114,76 @@
  .cart-checkout-refresh .purchase-coupon>summary:hover{background:#f2f6fb}
 }
 
+/* ---------- Cart v2 (approved mockup docs/proposals/apple-cart-flow) ---------- */
+/* Quantity: one pill, round keys, the number in the middle without its own box */
+.cart-checkout-refresh .cart-quantity-stepper{display:inline-flex!important;align-items:center!important;gap:2px!important;padding:3px!important;border:0!important;border-radius:999px!important;background:#f2f6fb!important;box-shadow:inset 0 0 0 1px #0b285012!important}
+.cart-checkout-refresh .cart-quantity-stepper>button{width:38px!important;height:38px!important;min-width:38px!important;padding:0!important;border:0!important;border-radius:50%!important;background:transparent!important;color:var(--af-blue)!important;box-shadow:none!important}
+.cart-checkout-refresh .cart-quantity-stepper>button:not(:disabled):active{background:#fff!important;box-shadow:0 2px 6px -2px #0b285040!important}
+.cart-checkout-refresh .cart-quantity-stepper>button:disabled{color:#b7c1cd!important;opacity:1!important}
+.cart-checkout-refresh .cart-quantity-stepper>button svg{width:17px;height:17px;stroke-width:2.6}
+.cart-checkout-refresh .cart-quantity-stepper select{appearance:none;-webkit-appearance:none;width:40px!important;min-width:40px!important;height:38px!important;padding:0!important;border:0!important;border-radius:10px!important;background:transparent!important;box-shadow:none!important;text-align:center;text-align-last:center;font:800 18px/1 Heebo,Arial,sans-serif!important;color:var(--af-ink)!important;font-variant-numeric:tabular-nums;cursor:pointer}
+.cart-checkout-refresh .cart-quantity-stepper select:focus-visible{outline:2px solid var(--af-blue)!important;outline-offset:1px}
+/* Price: savings read in green, the old price small and struck above */
+.cart-checkout-refresh .reference-sale-row{display:flex;align-items:center;gap:6px}
+.cart-checkout-refresh .reference-sale-row s{font-size:13px!important;color:#7b8796!important;font-variant-numeric:tabular-nums}
+.cart-checkout-refresh .reference-discount{display:inline-flex!important;align-items:center;height:20px;padding:0 7px!important;border:0!important;border-radius:999px!important;background:#e5f5eb!important;color:#1d7d45!important;font-size:11px!important;font-weight:800!important}
+.cart-checkout-refresh .reference-price-current.is-on-sale strong{color:#1d7d45!important}
+/* Writing and customer: a disclosure that grows downward, the choice shown while closed */
+.cart-checkout-refresh .cart-writing-toggle{display:flex!important;align-items:center;justify-content:space-between;gap:10px}
+.cart-checkout-refresh .cart-writing-toggle-end{display:inline-flex;align-items:center;gap:8px}
+.cart-checkout-refresh .cart-writing-badge{font-size:12px;font-weight:700;color:var(--af-muted);background:#fff;padding:2px 9px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--af-line);white-space:nowrap}
+.cart-checkout-refresh .cart-writing-badge[data-on=true]{color:var(--af-blue);background:#e8f1fd;box-shadow:none}
+.cart-checkout-refresh .cart-writing-chevron{transition:transform .45s var(--af-ease)}
+.cart-checkout-refresh .cart-writing-toggle[aria-expanded=true] .cart-writing-chevron{transform:rotate(180deg)}
+.cart-checkout-refresh .cart-writing-panel>*{animation:af-unfold .5s var(--af-ease) both}
+.cart-checkout-refresh .cart-writing-panel>*:nth-child(2){animation-delay:.04s}.cart-checkout-refresh .cart-writing-panel>*:nth-child(3){animation-delay:.08s}.cart-checkout-refresh .cart-writing-panel>*:nth-child(4){animation-delay:.12s}.cart-checkout-refresh .cart-writing-panel>*:nth-child(n+5){animation-delay:.16s}
+@keyframes af-unfold{from{opacity:0;transform:translateY(-8px)}}
+.cart-checkout-refresh .cart-writing-title{display:flex;align-items:center;gap:8px;margin:6px 2px 0;font-size:14px;font-weight:700;color:var(--af-muted)}
+.cart-checkout-refresh .cart-writing-tag{font-size:11px;font-weight:700;color:var(--af-blue);background:#e8f1fd;padding:1px 8px;border-radius:999px}
+.cart-checkout-refresh .cart-writing-info{width:24px;height:24px;margin-inline-start:auto;border-radius:50%;display:grid;place-items:center;font:800 12px/1 Heebo,Arial,sans-serif;color:var(--af-muted);background:#e6edf6;transition:transform .12s ease-out,background-color .2s,color .2s}
+.cart-checkout-refresh .cart-writing-info:active{transform:scale(.85)}
+.cart-checkout-refresh .cart-writing-info[aria-expanded=true]{background:var(--af-blue);color:#fff}
+.cart-checkout-refresh .cart-writing-note{display:grid;max-height:0;opacity:0;margin:0!important;padding:0 14px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px #1673e624;font-size:14px;line-height:1.65;color:var(--af-ink);overflow:hidden;transition:max-height .45s var(--af-ease),opacity .25s,padding .45s var(--af-ease)}
+.cart-checkout-refresh .cart-writing-note[data-open=true]{max-height:220px;opacity:1;padding:12px 14px}
+.cart-checkout-refresh .cart-writing-note b{color:var(--af-blue)}
+.cart-checkout-refresh .cart-writing-options>button,.cart-checkout-refresh .cart-writing-custom-choice{border-radius:16px!important;transition:transform .12s ease-out,box-shadow .3s var(--af-ease),background-color .3s}
+.cart-checkout-refresh .cart-writing-options>button:not(:disabled):active{transform:scale(.98)}
+.cart-checkout-refresh .cart-writing-options>button[aria-pressed=true],.cart-checkout-refresh .cart-writing-custom-choice[data-selected=true]{background:linear-gradient(180deg,#f5f9ff,#ebf3fe)!important;box-shadow:inset 0 0 0 2px var(--af-blue)!important;border-color:transparent!important}
+.cart-checkout-refresh .cart-writing-save{border:0!important;border-radius:12px!important;color:#fff!important;background:linear-gradient(180deg,#2a86f0,#1673e6)!important;box-shadow:inset 0 1px 0 #ffffff59,0 8px 18px -10px #1673e6b3!important;transition:transform .12s ease-out}
+.cart-checkout-refresh .cart-writing-save:active{transform:scale(.96)}
+.cart-checkout-refresh .cart-writing-word-stepper{border-radius:999px!important;background:#f2f6fb!important;border:0!important;box-shadow:inset 0 0 0 1px #0b285012!important;padding:3px!important}
+.cart-checkout-refresh .cart-writing-word-stepper>button{border-radius:50%!important;color:var(--af-blue)!important}
+.cart-checkout-refresh .cart-writing-word-stepper input{border:0!important;background:transparent!important;box-shadow:none!important;font-weight:800;text-align:center}
+
+/* ---------- Checkout v2: payment tiles keep their richness, the button waits after the terms ---------- */
+.cart-checkout-refresh .checkout-payment-tile>svg{box-sizing:content-box;padding:11px;border-radius:14px;transition:transform .45s var(--af-ease)}
+.cart-checkout-refresh .checkout-payment-tile[data-method=card]>svg{background:#eef5ff;color:var(--af-blue)}
+.cart-checkout-refresh .checkout-payment-tile[data-method=invoice]>svg{background:#e8f6f6;color:#0b7f86}
+.cart-checkout-refresh .checkout-payment-tile[data-method=credits]>svg{background:#fff3e6;color:#d96a12}
+.cart-checkout-refresh .checkout-payment-tile[data-method=monthly]>svg{background:#f1ecfd;color:#6b46c1}
+.cart-checkout-refresh .checkout-payment-tile[data-selected=true]{background:linear-gradient(180deg,#f5f9ff,#ebf3fe)!important;box-shadow:inset 0 0 0 2px var(--af-blue),0 12px 24px -16px #1673e6b3!important}
+.cart-checkout-refresh .checkout-payment-tile[data-selected=true]>svg{transform:scale(1.06)}
+.cart-checkout-refresh .checkout-payment-tile strong{font-weight:800}
+.cart-checkout-refresh .checkout-action-bar[data-ready=false] .purchase-primary{color:#8a95a3!important;background:#e6ebf1!important;box-shadow:none!important}
+.cart-checkout-refresh .checkout-action-bar[data-ready=true] .purchase-primary{animation:af-wake .5s var(--af-ease)}
+@keyframes af-wake{40%{transform:scale(1.03)}}
+.cart-checkout-refresh .checkout-terms-hint{flex-basis:100%;margin:8px 0 0;font-size:12px;color:#7b8796;text-align:center}
+@media(max-width:767px){
+ .cart-checkout-refresh .checkout-payment-tiles{grid-template-columns:minmax(0,1fr)!important;gap:10px!important}
+ .cart-checkout-refresh .checkout-payment-tile{display:grid!important;grid-template-columns:48px minmax(0,1fr) 24px!important;grid-template-areas:"icon title radio" "icon desc radio";align-items:center;column-gap:14px!important;row-gap:2px!important;padding:14px!important;text-align:right!important;min-height:0!important}
+ .cart-checkout-refresh .checkout-payment-tile>svg{grid-area:icon;width:26px;height:26px}
+ .cart-checkout-refresh .checkout-payment-tile>strong{grid-area:title;font-size:16px!important;align-self:end}
+ .cart-checkout-refresh .checkout-payment-tile>span{grid-area:desc;font-size:13px!important;align-self:start}
+ .cart-checkout-refresh .checkout-payment-tile>button{grid-area:radio;position:static!important;margin:0!important}
+ /* The confirm button sits at the end of the form, after the terms, instead of riding along at the bottom */
+ .cart-checkout-refresh .checkout-action-bar{position:static!important;inset:auto!important;transform:none!important;display:flex!important;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 0!important;padding:0!important;background:transparent!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;border:0!important}
+ .cart-checkout-refresh .checkout-action-bar .mobile-purchase-total{display:flex!important;flex-basis:100%;align-items:baseline;justify-content:space-between;font-size:26px;font-weight:800;letter-spacing:-.02em}
+ .cart-checkout-refresh .checkout-action-bar .mobile-purchase-total small{font-size:12px;font-weight:500;color:#7b8796}
+ .cart-checkout-refresh .checkout-action-bar .purchase-primary{flex:1 1 100%;width:100%!important;min-height:56px!important;border-radius:18px!important;font-size:17px!important}
+ body:has(.cart-checkout-refresh.is-checkout) .floating-whatsapp{bottom:calc(18px + env(safe-area-inset-bottom))!important}
+ .cart-checkout-refresh.is-checkout{padding-bottom:24px!important}
+}
+
 /* ---------- Catalog controls: category, search, sort and filter, export, bulk order, add site ---------- */
 .azure-catalog.catalog-approved-home :is(.catalog-home-category-trigger,.catalog-inline-search){border:0!important;background:#fff!important;box-shadow:0 0 0 1px var(--af-line),0 1px 2px #0b28500a,0 6px 16px -10px #0b285033!important;transition:box-shadow .3s var(--af-ease),transform .12s ease-out}
 .azure-catalog.catalog-approved-home .catalog-home-category-trigger:active{transform:scale(.97)}
