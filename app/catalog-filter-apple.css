@@ -116,3 +116,11 @@ body:has(.catalog-category-sheet[data-state=open])::before{content:'';position:f
  html body .catalog-category-sheet .catalog-sheet-foot{margin:14px -18px 0!important;padding:12px 18px 14px!important;grid-template-columns:auto 240px!important;justify-content:space-between}
 }
 @keyframes cf-pop{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+/* The paste-a-list tool is a first-class catalog action, beside export and bulk order */
+@media(min-width:900px){html body .azure-catalog .catalog-results-actions{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+/* Paste-a-list screen: a visible field to paste into */
+html body .catalog-list-dialog .catalog-list-input-panel{display:grid!important;gap:10px!important;padding:6px 0 0!important;background:transparent!important;border:0!important}
+html body .catalog-list-dialog .catalog-list-input-panel label{font:700 15px Heebo,Arial,sans-serif!important;color:var(--cf-ink)!important}
+html body .catalog-list-dialog .catalog-list-input-panel textarea{min-height:220px!important;padding:14px 16px!important;border:0!important;border-radius:16px!important;background:var(--cf-inset)!important;box-shadow:inset 0 0 0 1px var(--cf-line)!important;font:500 15px/1.6 Heebo,Arial,sans-serif!important;color:var(--cf-ink)!important;resize:vertical}
+html body .catalog-list-dialog .catalog-list-input-panel textarea:focus-visible{box-shadow:inset 0 0 0 2px var(--cf-blue)!important;outline:0!important}
+html body .catalog-list-dialog .catalog-list-input-panel p{margin:0!important;font:500 13px/1.6 Heebo,Arial,sans-serif!important;color:var(--cf-muted)!important}
