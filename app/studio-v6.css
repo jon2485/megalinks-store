@@ -1,0 +1,215 @@
+/* Studio v6 (approved 06.11.2026): one-row customer header with a step track,
+   a soft violet AI source, the "ready to send" thread in one blue, and a light link card. */
+
+/* Header: white, one row. Identity on the right, the three-step track on the left. */
+html body .studio-v2 .sv-header.sv-head6{background:#fff;border:0;box-shadow:0 1px 0 var(--sv-line)}
+html body .studio-v2 .sv-head6 .sv-header-inner{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(300px,380px);align-items:center;gap:16px;flex-wrap:nowrap;padding:16px 24px}
+html body .studio-v2 .sv-head6 .sv-back{width:auto;min-height:40px;padding:0 12px;gap:6px;border-radius:12px;background:transparent;color:var(--sv-muted);font:700 14px Heebo,Arial,sans-serif}
+html body .studio-v2 .sv-head6 .sv-identity{flex:none;gap:14px;order:0}
+html body .studio-v2 .sv-head6 .sv-logo{display:block;width:52px;height:52px;padding:6px;border-radius:14px;box-shadow:0 0 0 1px var(--sv-line)}
+html body .studio-v2 .sv-head6 .sv-logo-empty{display:grid}
+html body .studio-v2 .sv-head6 .sv-identity h1{margin:0;font-size:22px!important;line-height:1.2!important;letter-spacing:-.01em;white-space:nowrap;display:block}
+html body .studio-v2 .sv-head6 .sv-meta{display:flex;flex-wrap:nowrap;align-items:center;gap:0;margin:5px 0 0;font:600 13.5px/1.3 Heebo,Arial,sans-serif;color:var(--sv-muted);white-space:nowrap;overflow:hidden}
+html body .studio-v2 .sv-head6 .sv-meta>*+*::before{content:"";display:inline-block;width:3px;height:3px;margin:0 9px;border-radius:9px;background:#9aa6b4;vertical-align:middle}
+html body .studio-v2 .sv-head6 .sv-h6-site{display:inline-flex;align-items:center;gap:4px;color:var(--sv-blue);text-decoration:none}
+html body .studio-v2 .sv-head6 .sv-h6-step{display:none}
+html body .studio-v2 .sv-head6 .sv-save{display:inline-flex;align-items:center;gap:4px;width:auto;min-height:0;padding:0;background:none;font:600 13.5px Heebo,Arial,sans-serif;color:var(--sv-green)}
+html body .studio-v2 .sv-head6 .sv-save[data-state=dirty]{background:none;color:var(--sv-muted)}
+html body .studio-v2 .sv-head6 .sv-save[data-state=busy]{background:none;color:var(--sv-blue-ink)}
+.studio-v2 .sv-track{min-width:0}
+.studio-v2 .sv-track-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.studio-v2 .sv-track-bar span{height:6px;border-radius:9px;background:#e3eaf2;transition:background-color .3s ease}
+.studio-v2 .sv-track-bar span[data-on=true]{background:linear-gradient(90deg,#3b8ef0,var(--sv-blue))}
+.studio-v2 .sv-track-labels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:8px 0 0;padding:0;list-style:none;font:700 13px Heebo,Arial,sans-serif;color:var(--sv-faint)}
+.studio-v2 .sv-track-labels li[data-on=true]{color:var(--sv-blue)}
+.studio-v2 .sv-track-next{margin:6px 0 0;font:600 13px/1.4 Heebo,Arial,sans-serif;color:var(--sv-muted)}
+.studio-v2 .sv-track-next b{color:var(--sv-ink)}
+@media(hover:hover) and (pointer:fine){html body .studio-v2 .sv-head6 .sv-back:hover{background:#f1f5fa;color:var(--sv-ink)}}
+@media(max-width:1023px){
+ html body .studio-v2 .sv-head6 .sv-header-inner{grid-template-columns:auto minmax(0,1fr)}
+ html body .studio-v2 .sv-head6 .sv-track{grid-column:1/-1}
+}
+@media(max-width:699px){
+ html body .studio-v2 .sv-head6 .sv-header-inner{gap:6px 10px;padding:10px 16px 12px}
+ html body .studio-v2 .sv-head6 .sv-back{width:40px;padding:0;justify-content:center;background:#f1f5fa;color:var(--sv-ink)}
+ html body .studio-v2 .sv-head6 .sv-back span{display:none}
+ html body .studio-v2 .sv-head6 .sv-identity{gap:10px}
+ html body .studio-v2 .sv-head6 .sv-logo{display:block;width:36px;height:36px;padding:4px;border-radius:10px}
+ html body .studio-v2 .sv-head6 .sv-identity h1{font-size:17px!important;overflow:hidden;text-overflow:ellipsis}
+ html body .studio-v2 .sv-head6 .sv-meta{font-size:12.5px;margin-top:2px}
+ html body .studio-v2 .sv-head6 .sv-meta>*+*::before{margin:0 6px}
+ html body .studio-v2 .sv-head6 :is(.sv-h6-site,.sv-h6-order){display:none}
+ html body .studio-v2 .sv-head6 .sv-h6-step{display:inline}
+ html body .studio-v2 .sv-head6 .sv-h6-step::before{display:none!important}
+ html body .studio-v2 .sv-head6 .sv-save{width:auto;font-size:12.5px;gap:4px}
+ .studio-v2 .sv-track-bar span{height:4px}
+ .studio-v2 :is(.sv-track-labels,.sv-track-next){display:none}
+}
+
+/* AI source: soft violet-blue instead of navy, so it never competes with the orange send button. */
+html body .studio-v2 .sv-source.sv-source-ai{background:linear-gradient(135deg,#eef4ff,#f3efff);color:var(--sv-ink);box-shadow:0 0 0 1px #7c5cff47,0 8px 20px -14px #5a46dc73}
+html body .studio-v2 .sv-source.sv-source-ai small{color:var(--sv-muted)}
+html body .studio-v2 .sv-source.sv-source-ai .sv-source-icon{background:linear-gradient(135deg,var(--sv-blue),#7c5cff);color:#fff;box-shadow:0 4px 10px -4px #7c5cff99}
+html body .studio-v2 .sv-sources[data-compact=true] .sv-source.sv-source-ai{background:#fff;box-shadow:var(--sv-shadow)}
+@media(hover:hover) and (pointer:fine){html body .studio-v2 .sv-source.sv-source-ai:hover{box-shadow:0 0 0 1px #7c5cff66,0 14px 28px -16px #5a46dc80}}
+
+/* "Ready to send?": a numbered thread. Done steps and the line up to them fill in blue. */
+html body .studio-v2 .sv-ready-body>.sv-progress{display:none}
+html body .studio-v2 .sv-ready .sv-thread{list-style:none;margin:2px 0 0;padding:0}
+html body .studio-v2 .sv-ready .sv-thread li{position:relative;display:grid!important;grid-template-columns:30px minmax(0,1fr);align-items:center;gap:12px;min-height:46px;color:var(--sv-ink)}
+html body .studio-v2 .sv-ready .sv-thread li:not(:last-child)::before{content:"";position:absolute;inset-inline-start:13.5px;top:32px;bottom:-14px;width:3px;border-radius:3px;background:#e3eaf2}
+html body .studio-v2 .sv-ready .sv-thread li[data-state=done]:not(:last-child)::before{background:var(--sv-blue)}
+html body .studio-v2 .sv-ready .sv-node{position:relative;z-index:1;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff;color:var(--sv-faint);box-shadow:inset 0 0 0 2px #dbe3ec;font:800 13px Heebo,Arial,sans-serif}
+html body .studio-v2 .sv-ready .sv-thread li[data-state=done] .sv-node{background:var(--sv-blue);color:#fff;box-shadow:none}
+html body .studio-v2 .sv-ready .sv-thread li[data-state=current] .sv-node{color:var(--sv-blue);box-shadow:inset 0 0 0 2.5px var(--sv-blue),0 0 0 5px #1673e61f}
+html body .studio-v2 .sv-ready .sv-thread-copy{min-width:0}
+html body .studio-v2 .sv-ready .sv-thread-copy b{display:block;font:700 15px/1.3 Heebo,Arial,sans-serif;color:var(--sv-ink)}
+html body .studio-v2 .sv-ready .sv-thread-copy small{display:block;margin-top:1px;font:500 12.5px Heebo,Arial,sans-serif;color:var(--sv-faint)}
+html body .studio-v2 .sv-ready .sv-thread li[data-state=todo] .sv-thread-copy b{color:var(--sv-faint);font-weight:600}
+html body .studio-v2 .sv-ready .sv-thread-btn{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:42px;padding:0;border:0;background:none;text-align:right;cursor:pointer}
+html body .studio-v2 .sv-ready .sv-thread-go{flex:0 0 auto;padding:5px 12px;border-radius:999px;background:var(--sv-blue-tint);color:var(--sv-blue);font:800 13px Heebo,Arial,sans-serif;transition:transform .1s ease-out}
+html body .studio-v2 .sv-ready .sv-thread-btn:active .sv-thread-go{transform:scale(.95)}
+html body .studio-v2 .sv-ready .sv-thread-btn:focus-visible{outline:2px solid var(--sv-blue);outline-offset:3px;border-radius:10px}
+html body .studio-v2 .sv-ready .sv-thread-note{display:flex;align-items:center;gap:6px;margin:2px 0 0;padding-inline-start:42px;font:500 12.5px Heebo,Arial,sans-serif;color:var(--sv-faint)}
+@media(hover:hover) and (pointer:fine){html body .studio-v2 .sv-ready .sv-thread-btn:hover .sv-thread-go{background:#d9e8ff}.studio-v2 .sv-thread-btn:hover .sv-thread-copy b{color:var(--sv-ink)}}
+@media(prefers-reduced-motion:reduce){html body .studio-v2 .sv-ready .sv-track-bar span,html body .studio-v2 .sv-ready .sv-thread-go{transition:none}}
+
+/* Link card: opens under the clicked link, white like the rest of the editor. */
+html body .studio-link-menu.sv-linkcard{display:block;overflow:visible!important;width:340px;min-width:0;max-width:calc(100vw - 24px);padding:14px;border-radius:18px;background:#fff;color:#0b1b2f;direction:rtl;font-family:Heebo,Arial,sans-serif;box-shadow:0 0 0 1px #0b285014,0 18px 40px -12px #0b285047,0 4px 10px -4px #0b28501f}
+html body .studio-link-menu.sv-linkcard::before{content:"";position:absolute;top:-7px;left:clamp(18px,calc(var(--caret,170px) + 170px - 7px),308px);width:14px;height:14px;background:#fff;transform:rotate(45deg);border-radius:3px 0 0 0;box-shadow:-1px -1px 0 #0b285014}
+.sv-linkcard-top{display:grid;grid-template-columns:38px minmax(0,1fr);gap:11px;align-items:center}
+.sv-linkcard-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:#eaf3ff;color:#1673e6}
+.sv-linkcard-top b{display:block;font:800 15.5px/1.25 Heebo,Arial,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-linkcard-url{display:block;margin-top:2px;font:500 13px Heebo,Arial,sans-serif;color:#1673e6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sv-linkcard-actions{display:flex;gap:8px;margin-top:13px}
+html body .sv-linkcard-actions button{flex:1 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:0 12px;border:0;border-radius:12px;background:#f1f5fa;color:#0b1b2f;font:700 14.5px Heebo,Arial,sans-serif;white-space:nowrap!important;flex-shrink:0;cursor:pointer;transition:transform .1s ease-out,background-color .15s ease}
+html body .sv-linkcard-actions button.is-primary{background:linear-gradient(180deg,#2a84f0,#1673e6);color:#fff;box-shadow:0 6px 14px -8px #1673e6cc}
+html body .sv-linkcard-actions button.is-icon{flex:0 0 42px;padding:0;color:#4f5d6e}
+html body .sv-linkcard-actions button:active{transform:scale(.96)}
+html body .sv-linkcard-actions button:focus-visible{outline:2px solid #1673e6;outline-offset:2px}
+@media(hover:hover) and (pointer:fine){html body .sv-linkcard-actions button:hover{background:#e6edf5}html body .sv-linkcard-actions button.is-primary:hover{background:linear-gradient(180deg,#3a8ff3,#1a78ea)}html body .sv-linkcard-actions button.is-icon:hover{color:#b42343}}
+@media(prefers-reduced-motion:reduce){html body .sv-linkcard-actions button{transition:none}}
+
+/* Fix: the ready card no longer sticks over the cards beneath it, and long link-check results wrap inside it. */
+@media(min-width:1024px){html body .studio-v2 .sv-ready{position:relative!important;top:auto!important}}
+html body .studio-v2 .sv-side,html body .studio-v2 .sv-side>*{min-width:0}
+html body .studio-v2 .sv-ready .sv-validation,html body .studio-v2 .sv-ready .sv-validation *{min-width:0;overflow-wrap:anywhere;word-break:break-word}
+html body .studio-v2 .sv-ready .sv-validation .sv-bad{font-size:13.5px;line-height:1.55}
+
+/* AI dialog: white header, the three sections as a numbered thread, one violet-blue action. */
+html body .sv-ai-dialog .sv-ai-head{background:#fff!important;border-bottom:1px solid #e3e9f1}
+html body .sv-ai-dialog .sv-ai-badge{background:linear-gradient(135deg,#1673e6,#7c5cff)!important;box-shadow:0 8px 18px -8px #7c5cffaa!important}
+html body .sv-ai-dialog [data-slot=dialog-title]{color:#0b1b2f!important;letter-spacing:-.01em}
+html body .sv-ai-dialog [data-slot=dialog-description]{color:#5b6b82!important}
+html body .sv-ai-dialog [data-slot=dialog-close]{color:#5b6b82!important;left:18px!important;right:auto!important;top:22px!important;width:36px;height:36px;border-radius:12px;background:#f1f5fa;display:grid;place-items:center;opacity:1}
+html body .sv-ai-dialog .sv-ai-body{gap:0!important;padding:20px 24px 8px!important}
+html body .sv-ai-dialog .sv-ai-group{position:relative;gap:12px!important;padding:0 46px 22px 0!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+html body .sv-ai-dialog .sv-ai-group:not(.sv-ai-last)::before{content:"";position:absolute;right:13.5px;top:32px;bottom:2px;width:3px;border-radius:3px;background:#e3eaf2}
+html body .sv-ai-dialog .sv-ai-group[data-state=done]:not(.sv-ai-last)::before{background:#1673e6}
+html body .sv-ai-dialog .sv-ai-group h3{min-height:30px;font:800 16.5px Heebo,Arial,sans-serif!important;gap:10px!important}
+html body .sv-ai-dialog .sv-ai-group h3 small{font:700 13px Heebo,Arial,sans-serif;color:#1673e6}
+html body .sv-ai-dialog .sv-ai-group h3 .sv-ai-node{position:absolute;right:0;top:0;width:30px!important;height:30px!important;border-radius:50%;background:#fff!important;color:#8a99ad!important;box-shadow:inset 0 0 0 2px #dbe3ec;font:800 13px Heebo,Arial,sans-serif!important}
+html body .sv-ai-dialog .sv-ai-group[data-state=current] h3 .sv-ai-node{color:#1673e6!important;box-shadow:inset 0 0 0 2.5px #1673e6,0 0 0 5px #1673e61f}
+html body .sv-ai-dialog .sv-ai-group[data-state=done] h3 .sv-ai-node{background:#1673e6!important;color:#fff!important;box-shadow:none}
+html body .sv-ai-dialog label{color:#5b6b82!important;font-size:13.5px!important}
+html body .sv-ai-dialog :is(.sv-input,.sv-textarea),html body .sv-ai-dialog .sv-ai-group button[role=combobox]{min-height:48px;border-radius:14px!important;background:#f6f8fb!important;box-shadow:inset 0 0 0 1px #dfe6ef!important;font:600 15px Heebo,Arial,sans-serif!important;color:#0b1b2f!important}
+html body .sv-ai-dialog :is(.sv-input,.sv-textarea):focus{background:#fff!important}
+html body .sv-ai-dialog .sv-words{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr)) 84px;gap:4px!important;padding:4px;border-radius:14px;background:#f1f5fa}
+html body .sv-ai-dialog .sv-words button{min-height:40px!important;border-radius:11px!important;background:none!important;box-shadow:none!important;color:#5b6b82!important;font-weight:700!important}
+html body .sv-ai-dialog .sv-words button[aria-pressed=true]{background:#fff!important;color:#1673e6!important;box-shadow:0 1px 3px #0b28501f,0 0 0 1px #1673e633!important}
+html body .sv-ai-dialog .sv-words .sv-words-input{width:auto!important;min-height:40px!important;border-radius:11px!important;background:#fff!important}
+html body .sv-ai-dialog .sv-ai-note{margin:0 46px 10px 0!important;font-size:13px!important;color:#7b8796!important}
+html body .sv-ai-dialog .sv-check{margin:0 46px 10px 0}
+html body .sv-ai-dialog .sv-ai-foot{align-items:center}
+html body .sv-ai-dialog .sv-ai-status{order:1;margin:0 0 0 auto;font:600 13.5px Heebo,Arial,sans-serif;color:#5b6b82}
+html body .sv-ai-dialog .sv-ai-status b{color:#1673e6}
+html body .sv-ai-dialog .sv-ai-foot .sv-btn-primary{order:2;flex:0 0 240px;background:linear-gradient(135deg,#1673e6,#7c5cff)!important;box-shadow:0 10px 22px -10px #5a46dccc!important}
+html body .sv-ai-dialog .sv-ai-foot .sv-btn-secondary{order:3;background:#f1f5fa!important;box-shadow:none!important}
+html body .sv-ai-dialog .sv-btn-primary:disabled{opacity:1!important;background:#e3e9f1!important;color:#8a99ad!important;box-shadow:none!important}
+@media(max-width:699px){
+ html body .sv-ai-dialog .sv-ai-group{padding-right:40px!important}
+ html body .sv-ai-dialog .sv-words{grid-template-columns:repeat(4,minmax(0,1fr))}
+ html body .sv-ai-dialog .sv-words .sv-words-input{grid-column:1/-1}
+ html body .sv-ai-dialog .sv-ai-foot{flex-wrap:wrap}
+ html body .sv-ai-dialog .sv-ai-status{flex-basis:100%;margin:0}
+ html body .sv-ai-dialog .sv-ai-foot .sv-btn-primary{flex:1 1 auto}
+}
+
+/* Writer brief: one card, three numbered sections on a thread. */
+html body .studio-v2 .wb-card{display:block;padding:24px 26px;border-radius:24px;background:#fff;box-shadow:var(--sv-shadow);font-family:Heebo,Arial,sans-serif}
+html body .studio-v2 .wb-head{display:flex;align-items:flex-start;gap:14px;padding-bottom:18px;margin-bottom:20px;border-bottom:1px solid var(--sv-line)}
+html body .studio-v2 .wb-icon{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:var(--sv-blue-tint);color:var(--sv-blue)}
+html body .studio-v2 .wb-head h2{margin:0;font:800 22px/1.2 Heebo,Arial,sans-serif;color:var(--sv-ink);letter-spacing:-.01em}
+html body .studio-v2 .wb-head p{margin:4px 0 0;font:500 14px/1.5 Heebo,Arial,sans-serif;color:var(--sv-muted)}
+html body .studio-v2 .wb-chip{margin-inline-start:auto;flex:none;padding:6px 12px;border-radius:999px;background:var(--sv-blue-tint);color:var(--sv-blue-ink);font:800 13px Heebo,Arial,sans-serif;white-space:nowrap}
+html body .studio-v2 .wb-sent{display:flex;gap:10px;align-items:flex-start;margin:0 0 18px;padding:12px 14px;border-radius:16px;background:var(--sv-blue-tint);color:var(--sv-ink);font:500 14px/1.5 Heebo,Arial,sans-serif}
+html body .studio-v2 .wb-sent svg{color:var(--sv-blue);flex:none;margin-top:2px}
+html body .studio-v2 .wb-sent p{margin:2px 0 0;color:var(--sv-muted)}
+html body .studio-v2 .wb-sec{position:relative;padding:0 46px 26px 0}
+html body .studio-v2 .wb-sec:not(.wb-last)::before{content:"";position:absolute;right:13.5px;top:32px;bottom:2px;width:3px;border-radius:3px;background:#e3eaf2}
+html body .studio-v2 .wb-sec[data-state=done]:not(.wb-last)::before{background:var(--sv-blue)}
+html body .studio-v2 .wb-node{position:absolute;right:0;top:0;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff;color:var(--sv-faint);box-shadow:inset 0 0 0 2px #dbe3ec;font:800 13px Heebo,Arial,sans-serif}
+html body .studio-v2 .wb-sec[data-state=current] .wb-node{color:var(--sv-blue);box-shadow:inset 0 0 0 2.5px var(--sv-blue),0 0 0 5px #1673e61f}
+html body .studio-v2 .wb-sec[data-state=done] .wb-node{background:var(--sv-blue);color:#fff;box-shadow:none}
+html body .studio-v2 .wb-sec h3{display:flex;align-items:center;gap:10px;min-height:30px;margin:0 0 2px;font:800 16.5px Heebo,Arial,sans-serif;color:var(--sv-ink)}
+html body .studio-v2 .wb-sec h3 small{font:700 13px Heebo,Arial,sans-serif;color:var(--sv-blue)}
+html body .studio-v2 .wb-hint{margin:0 0 12px;font:500 13.5px Heebo,Arial,sans-serif;color:var(--sv-faint)}
+html body .studio-v2 .wb-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+html body .studio-v2 .wb-wide{grid-column:1/-1}
+html body .studio-v2 .wb-card label.wb-field{font:600 13.5px Heebo,Arial,sans-serif!important;color:var(--sv-muted)!important;gap:6px!important}
+html body .studio-v2 .wb-card :is(input:not([type=checkbox]),textarea,button[role=combobox]){min-height:48px;height:auto;border:0!important;border-radius:14px!important;background:#f6f8fb!important;box-shadow:inset 0 0 0 1px #dfe6ef!important;font:600 15px Heebo,Arial,sans-serif!important;color:var(--sv-ink)!important;padding:0 14px}
+html body .studio-v2 .wb-card textarea{min-height:88px!important;padding:12px 14px!important;line-height:1.6!important}
+html body .studio-v2 .wb-card :is(input,textarea):focus{background:#fff!important;box-shadow:inset 0 0 0 2px var(--sv-blue)!important;outline:none}
+html body .studio-v2 .wb-card .schedule-compact,html body .studio-v2 .wb-row{display:flex;align-items:center;gap:12px;margin-top:12px;padding:12px 14px;border-radius:16px;background:#f6f8fb;box-shadow:inset 0 0 0 1px #dfe6ef}
+html body .studio-v2 .wb-card .schedule-compact-icon,html body .studio-v2 .wb-row-icon{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:11px;background:var(--sv-blue-tint);color:var(--sv-blue);box-shadow:none}
+html body .studio-v2 .wb-card .schedule-compact-pick{background:#fff;color:var(--sv-ink);box-shadow:0 0 0 1px #dfe6ef;border-radius:12px}
+html body .studio-v2 .wb-row{cursor:pointer}
+html body .studio-v2 .wb-row-copy{flex:1;min-width:0}
+html body .studio-v2 .wb-row-copy b{display:block;font:700 14.5px Heebo,Arial,sans-serif;color:var(--sv-ink)}
+html body .studio-v2 .wb-row-copy small{display:block;margin-top:1px;font:500 12.5px/1.45 Heebo,Arial,sans-serif;color:var(--sv-faint)}
+html body .studio-v2 .wb-switch input{appearance:none;flex:none;position:relative;width:46px;height:28px;margin:0;border-radius:99px;background:#d6dee8;cursor:pointer;transition:background-color .2s ease}
+html body .studio-v2 .wb-switch input::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+html body .studio-v2 .wb-switch input:checked{background:var(--sv-blue)}
+html body .studio-v2 .wb-switch input:checked::after{transform:translateX(-18px)}
+html body .studio-v2 .wb-switch input:focus-visible{outline:2px solid var(--sv-blue);outline-offset:2px}
+html body .studio-v2 .wb-switch input:disabled{opacity:.5;cursor:not-allowed}
+html body .studio-v2 .wb-warn{margin:0 0 12px;font:600 14px Heebo,Arial,sans-serif;color:var(--sv-warn)}
+html body .studio-v2 .wb-foot{display:flex;align-items:center;gap:10px;padding-top:18px;border-top:1px solid var(--sv-line)}
+html body .studio-v2 .wb-status{margin:0 0 0 auto;font:600 13.5px Heebo,Arial,sans-serif;color:var(--sv-muted)}
+html body .studio-v2 .wb-status b{color:var(--sv-blue)}
+html body .studio-v2 .wb-foot button{min-height:50px;border-radius:15px!important;font:800 15.5px Heebo,Arial,sans-serif!important;gap:8px}
+html body .studio-v2 .wb-save{border:0!important;background:#f1f5fa!important;color:var(--sv-ink)!important;padding:0 20px}
+html body .studio-v2 .wb-send{border:0!important;padding:0 26px;background:linear-gradient(180deg,var(--sv-orange-1),var(--sv-orange-2))!important;color:#fff!important;box-shadow:0 10px 22px -10px #f26b0fcc}
+html body .studio-v2 .wb-send:disabled{opacity:1!important;background:#e3e9f1!important;color:var(--sv-faint)!important;box-shadow:none}
+html body .studio-v2 .wb-foot button:active:not(:disabled){transform:scale(.97)}
+@media(max-width:699px){
+ html body .studio-v2 .wb-card{padding:18px 16px}
+ html body .studio-v2 .wb-grid{grid-template-columns:minmax(0,1fr)}
+ html body .studio-v2 .wb-sec{padding-right:40px}
+ html body .studio-v2 .wb-chip{display:none}
+ html body .studio-v2 .wb-foot{flex-wrap:wrap}
+ html body .studio-v2 .wb-status{flex-basis:100%;margin:0}
+ html body .studio-v2 .wb-send{flex:1}
+ html body .studio-v2 .wb-card .schedule-compact{flex-wrap:wrap}
+}
+@media(prefers-reduced-motion:reduce){html body .studio-v2 .wb-switch input,html body .studio-v2 .wb-switch input::after{transition:none}}
+
+/* Side card for the writer flow: what happens after sending. */
+html body .studio-v2 .sv-after h2{margin:0 0 14px;font:800 17px Heebo,Arial,sans-serif;color:var(--sv-ink)}
+html body .studio-v2 .sv-after ol{list-style:none;margin:0;padding:0}
+html body .studio-v2 .sv-after li{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);gap:12px;padding-bottom:16px}
+html body .studio-v2 .sv-after li:last-child{padding-bottom:0}
+html body .studio-v2 .sv-after li:not(:last-child)::before{content:"";position:absolute;right:13.5px;top:32px;bottom:2px;width:3px;border-radius:3px;background:#e3eaf2}
+html body .studio-v2 .sv-after li[data-state=done]:not(:last-child)::before{background:var(--sv-blue)}
+html body .studio-v2 .sv-after .sv-node{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff;color:var(--sv-faint);box-shadow:inset 0 0 0 2px #dbe3ec;font:800 13px Heebo,Arial,sans-serif}
+html body .studio-v2 .sv-after li[data-state=current] .sv-node{color:var(--sv-blue);box-shadow:inset 0 0 0 2.5px var(--sv-blue),0 0 0 5px #1673e61f}
+html body .studio-v2 .sv-after li[data-state=done] .sv-node{background:var(--sv-blue);color:#fff;box-shadow:none}
+html body .studio-v2 .sv-after b{display:block;font:700 14.5px/1.3 Heebo,Arial,sans-serif;color:var(--sv-muted)}
+html body .studio-v2 .sv-after li[data-state=current] b{color:var(--sv-ink)}
+html body .studio-v2 .sv-after small{display:block;margin-top:2px;font:500 12.5px/1.45 Heebo,Arial,sans-serif;color:var(--sv-faint)}
+
+/* Round 2 fixes: the brief form comes first on phones, the AI close button clears the text, the word count input gets its own row. */
+@media(max-width:1023px){html body .studio-v2 .wb-card{order:-3!important}html body .studio-v2 .sv-after{order:-2!important}}
+html body .sv-ai-dialog .sv-ai-head{padding-left:66px!important}
+html body .sv-ai-dialog .sv-words{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+html body .sv-ai-dialog .sv-words .sv-words-input{grid-column:1/-1}
