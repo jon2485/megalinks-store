@@ -1,0 +1,39 @@
+/* Scheduling window, customer version (06.11.2026): Mega Links look — white surface, white header,
+   a clear calendar with a filled blue selected day, the chosen day spelled out, one strong confirm button. */
+html body .publication-date-customer[data-slot=dialog-content]{width:min(440px,calc(100vw - 24px))!important;max-width:440px!important;padding:0!important;border:0!important;border-radius:26px!important;background:#fff!important;box-shadow:0 30px 70px -30px #0b1b2fcc!important;overflow:hidden;font-family:Heebo,Arial,sans-serif;gap:0!important}
+html body .publication-date-customer [data-slot=dialog-header]{padding:22px 22px 16px!important;background:#fff;border-bottom:1px solid #e3e9f1;color:#0b1b2f;text-align:right;gap:6px}
+html body .publication-date-customer [data-slot=dialog-title]{display:flex;align-items:center;gap:12px;font:800 21px/1.3 Heebo,Arial,sans-serif!important;color:#0b1b2f!important;letter-spacing:-.01em}
+html body .publication-date-customer .publication-date-badge{display:grid;place-items:center;flex:0 0 auto;width:44px;height:44px;border-radius:14px;background:#e8f1ff;color:#1673e6;box-shadow:none}
+html body .publication-date-customer [data-slot=dialog-description]{margin:0;padding-inline-start:56px;font:500 14px/1.6 Heebo,Arial,sans-serif!important;color:#5b6b82!important}
+html body .publication-date-customer [data-slot=dialog-close]{color:#5b6b82!important;opacity:1;top:18px!important;width:36px;height:36px;border-radius:12px;background:#f1f5fa;display:grid;place-items:center}
+html body .publication-date-customer form{display:grid;gap:12px;padding:16px 18px 18px}
+html body .publication-date-customer .publication-date-chosen{display:flex;align-items:center;justify-content:center;gap:6px;min-height:44px;margin:0;padding:8px 12px;border-radius:14px;background:#f4f7fb;font:500 15px Heebo,Arial,sans-serif;color:#5b6b82;text-align:center}
+html body .publication-date-customer .publication-date-chosen strong{color:#0b5bc4;font-weight:800}
+html body .publication-date-customer .publication-calendar{margin:0!important;padding:10px 6px!important;border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:inset 0 0 0 1px #e3e9f1;--cell-size:40px}
+html body .publication-date-customer .publication-calendar .rdp-dropdown_root{border:0!important;border-radius:10px!important;background:#f1f5fa!important;box-shadow:none!important}
+html body .publication-date-customer .publication-calendar .rdp-caption_label{font:700 15px Heebo,Arial,sans-serif}
+html body .publication-date-customer .publication-calendar .rdp-button_previous,html body .publication-date-customer .publication-calendar .rdp-button_next{border:0!important;border-radius:50%!important;background:#f1f5fa!important;color:#0b1b2f!important}
+html body .publication-date-customer .publication-calendar th{font:700 12.5px Heebo,Arial,sans-serif;color:#8a99ad}
+html body .publication-date-customer .publication-calendar td button{width:40px;height:40px!important;min-height:40px!important;margin-inline:auto;border-radius:50%!important;font:600 15px Heebo,Arial,sans-serif;color:#0b1b2f;transition:background-color .15s,transform .1s ease-out}
+html body .publication-date-customer .publication-calendar td button:active{transform:scale(.92)}
+html body .publication-date-customer .publication-calendar td button[data-selected-single=true]{background:#1673e6!important;color:#fff!important;box-shadow:0 6px 14px -6px #1673e6}
+html body .publication-date-customer .publication-calendar td.rdp-today button:not([data-selected-single=true]){box-shadow:inset 0 0 0 1.5px #1673e6;color:#0b5bc4}
+html body .publication-date-customer .publication-calendar td button:disabled{color:#c3ccd8;opacity:1}
+@media(hover:hover) and (pointer:fine){html body .publication-date-customer .publication-calendar td button:not(:disabled):not([data-selected-single=true]):hover{background:#e8f1ff}}
+html body .publication-date-customer .publication-date-error{margin:0;text-align:center}
+html body .publication-date-customer .publication-date-actions{display:flex;flex-direction:row-reverse;gap:8px}
+html body .publication-date-customer .publication-date-actions>button{min-height:48px!important;border-radius:14px!important;font:700 15px Heebo,Arial,sans-serif!important}
+html body .publication-date-customer .publication-date-actions>button[type=submit]{flex:1;border:0;background:linear-gradient(180deg,#2a84f0,#1673e6)!important;color:#fff!important;box-shadow:0 10px 22px -12px #1673e6cc}
+html body .publication-date-customer .publication-date-actions>button[type=submit]:disabled{opacity:1;background:#e3e9f1!important;color:#8a99ad!important;box-shadow:none}
+html body .publication-date-customer .publication-date-actions>button[type=button]{flex:0 0 auto;padding:0 18px;border:0!important;background:#f1f5fa!important;color:#0b1b2f!important;box-shadow:none!important}
+html body .publication-date-customer .publication-date-actions>button:active:not(:disabled){transform:scale(.97)}
+html body .publication-date-customer .publication-date-reset{display:flex;align-items:center;gap:4px;margin:0 auto!important;text-decoration:none!important;min-height:40px;padding:0 12px;border-radius:999px;font:600 13.5px Heebo,Arial,sans-serif;color:#5b6b82}
+@media(hover:hover) and (pointer:fine){html body .publication-date-customer .publication-date-reset:hover{background:#f1f5fa;color:#0b1b2f}}
+@media(max-width:480px){
+ html body .publication-date-customer [data-slot=dialog-header]{padding:18px 16px 14px!important}
+ html body .publication-date-customer [data-slot=dialog-description]{padding-inline-start:0}
+ html body .publication-date-customer form{padding:12px 12px 16px}
+ html body .publication-date-customer .publication-calendar{--cell-size:38px}
+ html body .publication-date-customer .publication-calendar td button{width:38px;height:38px!important;min-height:38px!important}
+}
+@media(prefers-reduced-motion:reduce){html body .publication-date-customer .publication-calendar td button{transition:none}}

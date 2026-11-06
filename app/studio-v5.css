@@ -1,0 +1,43 @@
+/* Studio v5 (06.11.2026): fixed two-row phone toolbar, compact schedule row. Loaded after studio-v4.css. */
+
+/* Phone toolbar: row 1 = bold, heading, link, align right, image · row 2 = unlink, undo, redo, "עוד" */
+@media(max-width:699px){
+ html body .studio-v2 .studio-toolbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));grid-auto-flow:row dense;gap:6px!important;padding:6px!important;overflow:visible!important}
+ html body .studio-v2 .studio-toolbar>*{order:20;width:auto!important;min-width:0!important;margin:0!important}
+ html body .studio-v2 .studio-toolbar>.studio-tool,html body .studio-v2 .studio-toolbar>.studio-history-tools>*{height:44px!important;min-height:44px!important;width:100%!important;border-radius:11px!important;background:#fff!important;box-shadow:0 0 0 1px #0b28501a!important;color:var(--sv-ink)!important}
+ html body .studio-v2 .studio-toolbar>[data-tool=bold]{order:1}
+ html body .studio-v2 .studio-toolbar>[data-tool=h2]{order:2}
+ html body .studio-v2 .studio-toolbar>[data-tool=link]{order:3;background:var(--sv-blue)!important;color:#fff!important;box-shadow:none!important}
+ html body .studio-v2 .studio-toolbar>[data-tool=justifyRight]{order:4}
+ html body .studio-v2 .studio-toolbar>[data-tool=image]{order:5}
+ html body .studio-v2 .studio-toolbar>[data-tool=unlink]{order:6}
+ html body .studio-v2 .studio-toolbar>[data-tool=history]{order:7;grid-column:span 2!important;display:grid!important;grid-template-columns:1fr 1fr;gap:6px;padding:0!important;background:none!important}
+ html body .studio-v2 .studio-toolbar>[data-tool=history] span{display:none}
+ html body .studio-v2 .studio-toolbar>.studio-more-toggle{order:8;grid-column:span 2!important;width:100%;justify-content:center;margin:0!important;min-height:44px}
+ html body .studio-v2 .studio-toolbar>.studio-typography{order:30;grid-column:1/-1!important;display:flex}
+ html body .studio-v2 .studio-toolbar>.studio-tool:active,html body .studio-v2 .studio-toolbar>.studio-history-tools>*:active{transform:scale(.94)}
+ html body .studio-v2 .studio-toolbar>.studio-tool.is-active{background:var(--sv-blue-tint)!important;color:var(--sv-blue-ink)!important}
+}
+
+/* Schedule: one compact row — what happens, and two clear buttons */
+.schedule-compact{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#f4f7fb;box-shadow:inset 0 0 0 1px #0b28500f}
+.schedule-compact[data-set=true]{background:#eef6ff;box-shadow:inset 0 0 0 1px #1673e633}
+.schedule-compact-icon{flex:0 0 auto;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;color:#1673e6;box-shadow:0 1px 3px #0b28501a}
+.schedule-compact-copy{flex:1;min-width:0}
+.schedule-compact-copy h2{margin:0;font:700 15px/1.3 Heebo,Arial,sans-serif!important;color:#0b1b2f!important}
+.schedule-compact-copy p{margin:2px 0 0;font:500 13.5px/1.45 Heebo,Arial,sans-serif;color:#5b6b82}
+.schedule-compact-copy strong{color:#0b5bc4;font-weight:700}
+.schedule-compact-actions{display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.schedule-compact-pick{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border:0;border-radius:999px;background:#0b1b2f;color:#fff;font:700 14px Heebo,Arial,sans-serif;cursor:pointer;white-space:nowrap;transition:transform .12s ease-out,background-color .2s}
+.schedule-compact[data-set=true] .schedule-compact-pick{background:#fff;color:#0b1b2f;box-shadow:inset 0 0 0 1px #0b28501f}
+.schedule-compact-clear{display:inline-flex;align-items:center;gap:4px;min-height:40px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:#5b6b82;font:600 13.5px Heebo,Arial,sans-serif;cursor:pointer;transition:background-color .2s,transform .12s ease-out}
+.schedule-compact-pick:active,.schedule-compact-clear:active{transform:scale(.96)}
+.schedule-compact-pick:disabled{opacity:.45;cursor:not-allowed}
+.schedule-compact-pick:focus-visible,.schedule-compact-clear:focus-visible{outline:2px solid #1673e6;outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.schedule-compact-pick:hover{background:#17304f}.schedule-compact[data-set=true] .schedule-compact-pick:hover{background:#f6f9fd}.schedule-compact-clear:hover{background:#e6edf5;color:#0b1b2f}}
+@media(max-width:699px){
+ .schedule-compact{flex-wrap:wrap}
+ .schedule-compact-actions{flex:1 1 100%}
+ .schedule-compact-pick{flex:1;justify-content:center;min-height:44px}
+ .schedule-compact-clear{min-height:44px}
+}

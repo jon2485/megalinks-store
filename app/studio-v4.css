@@ -1,0 +1,151 @@
+/* Studio v4 (06.11.2026): header polish, framed title, compact sources & site, soft cards, jumps, phone toolbar.
+   Loaded after studio-v2.css; every rule is scoped to the studio or its editor. */
+
+/* Header: light surface with depth, chips for site / order / status, stepped progress */
+html body .studio-v2 .sv-header{background:linear-gradient(180deg,#ffffff 0%,#f6f9fe 100%);border-bottom:0;box-shadow:0 1px 0 var(--sv-line),0 16px 30px -30px #0b285066}
+html body .studio-v2 .sv-header-inner{padding:20px 24px 16px}
+html body .studio-v2 .sv-logo{width:60px;height:60px;border-radius:18px;padding:7px;box-shadow:0 0 0 1px var(--sv-line),0 8px 18px -12px #0b285055}
+html body .studio-v2 .sv-identity h1{font-size:24px!important;letter-spacing:-.02em}
+html body .studio-v2 .sv-meta{gap:6px;margin-top:8px}
+html body .studio-v2 .sv-chip,html body .studio-v2 .sv-order{display:inline-flex;align-items:center;gap:5px;min-height:28px;padding:0 11px;border-radius:999px;background:#f1f5fa;color:var(--sv-ink);font:600 12.5px Heebo,Arial,sans-serif;text-decoration:none;white-space:nowrap}
+html body .studio-v2 a.sv-chip-site{background:var(--sv-blue-tint);color:var(--sv-blue-ink)}
+html body .studio-v2 a.sv-chip-site:hover{background:#dbe9ff;text-decoration:none}
+html body .studio-v2 .sv-order{background:#fff;box-shadow:inset 0 0 0 1px var(--sv-line);color:var(--sv-ink);font-weight:700}
+html body .studio-v2 .sv-chip-status{background:var(--sv-warn-tint);color:var(--sv-warn)}
+html body .studio-v2 .sv-chip-status::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+html body .studio-v2 .sv-steps{background:transparent;border-top:0}
+html body .studio-v2 .sv-steps .studio-progress{gap:0!important;padding-top:0!important;padding-bottom:14px!important}
+html body .studio-v2 .sv-steps .studio-progress li:not(:last-child)::after{content:""!important;display:block;width:34px;height:2px;margin-inline:8px;border-radius:2px;background:#d5dfeb}
+html body .studio-v2 .sv-steps .studio-progress li.complete:not(:last-child)::after{background:var(--sv-green)}
+html body .studio-v2 .sv-steps .studio-progress li{padding:0 12px!important}
+
+/* Title: a clear field you can tell is editable */
+.studio-v2 .sv-title-field{position:relative}
+html body .studio-v2 .sv-title-input{min-height:58px;padding:10px 16px!important;padding-inline-end:46px!important;border:1.5px solid #d5dfeb!important;border-radius:16px!important;background:#fbfcfe!important;font-size:24px!important;transition:border-color .2s,box-shadow .2s,background-color .2s}
+html body .studio-v2 .sv-title-input:hover:not(:disabled){border-color:#9fbbe0!important;background:#fff!important}
+html body .studio-v2 .sv-title-input:focus{border-color:var(--sv-blue)!important;background:#fff!important;box-shadow:0 0 0 4px #1673e622!important}
+.studio-v2 .sv-title-pencil{position:absolute;inset-inline-end:16px;top:50%;transform:translateY(-50%);color:#8a99ad;pointer-events:none}
+.studio-v2 .sv-title-field:focus-within .sv-title-pencil{color:var(--sv-blue)}
+
+/* Sources: big while the article is empty, neat compact pills once there is text */
+html body .studio-v2 .sv-sources[data-compact=true]{gap:10px}
+html body .studio-v2 .sv-sources[data-compact=true] .sv-source{min-height:56px;padding:8px 14px;border-radius:16px}
+html body .studio-v2 .sv-sources[data-compact=true] .sv-source-icon{width:34px;height:34px;border-radius:11px}
+html body .studio-v2 .sv-sources[data-compact=true] .sv-source-icon svg{width:17px;height:17px}
+html body .studio-v2 .sv-sources[data-compact=true] .sv-source small{display:none}
+html body .studio-v2 .sv-sources[data-compact=true] .sv-source strong{font-size:14px}
+
+/* Notes and schedule share the look of the scheduling window */
+.studio-v2 .sv-softcard,html body .studio-v2 .sv-publish .article-schedule-card{padding:18px;border:1px solid #c4dff4!important;border-radius:20px!important;background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(239,249,255,.94))!important;box-shadow:0 10px 26px -22px #123c6855!important}
+.studio-v2 .sv-softcard{display:grid;gap:12px}
+.studio-v2 .sv-softcard-head{display:flex;align-items:center;gap:14px}
+.studio-v2 .sv-softcard-icon,html body .studio-v2 .sv-publish .article-schedule-icon{display:grid;place-items:center;flex:0 0 auto;width:48px;height:48px;border-radius:14px;color:#087af7;background:#def4ff;border:1px solid #e9fbff}
+.studio-v2 .sv-softcard h3,html body .studio-v2 .sv-publish .article-schedule-card h2{margin:0;font:750 18px/1.4 Heebo,Arial,sans-serif!important;color:#0b1b2f!important}
+.studio-v2 .sv-softcard-head p{margin:2px 0 0;font:500 14px/1.6 Heebo,Arial,sans-serif;color:#415e7d}
+html body .studio-v2 .sv-soft-input{border:1px solid #79aeea!important;border-radius:12px!important;background:#ffffffb8!important;box-shadow:none!important}
+html body .studio-v2 .sv-soft-input:focus{background:#fff!important;box-shadow:0 0 0 3px #1673e622!important}
+html body .studio-v2 .sv-publish .article-schedule-card p{color:#415e7d}
+html body .studio-v2 .sv-publish .publication-date-trigger{min-height:46px;padding:0 16px;border:1px solid #79aeea;border-radius:12px;background:#fff;color:#17365c;font:650 15px Heebo,Arial,sans-serif;transition:transform .12s ease-out,background-color .2s}
+html body .studio-v2 .sv-publish .publication-date-trigger:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){html body .studio-v2 .sv-publish .publication-date-trigger:hover{background:#f2f8ff}}
+
+/* Site details: one tidy row and two small tags */
+html body .studio-v2 .sv-site{gap:12px;padding:16px}
+html body .studio-v2 .sv-site-row{display:flex;align-items:center;gap:12px}
+html body .studio-v2 .sv-site-logo{width:46px;height:46px;border-radius:13px;object-fit:contain;padding:5px;background:#fff;box-shadow:0 0 0 1px var(--sv-line)}
+html body .studio-v2 .sv-site-logo.sv-logo-empty{display:grid;place-items:center;color:var(--sv-blue)}
+html body .studio-v2 .sv-site-copy{flex:1;min-width:0}
+html body .studio-v2 .sv-site-copy strong{display:block;font:700 15px/1.3 Heebo,Arial,sans-serif}
+html body .studio-v2 .sv-site-copy a{display:block;font-size:13px;color:var(--sv-muted);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+html body .studio-v2 .sv-site-open{flex:0 0 auto;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--sv-blue-tint);color:var(--sv-blue-ink);transition:transform .12s ease-out,background-color .2s}
+html body .studio-v2 .sv-site-open:active{transform:scale(.92)}
+html body .studio-v2 .sv-site-tags{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+html body .studio-v2 .sv-site-tags>div{display:inline-flex;align-items:baseline;gap:6px;padding:6px 12px;border-radius:12px;background:#f4f7fb}
+html body .studio-v2 .sv-site-tags>div[data-tone=status]{background:var(--sv-warn-tint)}
+html body .studio-v2 .sv-site-tags dt{font:600 12px Heebo,Arial,sans-serif;color:var(--sv-muted)}
+html body .studio-v2 .sv-site-tags dd{margin:0;font:700 13px Heebo,Arial,sans-serif;color:var(--sv-ink)}
+html body .studio-v2 .sv-site-tags>div[data-tone=status] dd{color:var(--sv-warn)}
+@media(hover:hover) and (pointer:fine){html body .studio-v2 .sv-site-open:hover{background:#dbe9ff}}
+
+/* Checklist: a missing item is a button that takes you there */
+html body .studio-v2 .sv-ready li{display:block}
+html body .studio-v2 .sv-ready li[data-done=true]{display:flex}
+.studio-v2 .sv-jump{display:flex;align-items:center;gap:10px;width:100%;min-height:38px;padding:6px 8px;border:0;border-radius:11px;background:#fff7ec;color:var(--sv-warn);font:600 14px/1.4 Heebo,Arial,sans-serif;text-align:right;cursor:pointer;transition:background-color .2s,transform .12s ease-out}
+.studio-v2 li[data-optional=true] .sv-jump{background:#f4f7fb;color:var(--sv-muted)}
+.studio-v2 .sv-jump-label{flex:1}
+.studio-v2 .sv-jump-arrow{flex:0 0 auto;opacity:.7;transition:transform .2s}
+.studio-v2 .sv-jump:active{transform:scale(.98)}
+.studio-v2 .sv-jump:focus-visible{outline:2px solid var(--sv-blue);outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.studio-v2 .sv-jump:hover{background:#ffeed6}.studio-v2 li[data-optional=true] .sv-jump:hover{background:#eaf0f7}.studio-v2 .sv-jump:hover .sv-jump-arrow{transform:translateX(-3px)}}
+.studio-v2 .sv-flash{animation:sv-flash 1.5s cubic-bezier(.2,.8,.2,1)}
+@keyframes sv-flash{0%,100%{box-shadow:0 0 0 0 #1673e600}25%,60%{box-shadow:0 0 0 4px #1673e699}}
+html body .studio-v2 .studio-link-tool.sv-flash{background:var(--sv-blue)!important;color:#fff!important}
+
+/* Link added */
+.studio-v2 .sv-hint-ok{background:var(--sv-green-tint)!important;color:var(--sv-green)!important;font-weight:700!important;animation:sv-pop .35s cubic-bezier(.2,.8,.2,1)}
+@keyframes sv-pop{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+
+/* Desktop: only the readiness card stays put; images, site and history scroll with the page */
+@media(min-width:1024px){
+ html body .studio-v2 .sv-side{position:static!important;align-self:stretch;align-content:start}
+ html body .studio-v2 .sv-ready{position:sticky;top:96px;z-index:4}
+ html body .studio-v2 .sv-side>:not(.sv-ready){position:relative;z-index:1}
+}
+
+/* Bottom bar: what is still missing, right next to "send" */
+.studio-v2 .sv-actionbar-missing{display:flex!important;align-items:center;gap:10px}
+.studio-v2 .sv-actionbar-missing strong{font:800 14px Heebo,Arial,sans-serif;color:var(--sv-blue-ink)}
+.studio-v2 .sv-actionbar-missing button{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border:0;border-radius:999px;background:var(--sv-warn-tint);color:var(--sv-warn);font:700 14px Heebo,Arial,sans-serif;cursor:pointer;transition:background-color .2s,transform .12s ease-out}
+.studio-v2 .sv-actionbar-missing button:active{transform:scale(.97)}
+@media(hover:hover) and (pointer:fine){.studio-v2 .sv-actionbar-missing button:hover{background:#ffe8c7}}
+
+/* While typing on a phone: room for text */
+body.sv-typing .studio-v2 .sv-actionbar{display:none!important}
+body.sv-typing .floating-whatsapp{display:none!important}
+
+/* Editor toolbar "עוד" (the desktop toolbar shows everything, so the toggle is hidden there) */
+.studio-more-toggle{display:none}
+
+/* Link popover and link details window */
+.studio-link-menu{position:fixed;z-index:70;transform:translateX(-50%);display:grid;gap:8px;min-width:230px;max-width:calc(100vw - 24px);padding:10px;border-radius:16px;background:#0b1b2f;color:#fff;box-shadow:0 18px 40px -16px #000a;font-family:Heebo,Arial,sans-serif;animation:sv-pop .2s cubic-bezier(.2,.8,.2,1)}
+.studio-link-menu-url{font:500 12px Heebo,Arial,sans-serif;color:#b9c6d8;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.studio-link-menu-actions{display:flex;gap:6px}
+.studio-link-menu-actions button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 12px;border:0;border-radius:11px;background:#ffffff1f;color:#fff;font:700 13.5px Heebo,Arial,sans-serif;cursor:pointer;white-space:nowrap;transition:background-color .2s,transform .12s ease-out}
+.studio-link-menu-actions button:first-child{background:#1673e6}
+.studio-link-menu-actions button:active{transform:scale(.96)}
+@media(hover:hover) and (pointer:fine){.studio-link-menu-actions button:hover{background:#ffffff33}.studio-link-menu-actions button:first-child:hover{background:#2f84f0}}
+.studio-link-view .studio-link-facts{display:grid;gap:8px;margin:0}
+.studio-link-view .studio-link-facts>div{padding:10px 12px;border-radius:12px;background:#f4f7fb}
+.studio-link-view .studio-link-facts dt{font:600 12px Heebo,Arial,sans-serif;color:#5b6b82}
+.studio-link-view .studio-link-facts dd{margin:2px 0 0;font:700 15px/1.5 Heebo,Arial,sans-serif;color:#0b1b2f;overflow-wrap:anywhere;text-align:right}
+.studio-link-view .studio-link-view-actions{display:flex;flex-wrap:wrap;gap:8px}
+.studio-link-view .studio-link-view-actions>*{min-height:44px}
+
+@media(max-width:699px){
+ html body .studio-v2 .sv-header-inner{padding:10px 12px}
+ html body .studio-v2 .sv-identity h1{font-size:16px!important}
+ html body .studio-v2 .sv-meta{margin-top:2px}
+ html body .studio-v2 .sv-chip,html body .studio-v2 .sv-order{display:none}
+ html body .studio-v2 .sv-title-input{font-size:19px!important;min-height:50px;padding:8px 12px!important;padding-inline-end:40px!important;border-radius:14px!important}
+ html body .studio-v2 .sv-sources[data-compact=true] .sv-source{min-height:46px;padding:6px}
+ html body .studio-v2 .sv-sources[data-compact=true] .sv-source-icon{width:26px;height:26px}
+ .studio-v2 .sv-softcard,html body .studio-v2 .sv-publish .article-schedule-card{padding:14px}
+ html body .studio-v2 .sv-publish .article-schedule-card{flex-direction:column;align-items:stretch;text-align:right}
+ html body .studio-v2 .sv-publish .article-schedule-controls{justify-items:stretch}
+ html body .studio-v2 .sv-publish .publication-date-trigger{width:100%;justify-content:center}
+ /* toolbar: bold, heading and link always visible; everything else under "עוד"; no sideways scroll */
+ html body .studio-v2 .studio-toolbar{display:flex!important;flex-wrap:wrap!important;overflow:visible!important;grid-template-rows:none;gap:4px!important;align-items:center}
+ html body .studio-v2 .studio-toolbar>*{grid-row:auto!important;grid-column:auto!important}
+ html body .studio-v2 .studio-toolbar[data-more=false]>:not([data-primary]):not(.studio-more-toggle){display:none!important}
+ html body .studio-v2 .studio-toolbar>.studio-typography{flex:1 1 100%;order:10;display:flex;gap:6px}
+ html body .studio-v2 .studio-toolbar>.studio-typography>*{flex:1 1 auto;min-width:0}
+ html body .studio-v2 .studio-toolbar>.studio-tool-divider{display:none!important}
+ html body .studio-v2 .studio-toolbar .studio-link-tool{background:var(--sv-blue)!important;color:#fff!important;border-radius:10px!important}
+ html body .studio-v2 .studio-more-toggle{display:inline-flex;align-items:center;gap:4px;margin-inline-start:auto;min-height:44px;padding:0 14px;border:0;border-radius:11px;background:#fff;box-shadow:0 0 0 1px #0b28501a;color:var(--sv-ink);font:700 13.5px Heebo,Arial,sans-serif;cursor:pointer}
+ html body .studio-v2 .studio-more-toggle svg{transition:transform .25s}
+ html body .studio-v2 .studio-more-toggle[aria-expanded=true] svg{transform:rotate(180deg)}
+ html body .studio-v2 .studio-more-toggle:active{transform:scale(.96)}
+ html body .studio-v2 .sv-site-tags>div{flex:1 1 auto}
+}
+@media(prefers-reduced-motion:reduce){.studio-v2 .sv-flash,.studio-v2 .sv-hint-ok,.studio-link-menu{animation:none}}
+@media(max-width:699px){html body .studio-v2 .sv-actionbar-missing{display:none!important}.studio-link-menu{min-width:280px}.studio-link-menu-actions button{font-size:13px;padding:0 10px}}
