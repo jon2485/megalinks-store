@@ -200,3 +200,10 @@ html body .article-customer-dialog .cv7-head>div{flex:1;min-width:0}
 html body .article-customer-dialog .cv7-chips span{max-width:100%;min-width:0}
 html body .article-customer-dialog .article-customer-option .cv7-tick{display:flex!important;align-items:center;justify-content:center;padding:0!important;margin:0!important;line-height:0!important;gap:0!important}
 html body .article-customer-dialog .article-customer-option .cv7-tick svg{width:14px!important;height:14px!important;margin:0!important;position:static!important;transform:none!important}
+/* The older ".article-customer-option>span" column rule pushed the initials and the X to a corner */
+html body .article-customer-option>span.cv7-avatar,html body .article-customer-option>span.cv7-none,html body .article-customer-option>span.cv7-tick{display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:center!important;gap:0!important;padding:0!important;line-height:1!important;text-align:center!important;overflow-wrap:normal!important}
+html body .article-customer-option>span.cv7-none svg{display:block;margin:0!important}
+html body .article-customer-dialog .article-customer-option{flex-shrink:0!important;height:auto!important;overflow:visible}
+html body .article-customer-dialog .cv7-head{min-width:0;overflow:hidden}
+html body .article-customer-dialog .cv7-chips{max-width:100%}
+html body .article-customer-dialog .cv7-chips span{display:block!important;max-width:100%!important;line-height:26px}
