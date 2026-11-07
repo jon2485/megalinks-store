@@ -35,6 +35,7 @@ import CustomersView from './customers-view';
 import WorkspaceFooter from './workspace-footer';
 import TermsContent from './terms-content';
 import { Toaster, toast } from 'sonner';
+import './customer-v7.css';
 import { pricingApi, api, useData, download, csv, decodeHtml } from '@/lib/client';
 import { Row, money, when, stages, writingStyles, articleTransitions } from '@/lib/shared';
 import { CreditAccounts, MonthlyView, ApprovalBoard, NoticesView, SupplierFinance } from './management';

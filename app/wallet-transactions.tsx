@@ -1,6 +1,6 @@
 'use client';
 import React,{useState} from 'react';
-import {Plus,Minus,Undo2,ChevronDown} from 'lucide-react';
+import {Plus,Minus,Undo2,ChevronDown,Globe,Hash,CalendarDays,Tag,ArrowLeft} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {money,when,type Row} from '@/lib/shared';
 import {type Ctx} from './workspace';
@@ -28,17 +28,16 @@ function TransactionItem({ctx,entry}:{ctx:Ctx;entry:Row}){
    <strong className="wallet-tx-amount"><bdi>{entry.amount>0?'+':''}{money(entry.amount)}</bdi></strong>
    <ChevronDown size={18} className="wallet-tx-chevron" aria-hidden="true"/>
   </button>
-  <div id={id} className="wallet-tx-detail" hidden={!open}><dl className="wallet-tx-facts">
-   {entry.cancellation?<>
-    <div className="is-wide"><dt>המוצר שבוטל</dt><dd>{entry.products?.length?entry.products.map((p:Row,index:number)=><SiteReference key={p.article_id||index} name={p.name} url={p.url}/>):'פרטי האתר אינם זמינים'}</dd></div>
-    <div><dt>מספר הזמנה</dt><dd>{entry.order_id?<Button variant="link" className="wallet-tx-link" onClick={()=>ctx.open({kind:'admin-finance',title:'פרטי הזמנה '+entry.order_number,render:()=> <OrderBreakdown id={entry.order_id} ctx={ctx}/>})}><bdi>{entry.order_number}</bdi></Button>:entry.order_number||'לא זמין'}</dd></div>
-    <div><dt>תאריך הביטול</dt><dd>{when(date)}</dd></div>
-   </>:<>
-    <div><dt>תאריך</dt><dd>{when(entry.created)}</dd></div>
-    <div><dt>סוג</dt><dd>{kindLabel(entry)}</dd></div>
-    {entry.reference&&<div><dt>מספר פעולה</dt><dd dir="ltr" title={entry.reference}>{shortReference(String(entry.reference))}</dd></div>}
-   </>}
-  </dl></div>
+  <div id={id} className="wallet-tx-detail" hidden={!open}><div className="cv7-detail">
+   <div className="cv7-hero" data-tone={tone==='out'?'out':'in'}><span className="cv7-hero-icon" aria-hidden="true"><Icon size={19}/></span><span><b><bdi>{money(Math.abs(entry.amount))}</bdi> {entry.cancellation?'חזרו ליתרה':entry.amount>0?'נוספו ליתרה':'שולמו מהיתרה'}</b><small>{entry.cancellation?'ההזמנה בוטלה, והסכום זמין לרכישה הבאה.':entry.amount>0?'הסכום זמין לשימוש מיד.':'החיוב בוצע מהיתרה שבחשבון.'}</small></span></div>
+   {entry.cancellation&&(entry.products?.length?entry.products.map((p:Row,index:number)=><div key={p.article_id||index} className="cv7-site"><span className="cv7-tile-icon" aria-hidden="true"><Globe size={18}/></span><SiteReference name={p.name} url={p.url}/></div>):<p className="cv7-muted">פרטי האתר אינם זמינים</p>)}
+   <dl className="cv7-tiles">
+    {entry.cancellation&&<div className={entry.order_id?'is-link':''}><span className="cv7-tile-icon" aria-hidden="true"><Hash size={16}/></span><span><dt>הזמנה</dt><dd>{entry.order_id?<button type="button" className="cv7-tile-link" onClick={()=>ctx.open({kind:'admin-finance',title:'פרטי הזמנה '+entry.order_number,render:()=> <OrderBreakdown id={entry.order_id} ctx={ctx}/>})}><bdi>{entry.order_number}</bdi><ArrowLeft size={14} aria-hidden="true"/></button>:entry.order_number||'לא זמין'}</dd></span></div>}
+    <div><span className="cv7-tile-icon" aria-hidden="true"><CalendarDays size={16}/></span><span><dt>{entry.cancellation?'תאריך הביטול':'תאריך'}</dt><dd>{when(date)}</dd></span></div>
+    {!entry.cancellation&&<div><span className="cv7-tile-icon" aria-hidden="true"><Tag size={16}/></span><span><dt>סוג</dt><dd>{kindLabel(entry)}</dd></span></div>}
+    {!entry.cancellation&&entry.reference&&<div><span className="cv7-tile-icon" aria-hidden="true"><Hash size={16}/></span><span><dt>מספר פעולה</dt><dd dir="ltr" className="cv7-ref" title={entry.reference}>{shortReference(String(entry.reference))}</dd></span></div>}
+   </dl>
+  </div></div>
  </li>;
 }
 

@@ -11,7 +11,7 @@ import {PaymentOrderActions} from './payment-review';
 import {paymentStatusLabel} from '@/lib/payment-state';
 import {articleAmounts,effectiveOrderTotal,orderCancellation,orderCancellationLabel} from '@/lib/order-finance';
 import React, {useState,useRef} from 'react';
-import {Wallet, History, Plus, Download, ReceiptText, FileText, CalendarDays, ShoppingCart, Eye, ArrowDownLeft, ArrowUpLeft, CreditCard, Landmark, LockKeyhole, Upload, LoaderCircle, CheckCircle2, XCircle, Ban, Clock3, ChevronDown} from 'lucide-react';
+import {Wallet, History, Plus, Download, ReceiptText, FileText, CalendarDays, ShoppingCart, Eye, ArrowDownLeft, ArrowUpLeft, CreditCard, Landmark, LockKeyhole, Upload, LoaderCircle, CheckCircle2, XCircle, Ban, Clock3, ChevronDown, Check, X, Hash} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
 import {Tabs, TabsList, TabsTrigger} from '@/components/ui/tabs';
@@ -90,16 +90,15 @@ function TopupItem({row}:{row:Row}){
    <span className="topup-pill">{status.label}</span>
    <ChevronDown size={18} className="topup-chevron" aria-hidden="true"/>
   </button>
-  <div id={id} className="topup-detail" role="region" aria-label={'פרטי ההטענה '+money(row.amount_cents)} hidden={!open}><div className="topup-detail-inner">
-   {row.decision==='approved'&&<p className="topup-message">הסכום נוסף ליתרה שלך.</p>}
-   {pending&&<p className="topup-message">{card?'היתרה תתעדכן אוטומטית אחרי אישור הסליקה.':'הסכום יתווסף ליתרה אחרי אימות ההעברה, בדרך כלל עד 48 שעות.'}</p>}
-   {row.decision_note&&<blockquote className="topup-note"><span>{row.decision==='rejected'?'סיבת הדחייה':'הערת הצוות'}</span>{row.decision_note}</blockquote>}
-   <dl className="topup-facts">
-    <div><dt>אמצעי תשלום</dt><dd>{card?'כרטיס אשראי':'העברה בנקאית'}</dd></div>
-    <div><dt>תאריך הבקשה</dt><dd>{when(row.created)}</dd></div>
-    {row.payment_date&&<div><dt>תאריך ההעברה</dt><dd>{when(row.payment_date)}</dd></div>}
-    {row.reference&&<div><dt>אסמכתא</dt><dd dir="ltr">{row.reference}</dd></div>}
-    {!card&&<div><dt>אישור העברה</dt><dd>{row.proof_file_id?'צורף':'לא צורף'}</dd></div>}
+  <div id={id} className="topup-detail" role="region" aria-label={'פרטי ההטענה '+money(row.amount_cents)} hidden={!open}><div className="topup-detail-inner cv7-detail">
+   {row.decision!=='cancelled'&&<ol className="cv7-steps" aria-label="מצב הבקשה"><li data-state="done"><i><Check size={12} strokeWidth={3}/></i>נשלחה</li><li data-state={pending?'current':'done'}><i>{pending?2:<Check size={12} strokeWidth={3}/>}</i>{pending?'בבדיקה':'נבדקה'}</li><li data-state={row.decision==='approved'?'done':row.decision==='rejected'?'bad':'todo'}><i>{row.decision==='approved'?<Check size={12} strokeWidth={3}/>:row.decision==='rejected'?<X size={12} strokeWidth={3}/>:3}</i>{row.decision==='rejected'?'נדחתה':'אושרה'}</li></ol>}
+   <div className="cv7-hero" data-tone={status.tone==='ok'?'in':status.tone==='bad'?'bad':status.tone==='wait'?'wait':'out'}><span className="cv7-hero-icon" aria-hidden="true"><Icon size={19}/></span><span><b>{row.decision==='approved'?'הסכום נוסף ליתרה':row.decision==='rejected'?'הבקשה נדחתה':row.decision==='cancelled'?'הבקשה בוטלה':'הבקשה בבדיקה'}</b><small>{row.decision==='approved'?'אפשר להשתמש ביתרה מיד.':pending?(card?'היתרה תתעדכן אוטומטית אחרי אישור הסליקה.':'הסכום יתווסף ליתרה אחרי אימות ההעברה, בדרך כלל עד 48 שעות.'):row.decision==='rejected'?'אפשר לשלוח בקשה חדשה עם הפרטים הנכונים.':'לא בוצע חיוב.'}</small></span></div>
+   {row.decision_note&&<blockquote className="cv7-note"><span>{row.decision==='rejected'?'סיבת הדחייה':'הערת הצוות'}</span>{row.decision_note}</blockquote>}
+   <dl className="cv7-tiles">
+    <div><span className="cv7-tile-icon" aria-hidden="true">{card?<CreditCard size={16}/>:<Landmark size={16}/>}</span><span><dt>אמצעי תשלום</dt><dd>{card?'כרטיס אשראי':'העברה בנקאית'}</dd></span></div>
+    <div><span className="cv7-tile-icon" aria-hidden="true"><CalendarDays size={16}/></span><span><dt>{row.payment_date?'תאריך ההעברה':'תאריך הבקשה'}</dt><dd>{when(row.payment_date||row.created)}</dd></span></div>
+    {row.reference&&<div><span className="cv7-tile-icon" aria-hidden="true"><Hash size={16}/></span><span><dt>אסמכתא</dt><dd dir="ltr" className="cv7-ref">{row.reference}</dd></span></div>}
+    {!card&&<div><span className="cv7-tile-icon" aria-hidden="true"><FileText size={16}/></span><span><dt>אישור העברה</dt><dd>{row.proof_file_id?'צורף':'לא צורף'}</dd></span></div>}
    </dl>
   </div></div>
  </li>;
