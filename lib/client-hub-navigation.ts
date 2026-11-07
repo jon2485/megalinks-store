@@ -6,7 +6,7 @@ export const clientHubTabs=[
  {id:'customers',path:'purchased/customers',label:'הלקוחות שלי'},
  {id:'profile',path:'purchased/profile',label:'פרטי חשבון'},
 ] as const;
-const aliases:Record<string,string>={orders:'purchased/orders',articles:'purchased/articles',links:'purchased/articles',dashboard:'purchased',strategies:'purchased',wallet:'purchased/payments',monthly:'purchased/orders','purchased/monthly':'purchased/orders',customers:'purchased/customers',profile:'purchased/profile',files:'purchased/files',support:'purchased/support',api:'purchased/api',notifications:'purchased/notifications'};
+const aliases:Record<string,string>={orders:'purchased/orders',articles:'purchased/articles',links:'purchased/articles',dashboard:'purchased',strategies:'purchased',wallet:'purchased/payments',monthly:'purchased/orders','purchased/monthly':'purchased/orders',customers:'purchased/customers',profile:'purchased/profile',files:'purchased/files',support:'purchased/support',api:'purchased/api',notifications:'purchased','purchased/notifications':'purchased'};
 export function clientHubRoute(view:string){return aliases[view]||view;}
 export function isClientHub(view:string){return view==='purchased'||view.startsWith('purchased/');}
 export function clientHubTab(view:string){const part=view.split('/')[1]||'lobby';return part==='monthly'?'orders':['support','api','files','notifications'].includes(part)?'profile':part;}

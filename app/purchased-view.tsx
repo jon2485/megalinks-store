@@ -59,7 +59,8 @@ export function PurchaseRow({ article, site, ctx, compact=false,canAssign=false 
 export default function PremiumPurchasedView({ ctx,initialStage='editing',compact=false,initialOrderId }: { ctx: Ctx;initialStage?:PurchaseStage;compact?:boolean;initialOrderId?:string }) {
     const state = useData('articles', ctx.revision), [search, setSearch] = useState(''), [selectedStage, setSelectedStage] = useState<PurchaseStage>(initialStage), [selectedMonth,setSelectedMonth]=useState('all'),[orderId,setOrderId]=useState(initialOrderId||''),[stageChosen,setStageChosen]=useState(false);
     const customerOptions=useData('articles/customer-options',ctx.revision);
-    const canAssign=!!customerOptions.data?.customers?.length||(state.data?.articles||[]).some((a:Row)=>!!a.customer_id);
+    // Assignment is offered even before the first customer exists: the dialog can add one on the spot
+    const canAssign=(!!customerOptions.data&&!customerOptions.error)||(state.data?.articles||[]).some((a:Row)=>!!a.customer_id);
     const sites = useMemo(()=>new Map<string,Row>(ctx.catalog.map(site=>[site.id,site])),[ctx.catalog]);
     const purchased: Row[] = (state.data?.articles || []).filter((article:Row)=>article.status!=='cancelled' && (article.paid || article.demo || article.on_account) && (!orderId||article.order_id===orderId));
     const query=search.trim().toLocaleLowerCase();

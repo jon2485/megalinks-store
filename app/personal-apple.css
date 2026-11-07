@@ -381,3 +381,5 @@
 .client-hub.approved-account.personal-apple .ml-update-facts dt{font-size:12px;font-weight:600;color:#5d6877}
 .client-hub.approved-account.personal-apple .ml-update-facts dd{font-size:16px;font-weight:800;color:var(--pa-ink);font-variant-numeric:tabular-nums}
 .client-hub.approved-account.personal-apple .ml-update-note{font-size:14px;color:#3d5978;padding:8px 12px;border-radius:12px;background:#fdf3f2}
+/* Desktop: the back-to-top bar sat in the page flow and pushed content down; the phone keeps its floating button */
+@media(min-width:768px){.client-hub .account-return-bar{display:none!important}}

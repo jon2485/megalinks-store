@@ -148,3 +148,10 @@ html body .workspace-site-header.workspace-site-header-compact :is([data-page="p
 html body .header-apple-sheet :is([data-page=offers]) .mobile-glass-icon{background:linear-gradient(180deg,#ffa04a,#f26a1b)!important}
 html body .header-apple-sheet :is([data-page=knowledge],[data-page=purchased]) .mobile-glass-icon{background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important}
 html body .header-apple-sheet :is([data-page=admin],[data-page=supplier-workspace]) .mobile-glass-icon{background:linear-gradient(180deg,#9aa7b6,#6c7a8b)!important}
+/* Signed-out sheet: a short greeting with the reason to sign in, then the sign-in button on its own row */
+html body .header-apple-sheet .workspace-mobile-drawer-top:has(.workspace-guest-welcome){align-items:flex-start!important}
+html body .header-apple-sheet .workspace-guest-welcome{flex:1;display:grid;gap:12px;min-width:0}
+html body .header-apple-sheet .workspace-guest-text{display:grid;gap:2px;margin:0;text-align:right}
+html body .header-apple-sheet .workspace-guest-text strong{font:800 22px/1.2 Heebo,Arial,sans-serif;letter-spacing:-.01em;color:#0b1b2f}
+html body .header-apple-sheet .workspace-guest-text small{font:500 14px/1.4 Heebo,Arial,sans-serif;color:#5b6b82}
+html body .header-apple-sheet .workspace-guest-welcome .workspace-signin{justify-self:stretch;display:flex!important;justify-content:center;align-items:center;min-height:48px;margin:0!important}

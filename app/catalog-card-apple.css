@@ -79,3 +79,5 @@
 }
 @media(prefers-reduced-motion:reduce){.publication-catalog-card.pc-apple,.publication-catalog-card.pc-apple *{animation:none!important;transition-duration:.01ms!important}.publication-catalog-card.pc-apple:hover{transform:none}}
 @media(forced-colors:active){.publication-catalog-card.pc-apple{border:1px solid CanvasText!important}.publication-catalog-card.pc-apple .pc-tip{background:Canvas;color:CanvasText;border:1px solid CanvasText}}
+/* Savings: the amount itself one size up and heavier, so the eye lands on the gain */
+:is(.pc-saving,.ba-saving) .saving-amount{font-size:1.15em;font-weight:800;letter-spacing:-.01em}

@@ -11,7 +11,7 @@ import {PaymentOrderActions} from './payment-review';
 import {paymentStatusLabel} from '@/lib/payment-state';
 import {articleAmounts,effectiveOrderTotal,orderCancellation,orderCancellationLabel} from '@/lib/order-finance';
 import React, {useState,useRef} from 'react';
-import {Wallet, History, Plus, Download, ReceiptText, FileText, CalendarDays, ShoppingCart, Eye, ArrowDownLeft, ArrowUpLeft, CreditCard, Landmark, LockKeyhole, Upload, LoaderCircle} from 'lucide-react';
+import {Wallet, History, Plus, Download, ReceiptText, FileText, CalendarDays, ShoppingCart, Eye, ArrowDownLeft, ArrowUpLeft, CreditCard, Landmark, LockKeyhole, Upload, LoaderCircle, CheckCircle2, XCircle, Ban, Clock3, ChevronDown} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
 import {Tabs, TabsList, TabsTrigger} from '@/components/ui/tabs';
@@ -79,9 +79,34 @@ function BalanceTopUp({ctx,close}:{ctx:Ctx;close:()=>void}) {
         <div className="space-y-3"><Button type="submit" disabled={busy} className="h-auto min-h-12 w-full rounded-xl bg-slate-900 px-4 py-3 text-base font-bold text-white hover:bg-slate-800">{busy?<LoaderCircle size={18} className="animate-spin"/>:method==='card'?<LockKeyhole size={18}/>:<Landmark size={18}/>} {method==='card'?'מעבר לתשלום מאובטח':'שליחת בקשה לאישור'}</Button><p className="text-center text-sm leading-6 text-slate-600">{method==='card'?'היתרה תעודכן באופן מיידי לאחר אישור העסקה.':'הבקשה תועבר לאישור. היתרה תעודכן לאחר אימות הכספים בדרך כלל עד 48 שעות.'}</p></div>
     </form>;
 }
+const topupStatus=(row:Row)=>row.decision==='approved'?{tone:'ok',label:'אושרה',Icon:CheckCircle2}:row.decision==='rejected'?{tone:'bad',label:'נדחתה',Icon:XCircle}:row.decision==='cancelled'?{tone:'muted',label:'בוטלה',Icon:Ban}:row.decision==='awaiting_gateway'?{tone:'wait',label:'ממתינה לתשלום',Icon:Clock3}:{tone:'wait',label:'בבדיקה',Icon:Clock3};
+function TopupItem({row}:{row:Row}){
+ const [open,setOpen]=useState(false),status=topupStatus(row),Icon=status.Icon,card=row.payment_method==='card',id='topup-detail-'+row.id;
+ const pending=!['approved','rejected','cancelled'].includes(row.decision);
+ return <li className="topup-item" data-tone={status.tone} data-open={open}>
+  <button type="button" className="topup-row" aria-expanded={open} aria-controls={id} onClick={()=>setOpen(v=>!v)}>
+   <span className="topup-icon" aria-hidden="true"><Icon size={20}/></span>
+   <span className="topup-main"><strong className="topup-amount">{money(row.amount_cents)}</strong><span className="topup-sub">{card?'אשראי':'העברה בנקאית'} · {when(row.created)}</span></span>
+   <span className="topup-pill">{status.label}</span>
+   <ChevronDown size={18} className="topup-chevron" aria-hidden="true"/>
+  </button>
+  <div id={id} className="topup-detail" role="region" aria-label={'פרטי ההטענה '+money(row.amount_cents)} hidden={!open}><div className="topup-detail-inner">
+   {row.decision==='approved'&&<p className="topup-message">הסכום נוסף ליתרה שלך.</p>}
+   {pending&&<p className="topup-message">{card?'היתרה תתעדכן אוטומטית אחרי אישור הסליקה.':'הסכום יתווסף ליתרה אחרי אימות ההעברה, בדרך כלל עד 48 שעות.'}</p>}
+   {row.decision_note&&<blockquote className="topup-note"><span>{row.decision==='rejected'?'סיבת הדחייה':'הערת הצוות'}</span>{row.decision_note}</blockquote>}
+   <dl className="topup-facts">
+    <div><dt>אמצעי תשלום</dt><dd>{card?'כרטיס אשראי':'העברה בנקאית'}</dd></div>
+    <div><dt>תאריך הבקשה</dt><dd>{when(row.created)}</dd></div>
+    {row.payment_date&&<div><dt>תאריך ההעברה</dt><dd>{when(row.payment_date)}</dd></div>}
+    {row.reference&&<div><dt>אסמכתא</dt><dd dir="ltr">{row.reference}</dd></div>}
+    {!card&&<div><dt>אישור העברה</dt><dd>{row.proof_file_id?'צורף':'לא צורף'}</dd></div>}
+   </dl>
+  </div></div>
+ </li>;
+}
 function CustomerTopups({ctx,approved=false}:{ctx:Ctx;approved?:boolean}) {
  const state=useData('wallet-topups',ctx.revision);const rows:Row[]=state.data?.requests||[];
- return <section className="customer-finance-topups space-y-3"><h2 className="!text-xl font-bold text-slate-900">בקשות הטענת יתרה</h2><p className="approved-finance-subtitle">כל בקשות הטענת היתרה שלך במקום אחד.</p><ErrorBox error={state.error}/>{state.loading?<p role="status" className="text-base text-slate-700">טוען בקשות…</p>:rows.length?<ul>{rows.map(row=><li key={row.id} data-decision={row.decision||'pending'} className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 py-4"><div><strong className="text-lg text-slate-900">{money(row.amount_cents)}</strong><p className="mt-1 break-all text-sm text-slate-700">{when(row.created)} · אסמכתא: {row.reference}</p>{row.decision_note&&<p className="mt-2 text-base text-slate-800">{row.decision_note}</p>}{!['approved','rejected','cancelled'].includes(row.decision)&&<p className="customer-finance-pending-note">{row.payment_method==='card'?'היתרה תעודכן אוטומטית לאחר אישור הסליקה.':'הסכום יתווסף ליתרה לאחר אישור מנהל.'}</p>}</div><span className={'rounded-full px-3 py-2 text-sm font-bold '+(row.decision==='approved'?'bg-teal-100 text-teal-900':row.decision==='rejected'?'bg-rose-100 text-rose-800':'bg-orange-100 text-orange-900')}>{row.decision==='approved'?'אושרה · היתרה עודכנה':row.decision==='rejected'?'נדחתה':row.decision==='cancelled'?'בוטלה':row.decision==='awaiting_gateway'?'ממתינה להשלמת תשלום באשראי':'ממתינה לאימות מנהל'}</span></li>)}</ul>:approved?<AccountEmptyState kind="requests" title="אין בקשות הטענת יתרה" description="כשתבצע בקשת הטענה, היא תופיע כאן."/>:<p className="text-base text-slate-700">אין כרגע בקשות הטענה.</p>}</section>;
+ return <section className="customer-finance-topups topup-apple space-y-3"><h2 className="!text-xl font-bold text-slate-900">בקשות הטענת יתרה</h2><p className="approved-finance-subtitle">לחצו על בקשה כדי לראות את כל הפרטים.</p><ErrorBox error={state.error}/>{state.loading?<p role="status" className="text-base text-slate-700">טוען בקשות…</p>:rows.length?<ul className="topup-list">{rows.map(row=><TopupItem key={row.id} row={row}/>)}</ul>:approved?<AccountEmptyState kind="requests" title="אין בקשות הטענת יתרה" description="כשתבצע בקשת הטענה, היא תופיע כאן."/>:<p className="text-base text-slate-700">אין כרגע בקשות הטענה.</p>}</section>;
 }
 export default function BillingWorkspace({ctx,monthly=false,balanceOnly=false}:{ctx:Ctx;monthly?:boolean;balanceOnly?:boolean}) {
     const hasCreditAccount=ctx.user?.monthly_account?.enabled===1||ctx.user?.monthly_account?.enabled===true;

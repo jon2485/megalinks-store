@@ -34,7 +34,7 @@ export function WorkspaceAccountControls({ ctx, compactGreeting = false, menu = 
                     <a className="account-apple-signout" href="/signout-with-chatgpt?return_to=/" target="_top"><LogOut size={17} aria-hidden="true"/>יציאה מהחשבון</a>
                 </PopoverContent>
             </Popover>)}
-        <Button variant="ghost" size="icon" className="workspace-notification-button" aria-label={pending > 0 ? `התראות ואישורים, ${pending} ממתינים` : 'התראות ואישורים'} onClick={() => ctx.go(ctx.adminMode ? 'admin' : 'notifications')}>
+        <Button variant="ghost" size="icon" className="workspace-notification-button" aria-label={pending > 0 ? `התראות ואישורים, ${pending} ממתינים` : 'התראות ואישורים'} onClick={() => ctx.go(ctx.adminMode ? 'admin' : 'purchased')}>
             <Bell size={21} strokeWidth={1.7}/>
             {pending > 0 && <span className="workspace-notification-dot" aria-hidden="true">{pending > 9 ? '9+' : pending}</span>}
         </Button>

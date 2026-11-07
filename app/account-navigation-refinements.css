@@ -188,3 +188,22 @@
 .account-return-bar button:hover{background:#e7f4ff}
 .account-return-bar button:focus-visible{outline:2px solid #0872d5;outline-offset:3px}
 .client-hub.approved-account .client-hub-content{min-height:calc(100svh - var(--account-scroll-offset,80px) - 72px);scroll-margin-top:calc(var(--account-scroll-offset,80px) + 56px)}
+/* Customer assignment in "הכתבות שלי": a labeled, tinted chip instead of a bare "⋯", full width on phones */
+.client-hub.approved-account .article-customer-compact{flex:0 0 auto}
+.article-assign-chip{display:inline-flex;align-items:center;gap:10px;min-height:44px;max-width:100%;padding:6px 14px 6px 12px;border:0;border-radius:999px;background:#eef6ff;color:#0b4a8f;box-shadow:inset 0 0 0 1px #1673e624;font:700 14px/1.2 Heebo,Arial,sans-serif;cursor:pointer;transition:transform .12s ease-out,background-color .2s,box-shadow .2s}
+.article-assign-chip[data-assigned=true]{background:#e7f7f3;color:#0a6b5f;box-shadow:inset 0 0 0 1px #0a7d7424}
+.article-assign-icon{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff;box-shadow:0 1px 2px #0b28501a;flex:0 0 auto}
+.article-assign-copy{display:grid;min-width:0;text-align:right}
+.article-assign-copy small{font:600 11px/1.2 Heebo,Arial,sans-serif;opacity:.75}
+.article-assign-copy bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.article-assign-edit{flex:0 0 auto;opacity:.7}
+.article-assign-chip:active{transform:scale(.96)}
+.article-assign-chip:focus-visible{outline:2px solid #0872d5;outline-offset:2px}
+@media(hover:hover) and (pointer:fine){.article-assign-chip:hover{background:#e0eeff;box-shadow:inset 0 0 0 1px #1673e655,0 6px 14px -8px #1673e666}.article-assign-chip[data-assigned=true]:hover{background:#d8f2ec;box-shadow:inset 0 0 0 1px #0a7d7455,0 6px 14px -8px #0a7d7466}}
+@media(max-width:767px){.client-hub.approved-account .article-customer-compact{flex:1 1 100%;width:100%}.article-assign-chip{width:100%;justify-content:center}}
+@media(prefers-reduced-motion:reduce){.article-assign-chip{transition:none}}
+@media(max-width:767px){.client-hub.approved-account .purchase-action-row:has(.article-assign-chip){flex-direction:column!important;align-items:stretch!important;gap:10px!important}.client-hub.approved-account .purchase-action-row:has(.article-assign-chip) .purchase-action-buttons{width:100%!important;flex:1 1 auto!important}.client-hub.approved-account .purchase-action-row .article-customer-compact{flex:0 0 auto!important}}
+.client-hub.approved-account .purchase-action-row:has(.article-assign-chip){flex-direction:column!important;align-items:stretch!important;gap:10px!important}
+.client-hub.approved-account .purchase-action-row:has(.article-assign-chip) .purchase-action-buttons{width:100%!important;flex:1 1 auto!important}
+.client-hub.approved-account .purchase-action-row .article-customer-compact{flex:0 0 auto!important}
+.client-hub.approved-account .purchase-action-row .article-assign-chip{width:100%;justify-content:center}

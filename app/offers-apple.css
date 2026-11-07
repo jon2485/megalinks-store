@@ -65,3 +65,4 @@
 @media(max-width:480px){.bundle-apple{padding:16px;border-radius:22px}.bundle-apple .ba-site{grid-template-columns:64px minmax(0,1fr) auto;gap:10px}.bundle-apple .ba-logo{width:64px;height:46px;border-radius:12px}.bundle-apple .ba-price strong{font-size:27px}}
 @media(prefers-reduced-motion:reduce){.bundle-apple,.bundle-apple *,.offers-page.azure-page-theme .offers-type-tabs button{animation:none!important;transition-duration:.01ms!important}.bundle-apple:hover{transform:none}}
 @media(forced-colors:active){.bundle-apple{border:1px solid CanvasText}.offers-page.azure-page-theme .offers-type-tabs button[aria-pressed=true]{outline:2px solid Highlight}}
+.ba-saving .saving-amount{font-size:1.15em;font-weight:800;letter-spacing:-.01em}

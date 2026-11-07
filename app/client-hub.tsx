@@ -4,7 +4,7 @@ import './account-navigation-refinements.css';
 import './customer-cards-approved.css';
 import './personal-apple.css';
 import {useAccountUnderline} from './account-motion';
-import {Home,FileText,ShoppingCart,Wallet,Users,Settings,Plus,Globe,Headphones,FolderOpen,Bell,Code2,ArrowUp} from 'lucide-react';
+import {Home,FileText,ShoppingCart,Wallet,Users,Settings,Plus,Globe,Headphones,FolderOpen,Code2,ArrowUp} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import AccountFirstScreen from './account-first-screen';
 import MobileAccountMenu from './mobile-personal-menu';
@@ -35,4 +35,4 @@ export default function ClientHub({ctx,view}:{ctx:Ctx;view:string}){
  {part==='selling'?<SellerWorkspace ctx={ctx}/>:part==='lobby'?<ClientUpdates ctx={ctx}/>:part==='articles'?<PurchasedView key={view} ctx={ctx} compact={approved} initialStage={purchaseStages.find(s=>s.key===view.split('/')[2])?.key} initialOrderId={view.split('/')[2]==='order'?decodeURIComponent(view.split('/')[3]||''):undefined}/>:part==='orders'||part==='monthly'?<CustomerOrdersView ctx={ctx}/>:part==='payments'?<BillingWorkspace ctx={ctx} balanceOnly/>:part==='customers'?<CustomersView ctx={ctx}/>:part==='profile'?<><AccountSettings ctx={ctx}/><AccountLinks ctx={ctx}/></>:part==='files'?<FilesView ctx={ctx}/>:part==='notifications'?<NoticesView ctx={ctx}/>:part==='api'?<ApiView ctx={ctx}/>:part==='support'?<RecordView ctx={ctx} view="support"/>:<div className="client-hub-panel"><p>העמוד המבוקש לא נמצא.</p><Button onClick={()=>ctx.go('purchased')}>חזרה ללובי</Button></div>}
  </div></section>;
 }
-function AccountLinks({ctx}:{ctx:Ctx}){return <div className="client-hub-account-links">{[{path:'support',label:'פנייה לתמיכה',icon:Headphones},{path:'files',label:'ספריית הקבצים',icon:FolderOpen},{path:'notifications',label:'התראות ועדכונים',icon:Bell},{path:'api',label:'חיבור API',icon:Code2}].map(({path,label,icon:Icon})=><Button key={path} variant="outline" onClick={()=>ctx.go('purchased/'+path)}><Icon size={19}/>{label}</Button>)}</div>;}
+function AccountLinks({ctx}:{ctx:Ctx}){return <div className="client-hub-account-links">{[{path:'support',label:'פנייה לתמיכה',icon:Headphones},{path:'files',label:'ספריית הקבצים',icon:FolderOpen},{path:'api',label:'חיבור API',icon:Code2}].map(({path,label,icon:Icon})=><Button key={path} variant="outline" onClick={()=>ctx.go('purchased/'+path)}><Icon size={19}/>{label}</Button>)}</div>;}
