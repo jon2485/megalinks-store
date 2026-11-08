@@ -253,12 +253,3 @@
  .admin-design-v172 .wc2.is-sky a.wc2-go{white-space:nowrap;min-width:0}
  .admin-design-v172 .wc2.is-sky a.wc2-go span{overflow:hidden;text-overflow:ellipsis}
 }
-/* focused cancellation window */
-.wc2-cancel{display:grid;gap:14px}
-.wc2-cancel-links{display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid #e5eaf1}
-.wc2-cancel-links button{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:12px;border:1px solid #d6e2f0;background:#f6faff;color:#0a66c2;font-weight:650;font-size:14px;transition:transform .12s,background-color .15s}
-.wc2-cancel-links button:hover{background:#eaf3ff}
-.wc2-cancel-links button:active{transform:scale(.97)}
-.wc2-cancel-links button:focus-visible{outline:2px solid #2f9bff;outline-offset:2px}
-.wc2-cancel-load{display:flex;align-items:center;gap:8px;padding:18px 4px;color:#55687f}
-.wc2-cancel-load.is-error{color:#c42847}

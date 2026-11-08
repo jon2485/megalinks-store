@@ -270,3 +270,35 @@ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>
 @media(max-width:520px){
  .admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-chips{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* Articles screen in the sky design (08.11.2026): same list parts as orders, plus the content-only cells. */
+.orders-sky .orders-match-screen.om-content .om-wait:not(.is-late){color:var(--sk-ink)}
+.orders-sky .orders-match-screen.om-content .om-wait .om-muted{color:var(--sk-mute)}
+.orders-sky .orders-match-screen .om-article-site{color:var(--sk-link)}
+.orders-sky .orders-match-screen.om-content .om-content-side{color:var(--sk-copy);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;overflow-wrap:normal;direction:ltr;text-align:right;unicode-bidi:plaintext}
+.orders-sky .om-article-panel .om-link{transition:background-color .15s,transform .12s}
+.orders-sky .om-article-panel .om-link:active{transform:scale(.98)}
+.orders-sky .om-article-panel .om-link:focus-visible{outline:2px solid var(--sk-ring);outline-offset:2px}
+/* open article panel follows the sky tokens, so it reads in dark too */
+.orders-sky .orders-match-screen .om-article-panel{background:transparent;border-top:1px solid var(--sk-line)}
+.orders-sky .orders-match-screen .om-article-panel>section:not(.om-attach):not(.om-brief){background:transparent;border-color:var(--sk-line)}
+.orders-sky .orders-match-screen .om-article-panel :is(h3,.om-customer-name){color:var(--sk-ink)}
+.orders-sky .orders-match-screen .om-article-panel :is(.om-payment dd,.om-route b){color:var(--sk-ink)}
+.orders-sky .orders-match-screen .om-article-panel :is(.om-payment dt,.om-route time,.om-customer-line){color:var(--sk-mute)}
+.orders-sky .orders-match-screen .om-article-panel :is(.om-payment dd a,.om-link){color:var(--sk-link)}
+.orders-sky .orders-match-screen .om-article-panel .om-link{border-color:var(--sk-line)}
+.orders-sky .orders-match-screen .om-article-panel .om-panel-foot{background:transparent;border-color:var(--sk-line)}
+.orders-sky .orders-match-screen .om-instruction-row b{color:var(--sk-ink)}
+.orders-sky .orders-match-screen .om-instruction-row :is(p,time){color:var(--sk-copy)}
+.orders-sky .orders-match-screen .om-instruction-text{background:var(--sk-well);color:var(--sk-ink);border-color:var(--sk-line)}
+@media(max-width:760px){
+ .orders-sky .orders-match-screen.om-content .orders-reference-toolbar.om-toolbar{grid-template-columns:minmax(0,1fr)!important}
+ .orders-sky .orders-match-screen.om-content .orders-reference-toolbar.om-toolbar{flex-wrap:wrap}
+ .orders-sky .orders-match-screen.om-content .orders-reference-toolbar .orders-reference-search{flex:1 1 100%!important;width:100%!important;max-width:none!important;min-width:0}
+ .orders-sky .orders-match-screen.om-content .orders-reference-toolbar>:not(.orders-reference-search){flex:1 1 100%}
+ .orders-sky .orders-match-screen.om-content .om-row:has(>.om-id){grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"id pay" "who who" "sites sites" "amount amount" "pub act"}
+ .orders-sky .orders-match-screen.om-content .om-row>.om-sites{display:flex;flex-direction:column;align-items:flex-start;gap:2px;min-width:0}
+ .orders-sky .orders-match-screen.om-content .om-row>.om-amount{justify-self:stretch;text-align:start;font-size:13px}
+ .orders-sky .orders-match-screen.om-content .om-row>.om-amount:not(:has(.om-muted))::before{content:"ספק: ";color:var(--sk-mute)}
+ .orders-sky .orders-match-screen.om-content .om-row>.om-pay{justify-self:end;align-items:flex-end}
+}
