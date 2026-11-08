@@ -313,3 +313,17 @@ html body .s8 .s8-row:last-child{border-bottom:0}
 .in-hero ul,.in-need ul{margin-inline:0}
 .in-final h2{color:#fff}
 @media(prefers-reduced-motion:reduce){.in-wrap *{transition:none!important;transform:none!important}.in-card,.in-float{rotate:0deg!important}}
+/* Intro hero, light option A (approved 08.11): white-to-sky card, dark text, blue CTA; the sample card stays blue */
+html body .s8 .in-hero{background:linear-gradient(135deg,#ffffff 0%,#eef6ff 55%,#e3f4fb 100%);color:var(--ink);box-shadow:0 0 0 1px #1673e61f,0 24px 50px -36px #1673e680}
+html body .s8 .in-glow{background:radial-gradient(420px 260px at 85% 0%,#d6e8ff,transparent 60%),radial-gradient(360px 260px at 0% 100%,#e6f9fb,transparent 65%)}
+html body .s8 .in-hero h2{color:var(--ink)}
+html body .s8 .in-hero p{color:#3d5270;opacity:1}
+html body .s8 .in-eyebrow{background:#fff;color:var(--bl);box-shadow:0 0 0 1px #1673e626}
+html body .s8 .in-hero .in-primary{background:linear-gradient(135deg,#1673e6,#2b8cff);color:#fff;box-shadow:0 12px 24px -12px #1673e6}
+html body .s8 .in-hero .in-primary:hover{filter:brightness(1.07);box-shadow:0 16px 28px -12px #1673e6}
+html body .s8 .in-ghost{background:#fff;color:var(--ink);box-shadow:0 0 0 1px #c9d8ec}
+html body .s8 .in-ghost:hover{background:#f3f8ff;box-shadow:0 0 0 1px #a9c3e6}
+html body .s8 .in-trust{color:#2b4160;opacity:1}html body .s8 .in-trust svg{color:#16a34a}
+html body .s8 .in-card{background:linear-gradient(135deg,#0b3d91,#1673e6 55%,#22b8cf);color:#fff;box-shadow:0 26px 44px -20px #1155c0aa,inset 0 1px 0 #ffffff40}
+html body .s8 .in-float{box-shadow:0 0 0 1px #0b285010,0 18px 34px -18px #0b285066}
+html body .s8 .in-hero .in-btn:focus-visible{outline-color:var(--bl)}
