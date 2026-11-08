@@ -280,14 +280,14 @@ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>
 .orders-sky .om-article-panel .om-link:active{transform:scale(.98)}
 .orders-sky .om-article-panel .om-link:focus-visible{outline:2px solid var(--sk-ring);outline-offset:2px}
 /* open article panel follows the sky tokens, so it reads in dark too */
-.orders-sky .orders-match-screen .om-article-panel{background:transparent;border-top:1px solid var(--sk-line)}
-.orders-sky .orders-match-screen .om-article-panel>section:not(.om-attach):not(.om-brief){background:transparent;border-color:var(--sk-line)}
-.orders-sky .orders-match-screen .om-article-panel :is(h3,.om-customer-name){color:var(--sk-ink)}
-.orders-sky .orders-match-screen .om-article-panel :is(.om-payment dd,.om-route b){color:var(--sk-ink)}
-.orders-sky .orders-match-screen .om-article-panel :is(.om-payment dt,.om-route time,.om-customer-line){color:var(--sk-mute)}
-.orders-sky .orders-match-screen .om-article-panel :is(.om-payment dd a,.om-link){color:var(--sk-link)}
-.orders-sky .orders-match-screen .om-article-panel .om-link{border-color:var(--sk-line)}
-.orders-sky .orders-match-screen .om-article-panel .om-panel-foot{background:transparent;border-color:var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel){background:transparent;border-top:1px solid var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel)>section:not(.om-attach):not(.om-brief){background:transparent;border-color:var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(h3,.om-customer-name){color:var(--sk-ink)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(.om-payment dd,.om-route b){color:var(--sk-ink)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(.om-payment dt,.om-route time,.om-customer-line){color:var(--sk-mute)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(.om-payment dd a,.om-link){color:var(--sk-link)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) .om-link{border-color:var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) .om-panel-foot{background:transparent;border-color:var(--sk-line)}
 .orders-sky .orders-match-screen .om-instruction-row b{color:var(--sk-ink)}
 .orders-sky .orders-match-screen .om-instruction-row :is(p,time){color:var(--sk-copy)}
 .orders-sky .orders-match-screen .om-instruction-text{background:var(--sk-well);color:var(--sk-ink);border-color:var(--sk-line)}
@@ -302,3 +302,11 @@ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>
  .orders-sky .orders-match-screen.om-content .om-row>.om-amount:not(:has(.om-muted))::before{content:"ספק: ";color:var(--sk-mute)}
  .orders-sky .orders-match-screen.om-content .om-row>.om-pay{justify-self:end;align-items:flex-end}
 }
+
+/* Customers screen (08.11.2026) */
+.orders-sky .orders-match-screen.om-users :is(.om-user-name span,.om-user-role small,.om-user-monthly small,.om-user-orders small){color:var(--sk-mute)}
+.orders-sky .orders-match-screen.om-users :is(.om-user-credit,.om-user-orders b){color:var(--sk-ink)}
+.orders-sky .orders-match-screen.om-users .om-user-alert{color:var(--om-red,#c42847)}
+.orders-sky .orders-match-screen.om-users>.orders-unified-heading{position:relative}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) .om-payment dd a:hover{text-decoration:underline}
+@media(min-width:761px){.orders-sky .orders-match-screen.om-users>.om-top-actions{top:2px;inset-inline-end:66px}}

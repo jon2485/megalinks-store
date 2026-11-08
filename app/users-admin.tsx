@@ -8,6 +8,7 @@ import {Field,Pick,type Ctx} from './workspace';
 import {ActionForm} from './screens';
 import {orderDateLabel} from './order-presentation';
 import {openCustomerOrder} from './customer-account-admin';
+import SkyThemeButton from './sky-theme-button';
 import {OrderExport,OrderFilter,OrderPager,OrderRecord,OrderSearch,OrderViews,plainClick} from './order-list-parts';
 
 const roleNames:Row={customer:'לקוח',agency:'סוכנות',supplier:'ספק',admin:'מנהל'};
@@ -27,7 +28,7 @@ function UserPanel({ctx,user}:{ctx:Ctx;user:Row}){
  const monthly=()=>ctx.open({kind:'admin-finance',title:'מסגרת חשבון חודשי',description:user.name,render:(close:()=>void)=><MonthlyPermission ctx={ctx} user={user} close={close}/>});
  const credit=()=>ctx.open({kind:'admin-finance',title:'תנועת קרדיט ידנית',description:'סכום שלילי מפחית יתרה. לכל פעולה נדרשת אסמכתא ייחודית.',render:(close:()=>void)=><CreditMovement ctx={ctx} user={user} close={close}/>});
  return <div className="om-panel om-user-panel" dir="rtl">
-  <section className="om-payment"><h3>פרטי החשבון</h3><dl><div><dt>סוג החשבון</dt><dd>{roleNames[user.role]||user.role}</dd></div><div><dt>מייל</dt><dd><bdi>{user.email}</bdi></dd></div><div><dt>טלפון</dt><dd>{user.phone?<a href={'tel:'+user.phone}><bdi>{user.phone}</bdi></a>:'לא נמסר'}</dd></div><div><dt>חברה</dt><dd>{user.company||'לא נמסרה'}</dd></div><div><dt>רמת מחיר</dt><dd>{user.tier_name||'לקוחות רגילים'}</dd></div><div><dt>הצטרף</dt><dd><bdi>{orderDateLabel(user.created)}</bdi></dd></div></dl></section>
+  <section className="om-payment"><h3>פרטי החשבון</h3><dl><div><dt>סוג החשבון</dt><dd>{roleNames[user.role]||user.role}</dd></div><div><dt>מייל</dt><dd><a href={'mailto:'+user.email}><bdi>{user.email}</bdi></a></dd></div><div><dt>טלפון</dt><dd>{user.phone?<a href={'tel:'+user.phone}><bdi>{user.phone}</bdi></a>:'לא נמסר'}</dd></div><div><dt>חברה</dt><dd>{user.company||'לא נמסרה'}</dd></div><div><dt>רמת מחיר</dt><dd>{user.tier_name||'לקוחות רגילים'}</dd></div><div><dt>הצטרף</dt><dd><bdi>{orderDateLabel(user.created)}</bdi></dd></div></dl></section>
   <section className="om-payment"><h3>כספים</h3><dl><div><dt>קרדיט בארנק</dt><dd><bdi>{money(user.credits||0)}</bdi></dd></div><div><dt>חשבון חודשי</dt><dd>{user.monthly_enabled?'מאושר':'ללא הרשאה'}</dd></div><div><dt>חוב חודשי פתוח</dt><dd><bdi>{money(user.monthly_balance||0)}</bdi></dd></div><div><dt>מסגרת מאושרת</dt><dd><bdi>{money(user.credit_limit||0)}</bdi></dd></div><div><dt>מסגרת פנויה</dt><dd><bdi>{money(available(user))}</bdi></dd></div></dl>{Number(user.pending_payment_reports)>0&&<a className="om-link om-user-alert" href="/admin-payment-reports" onClick={go('admin-payment-reports')}><ShieldCheck size={16} aria-hidden="true"/><span>{Number(user.pending_payment_reports)===1?'דיווח תשלום ממתין לבדיקה':user.pending_payment_reports+' דיווחי תשלום ממתינים לבדיקה'}</span><ChevronLeft size={15} aria-hidden="true"/></a>}</section>
   <section className="om-customer"><h3>מעבר מהיר</h3>
    {link(account+'/orders',ShoppingCart,'הזמנות ותשלומים')}
@@ -47,7 +48,7 @@ export default function UsersAdmin({ctx}:{ctx:Ctx}){
  const count=(r:string)=>scoped.filter(u=>u.role===r).length,reset=()=>{setPage(1);setOpen('');};
  const exportRows=()=>exportSpreadsheet('accounts.xlsx',[['שם','מייל','טלפון','חברה','סוג חשבון','רמת מחיר','קרדיט בארנק','חשבון חודשי','חוב חודשי','מסגרת מאושרת','הזמנות'],...rows.map(u=>[u.name,u.email,u.phone||'',u.company||'',roleNames[u.role]||u.role,u.tier_name||'',Number(u.credits||0)/100,u.monthly_enabled?'מאושר':'לא',Number(u.monthly_balance||0)/100,Number(u.credit_limit||0)/100,Number(u.order_count||0)])],'חשבונות');
  return <section className="orders-match-screen om-finance om-content om-users" dir="rtl">
-  <header className="orders-unified-heading"><h1>לקוחות והרשאות</h1><p>כל החשבונות, היתרות וההרשאות במקום אחד.</p></header>
+  <header className="orders-unified-heading"><h1>לקוחות והרשאות</h1><SkyThemeButton/><p>כל החשבונות, היתרות וההרשאות במקום אחד.</p></header>
   <div className="om-top-actions"><OrderExport run={exportRows} disabled={!rows.length}/></div>
   <div className="orders-reference-panel">
    <div className="orders-reference-toolbar om-toolbar is-one"><OrderSearch label="חיפוש לפי שם, מייל, חברה או טלפון" value={search} onChange={v=>{setSearch(v);reset();}}/><OrderFilter label="סינון לפי כספים" icon={<SlidersHorizontal size={20}/>} value={funds} onChange={v=>{setFunds(v);reset();}} options={{all:'כל החשבונות',monthly:'עם חשבון חודשי',debt:'עם חוב חודשי פתוח',credit:'עם קרדיט בארנק',reports:'עם דיווח תשלום ממתין'}}/></div>
