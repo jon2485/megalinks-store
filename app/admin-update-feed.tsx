@@ -1,7 +1,7 @@
 'use client';
 import React,{useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {toast} from 'sonner';
-import {Bell,CalendarDays,Check,CheckCircle2,ChevronDown,ChevronLeft,ChevronRight,ChevronUp,Clock,FileText,Info,Landmark,Loader2,Mail,MessageSquare,PenLine,Plug,ReceiptText,RefreshCcw,RefreshCw,RotateCcw,Search,Send,Store,Tags,TriangleAlert,Wallet,X,XCircle} from 'lucide-react';
+import {Bell,CalendarDays,Check,CheckCircle2,ChevronDown,ChevronLeft,ChevronRight,ChevronUp,Clock,FileText,Info,Landmark,Loader2,Mail,MessageSquare,Moon,PenLine,Plug,ReceiptText,RefreshCcw,RefreshCw,RotateCcw,Search,Send,Store,Sun,Tags,TriangleAlert,Wallet,X,XCircle} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {money,type Row} from '@/lib/shared';
 import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
@@ -39,8 +39,8 @@ function Wave({values}:{values:number[]}){
  for(let i=0;i<n-1;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(n-1,i+2)];d+=` C${p1[0]+(p2[0]-p0[0])/6},${p1[1]+(p2[1]-p0[1])/6} ${p2[0]-(p3[0]-p1[0])/6},${p2[1]-(p3[1]-p1[1])/6} ${p2[0]},${p2[1]}`;}
  d+=` L0,${pts[n-1][1]}`;const last=pts[n-1];
  return <svg className="sky-wave" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
-  <defs><linearGradient id={id+'s'} x1="1" x2="0"><stop offset="0" stopColor="#fff" stopOpacity=".35"/><stop offset=".55" stopColor="#fff" stopOpacity=".95"/><stop offset="1" stopColor="#7fe7f2"/></linearGradient>
-   <linearGradient id={id+'f'} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7fe7f2" stopOpacity=".32"/><stop offset="1" stopColor="#7fe7f2" stopOpacity="0"/></linearGradient>
+  <defs><linearGradient id={id+'s'} x1="1" x2="0"><stop className="sky-s1" offset="0" stopColor="#fff" stopOpacity=".35"/><stop className="sky-s2" offset=".55" stopColor="#fff" stopOpacity=".95"/><stop className="sky-s3" offset="1" stopColor="#7fe7f2"/></linearGradient>
+   <linearGradient id={id+'f'} x1="0" y1="0" x2="0" y2="1"><stop className="sky-f1" offset="0" stopColor="#7fe7f2" stopOpacity=".32"/><stop className="sky-f2" offset="1" stopColor="#7fe7f2" stopOpacity="0"/></linearGradient>
    <clipPath id={id+'c'}><rect className="sky-wave-wipe" x="0" y="0" width={W} height={H}/></clipPath></defs>
   <path d={d+` L0,${H} L${W},${H} Z`} fill={`url(#${id}f)`} clipPath={`url(#${id}c)`}/>
   <path className="sky-wave-glow" d={d} pathLength={1}/>
@@ -52,6 +52,9 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  const [saved,setSaved]=useState(()=>({...initial,...adminViewState('updates',initial)})),[draft,setDraft]=useState(saved.q);
  const [busy,setBusy]=useState(''),[done,setDone]=useState<string[]>([]),[rowError,setRowError]=useState<{id:string;message:string}|null>(null),[opening,setOpening]=useState(''),[active,setActive]=useState('urgent'),[flash,setFlash]=useState(''),[refreshed,setRefreshed]=useState(false),[moreBusy,setMoreBusy]=useState(''),[updatedAt,setUpdatedAt]=useState('');
  const input=useRef<HTMLInputElement>(null),root=useRef<HTMLElement>(null),seg=useRef<HTMLDivElement>(null),lock=useRef(false),restore=useRef(saved.scroll),latest=useRef(saved),refreshing=useRef(false),timers=useRef<ReturnType<typeof setTimeout>[]>([]);
+ const [theme,setTheme]=useState<'dark'|'light'>('dark');
+ useLayoutEffect(()=>{try{if(localStorage.getItem('wc2-theme')==='light')setTheme('light');}catch{}},[]);
+ function switchTheme(){const next=theme==='light'?'dark':'light';setTheme(next);try{localStorage.setItem('wc2-theme',next);}catch{}}
  const isOpen=saved.state==='open',limits={...defaults,...saved.limits};
  const laneParams=new URLSearchParams({view:'lanes',q:saved.q,...Object.fromEntries(Object.entries(limits).map(([k,v])=>['limit_'+k,String(v)]))});
  const listParams=new URLSearchParams({q:saved.q,state:'handled',page:String(saved.page)});
@@ -105,12 +108,13 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  const bigLines:[string,string]=!isOpen?['טופלו',handledCount===1?'התראה אחת סומנה':handledCount+' התראות סומנו']:!data?['טוען','את העדכונים…']:saved.q?['נמצאו '+toHandle,'לטיפול בחיפוש']:toHandle===0?['הכול רגוע','אין דברים לטיפול']:[toHandle+' לטיפול',urgentN===0?'בלי דברים דחופים':urgentN===1?'ואחד מהם דחוף':'ו־'+urgentN+' מהם דחופים'];
  const blurb=!isOpen?'אלה ההתראות שסימנת כטופלו. אפשר לפתוח כל אחת או להחזיר אותה לטיפול.':!data?'':toHandle===0?'אין כרגע ביטולים, כסף שממתין, כתבות או פניות שמחכים לך.':[urgentN&&(urgentN===1?'דבר דחוף אחד: ביטול, כסף שממתין או תקלת שליחה.':urgentN+' דברים דחופים: ביטולים, כסף שממתין ותקלות שליחה.'),contentN&&(contentN===1?'כתבה אחת מחכה לך.':contentN+' כתבות מחכות לך.'),serviceN&&(serviceN===1?'פנייה אחת מחכה לתשובה.':serviceN+' פניות מחכות לתשובה.')].filter(Boolean).join(' ');
  const week:{v:number;day:string}[]=pulse?.orders?.series?(pulse.orders.series as number[]).slice(-7).map((v,i)=>({v,day:dayShift(pulse.today,i-6)})):[];
- return <section className="wc2 is-sky" dir="rtl" ref={root}>
+ return <section className={'wc2 is-sky'+(theme==='light'?' is-light':'')} dir="rtl" ref={root}>
   <div className="sky-stage">
   <header className="wc2-head"><div className="sky-title"><h1>מרכז העבודה</h1>{updatedAt&&<span className="wc2-live">עודכן {updatedAt}</span>}</div>
    <div className="wc2-tools"><form noValidate role="search" className="wc2-search" onSubmit={e=>{e.preventDefault();commit({q:draft.trim()});}}>{searching?<Loader2 className="wc2-spin" size={17} aria-hidden="true"/>:<Search size={17} aria-hidden="true"/>}<input ref={input} type="search" maxLength={120} aria-label="חיפוש התראה או לקוח" placeholder="חיפוש התראה או לקוח" value={draft} onChange={e=>setDraft(e.target.value)}/>{draft&&<button type="button" aria-label="ניקוי חיפוש" onClick={()=>{setDraft('');commit({q:''});input.current?.focus();}}><X size={17} aria-hidden="true"/></button>}</form>
     <div className="wc2-seg" ref={seg} role="group" aria-label="מצב הטיפול בהתראות"><span className="wc2-thumb" aria-hidden="true"/>{[['open','פתוח',toHandle+total('info')],['handled','טופלו',handledCount]].map(([value,label,n])=><button key={String(value)} type="button" aria-pressed={saved.state===value} onClick={()=>commit({state:String(value)})}>{label}{(value==='handled'||data)&&<bdi>({Number(n)})</bdi>}</button>)}</div>
-    <button type="button" className={'wc2-glass'+(refreshed?' is-success':'')} disabled={state.loading} aria-busy={state.loading||undefined} aria-label="רענון העדכונים" onClick={refresh}>{refreshed?<Check size={17} aria-hidden="true"/>:<RefreshCw className={state.loading?'wc2-spin':undefined} size={17} aria-hidden="true"/>}<span>{state.loading?'מרענן…':refreshed?'עודכן':'רענון'}</span></button></div></header>
+    <button type="button" className={'wc2-glass'+(refreshed?' is-success':'')} disabled={state.loading} aria-busy={state.loading||undefined} aria-label="רענון העדכונים" onClick={refresh}>{refreshed?<Check size={17} aria-hidden="true"/>:<RefreshCw className={state.loading?'wc2-spin':undefined} size={17} aria-hidden="true"/>}<span>{state.loading?'מרענן…':refreshed?'עודכן':'רענון'}</span></button>
+    <button type="button" className="wc2-glass sky-theme" aria-pressed={theme==='light'} aria-label={theme==='light'?'מעבר למצב כהה':'מעבר למצב בהיר'} title={theme==='light'?'מצב כהה':'מצב בהיר'} onClick={switchTheme}>{theme==='light'?<Moon size={18} aria-hidden="true"/>:<Sun size={18} aria-hidden="true"/>}</button></div></header>
   <div className="sky-hero">
    <div className="sky-main">
     <p className="sky-big" role="status"><span className="sky-ln"><span>{bigLines[0]}</span></span><span className="sky-ln"><span>{bigLines[1]}</span></span></p>
