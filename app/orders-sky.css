@@ -253,3 +253,20 @@ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>
  .orders-sky .orders-match-screen:not(.om-finance) .om-head,.orders-sky .orders-match-screen:not(.om-finance) .om-row{grid-template-columns:96px 140px minmax(90px,1fr) 128px 128px 108px auto auto;gap:10px}
  .orders-sky .orders-match-screen:not(.om-finance) .om-row>.om-action{padding-inline:12px}
 }
+
+/* Phones: categories and views wrap into even rows instead of a strip that runs off the card (08.11 owner feedback). */
+@media(max-width:760px){
+ .admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-chips{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0 0;padding:0;overflow:visible}
+ .admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-chips a{flex:initial;min-width:0;min-height:44px;height:auto;padding:6px 8px;justify-content:center;gap:5px;text-align:center;white-space:normal;line-height:1.2;font-size:13px;border-radius:14px;transition:background .18s,transform .12s}
+ .admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-chips a:active{transform:scale(.97)}
+ .orders-sky .orders-match-screen .om-chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;overflow:visible;width:100%}
+ .orders-sky .orders-match-screen .om-chips button{width:100%;min-width:0;justify-content:center;padding:0 10px;font-size:13.5px}
+ .orders-sky .orders-match-screen .om-toolbar .orders-reference-search input{font-size:14px}
+}
+@media(max-width:420px){
+ .orders-sky .orders-match-screen .om-chips{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+.orders-sky .orders-unified-heading .orders-category-chips a{word-break:keep-all;overflow-wrap:normal;hyphens:none}
+@media(max-width:520px){
+ .admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-chips{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
