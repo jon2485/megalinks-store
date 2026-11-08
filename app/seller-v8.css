@@ -225,3 +225,29 @@ html body .s8 .s8-row:last-child{border-bottom:0}
 .s16-steps [data-s=done] small{color:#15803d;font-weight:600}.s16-steps [data-s=now] small{color:var(--bl);font-weight:700}
 .s16-steps li:not([data-s]) strong{color:var(--mut)}
 @media(max-width:760px){.s16-steps{padding:16px 4px 14px}.s16-steps li{padding:0 4px}.s16-dot{width:30px;height:30px;font-size:13px}.s16-steps li+li:before{top:15px}.s16-steps strong{font-size:13px}.s16-steps small{font-size:11.5px}}
+/* Interaction feedback (apple-design: respond on press, continuous, interruptible, reduced-motion aware) */
+.s8 .s8-btn,.s8 .s8-tabs button,.s8 .s8-seg button,.s8 button.s8-row,.s8 .s8-todo,.s8 .s15-set li>button,.s8 .s15-danger,.s8 .s8-back,.s8 .s15-f button,.s8 .s15-ln,.s8 .s8-month .s8-btn{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .18s cubic-bezier(.2,.8,.2,1),background-color .15s ease,box-shadow .2s ease,color .15s ease,filter .15s ease}
+.s8 .s8-btn:active:not(:disabled),.s8 .s8-tabs button:active,.s8 .s8-seg button:active,.s8 .s15-danger:active,.s8 .s15-ln:active{transform:scale(.96);transition-duration:.08s}
+.s8 button.s8-row:active,.s8 .s8-todo:active,.s8 .s15-set li>button:active:not(:disabled){transform:scale(.992);transition-duration:.08s}
+.s8 .s8-back:active,.s8 .s15-f button:active{opacity:.6}
+.s8 .s8-btn:disabled{opacity:.45;cursor:not-allowed}
+.s8 :is(.s8-btn,.s8-tabs button,.s8-seg button,.s8-row,.s8-todo,.s15-set button,.s15-danger,.s8-back,.s15-f button,.s15-ln):focus-visible{outline:2.5px solid var(--bl);outline-offset:2px}
+.s8 .s8-go svg,.s8 .s15-set li>button>svg,.s8 .s8-todo .s8-btn svg,.s8 .s15-f button svg,.s8 .s8-back svg{transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+@media(hover:hover) and (pointer:fine){
+ .s8 .s8-primary:hover:not(:disabled){filter:brightness(1.07);box-shadow:0 10px 22px -10px #1673e6!important;transform:translateY(-1px)}
+ .s8 .s8-soft:hover:not(:disabled){background:#e3eaf3}
+ .s8 .s8-tabs button:not([aria-pressed=true]):hover{background:#ffffff8c;color:var(--ink)}
+ .s8 .s8-seg button:not([aria-pressed=true]):hover{background:#ffffffa6;color:var(--ink)}
+ .s8 button.s8-row:hover{background:#f5f9ff}.s8 button.s8-row:hover .s8-go svg{transform:translateX(-3px)}.s8 button.s8-row:hover strong{color:var(--bl)}
+ .s8 .s8-todo:hover{box-shadow:inset 0 0 0 1px #f5c56b,0 12px 24px -18px #d9770688!important;transform:translateY(-1px)}.s8 .s8-todo:hover .s8-btn svg{transform:translateX(-3px)}
+ .s8 .s15-set li>button:not(:disabled):hover{background:#eaf1fb;border-radius:10px}.s8 .s15-set li>button:not(:disabled):hover>svg{transform:translateX(-3px);color:var(--bl)}
+ .s8 .s15-danger:hover{background:#fdecea}
+ .s8 .s8-back:hover svg{transform:translateX(3px)}.s8 .s15-f button:hover svg{transform:translateX(-3px)}
+ .s8 .s15-ln:hover{background:#eaf1fb;color:var(--bl)}
+ .s8 .s15-r:hover{background:#f8fbff}.s8 .s15-wait:hover{background:linear-gradient(90deg,#fff3dc,#fffaf0)}
+ .s8 .s8-payrow:hover,.s8 .s8-art:hover{background:#f8fbff}
+ .s8 .s10-tile{transition:transform .2s ease,box-shadow .2s ease}.s8 .s10-tile:hover{transform:translateY(-2px);box-shadow:0 0 0 1px #0b285014,0 20px 36px -26px #0b285077}
+ .s8 .s10-card{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s ease}.s8 .s10-card:hover{transform:translateY(-2px) rotate(-.3deg);box-shadow:0 30px 50px -24px #1155c0bb,inset 0 1px 0 #ffffff40}
+}
+.s15-set li>button{padding:0 8px!important;margin:0 -8px;width:calc(100% + 16px)!important}
+@media(prefers-reduced-motion:reduce){.s8 *,.s8 *:hover,.s8 *:active{transform:none!important;transition:background-color .15s,color .15s,opacity .15s!important}}
