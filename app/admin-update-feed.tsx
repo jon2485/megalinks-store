@@ -8,6 +8,7 @@ import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
 import type {Ctx} from './workspace';
 import {useAdminAttention} from './admin-attention';
 import './admin-work-center-v2.css';
+import './admin-work-center-sky.css';
 // Approved redesign 05.11.2026 (docs/proposals/work-center-v2): summary numbers, jump pills, quiet lanes, undo after "handled".
 const initial={q:'',state:'open',page:1,scroll:0,limits:{} as Record<string,number>};
 const lanes=[{id:'urgent',label:'דחוף',sub:'ביטולים, כסף שממתין ותקלות שליחה',icon:TriangleAlert,empty:'אין כרגע דברים דחופים',step:20},{id:'content',label:'תוכן ופרסום',sub:'כתבות שמחכות לך',icon:FileText,empty:'אין כתבות שמחכות לך',step:10},{id:'service',label:'שירות וספקים',sub:'אנשים שמחכים לתשובה',icon:MessageSquare,empty:'אין פניות או בקשות פתוחות',step:10}] as const;
@@ -26,6 +27,26 @@ function Spark({values}:{values:number[]}){
  if(values.length<2||!values.some(Boolean))return null;
  const max=Math.max(...values),w=84,h=34,pts=values.map((v,i)=>[w-2-(i*(w-4))/(values.length-1),h-3-(v/max)*(h-8)]);
  return <svg className="wc2-spark" viewBox={`0 0 ${w} ${h}`} aria-hidden="true"><polyline points={pts.map(p=>p.join(',')).join(' ')}/></svg>;
+}
+// "Sky" stage 08.11.2026: glass panels over the brand waves, inspired by the Forecast Center reference.
+// The wave shows orders for the last 7 days. Oldest day sits on the right (RTL), today on the left.
+const dayShift=(day:string,n:number)=>{const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+n);return d.toISOString().slice(0,10);};
+const dayName=(day:string)=>new Intl.DateTimeFormat('he-IL',{weekday:'long',timeZone:'UTC'}).format(new Date(day+'T12:00:00Z')).replace('יום ','');
+function Wave({values}:{values:number[]}){
+ const id=React.useId().replace(/:/g,''),W=700,H=150,n=values.length,max=Math.max(1,...values);
+ const pts=values.map((v,i)=>[W-(i+.5)*W/n,H-22-(v/max)*(H-62)]);
+ let d=`M${W},${pts[0][1]} L${pts[0][0]},${pts[0][1]}`;
+ for(let i=0;i<n-1;i++){const p0=pts[Math.max(0,i-1)],p1=pts[i],p2=pts[i+1],p3=pts[Math.min(n-1,i+2)];d+=` C${p1[0]+(p2[0]-p0[0])/6},${p1[1]+(p2[1]-p0[1])/6} ${p2[0]-(p3[0]-p1[0])/6},${p2[1]-(p3[1]-p1[1])/6} ${p2[0]},${p2[1]}`;}
+ d+=` L0,${pts[n-1][1]}`;const last=pts[n-1];
+ return <svg className="sky-wave" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden="true">
+  <defs><linearGradient id={id+'s'} x1="1" x2="0"><stop offset="0" stopColor="#fff" stopOpacity=".35"/><stop offset=".55" stopColor="#fff" stopOpacity=".95"/><stop offset="1" stopColor="#7fe7f2"/></linearGradient>
+   <linearGradient id={id+'f'} x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#7fe7f2" stopOpacity=".32"/><stop offset="1" stopColor="#7fe7f2" stopOpacity="0"/></linearGradient>
+   <clipPath id={id+'c'}><rect className="sky-wave-wipe" x="0" y="0" width={W} height={H}/></clipPath></defs>
+  <path d={d+` L0,${H} L${W},${H} Z`} fill={`url(#${id}f)`} clipPath={`url(#${id}c)`}/>
+  <path className="sky-wave-glow" d={d} pathLength={1}/>
+  <path className="sky-wave-line" d={d} pathLength={1} stroke={`url(#${id}s)`}/>
+  <circle className="sky-wave-dot" cx={last[0]} cy={last[1]} r="5"/>
+ </svg>;
 }
 export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  const [saved,setSaved]=useState(()=>({...initial,...adminViewState('updates',initial)})),[draft,setDraft]=useState(saved.q);
@@ -78,19 +99,34 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
    {rowError?.id===key&&<p className="wc2-row-error" role="alert"><TriangleAlert size={16} aria-hidden="true"/><span>{rowError?.message}</span></p>}
   </article>;};
  const moreButton=(id:string,label:string,count:number,shown:number,step:number)=>moreBusy===id?<button type="button" className="wc2-more" disabled aria-busy="true"><span>טוען…</span><Loader2 className="wc2-spin" size={16} aria-hidden="true"/></button>:count>limits[id]?<button type="button" className="wc2-more" onClick={()=>more(id,count,step)}><span>הצגת עוד {count-shown} ב{label}</span><ChevronDown size={16} aria-hidden="true"/></button>:limits[id]>defaults[id]&&<button type="button" className="wc2-more" onClick={()=>less(id)}><span>הצגת פחות</span><ChevronUp size={16} aria-hidden="true"/></button>;
- const kpi=(key:string,label:string,value:React.ReactNode,note:React.ReactNode,page:string,preset?:()=>void,series?:number[])=><a key={key} className={'wc2-kpi'+(opening===key?' is-opening':'')} href={'/'+page} onClick={e=>{if(!plain(e))return;e.preventDefault();preset?.();open(key,page);}}><div><span className="wc2-kpi-label">{label}</span><strong>{pulse?value:'—'}</strong><small>{pulse?note:' '}</small></div>{series&&<Spark values={series}/>}</a>;
+ const kpi=(key:string,label:string,value:React.ReactNode,note:React.ReactNode,page:string,preset?:()=>void,series?:number[],extra='')=><a key={key} className={'wc2-kpi'+extra+(opening===key?' is-opening':'')} href={'/'+page} onClick={e=>{if(!plain(e))return;e.preventDefault();preset?.();open(key,page);}}><div><span className="wc2-kpi-label">{label}</span><strong>{pulse?value:'—'}</strong><small>{pulse?note:' '}</small></div>{series&&<Spark values={series}/>}{opening===key?<Loader2 className="wc2-spin sky-kpi-go" size={18} aria-hidden="true"/>:<ChevronLeft className="sky-kpi-go" size={18} aria-hidden="true"/>}</a>;
  const ordersDelta=pulse?pulse.orders.today-pulse.orders.yesterday:0,revenueDelta=pulse?.revenue.previous?Math.round((pulse.revenue.month-pulse.revenue.previous)/pulse.revenue.previous*100):null;
- return <section className="wc2" dir="rtl" ref={root}>
-  <header className="wc2-head"><div><h1>מרכז העבודה</h1><p className="wc2-state" role="status"><span>{!isOpen?'התראות שסומנו כטופלו':!data?'טוען עדכונים…':saved.q?<>נמצאו <b className="is-plain">{toHandle}</b> לטיפול</>:toHandle===0?'אין כרגע דברים לטיפול':<>{total('urgent')>0&&<><b>{total('urgent')===1?'דחוף אחד':total('urgent')+' דחופים'}</b> מתוך </>}{toHandle} לטיפול</>}</span>{updatedAt&&<span className="wc2-live">עודכן {updatedAt}</span>}</p></div>
+ const urgentN=total('urgent'),contentN=total('content'),serviceN=total('service');
+ const bigLines:[string,string]=!isOpen?['טופלו',handledCount===1?'התראה אחת סומנה':handledCount+' התראות סומנו']:!data?['טוען','את העדכונים…']:saved.q?['נמצאו '+toHandle,'לטיפול בחיפוש']:toHandle===0?['הכול רגוע','אין דברים לטיפול']:[toHandle+' לטיפול',urgentN===0?'בלי דברים דחופים':urgentN===1?'ואחד מהם דחוף':'ו־'+urgentN+' מהם דחופים'];
+ const blurb=!isOpen?'אלה ההתראות שסימנת כטופלו. אפשר לפתוח כל אחת או להחזיר אותה לטיפול.':!data?'':toHandle===0?'אין כרגע ביטולים, כסף שממתין, כתבות או פניות שמחכים לך.':[urgentN&&(urgentN===1?'דבר דחוף אחד: ביטול, כסף שממתין או תקלת שליחה.':urgentN+' דברים דחופים: ביטולים, כסף שממתין ותקלות שליחה.'),contentN&&(contentN===1?'כתבה אחת מחכה לך.':contentN+' כתבות מחכות לך.'),serviceN&&(serviceN===1?'פנייה אחת מחכה לתשובה.':serviceN+' פניות מחכות לתשובה.')].filter(Boolean).join(' ');
+ const week:{v:number;day:string}[]=pulse?.orders?.series?(pulse.orders.series as number[]).slice(-7).map((v,i)=>({v,day:dayShift(pulse.today,i-6)})):[];
+ return <section className="wc2 is-sky" dir="rtl" ref={root}>
+  <div className="sky-stage">
+  <header className="wc2-head"><div className="sky-title"><h1>מרכז העבודה</h1>{updatedAt&&<span className="wc2-live">עודכן {updatedAt}</span>}</div>
    <div className="wc2-tools"><form noValidate role="search" className="wc2-search" onSubmit={e=>{e.preventDefault();commit({q:draft.trim()});}}>{searching?<Loader2 className="wc2-spin" size={17} aria-hidden="true"/>:<Search size={17} aria-hidden="true"/>}<input ref={input} type="search" maxLength={120} aria-label="חיפוש התראה או לקוח" placeholder="חיפוש התראה או לקוח" value={draft} onChange={e=>setDraft(e.target.value)}/>{draft&&<button type="button" aria-label="ניקוי חיפוש" onClick={()=>{setDraft('');commit({q:''});input.current?.focus();}}><X size={17} aria-hidden="true"/></button>}</form>
     <div className="wc2-seg" ref={seg} role="group" aria-label="מצב הטיפול בהתראות"><span className="wc2-thumb" aria-hidden="true"/>{[['open','פתוח',toHandle+total('info')],['handled','טופלו',handledCount]].map(([value,label,n])=><button key={String(value)} type="button" aria-pressed={saved.state===value} onClick={()=>commit({state:String(value)})}>{label}{(value==='handled'||data)&&<bdi>({Number(n)})</bdi>}</button>)}</div>
     <button type="button" className={'wc2-glass'+(refreshed?' is-success':'')} disabled={state.loading} aria-busy={state.loading||undefined} aria-label="רענון העדכונים" onClick={refresh}>{refreshed?<Check size={17} aria-hidden="true"/>:<RefreshCw className={state.loading?'wc2-spin':undefined} size={17} aria-hidden="true"/>}<span>{state.loading?'מרענן…':refreshed?'עודכן':'רענון'}</span></button></div></header>
-  {isOpen&&<nav className="wc2-kpis" aria-label="תמונת מצב">
-   {kpi('pulse-orders','הזמנות היום',pulse?.orders.today,<>{ordersDelta!==0&&<span className={ordersDelta>0?'is-up':'is-down'}>{ordersDelta>0?'↑':'↓'} {Math.abs(ordersDelta)}</span>} {ordersDelta===0?'כמו אתמול':'לעומת אתמול'}</>,'admin-orders',()=>saveAdminViewState('orders-bucket','active'),pulse?.orders.series)}
-   {kpi('pulse-revenue','הכנסות החודש',pulse&&whole(pulse.revenue.month),revenueDelta==null?'תשלומים שאושרו החודש':<><span className={revenueDelta>=0?'is-up':'is-down'}>{revenueDelta>=0?'↑':'↓'} {Math.abs(revenueDelta)}%</span> לעומת החודש הקודם</>,'admin-reports',undefined,pulse?.revenue.series)}
-   {kpi('pulse-awaiting','ממתין לתשלום',pulse&&whole(pulse.awaiting.cents),pulse?.awaiting.count?<><span className="is-warn">{pulse.awaiting.count===1?'הזמנה אחת':pulse.awaiting.count+' הזמנות'}</span> · הוותיקה {days(pulse.awaiting.oldest_days)}</>:'אין הזמנות שממתינות','admin-orders',()=>saveAdminViewState('orders-bucket','awaiting'))}
-   {kpi('pulse-articles','כתבות בעבודה',pulse?.articles.active,pulse?.articles.review?<><span className="is-warn">{pulse.articles.review}</span> מחכות לאישור שלך</>:'אין כתבות שמחכות לאישור','admin-articles')}
-  </nav>}
+  <div className="sky-hero">
+   <div className="sky-main">
+    <p className="sky-big" role="status"><span className="sky-ln"><span>{bigLines[0]}</span></span><span className="sky-ln"><span>{bigLines[1]}</span></span></p>
+    {blurb&&<p className="sky-blurb">{blurb}</p>}
+    {isOpen&&week.length===7&&<figure className="sky-forecast" aria-label="הזמנות בשבעת הימים האחרונים"><figcaption>הזמנות ב־7 הימים האחרונים</figcaption>
+     <ol className="sky-nums">{week.map((w,i)=><li key={w.day} className={i===6?'is-on':undefined}><b>{w.v}</b><span>{i===6?'היום':dayName(w.day)}</span></li>)}</ol>
+     <Wave values={week.map(w=>w.v)}/></figure>}
+   </div>
+   {isOpen&&<nav className="wc2-kpis sky-rail" aria-label="תמונת מצב">
+    {kpi('pulse-revenue','הכנסות החודש',pulse&&whole(pulse.revenue.month),revenueDelta==null?'תשלומים שאושרו החודש':<><span className={revenueDelta>=0?'is-up':'is-down'}>{revenueDelta>=0?'↑':'↓'} {Math.abs(revenueDelta)}%</span> לעומת החודש הקודם</>,'admin-reports',undefined,undefined,' is-big')}
+    {kpi('pulse-orders','הזמנות היום',pulse?.orders.today,<>{ordersDelta!==0&&<span className={ordersDelta>0?'is-up':'is-down'}>{ordersDelta>0?'↑':'↓'} {Math.abs(ordersDelta)}</span>} {ordersDelta===0?'כמו אתמול':'לעומת אתמול'}</>,'admin-orders',()=>saveAdminViewState('orders-bucket','active'))}
+    {kpi('pulse-awaiting','ממתין לתשלום',pulse&&whole(pulse.awaiting.cents),pulse?.awaiting.count?<><span className="is-warn">{pulse.awaiting.count===1?'הזמנה אחת':pulse.awaiting.count+' הזמנות'}</span> · הוותיקה {days(pulse.awaiting.oldest_days)}</>:'אין הזמנות שממתינות','admin-orders',()=>saveAdminViewState('orders-bucket','awaiting'))}
+    {kpi('pulse-articles','כתבות בעבודה',pulse?.articles.active,pulse?.articles.review?<><span className="is-warn">{pulse.articles.review}</span> מחכות לאישור שלך</>:'אין כתבות שמחכות לאישור','admin-articles')}
+   </nav>}
+  </div>
+  </div>
   {attention.data?.email_ready===false&&<aside className="wc2-alert"><Mail size={20} aria-hidden="true"/><div><b>חיבור הדוא״ל אינו פעיל</b><p>הודעות ממתינות לחיבור.</p></div><button type="button" className="wc2-glass" onClick={()=>open('email','admin-connections')}><span>{opening==='email'?'פותח…':'הגדרת החיבור'}</span>{opening==='email'?<Loader2 className="wc2-spin" size={16} aria-hidden="true"/>:<ChevronLeft size={16} aria-hidden="true"/>}</button></aside>}
   {isOpen&&<div className="wc2-jump"><nav aria-label="קפיצה לפי סוג">{[...lanes,{id:'info',label:'לידיעה בלבד',icon:Bell}].map(l=>{const Icon=l.icon,n=total(l.id);return <button type="button" key={l.id} className={'wc2-pill is-'+l.id+(l.id==='urgent'&&n>0?' is-loud':'')} aria-current={active===l.id?'true':undefined} onClick={()=>jump(l.id)}><span className="wc2-pill-icon"><Icon size={15} aria-hidden="true"/></span><span>{l.label}</span><strong>{data?n:'—'}</strong></button>;})}</nav></div>}
   {state.error&&<div className="wc2-error" role="alert"><p>לא ניתן לרענן.{state.data?' הנתונים האחרונים מוצגים.':''} {state.error}</p><button type="button" className="wc2-glass" onClick={refresh}><RefreshCw size={17} aria-hidden="true"/><span>ניסיון נוסף</span></button></div>}
