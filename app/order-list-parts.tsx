@@ -8,11 +8,14 @@ import {OrderUrl,orderMoney,orderTimestamp} from './order-presentation';
 import './orders-reference.css';
 import './orders-modern.css';
 import './orders-apex.css';
+import './orders-sky.css';
 // Shared parts of the orders list, used by the orders and finance screens.
 export const plainClick=(e:React.MouseEvent)=>e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey;
 export function recentMonths(count=18){const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Jerusalem'}));return Array.from({length:count},(_,i)=>{const d=new Date(now.getFullYear(),now.getMonth()-i,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');});}
 export function orderSites(o:Row){try{const list=typeof o.item_preview==='string'?JSON.parse(o.item_preview):o.item_preview;return Array.isArray(list)?list:[];}catch{return [];}}
-export function OrderSites({order}:{order:Row}){const sites=orderSites(order);return <div className="om-sites">{sites[0]?<span className="om-site" title={sites.map((x:Row)=>x.name).join(', ')}>{sites[0].name}</span>:<span className="om-muted">אין פריטים</span>}{sites.length>1&&<span className="om-plus"><bdi dir="ltr">+{sites.length-1}</bdi></span>}</div>;}
+/** Site address for list rows (plain text, the row itself is the click target). Falls back to the site name. */
+export function siteLabel(site:Row){const raw=String(site?.url||'').trim();if(raw){try{const u=new URL(/^https?:\/\//i.test(raw)?raw:'https://'+raw);if(u.hostname.includes('.'))return u.hostname+(u.pathname==='/'?'':u.pathname.replace(/\/$/,''));}catch{}}return String(site?.name||'');}
+export function OrderSites({order}:{order:Row}){const sites=orderSites(order);return <div className="om-sites">{sites[0]?<span className="om-site" dir="ltr" title={sites.map((x:Row)=>siteLabel(x)).join(', ')}>{siteLabel(sites[0])}</span>:<span className="om-muted">אין פריטים</span>}{sites.length>1&&<span className="om-plus"><bdi dir="ltr">+{sites.length-1}</bdi></span>}</div>;}
 export function OrderPublication({o}:{o:Row}){
  const all=Math.max(0,Number(o.article_count||0)-Number(o.fully_refunded_count||0)),done=Math.min(all,Number(o.published_count||0));
  const pending=Number(o.cancel_pending_count)||0,cancel=pending>0&&<small className="om-cancel-note"><XCircle size={13} aria-hidden="true"/>{pending===1?'בקשת ביטול לפריט אחד':'בקשות ביטול ל־'+pending+' פריטים'}</small>;

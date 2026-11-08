@@ -17,6 +17,7 @@ import type {Ctx} from './workspace';
 import {OrderItemPriceEditor} from './order-item-price-editor';
 import {MonthlyOrderActions} from './monthly-order-actions';
 import './orders-approved.css';
+import './orders-sky.css';
 
 export {orderNumber,orderMoney,orderTimestamp,paymentReceivedAt,OrderUrl} from './order-presentation';
 import {orderNumber,orderMoney,orderTimestamp,paymentReceivedAt,OrderUrl,orderDateLabel as date} from './order-presentation';

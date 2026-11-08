@@ -1,0 +1,255 @@
+/* Orders area in the "sky" look (approved 08.11.2026, docs/proposals/orders-sky/list-open.html).
+   Scoped to .orders-sky, set by workspace.tsx on the six orders screens and on admin-order/<id>.
+   Dark is the default; <html data-admin-theme="light"> switches to light (shared with the work center).
+   Only colors, surfaces and layout change here. Status logic and labels live in the components and stay as they were. */
+
+/* ---------- theme tokens ---------- */
+.orders-sky{
+ --sk-ink:#fff;--sk-copy:rgba(255,255,255,.8);--sk-mute:rgba(255,255,255,.6);--sk-line:rgba(255,255,255,.11);
+ --sk-glass:linear-gradient(180deg,rgba(255,255,255,.115),rgba(255,255,255,.145) 24%,rgba(255,255,255,.135) 78%,rgba(255,255,255,.12));
+ --sk-edge:inset 0 1px 0 rgba(255,255,255,.22),inset 0 0 0 1px rgba(255,255,255,.13);
+ --sk-well:rgba(255,255,255,.06);--sk-well-line:rgba(255,255,255,.09);
+ --sk-btn:rgba(255,255,255,.12);--sk-btn-hover:rgba(255,255,255,.22);--sk-cur-bg:#fff;--sk-cur-ink:#06203a;
+ --sk-link:#7fe7f2;--sk-ring:rgba(127,231,242,.65);--sk-shadow:0 18px 50px rgba(3,16,42,.28);
+ --sk-stage:linear-gradient(180deg,rgba(3,14,34,0) 0,rgba(3,14,34,.18) 420px,#04122b 760px,#03102a 100%),url('/brand/personal-waves.jpg') center top/auto 760px no-repeat,#03102a;
+ --sk-glow:radial-gradient(55% 40% at 82% 6%,rgba(80,215,235,.22),transparent 70%),radial-gradient(45% 35% at 8% 30%,rgba(40,120,255,.2),transparent 70%);
+}
+html[data-admin-theme=light] .orders-sky{
+ --sk-ink:#0c1d33;--sk-copy:#3a4e66;--sk-mute:#6a7d94;--sk-line:rgba(15,27,45,.08);
+ --sk-glass:linear-gradient(180deg,rgba(255,255,255,.74),rgba(255,255,255,.62) 60%,rgba(255,255,255,.56));
+ --sk-edge:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.75),0 1px 2px rgba(15,40,80,.05),0 10px 28px rgba(30,80,140,.08);
+ --sk-well:rgba(255,255,255,.62);--sk-well-line:rgba(15,27,45,.07);
+ --sk-btn:rgba(255,255,255,.72);--sk-btn-hover:#fff;--sk-cur-bg:#0c2b4d;--sk-cur-ink:#fff;
+ --sk-link:#0a66c2;--sk-ring:rgba(10,102,194,.55);--sk-shadow:0 0 0 1px rgba(15,40,80,.06),0 18px 50px rgba(30,80,140,.12);
+ --sk-stage:linear-gradient(180deg,rgba(244,250,255,0) 0,rgba(244,250,255,.25) 420px,#f2f8fe 760px,#f4f8fc 100%),url('/brand/checkout-waves.webp') center top/max(100%,1150px) auto no-repeat,#f4f9fe;
+ --sk-glow:radial-gradient(55% 40% at 82% 6%,rgba(120,210,255,.3),transparent 70%),radial-gradient(45% 35% at 8% 30%,rgba(150,190,255,.25),transparent 70%);
+}
+/* The existing orders palettes, re-pointed for the dark glass. Light keeps their original values. */
+html:not([data-admin-theme=light]) .orders-sky .orders-match-screen,html:not([data-admin-theme=light]) .orders-sky.orders-sky{
+ --om-ink:#fff;--om-copy:rgba(255,255,255,.8);--om-line:rgba(255,255,255,.11);--om-navy:#fff;--om-red:#ff98ab;--om-red-ink:#ffb3c1;--om-red-tint:rgba(255,95,125,.16);
+ --om-blue:#9fcbff;--om-blue-tint:rgba(90,160,255,.18);--om-green:#5fe0a8;--om-green-tint:rgba(70,210,150,.16);--om-amber:#ffcf7a;--om-amber-tint:rgba(255,190,90,.16);
+ --om-gray:rgba(255,255,255,.75);--om-gray-tint:rgba(255,255,255,.1);--om-slate:rgba(255,255,255,.75);--om-slate-tint:rgba(255,255,255,.1);--om-teal:#7fe7f2;--om-teal-tint:rgba(60,210,220,.16);
+ --om-purple:#c4b5fd;--om-purple-tint:rgba(150,120,255,.2);--om-yellow:#ffe08a;--om-yellow-tint:rgba(255,210,80,.16);
+ --ax-card:transparent;--ax-line:rgba(255,255,255,.11);--ax-line-2:rgba(255,255,255,.08);--ax-ink:#fff;--ax-copy:rgba(255,255,255,.8);--ax-mute:rgba(255,255,255,.6);
+ --ax-brand:#5fe0a8;--ax-brand-2:#5fe0a8;--ax-brand-tint:rgba(70,210,150,.16);--ax-red:#ff7d97;--ax-red-tint:rgba(255,95,125,.16);--ax-amber:#ffcf7a;--ax-amber-tint:rgba(255,190,90,.16);
+ --ax-violet:#c4b5fd;--ax-violet-tint:rgba(150,120,255,.2);--ax-blue:#9fcbff;--ax-blue-tint:rgba(90,160,255,.18)}
+html:not([data-admin-theme=light]) .orders-sky .approved-order-management{--ao-ink:#fff;--ao-copy:rgba(255,255,255,.75);--ao-line:rgba(255,255,255,.11);--ao-ice:rgba(255,255,255,.06);--ao-teal:#7fe7f2}
+
+/* ---------- stage ---------- */
+/* No isolation, no transform, no filter here: the phone order sheet is position:fixed inside this element and must stay above the dock. */
+.admin-design-v172 .admin-workspace-body.orders-sky.orders-sky{position:relative;overflow:hidden;padding:24px 26px 30px!important;border-radius:30px;color:var(--sk-ink);background:var(--sk-glow),var(--sk-stage)!important;box-shadow:var(--sk-shadow)}
+
+/* ---------- heading and categories ---------- */
+.orders-sky .orders-unified-heading{position:relative;padding-inline-end:56px;margin-bottom:20px;background:none!important;border:0!important;box-shadow:none!important}
+.admin-design-v172 .admin-workspace-body.orders-sky.orders-sky .orders-unified-heading h1{font-size:clamp(32px,3.4vw,46px)!important;font-weight:800!important;letter-spacing:-.02em;line-height:1.1;color:var(--sk-ink)!important;text-shadow:none}
+.orders-sky .orders-unified-heading>p{margin-top:6px;font-size:17px;color:var(--sk-copy)!important}
+.orders-sky .orders-unified-heading .orders-category-tiles{gap:8px;padding:0;background:none!important;border:0!important;margin-top:18px}
+.admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-tiles>a{height:42px;min-height:42px;padding:0 16px;border-radius:21px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700;-webkit-backdrop-filter:blur(16px) saturate(115%);backdrop-filter:blur(16px) saturate(115%);transition:background .18s,transform .12s,color .18s}
+.admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-tiles>a:hover{background:var(--sk-btn-hover);color:var(--sk-ink)}
+.admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-tiles>a[aria-current=page]{background:var(--sk-cur-bg)!important;color:var(--sk-cur-ink)!important;box-shadow:0 2px 10px rgba(0,0,0,.14)!important}
+.admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-tiles>a[aria-current=page]::after{content:none}
+.admin-apex.admin-apex .orders-sky .orders-unified-heading .orders-category-tiles>a svg{color:inherit!important}
+.orders-sky .orders-sky-theme{position:absolute;top:0;inset-inline-end:0;width:44px;height:44px;border-radius:50%;border:0;display:grid;place-items:center;cursor:pointer;color:var(--sk-ink);background:var(--sk-btn);box-shadow:var(--sk-edge);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);transition:background .18s,transform .12s}
+.orders-sky .orders-sky-theme svg{transition:transform .45s cubic-bezier(.16,1,.3,1)}
+.orders-sky .orders-sky-theme:hover{background:var(--sk-btn-hover)}.orders-sky .orders-sky-theme:hover svg{transform:rotate(-20deg)}
+
+/* ---------- toolbar, views ---------- */
+.orders-sky .orders-match-screen .orders-reference-panel{background:none!important;border:0!important;box-shadow:none!important;padding:0!important}
+.orders-sky .orders-match-screen .orders-reference-export,.orders-sky .orders-match-screen .om-top-actions .om-btn{background:var(--sk-btn);box-shadow:var(--sk-edge);border:0;color:var(--sk-ink);transition:background .18s,transform .12s}
+.orders-sky .orders-match-screen .orders-reference-export{top:24px;inset-inline-end:82px;min-height:44px;border-radius:22px}
+.orders-sky .orders-match-screen .orders-reference-export:hover:not(:disabled){background:var(--sk-btn-hover)}
+.orders-sky .orders-match-screen .orders-reference-search{height:44px;border:0!important;border-radius:22px!important;background:var(--sk-btn)!important;box-shadow:var(--sk-edge)!important;color:var(--sk-mute);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.orders-sky .orders-match-screen .orders-reference-search:focus-within{box-shadow:var(--sk-edge),0 0 0 3px var(--sk-ring)!important}
+.admin-design-v172 .admin-workspace-body.orders-sky.orders-sky .orders-reference-search input:not([type=checkbox]):not([type=radio]){background:transparent!important;color:var(--sk-ink)!important;border:0!important;box-shadow:none!important;min-height:0!important}
+.orders-sky .orders-reference-search input::placeholder{color:var(--sk-mute)}
+.orders-sky .orders-match-screen .orders-reference-search button{color:var(--sk-copy);border-radius:50%}
+.admin-design-v172 .admin-workspace-body.orders-sky.orders-sky .orders-reference-month-filter :is([data-slot=select-trigger],button[role=combobox]){height:44px;border:0!important;border-radius:22px!important;background:var(--sk-btn)!important;box-shadow:var(--sk-edge)!important;color:var(--sk-ink)!important}
+.orders-sky .orders-match-screen .om-chips{gap:8px;padding:0;background:none!important;border:0}
+.orders-sky .orders-match-screen .om-chips button{height:40px;min-height:40px;padding:0 14px;border-radius:20px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700;transition:background .18s,transform .12s}
+.orders-sky .orders-match-screen .om-chips button:hover{background:var(--sk-btn-hover)}
+.orders-sky .orders-match-screen .om-chips button[aria-pressed=true]{background:var(--sk-cur-bg);color:var(--sk-cur-ink);box-shadow:0 2px 10px rgba(0,0,0,.14)}
+.orders-sky .orders-match-screen .om-chips button b{border-radius:11px;background:var(--sk-well);color:inherit}
+.orders-sky .orders-match-screen .om-chips button[aria-pressed=true] b{background:rgba(127,231,242,.25);color:inherit}
+.orders-sky .orders-match-screen .om-chips button.is-attention b{background:#dc2626;color:#fff}
+.orders-sky .orders-match-screen .om-head{color:var(--sk-mute)}
+.orders-sky .orders-match-screen :is(.orders-reference-loading,.orders-reference-empty,.om-note){color:var(--sk-copy);background:none}
+.orders-sky .orders-match-screen .orders-reference-empty{border-radius:22px;background:var(--sk-glass);box-shadow:var(--sk-edge)}
+.orders-sky .orders-match-screen .orders-reference-empty h3{color:var(--sk-ink)}
+.orders-sky .orders-match-screen .om-section{color:var(--sk-copy)}
+
+/* ---------- order rows (glass cards; the status edge keeps the existing tone rules) ---------- */
+.orders-sky .orders-match-screen .om-order{background:var(--sk-glass);box-shadow:var(--sk-edge);border:0;border-inline-start:5px solid #94a3b8;border-radius:20px;-webkit-backdrop-filter:blur(26px) saturate(118%);backdrop-filter:blur(26px) saturate(118%);transition:box-shadow .2s}
+.orders-sky .orders-match-screen .om-order:hover{box-shadow:var(--sk-edge),0 8px 24px rgba(0,10,30,.12)}
+.orders-sky .orders-match-screen .om-order.is-open{box-shadow:var(--sk-edge),0 0 0 1.5px var(--sk-ring),0 18px 40px rgba(0,10,30,.22)}
+.orders-sky .orders-match-screen .om-order.is-open>.om-row{background:none;border-bottom:1px solid var(--sk-line)}
+.orders-sky .orders-match-screen .om-row{transition:background .15s}
+.orders-sky .orders-match-screen .om-row:hover{background:rgba(255,255,255,.04)}
+html[data-admin-theme=light] .orders-sky .orders-match-screen .om-row:hover{background:rgba(255,255,255,.4)}
+.orders-sky .orders-match-screen .om-id strong,.orders-sky .orders-match-screen .om-amount,.orders-sky .orders-match-screen .om-who b{color:var(--sk-ink)}
+.orders-sky .orders-match-screen .om-id time,.orders-sky .orders-match-screen .om-who span,.orders-sky .orders-match-screen .om-pay small,.orders-sky .orders-match-screen .om-progress small,.orders-sky .orders-match-screen .om-muted{color:var(--sk-mute)}
+.orders-sky .orders-match-screen .om-site{color:var(--sk-link);font-weight:700;direction:ltr;unicode-bidi:plaintext}
+.orders-sky .orders-match-screen .om-plus{background:var(--sk-well);color:var(--sk-copy)}
+.orders-sky .orders-match-screen .om-pips i{background:var(--sk-line)}
+@media(min-width:1181px){
+ .orders-sky .orders-match-screen:not(.om-finance) .om-head,.orders-sky .orders-match-screen:not(.om-finance) .om-row{grid-template-columns:104px 150px minmax(110px,1fr) 150px 140px 112px auto auto}
+}
+
+/* ---------- buttons and pills (both themes) ---------- */
+.orders-sky .orders-match-screen :is(a,button).om-btn,.orders-sky .om-panel :is(a,button).om-btn{border:0;border-radius:12px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700;transition:background .18s,transform .12s,filter .15s}
+.orders-sky .orders-match-screen :is(a,button).om-btn:hover:not(:disabled),.orders-sky .om-panel :is(a,button).om-btn:hover:not(:disabled){background:var(--sk-btn-hover);color:var(--sk-ink)}
+.orders-sky :is(a,button).om-btn.is-primary,.orders-sky .orders-match-screen .om-btn.is-primary{background:linear-gradient(180deg,#2f9bff,#0a66c2)!important;color:#fff!important;border:0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 6px 16px rgba(10,102,194,.32)!important}
+.orders-sky :is(a,button).om-btn.is-primary:hover:not(:disabled){filter:brightness(1.07)}
+.orders-sky .om-btn.is-success{background:rgba(70,210,150,.24)!important;color:var(--sk-ink)!important}
+.orders-sky .orders-match-screen .om-danger,.orders-sky .om-panel .om-danger{border:0;border-radius:11px;background:var(--om-red-tint,rgba(196,40,71,.08));box-shadow:inset 0 0 0 1px rgba(255,130,155,.45);color:var(--om-red,#c42847);font-weight:700;transition:background .18s,transform .12s}
+.orders-sky .om-danger:hover:not(:disabled){background:rgba(255,95,125,.26)}
+.orders-sky .orders-match-screen .om-expand{min-width:44px;width:auto;padding:0 10px;display:inline-flex;align-items:center;justify-content:center;gap:4px;border:0;border-radius:12px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700;font-size:14px;transition:background .18s,transform .12s}
+.orders-sky .orders-match-screen .om-expand:hover{background:var(--sk-btn-hover)}
+.orders-sky .orders-match-screen .om-order.is-open .om-expand{background:var(--sk-btn);color:var(--sk-ink);border:0}
+.orders-sky :is(.orders-reference-export,.om-btn,.om-danger,.om-expand,.om-chips button,.orders-category-tiles>a,.orders-sky-theme,.sk-more,.orders-reference-pagination button,.approved-back,.approved-management-row button,.approved-customer-link,.approved-more,.approved-report-review button):active:not(:disabled){transform:scale(.97)}
+.orders-sky :is(a,button,summary,input,[role=combobox]):focus-visible{outline:2px solid var(--sk-link)!important;outline-offset:2px}
+.orders-sky .om-pill{border-radius:14px;font-weight:700}
+.orders-sky .orders-reference-pagination{color:var(--sk-mute)}
+.orders-sky .orders-reference-pagination button{border:0;border-radius:12px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);transition:background .18s,transform .12s}
+.orders-sky .orders-reference-pagination button:hover:not(:disabled){background:var(--sk-btn-hover)}
+.orders-sky .orders-reference-pagination button[aria-current=page]{background:var(--sk-cur-bg)!important;color:var(--sk-cur-ink)!important;border:0}
+.orders-sky .orders-reference-error{border-radius:16px}
+
+/* ---------- open order panel ---------- */
+.orders-sky .orders-match-screen .om-panel.sk-panel{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:16px;align-items:start;padding:16px 18px 18px;border-top:0;background:none}
+.orders-sky .sk-panel section{padding:0}
+.orders-sky .sk-panel section+section{border:0}
+.orders-sky .sk-panel .sk-items,.orders-sky .sk-panel .sk-card{border-radius:18px;background:var(--sk-well);box-shadow:inset 0 0 0 1px var(--sk-well-line);overflow:hidden}
+.orders-sky .sk-panel .sk-side{display:grid;gap:12px;align-content:start;min-width:0}
+.orders-sky .sk-panel .sk-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:12px 16px 8px}
+.orders-sky .sk-panel .sk-head h3{margin:0;font-size:15.5px;font-weight:800;color:var(--sk-ink)}
+.orders-sky .sk-panel .sk-head small{font-size:12.5px;color:var(--sk-mute)}
+.orders-sky .sk-panel .om-items-head{padding:0 16px;color:var(--sk-mute)}
+.orders-sky .sk-panel .om-item{padding:10px 16px;border-top:1px solid var(--sk-line);grid-template-columns:minmax(0,1fr) 128px 104px 110px}
+.orders-sky .sk-panel .om-item>strong{color:var(--sk-ink)}
+.orders-sky .sk-panel .om-url a,.orders-sky .sk-panel .approved-order-url{color:var(--sk-link);font-weight:700;font-size:15px}
+.orders-sky .sk-panel .om-url svg{color:var(--sk-mute)}
+.orders-sky .sk-panel .om-article{color:var(--sk-link);font-weight:700;font-size:13px}
+.orders-sky .sk-panel .om-item-date{color:var(--sk-mute)}
+.orders-sky .sk-panel .sk-morebar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-top:1px solid var(--sk-line);background:rgba(10,102,194,.07);font-size:13.5px;color:var(--sk-copy)}
+.orders-sky .sk-panel .sk-morebar .om-btn{min-height:38px}
+.orders-sky .sk-panel .om-sum{margin:0;padding:8px 16px 12px;border-top:1px solid var(--sk-line);color:var(--sk-copy)}
+.orders-sky .sk-panel .om-sum b{color:var(--sk-ink)}
+.orders-sky .sk-panel .om-sum .is-total{border-top:1px solid var(--sk-line);margin-top:6px;padding-top:10px}
+.orders-sky .sk-panel .om-sum .is-total b{font-size:20px}
+.orders-sky .sk-panel .sk-note{display:block;padding:0 16px 12px;font-size:12.5px;color:var(--sk-mute)}
+.orders-sky .sk-panel .sk-who{display:flex;align-items:center;gap:12px;padding:0 16px 12px}
+.orders-sky .sk-panel .sk-avatar{width:44px;height:44px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;font-size:15px;color:#fff;background:linear-gradient(180deg,#2f9bff,#0a66c2)}
+.orders-sky .sk-panel .om-customer-name{display:block;margin:0;font-size:16px;font-weight:800;color:var(--sk-link);text-decoration:underline;text-underline-offset:3px}
+.orders-sky .sk-panel .om-customer-line{margin:1px 0 0;font-size:13px;color:var(--sk-mute)}
+.orders-sky .sk-panel .sk-pair{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px 16px}
+.orders-sky .sk-panel .sk-pair .om-btn{min-height:40px;width:100%;gap:6px}
+.orders-sky .sk-panel .om-payment dl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0;padding:0 12px 12px}
+.orders-sky .sk-panel .om-payment dl>div{margin:0;padding:9px 11px;border:0;border-radius:13px;background:var(--sk-well);box-shadow:inset 0 0 0 1px var(--sk-well-line);display:block}
+.orders-sky .sk-panel .om-payment dt{font-size:12px;color:var(--sk-mute)}
+.orders-sky .sk-panel .om-payment dd{margin:2px 0 0;font-size:13.5px;font-weight:700;color:var(--sk-ink);text-align:start;display:flex;flex-wrap:wrap;gap:4px 8px;overflow-wrap:anywhere}
+.orders-sky .sk-panel .om-payment dd a{color:var(--sk-link);font-weight:700;display:inline-flex;align-items:center;gap:4px}
+.orders-sky .sk-panel .sk-doc{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 16px 14px}
+.orders-sky .sk-panel .sk-doc b{display:block;font-size:13.5px;color:var(--sk-ink)}.orders-sky .sk-panel .sk-doc small{display:block;font-size:12px;color:var(--sk-mute)}
+.orders-sky .sk-panel .sk-doc .om-btn{min-height:36px}
+.orders-sky .sk-panel .sk-history ol{list-style:none;margin:0;padding:0}
+.orders-sky .sk-panel .sk-history li{position:relative;padding:8px 16px 8px 16px;padding-inline-start:34px;border-top:1px solid var(--sk-line);font-size:13px;color:var(--sk-ink)}
+.orders-sky .sk-panel .sk-history li::before{content:"";position:absolute;inset-inline-start:16px;top:14px;width:8px;height:8px;border-radius:50%;background:var(--sk-link);box-shadow:0 0 0 3px rgba(127,231,242,.18)}
+.orders-sky .sk-panel .sk-history li small{display:block;color:var(--sk-mute);font-size:12px;margin-top:2px}
+.orders-sky .sk-panel .sk-history .om-note{padding:4px 16px 12px}
+.orders-sky .sk-panel .sk-more{display:flex;width:100%;align-items:center;justify-content:center;gap:6px;min-height:40px;border:0;border-top:1px solid var(--sk-line);background:none;color:var(--sk-link);font:inherit;font-size:13.5px;font-weight:700;cursor:pointer;transition:background .15s}
+.orders-sky .sk-panel .sk-more:hover{background:rgba(255,255,255,.06)}
+.orders-sky .sk-panel .sk-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0;background:none;position:static}
+.orders-sky .sk-panel .sk-actions .om-btn{flex:1 1 auto;min-height:42px}
+
+/* ---------- full order page ---------- */
+.orders-sky .approved-order-management{background:none!important;border:0!important;border-radius:0;padding:0!important;color:var(--sk-ink)}
+.orders-sky .approved-order-management .approved-back{margin:0 0 10px;padding:0 12px;border-radius:12px;color:var(--sk-link);font-weight:700}
+.orders-sky .approved-order-management .approved-back:hover{background:var(--sk-btn)}
+.orders-sky .approved-manage-header{padding:20px 22px;margin-bottom:16px;border-radius:24px;background:var(--sk-glass);box-shadow:var(--sk-edge)}
+.admin-design-v172 .admin-workspace-body.orders-sky.orders-sky .approved-manage-header h1{font-size:clamp(26px,2.6vw,36px)!important;font-weight:800!important;color:var(--sk-ink)!important}
+.orders-sky .approved-manage-header p{font-size:15px;color:var(--sk-copy)}
+.orders-sky .approved-manage-header>strong{font-size:30px;letter-spacing:-.02em;color:var(--sk-ink)}
+.orders-sky .approved-customer-link{border:0;background:none;padding:0 2px;border-radius:6px;color:var(--sk-link);font:inherit;font-weight:800;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.orders-sky .approved-state{font-size:13px;font-weight:700;padding:5px 14px}
+html:not([data-admin-theme=light]) .orders-sky .approved-state{background:rgba(255,255,255,.12);color:#fff}
+html:not([data-admin-theme=light]) .orders-sky .approved-state.is-paid,html:not([data-admin-theme=light]) .orders-sky .approved-publication.is-published{background:rgba(70,210,150,.16);color:#5fe0a8}
+html:not([data-admin-theme=light]) .orders-sky .approved-state.is-pending{background:rgba(255,190,90,.16);color:#ffcf7a}
+html:not([data-admin-theme=light]) .orders-sky .approved-state.is-cancelled{background:rgba(255,95,125,.16);color:#ff98ab}
+html:not([data-admin-theme=light]) .orders-sky .approved-publication{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85)}
+.orders-sky .approved-report-review{border-radius:18px;margin-bottom:14px}
+.orders-sky .approved-management-search{border-radius:22px;background:var(--sk-btn);box-shadow:var(--sk-edge);border:0}
+.orders-sky .approved-management-search input{background:transparent!important;color:var(--sk-ink)!important}
+.orders-sky .approved-management-head{color:var(--sk-mute);padding:0 20px 6px}
+.orders-sky .approved-management-items{border-radius:22px;background:var(--sk-glass);box-shadow:var(--sk-edge);overflow:hidden;margin-bottom:14px}
+.orders-sky .approved-management-row{border-top:1px solid var(--sk-line)}
+.orders-sky .approved-management-items>article:first-child .approved-management-row{border-top:0}
+.orders-sky .approved-management-row strong{color:var(--sk-ink)}
+.orders-sky .approved-article-link{color:var(--sk-link);font-weight:700}
+.orders-sky .finance-item-actions button{border:0;border-radius:11px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700}
+.orders-sky .finance-item-actions button.is-danger{background:var(--om-red-tint,rgba(196,40,71,.08));box-shadow:inset 0 0 0 1px rgba(255,130,155,.45);color:var(--om-red,#c42847)}
+.orders-sky .approved-more{border:0;border-radius:12px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700}
+.orders-sky :is(.approved-management-history,.approved-management-documents){margin-top:12px;padding:4px 18px;border-radius:22px;background:var(--sk-glass);box-shadow:var(--sk-edge);color:var(--sk-ink)}
+.orders-sky :is(.approved-management-history,.approved-management-documents,.approved-payment-details) summary{color:var(--sk-link)}
+.orders-sky .approved-management-history p{color:var(--sk-copy)}
+.orders-sky .approved-order-note{color:var(--sk-mute)}
+html:not([data-admin-theme=light]) .orders-sky .approved-payment-details .approved-assignment{background:rgba(70,210,150,.12)}
+
+/* ---------- inline forms stay on a light sheet so every field reads clearly ---------- */
+.orders-sky :is(.om-refund,.approved-inline-refund,.om-sheet,.approved-management-documents form,.approved-management-documents .invoice-attachment,.om-dialog-part){
+ --om-ink:#0b274d;--om-copy:#4a5f7a;--om-line:#d9e4ee;--om-navy:#071f4b;--om-red:#b81f3f;--om-red-ink:#8f1530;--om-red-tint:#fdeef1;--om-blue:#0a66c2;--om-blue-tint:#e6f1fc;--om-green:#17694f;--om-green-tint:#e7f6f0;--om-amber:#8a5a0a;--om-amber-tint:#fdf3df;--om-gray:#4f5d6e;--om-gray-tint:#e4e9ef;--om-slate:#55687f;--om-slate-tint:#edf1f6;
+ --ao-ink:#102d53;--ao-copy:#526d8d;--ao-line:#d3e4f1;--sk-ink:#0c1d33;--sk-copy:#3a4e66;--sk-mute:#6a7d94;--sk-line:rgba(15,27,45,.08);--sk-link:#0a66c2;--sk-btn:#fff;--sk-btn-hover:#f2f6fb;--sk-edge:inset 0 0 0 1px #d9e4ee}
+html:not([data-admin-theme=light]) .orders-sky :is(.om-refund,.approved-inline-refund){margin:0 12px 12px;padding:14px;border-radius:16px;background:#fff;color:#0c1d33}
+.orders-sky .om-sheet .sk-panel{display:block;padding:0}
+.orders-sky .om-sheet .sk-panel :is(.sk-items,.sk-card){margin-bottom:12px}
+
+/* ---------- phones ---------- */
+@media(max-width:1100px){
+ .orders-sky .orders-match-screen .om-panel.sk-panel{grid-template-columns:1fr}
+}
+@media(max-width:760px){
+ .admin-design-v172 .admin-workspace-body.orders-sky.orders-sky{padding:16px 12px 22px!important;border-radius:22px;background-size:auto,auto,auto,auto 560px,auto!important}
+ .orders-sky .orders-unified-heading{padding-inline-end:52px}
+ .orders-sky .orders-match-screen .orders-reference-export{top:16px;inset-inline-end:64px;min-height:40px;width:40px}
+ .admin-design-v172 .admin-workspace-body.orders-sky.orders-sky .orders-unified-heading h1{font-size:30px!important}
+ .orders-sky .orders-unified-heading .orders-category-chips a{border:0!important;background:var(--sk-btn)!important;box-shadow:var(--sk-edge);color:var(--sk-ink)!important}
+ .orders-sky .orders-unified-heading .orders-category-chips a[aria-current=page]{background:var(--sk-cur-bg)!important;color:var(--sk-cur-ink)!important}
+ .orders-sky .om-filters-button{border:0!important;border-radius:22px!important;background:var(--sk-btn)!important;box-shadow:var(--sk-edge);color:var(--sk-ink)!important}
+ /* No blur on phones: a blurred ancestor would trap the fixed order sheet inside the card. */
+ .orders-sky .orders-match-screen .om-order{-webkit-backdrop-filter:none;backdrop-filter:none;border-radius:16px}
+ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-order{background:rgba(20,40,70,.72)}
+ html[data-admin-theme=light] .orders-sky .orders-match-screen .om-order{background:rgba(255,255,255,.86)}
+ .orders-sky .sk-panel .om-item{grid-template-columns:minmax(0,1fr) auto}
+ .orders-sky .sk-panel .om-payment dl{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){.orders-sky *{transition:none!important}}
+
+/* fixes after the first local check */
+.orders-sky .orders-match-screen .om-expand{white-space:nowrap}
+.orders-sky .om-expand-text{display:none}
+@media(min-width:1760px){.orders-sky .orders-match-screen .om-order.is-open .om-expand-text{display:inline}}
+.orders-sky.orders-sky .orders-match-screen .om-chips button[aria-pressed=true]{background:var(--sk-cur-bg);color:var(--sk-cur-ink)}
+.orders-sky .sk-panel .om-item{grid-template-columns:minmax(0,1fr) 152px 104px 110px}
+.orders-sky .sk-panel .om-item>.om-pill{white-space:nowrap;justify-self:start}
+@media(max-width:760px){.orders-sky .sk-panel .om-item{grid-template-columns:minmax(0,1fr) auto}}
+.orders-sky.orders-sky .orders-match-screen .om-expand{transition:background .18s,transform .12s,color .18s}
+
+/* finance tabs */
+.orders-sky .orders-match-screen .om-top-actions{top:24px;inset-inline-end:82px}
+.orders-sky .orders-match-screen.om-finance .om-expand{min-width:0;width:36px;padding:0}
+.orders-sky .orders-match-screen .om-summary{background:var(--sk-glass);box-shadow:var(--sk-edge);border-radius:20px;-webkit-backdrop-filter:blur(26px) saturate(118%);backdrop-filter:blur(26px) saturate(118%)}
+.orders-sky .orders-match-screen .om-summary>div{border-color:var(--sk-line)}
+html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>div[class*=is-]{background:rgba(255,190,90,.12)}
+.orders-sky .orders-match-screen .om-range a,.orders-sky .orders-match-screen .om-range button:not([aria-pressed]){color:var(--sk-link)}
+.orders-sky .orders-match-screen .om-range button[aria-pressed]{border:0;border-radius:20px;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700;transition:background .18s,transform .12s}
+.orders-sky .orders-match-screen .om-range button[aria-pressed=true]{background:var(--sk-cur-bg);color:var(--sk-cur-ink)}
+@media(max-width:760px){
+ .orders-sky .orders-match-screen .om-top-actions{position:static}
+ .orders-sky .orders-match-screen .om-row:has(>.om-id)>.om-id :is(strong,time){white-space:nowrap}
+ .orders-sky .orders-match-screen .om-row:has(>.om-id)>.om-who{flex-wrap:wrap;row-gap:0}
+ .orders-sky .orders-match-screen .om-row:has(>.om-id)>.om-who b{overflow:visible;white-space:normal}
+ .orders-sky .om-sheet-layer{z-index:95}
+}
+@media(min-width:1181px){
+ .orders-sky .orders-match-screen:not(.om-finance) .om-head,.orders-sky .orders-match-screen:not(.om-finance) .om-row{grid-template-columns:96px 140px minmax(90px,1fr) 128px 128px 108px auto auto;gap:10px}
+ .orders-sky .orders-match-screen:not(.om-finance) .om-row>.om-action{padding-inline:12px}
+}

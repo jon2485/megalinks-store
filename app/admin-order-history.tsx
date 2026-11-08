@@ -1,6 +1,6 @@
 'use client';
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {Search,Download,X,CalendarDays,ChevronDown,ChevronLeft,ChevronRight,ChevronUp,Loader2,SlidersHorizontal,XCircle} from 'lucide-react';
+import {Search,Download,X,CalendarDays,ChevronDown,ChevronLeft,ChevronRight,ChevronUp,Loader2,Maximize2,SlidersHorizontal,XCircle} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {adminViewState,saveAdminViewState,takeAdminViewState} from '@/lib/admin-view-state';
 import {paymentConfirmed,israelDate,ORDER_ABANDONED_DAYS,type AdminOrderFilterBucket} from '@/lib/admin-order-buckets';
@@ -12,7 +12,7 @@ import {downloadAdminWorkbook} from './admin-export';
 import './orders-reference.css';
 import './orders-modern.css';
 import {OrderPanel} from './admin-order-panel';
-import {OrderFilter,OrderFilters,orderSites,OrderPublication as Publication,RecordPanel} from './order-list-parts';
+import {OrderFilter,OrderFilters,orderSites,siteLabel,OrderPublication as Publication,RecordPanel} from './order-list-parts';
 import {orderMoney} from './order-presentation';
 import {ReportReview} from './payment-reports';
 
@@ -75,16 +75,16 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
    {!current&&!state.error?<div className="orders-reference-loading" role="status">טוען הזמנות…</div>:current&&!rows.length?<div className="orders-reference-empty"><h3>{saved.bucket==='attention'&&!saved.q&&!saved.month?'אין כרגע הזמנות לטיפול':'אין הזמנות שמתאימות לסינון'}</h3><p>{saved.bucket==='attention'&&!saved.q&&!saved.month?'דיווחי תשלום ובקשות ביטול חדשים יופיעו כאן.':'אפשר לשנות את החודש או את המצב, או לנקות את החיפוש.'}</p><button type="button" onClick={()=>{setDraft('');commit({bucket:'active',month:'',q:''});}}>הצגת כל ההזמנות</button></div>:<>
     <div className="om-head" aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span/><span/></div>
     <div className="om-list" aria-label="רשימת ההזמנות">
-     {rows.map((o,index)=>{const startsAbandoned=(saved.bucket==='awaiting')&&isAbandoned(o)&&(index===0||!isAbandoned(rows[index-1])),open=expanded===o.id,pay=orderPaymentState(o),sites=orderSites(o),cancelAsk=Number(o.cancel_pending_count)>0,askReview=!cancelAsk&&reportPending(o),busy=opening===o.id,label=busy?'פותח…':cancelAsk?'טיפול בביטול':askReview?'בדיקת הדיווח':'ניהול הזמנה';return <React.Fragment key={o.id}>{startsAbandoned&&<h3 className="om-section">נזנחו, מעל {ORDER_ABANDONED_DAYS} ימים</h3>}<article className={'om-order'+(open?' is-open':'')}>
+     {rows.map((o,index)=>{const startsAbandoned=(saved.bucket==='awaiting')&&isAbandoned(o)&&(index===0||!isAbandoned(rows[index-1])),open=expanded===o.id,pay=orderPaymentState(o),sites=orderSites(o),cancelAsk=Number(o.cancel_pending_count)>0,askReview=!cancelAsk&&reportPending(o),busy=opening===o.id,label=busy?'פותח…':cancelAsk?'טיפול בביטול':askReview?'בדיקת הדיווח':open?'פתיחה בעמוד מלא':'ניהול הזמנה',full=open&&!cancelAsk&&!askReview;return <React.Fragment key={o.id}>{startsAbandoned&&<h3 className="om-section">נזנחו, מעל {ORDER_ABANDONED_DAYS} ימים</h3>}<article className={'om-order is-tone-'+pay.tone+(cancelAsk?' has-cancel':'')+(open?' is-open':'')}>
       <div className="om-row" onClick={()=>setExpanded(open?'':o.id)}>
        <div className="om-id"><strong><bdi>#{String(o.number).replace(/^#/,'')}</bdi></strong><time dateTime={o.created}>{orderDate(o.created)}</time></div>
        <div className="om-who"><b>{o.user_name||o.name}</b>{o.on_account||o.payment==='monthly'||o.billing_month?<span className="is-monthly">הזמנה חודשית</span>:<span>הזמנה רגילה</span>}</div>
-       <div className="om-sites">{sites[0]?<span className="om-site" title={sites.map((x:Row)=>x.name).join(', ')}>{sites[0].name}</span>:<span className="om-muted">אין פריטים</span>}{sites.length>1&&<span className="om-plus"><bdi dir="ltr">+{sites.length-1}</bdi></span>}</div>
+       <div className="om-sites">{sites[0]?<span className="om-site" dir="ltr" title={sites.map((x:Row)=>siteLabel(x)).join(', ')}>{siteLabel(sites[0])}</span>:<span className="om-muted">אין פריטים</span>}{sites.length>1&&<span className="om-plus"><bdi dir="ltr">+{sites.length-1}</bdi></span>}</div>
        <div className="om-pay"><span className={'om-pill is-'+pay.tone}>{pay.label}</span>{pay.note&&<small>{pay.note}</small>}</div>
        <div className="om-pub"><Publication o={o}/></div>
        <div className="om-amount"><bdi>{orderMoney(o.amounts.total)}</bdi></div>
-       <a className={'om-btn om-action'+(cancelAsk||askReview?' is-primary':'')+(busy?' is-opening':'')} href={'/admin-order/'+o.id} aria-busy={busy||undefined} onClick={e=>{e.stopPropagation();if(!plain(e))return;e.preventDefault();if(askReview)review(o);else detail(o);}}><span>{label}</span>{busy?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:<ChevronLeft size={16} aria-hidden="true"/>}</a>
-       <button type="button" className="om-expand" aria-label={(open?'סגירת פירוט הזמנה ':'פירוט הזמנה ')+o.number} aria-expanded={open} aria-controls={'order-inline-'+o.id} onClick={e=>{e.stopPropagation();setExpanded(open?'':o.id);}}>{open?<ChevronUp size={19} aria-hidden="true"/>:<ChevronDown size={19} aria-hidden="true"/>}</button>
+       <a className={'om-btn om-action'+(cancelAsk||askReview?' is-primary':'')+(busy?' is-opening':'')} href={'/admin-order/'+o.id} aria-busy={busy||undefined} onClick={e=>{e.stopPropagation();if(!plain(e))return;e.preventDefault();if(askReview)review(o);else detail(o);}}>{full&&!busy&&<Maximize2 size={15} aria-hidden="true"/>}<span>{label}</span>{busy?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:!full&&<ChevronLeft size={16} aria-hidden="true"/>}</a>
+       <button type="button" className="om-expand" title={open?"סגירה":"פירוט"} aria-label={(open?'סגירת פירוט הזמנה ':'פירוט הזמנה ')+o.number} aria-expanded={open} aria-controls={'order-inline-'+o.id} onClick={e=>{e.stopPropagation();setExpanded(open?'':o.id);}}>{open?<><span className="om-expand-text">סגירה</span><ChevronUp size={18} aria-hidden="true"/></>:<ChevronDown size={19} aria-hidden="true"/>}</button>
       </div>
       {open&&<RecordPanel id={'order-inline-'+o.id} title={<>הזמנה <bdi>#{String(o.number).replace(/^#/,'')}</bdi></>} badge={<span className={'om-pill is-'+pay.tone}>{pay.label}</span>} onClose={()=>setExpanded('')}><OrderPanel ctx={ctx} order={o} manage={()=>detail(o)}/></RecordPanel>}
      </article></React.Fragment>;})}
