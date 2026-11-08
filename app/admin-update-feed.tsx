@@ -1,5 +1,5 @@
 'use client';
-import React,{useEffect,useLayoutEffect,useRef,useState} from 'react';
+import React,{lazy,Suspense,useEffect,useLayoutEffect,useRef,useState} from 'react';
 import {toast} from 'sonner';
 import {Bell,CalendarDays,Check,CheckCircle2,ChevronDown,ChevronLeft,ChevronRight,ChevronUp,Clock,FileText,Info,Landmark,Loader2,Mail,MessageSquare,Moon,PenLine,Plug,ReceiptText,RefreshCcw,RefreshCw,RotateCcw,Search,Send,Store,Sun,Tags,TriangleAlert,Wallet,X,XCircle} from 'lucide-react';
 import {api,useData} from '@/lib/client';
@@ -10,6 +10,18 @@ import {useAdminAttention} from './admin-attention';
 import {useAdminTheme} from './admin-theme';
 import './admin-work-center-v2.css';
 import './admin-work-center-sky.css';
+
+const RefundForm=lazy(()=>import('./refund-dialog').then(m=>({default:m.RefundForm})));
+// Cancellation alerts open only that article's cancellation form, not the whole order (08.11.2026).
+function CancelFocus({ctx,id,close}:{ctx:Ctx;id:string;close:()=>void}){
+ const state=useData('articles/'+id,ctx.revision),a=state.data?.article,o=state.data?.order;
+ const leave=(page:string)=>{close();ctx.go(page);};
+ const wait=<p role="status" className="wc2-cancel-load"><Loader2 className="wc2-spin" size={18} aria-hidden="true"/>טוען את פרטי הביטול…</p>;
+ if(state.error&&!a)return <p role="alert" className="wc2-cancel-load is-error">{state.error}</p>;
+ if(!a||!o)return wait;
+ return <div className="wc2-cancel"><Suspense fallback={wait}><RefundForm ctx={ctx} userId={a.user_id||o.user_id} article={a} order={o} close={close}/></Suspense>
+  <nav className="wc2-cancel-links" aria-label="מעבר למסכים נוספים"><button type="button" onClick={()=>leave('admin-article/'+a.id)}><FileText size={16} aria-hidden="true"/><span>פתיחת הכתבה</span></button><button type="button" onClick={()=>leave('admin-order/'+o.id)}><ReceiptText size={16} aria-hidden="true"/><span>ההזמנה המלאה <bdi>{o.number}</bdi></span></button></nav></div>;
+}
 // Approved redesign 05.11.2026 (docs/proposals/work-center-v2): summary numbers, jump pills, quiet lanes, undo after "handled".
 const initial={q:'',state:'open',page:1,scroll:0,limits:{} as Record<string,number>};
 const lanes=[{id:'urgent',label:'דחוף',sub:'ביטולים, כסף שממתין ותקלות שליחה',icon:TriangleAlert,empty:'אין כרגע דברים דחופים',step:20},{id:'content',label:'תוכן ופרסום',sub:'כתבות שמחכות לך',icon:FileText,empty:'אין כתבות שמחכות לך',step:10},{id:'service',label:'שירות וספקים',sub:'אנשים שמחכים לתשובה',icon:MessageSquare,empty:'אין פניות או בקשות פתוחות',step:10}] as const;
@@ -90,7 +102,7 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
    later(()=>{setDone(list=>list.filter(x=>x!==key));ctx.refresh();},1100);
   }catch(e){setRowError({id:key,message:(e as Error).message||'הפעולה לא הושלמה. אפשר לנסות שוב.'});}finally{setBusy('');lock.current=false;}
  }
- const go=(row:Row,key:string,className:string,label=row.action)=><a className={className+(opening===key?' is-opening':'')} href={'/'+row.page} aria-busy={opening===key||undefined} onClick={e=>{if(!plain(e))return;e.preventDefault();if(row.kind==='topup')saveAdminViewState('topups-search',row.detail||row.user_name);open(key,row.page);}}><span>{opening===key?'פותח…':label}</span>{opening===key?<Loader2 className="wc2-spin" size={16} aria-hidden="true"/>:<ChevronLeft size={16} aria-hidden="true"/>}</a>;
+ const go=(row:Row,key:string,className:string,label=row.action)=><a className={className+(opening===key?' is-opening':'')} href={'/'+row.page} aria-busy={opening===key||undefined} onClick={e=>{if(!plain(e))return;e.preventDefault();if(row.kind==='cancellation'&&row.resource_id){ctx.open({kind:'admin-finance',title:'טיפול בביטול וזיכוי',description:'הכתבה הזו בלבד. מאשרים עצירת פרסום מול הספק ואז מזכים.',render:(close:()=>void)=><CancelFocus ctx={ctx} id={row.resource_id} close={close}/>});return;}if(row.kind==='topup')saveAdminViewState('topups-search',row.detail||row.user_name);open(key,row.page);}}><span>{opening===key?'פותח…':label}</span>{opening===key?<Loader2 className="wc2-spin" size={16} aria-hidden="true"/>:<ChevronLeft size={16} aria-hidden="true"/>}</a>;
  const markButton=(row:Row,small=false)=>{const key=row.id,isBusy=busy===key;return <button type="button" className={'wc2-done'+(small?' is-small':'')+(isBusy?' is-busy':'')} disabled={!!busy} aria-busy={isBusy||undefined} aria-label={'סמן כטופל: '+row.title} title="סמן כטופל" onClick={()=>mark(row)}>{isBusy?<Loader2 className="wc2-spin" size={16} aria-hidden="true"/>:<Check size={small?15:17} aria-hidden="true"/>}{!small&&<span>{isBusy?'מסמן…':'סמן כטופל'}</span>}</button>;};
  const record=(row:Row,handled=false)=>{const key=row.history_id||row.id,Icon=kindIcons[row.kind]||Bell,stamp=handled?row.handled_at:row.happened_at,late=!handled&&hours(stamp)>=24,finished=done.includes(key);
   return <article className={'wc2-row'+(finished?' is-finished':'')} key={key}><span className="wc2-chip"><Icon size={19} aria-hidden="true"/></span>
