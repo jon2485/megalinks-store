@@ -280,14 +280,14 @@ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>
 .orders-sky .om-article-panel .om-link:active{transform:scale(.98)}
 .orders-sky .om-article-panel .om-link:focus-visible{outline:2px solid var(--sk-ring);outline-offset:2px}
 /* open article panel follows the sky tokens, so it reads in dark too */
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel){background:transparent;border-top:1px solid var(--sk-line)}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel)>section:not(.om-attach):not(.om-brief){background:transparent;border-color:var(--sk-line)}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(h3,.om-customer-name){color:var(--sk-ink)}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(.om-payment dd,.om-route b){color:var(--sk-ink)}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(.om-payment dt,.om-route time,.om-customer-line){color:var(--sk-mute)}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) :is(.om-payment dd a,.om-link){color:var(--sk-link)}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) .om-link{border-color:var(--sk-line)}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) .om-panel-foot{background:transparent;border-color:var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel){background:transparent;border-top:1px solid var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel)>section:not(.om-attach):not(.om-brief){background:transparent;border-color:var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel) :is(h3,.om-customer-name){color:var(--sk-ink)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel) :is(.om-payment dd,.om-route b){color:var(--sk-ink)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel) :is(.om-payment dt,.om-route time,.om-customer-line){color:var(--sk-mute)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel) :is(.om-payment dd a,.om-link){color:var(--sk-link)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel) .om-link{border-color:var(--sk-line)}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel) .om-panel-foot{background:transparent;border-color:var(--sk-line)}
 .orders-sky .orders-match-screen .om-instruction-row b{color:var(--sk-ink)}
 .orders-sky .orders-match-screen .om-instruction-row :is(p,time){color:var(--sk-copy)}
 .orders-sky .orders-match-screen .om-instruction-text{background:var(--sk-well);color:var(--sk-ink);border-color:var(--sk-line)}
@@ -308,5 +308,31 @@ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>
 .orders-sky .orders-match-screen.om-users :is(.om-user-credit,.om-user-orders b){color:var(--sk-ink)}
 .orders-sky .orders-match-screen.om-users .om-user-alert{color:var(--om-red,#c42847)}
 .orders-sky .orders-match-screen.om-users>.orders-unified-heading{position:relative}
-.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel) .om-payment dd a:hover{text-decoration:underline}
+.orders-sky .orders-match-screen :is(.om-article-panel,.om-user-panel,.om-site-panel) .om-payment dd a:hover{text-decoration:underline}
 @media(min-width:761px){.orders-sky .orders-match-screen.om-users>.om-top-actions{top:2px;inset-inline-end:66px}}
+
+/* Catalog and pricing (09.11.2026) */
+.orders-sky .orders-match-screen.om-catalog>.orders-unified-heading{position:relative}
+.orders-sky .orders-match-screen.om-catalog :is(.om-site-id a,.om-site-price small:not(.om-report-warn)){color:var(--sk-mute)}
+.orders-sky .orders-match-screen.om-catalog .om-site-id a{color:var(--sk-link)}
+.orders-sky .orders-match-screen.om-catalog :is(.om-site-id b,.om-site-supplier,.om-site-cost,.om-site-price){color:var(--sk-ink)}
+.orders-sky .orders-match-screen.om-catalog .om-site-panel .om-note{color:var(--sk-mute)}
+.orders-sky .orders-match-screen.om-catalog .om-site-panel .om-panel-foot small{color:var(--sk-mute)}
+/* catalog tabs as glass pills, same as the other area headings */
+.admin-apex.admin-apex .orders-sky .orders-match-screen.om-catalog .om-catalog-tabs{display:flex;flex-wrap:wrap;gap:8px;width:auto;padding:0;margin:4px 0 18px;background:none!important;border:0!important;box-shadow:none!important}
+.admin-apex.admin-apex .orders-sky .orders-match-screen.om-catalog .om-catalog-tabs>a{height:42px;min-height:42px;padding:0 16px;border-radius:21px;border:0;background:var(--sk-btn);box-shadow:var(--sk-edge);color:var(--sk-ink);font-weight:700;display:inline-flex;align-items:center;gap:8px;-webkit-backdrop-filter:blur(16px) saturate(115%);backdrop-filter:blur(16px) saturate(115%);transition:background .18s,transform .12s}
+.admin-apex.admin-apex .orders-sky .orders-match-screen.om-catalog .om-catalog-tabs>a:hover{background:var(--sk-btn-hover)}
+.admin-apex.admin-apex .orders-sky .orders-match-screen.om-catalog .om-catalog-tabs>a[aria-current=page]{background:var(--sk-cur-bg)!important;color:var(--sk-cur-ink)!important;box-shadow:0 2px 10px rgba(0,0,0,.14)!important}
+.admin-apex.admin-apex .orders-sky .orders-match-screen.om-catalog .om-catalog-tabs>a::after{content:none!important}
+.admin-apex.admin-apex .orders-sky .orders-match-screen.om-catalog .om-catalog-tabs>a svg{width:18px;height:18px;color:inherit!important}
+.admin-apex.admin-apex .orders-sky .orders-match-screen.om-catalog .om-catalog-tabs>a:focus-visible{outline:2px solid var(--sk-ring);outline-offset:2px}
+/* summary card that needs attention: readable in dark */
+html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>button.is-report{background:rgba(255,190,90,.14)}
+html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>button.is-report :is(dt,dd,small){color:#ffd28a}
+.orders-sky .orders-match-screen .om-summary>button{transition:background .18s,transform .12s}
+.orders-sky .orders-match-screen .om-summary>button:active{transform:scale(.99)}
+/* level and personal price lists */
+.orders-sky .orders-match-screen :is(.om-tier-name b,.om-tier-percent,.om-pricebook-who b){color:var(--sk-ink)}
+.orders-sky .orders-match-screen :is(.om-tier-name small,.om-tier-members,.om-tier-head,.om-pricebook-head,.om-pricebook-who bdi,.om-pricebook-who small){color:var(--sk-mute)}
+.orders-sky .orders-match-screen .om-tier-name svg{color:var(--sk-link)}
+.orders-sky .orders-match-screen .om-tier-rule{background:var(--sk-well);color:var(--sk-ink);box-shadow:inset 0 0 0 1px var(--sk-well-line)}
