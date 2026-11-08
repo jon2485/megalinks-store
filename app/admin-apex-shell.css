@@ -79,3 +79,26 @@
  .admin-apex .admin-v172-menu .admin-v172-menu-section{border:0!important;margin:0;padding:0}
  .admin-apex .admin-v172-menu .admin-v172-menu-section+.admin-v172-menu-section{border-top:1px solid var(--sx-line)!important;margin-top:8px}
 }
+
+/* Side menu follows the work center light/dark switch (08.11.2026). The choice sits on <html data-admin-theme>.
+   Without the attribute the menu keeps the original Apex black. */
+html[data-admin-theme=dark] .admin-apex{--sx-side:#06152b;--sx-side-2:rgba(255,255,255,.07);--sx-line:rgba(255,255,255,.08);--sx-ink:#d3dfee;--sx-mute:rgba(211,223,238,.55);--sx-on:#7fe7f2;--sx-on-bg:rgba(127,231,242,.13)}
+html[data-admin-theme=light] .admin-apex{--sx-side:#f6faff;--sx-side-2:rgba(10,102,194,.07);--sx-line:rgba(15,40,80,.09);--sx-ink:#24364d;--sx-mute:#7a8aa0;--sx-on:#0a66c2;--sx-on-bg:rgba(10,102,194,.10)}
+@media(min-width:1101px){
+ html[data-admin-theme] body .admin-apex.admin-apex.admin-design-v172.admin-design-v172 .admin-v172-navigation{transition:background-color .3s,border-color .3s}
+ html[data-admin-theme=dark] body .admin-apex.admin-apex.admin-design-v172.admin-design-v172 .admin-v172-navigation{background:radial-gradient(120% 40% at 100% 0%,rgba(80,215,235,.14),transparent 60%),linear-gradient(180deg,#071c36 0%,#04122b 100%)}
+ html[data-admin-theme=light] body .admin-apex.admin-apex.admin-design-v172.admin-design-v172 .admin-v172-navigation{background:radial-gradient(120% 40% at 100% 0%,rgba(120,210,255,.22),transparent 60%),linear-gradient(180deg,#f7fbff 0%,#eef5fc 100%);box-shadow:-1px 0 0 rgba(15,40,80,.04),-8px 0 30px rgba(30,80,140,.05)}
+ html[data-admin-theme] .admin-apex .admin-v172-menu :is(.admin-v172-area-link,.admin-v172-area>a,.admin-v172-area summary,.admin-menu-utilities a){transition:background-color .15s,color .15s,transform .12s}
+ html[data-admin-theme] .admin-apex .admin-v172-menu :is(.admin-v172-area-link,.admin-v172-area>a,.admin-menu-utilities a):active{transform:scale(.98)}
+ html[data-admin-theme] .admin-apex .admin-v172-menu :is(a,summary):focus-visible{outline:2px solid var(--sx-on);outline-offset:1px}
+ html[data-admin-theme=dark] .admin-apex .admin-v172-menu .admin-v172-area a:not(.admin-v172-area-link),html[data-admin-theme=dark] .admin-apex .admin-v172-menu .admin-menu-utilities a,html[data-admin-theme=dark] .admin-apex .admin-side-user a{color:rgba(211,223,238,.72)}
+ html[data-admin-theme=dark] .admin-apex .admin-v172-menu .admin-v172-search input{color:#fff}
+ html[data-admin-theme=light] .admin-apex .admin-v172-menu .admin-v172-search{background:rgba(255,255,255,.8);box-shadow:0 1px 2px rgba(15,40,80,.04)}
+ html[data-admin-theme=light] .admin-apex .admin-v172-menu .admin-v172-search input{color:var(--sx-ink)}
+ html[data-admin-theme=light] .admin-apex .admin-v172-menu .admin-v172-area a:not(.admin-v172-area-link),html[data-admin-theme=light] .admin-apex .admin-v172-menu .admin-menu-utilities a,html[data-admin-theme=light] .admin-apex .admin-side-user a{color:#55687f}
+ html[data-admin-theme=light] .admin-apex .admin-v172-menu :is(.admin-v172-area-link,.admin-v172-area>a,.admin-menu-utilities a):hover{color:#0c1d33}
+ html[data-admin-theme=light] .admin-apex .admin-side-user b{color:#0c1d33}
+ html[data-admin-theme=light] .admin-apex .admin-side-user a:hover{color:#c42847}
+ html[data-admin-theme=light] .admin-apex .admin-v172-menu .admin-v172-attention.is-dot{background:#12a06f}
+ html[data-admin-theme=light] .admin-apex .admin-v172-menu{scrollbar-color:#c7d3e1 transparent}
+}

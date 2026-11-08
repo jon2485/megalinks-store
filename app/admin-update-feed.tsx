@@ -7,6 +7,7 @@ import {money,type Row} from '@/lib/shared';
 import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
 import type {Ctx} from './workspace';
 import {useAdminAttention} from './admin-attention';
+import {useAdminTheme} from './admin-theme';
 import './admin-work-center-v2.css';
 import './admin-work-center-sky.css';
 // Approved redesign 05.11.2026 (docs/proposals/work-center-v2): summary numbers, jump pills, quiet lanes, undo after "handled".
@@ -52,9 +53,7 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  const [saved,setSaved]=useState(()=>({...initial,...adminViewState('updates',initial)})),[draft,setDraft]=useState(saved.q);
  const [busy,setBusy]=useState(''),[done,setDone]=useState<string[]>([]),[rowError,setRowError]=useState<{id:string;message:string}|null>(null),[opening,setOpening]=useState(''),[active,setActive]=useState('urgent'),[flash,setFlash]=useState(''),[refreshed,setRefreshed]=useState(false),[moreBusy,setMoreBusy]=useState(''),[updatedAt,setUpdatedAt]=useState('');
  const input=useRef<HTMLInputElement>(null),root=useRef<HTMLElement>(null),seg=useRef<HTMLDivElement>(null),lock=useRef(false),restore=useRef(saved.scroll),latest=useRef(saved),refreshing=useRef(false),timers=useRef<ReturnType<typeof setTimeout>[]>([]);
- const [theme,setTheme]=useState<'dark'|'light'>('dark');
- useLayoutEffect(()=>{try{if(localStorage.getItem('wc2-theme')==='light')setTheme('light');}catch{}},[]);
- function switchTheme(){const next=theme==='light'?'dark':'light';setTheme(next);try{localStorage.setItem('wc2-theme',next);}catch{}}
+ const [theme,switchTheme]=useAdminTheme();
  const isOpen=saved.state==='open',limits={...defaults,...saved.limits};
  const laneParams=new URLSearchParams({view:'lanes',q:saved.q,...Object.fromEntries(Object.entries(limits).map(([k,v])=>['limit_'+k,String(v)]))});
  const listParams=new URLSearchParams({q:saved.q,state:'handled',page:String(saved.page)});
