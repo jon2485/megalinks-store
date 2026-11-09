@@ -563,3 +563,51 @@
   - **עמודת "מלאי" בטבלת האתרים:** שומשו / סך הכול (סך הכול מודגש וגדול יותר). "ללא הגבלה" כשאין מלאי.
   - **נדחה לבקשת הבעלים:** מסך ניהול מלאי. הקוד הוסר, לא נשאר בענף.
   - **לא נבדק בדפדפן:** הלשונית נשארה על "טוען" בדפדפן הבדיקה (האיטיות הידועה). ה-API נבדק ישירות ומחזיר את הכתבות הנכונות תוך 35ms. כדאי לבדוק בקישור המקומי.
+
+## 09.11.2026 – Supplier types spec (no code)
+- New spec file: docs/suppliers-types-spec.md.
+  - supplier types: with account / manual / partial / site without a supplier
+  - stock types: unlimited monthly vs prepaid package
+  - a page per type, link map, design, gaps
+- Gaps that need the owner's decision:
+  - no record of a package payment
+  - a cancellation doesn't return stock
+  - a paused site isn't checked at dispatch
+  - lowering the stock changes the history
+- Next step: wait for approval of the spec and the gap decisions before building a page.
+
+## 09.11.2026: Suppliers built to the owner's decisions
+**What was built**
+- Single suppliers page (`SupplierHub`) with supplier type, site type and stock.
+- Overview (`admin-supplier-overview`).
+- Per-site stock page (`admin-supplier-stock/<site>`).
+- Supplier articles page (`admin-supplier-articles/<id>`).
+- Add-stock window.
+- Monthly email to a manual supplier with a public invoice page (`/supplier-invoice/<token>`).
+- Number returned to stock on cancellation before publication.
+- Admin-only notes for a paused site or a site missing stock.
+
+**New files**
+- lib/supplier-stock.ts, lib/supplier-month.ts
+- app/supplier-pages.tsx, app/supplier-invoice-view.tsx, app/supplier-hub.css
+
+**Changed files**
+- lib/publication.ts (number = lowest free slot, default email, images in the email)
+- lib/mail.ts, lib/supplier-mail-content.ts (image credit)
+- lib/account-management.ts (stock return)
+- lib/catalog-bulk.ts (stock can only be added)
+- lib/admin-suppliers.ts, lib/admin-content.ts
+- route.ts, workspace.tsx, admin-suppliers-workspace.tsx, content-category-nav, admin-shell, admin-navigation, seo.ts, admin-content-workspace.tsx
+
+**Important before upload:** the first time "כל הספקים" opens in Production, every site with no supplier gets linked automatically to a supplier card for its email. Sites without an email are linked to asher.megalinks@gmail.com. Locally that was 1,177 sites. This is by the owner's decision, but it is a data change. Confirm before upload.
+
+**Not finished**
+- The monthly email runs inside the existing month-close job (maintenance/seller-months). That job only covers the month that just ended, not older months.
+- Allocations of articles cancelled before this change stay counted (legacy).
+
+**Temporary (local only, must not be uploaded)**
+- Fictional test data in the local DB:
+  - packages on jpost and Mako
+  - QA articles "כתבת מלאי"
+  - two articles moved to 2026-10
+  - invoice INV-7788

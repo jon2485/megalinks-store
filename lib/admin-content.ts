@@ -1,3 +1,4 @@
+import {packageRanges,slotPlace} from './supplier-stock';
 import {all,one} from './server';
 import {SUPPLIER_LATE_DAYS,writingCodeSql} from './writing-workflow';
 // A content-only projection. Financial fields and article bodies stay out of lists.
@@ -22,7 +23,7 @@ export const contentSource=`WITH history AS (
  json_extract(a.data,'$.writing_requested_at') AS writing_requested_at,json_extract(a.data,'$.writing_returned_at') AS writing_returned_at,json_extract(a.data,'$.writing_completed_at') AS writing_completed_at,
  json_extract(a.data,'$.writing_revision_requested_at') AS writing_revision_requested_at,json_extract(a.data,'$.writing_revision_note') AS writing_revision_note,
  COALESCE(NULLIF(json_extract(a.data,'$.topic'),''),'') AS topic,json_extract(a.data,'$.editorial_words') AS editorial_words,json_extract(a.data,'$.keywords') AS keywords,json_extract(a.data,'$.brand') AS brand,json_extract(a.data,'$.audience') AS audience,json_extract(a.data,'$.style') AS style,json_extract(a.data,'$.target_url') AS target_url,json_extract(a.data,'$.anchor') AS anchor,json_extract(a.data,'$.target_url_2') AS target_url_2,json_extract(a.data,'$.anchor_2') AS anchor_2,json_extract(a.data,'$.notes') AS notes,
- j.status AS delivery_status,json_extract(j.data,'$.error') AS delivery_error,
+ j.status AS delivery_status,json_extract(j.data,'$.error') AS delivery_error,w.active AS website_active,
  CASE WHEN o.status<>'cancelled' AND (o.paid=1 OR json_extract(o.data,'$.demo')=1 OR json_extract(o.data,'$.on_account')=1 OR json_extract(o.data,'$.payment_settled')=1) THEN 1 ELSE 0 END AS workable
  FROM articles a JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id JOIN websites w ON w.id=a.website_id
  LEFT JOIN history h ON h.resource=a.id
@@ -98,5 +99,5 @@ export async function adminContent(query:URLSearchParams,exported=false){
 
 /** Articles a supplier has received: waiting for publication and published. Articles still with the customer never appear (09.11.2026). */
 export async function supplierArticles(supplierId:string){
- return {articles:await all(contentSource+` SELECT v.id,v.title,v.topic,v.website_id,v.website_url,w2.name AS website_name,v.stage,v.status,v.supplier_sent_at,v.published_at,v.published_url,v.anchor,v.target_url,v.anchor_2,v.target_url_2,v.number,v.waiting_since,v.supplier_late,v.delivery_status FROM visible v JOIN websites w2 ON w2.id=v.website_id WHERE v.supplier_id=? AND v.stage IN ('with_supplier','published') ORDER BY CASE WHEN v.stage='with_supplier' THEN 0 ELSE 1 END,CASE WHEN v.stage='with_supplier' THEN v.supplier_sent_at END ASC,COALESCE(v.published_at,v.updated) DESC,v.id`,supplierId)};
+ const rows:any[]=await all(contentSource+` SELECT v.id,v.title,v.topic,v.website_id,v.website_url,w2.name AS website_name,v.stage,v.status,v.supplier_sent_at,v.published_at,v.published_url,v.anchor,v.target_url,v.anchor_2,v.target_url_2,v.number,v.waiting_since,v.supplier_late,v.delivery_status,d.sequence AS stock_slot,d.stock_total AS stock_snapshot,json_extract(w2.data,'$.stock_total') AS site_stock,w2.active AS site_active FROM visible v JOIN websites w2 ON w2.id=v.website_id LEFT JOIN supplier_dispatch_allocations d ON d.article_id=v.id WHERE v.supplier_id=? AND v.stage IN ('with_supplier','published','delivery_failed') ORDER BY CASE WHEN v.stage='published' THEN 1 ELSE 0 END,COALESCE(v.published_at,v.supplier_sent_at,v.updated) DESC,v.id`,supplierId);const ranges=new Map<string,any[]>();for(const site of new Set(rows.filter((r:any)=>r.stock_snapshot!==null&&r.stock_slot).map((r:any)=>r.website_id))){const packs=(await all("SELECT id,data FROM records WHERE kind='stock_package' AND json_extract(data,'$.website_id')=? ORDER BY created,id",site)).map((r:any)=>JSON.parse(r.data));const w=rows.find((r:any)=>r.website_id===site);ranges.set(site as string,packageRanges(w.site_stock===null?null:Number(w.site_stock),packs));}return {articles:rows.map((r:any)=>({...r,stock_place:r.stock_snapshot!==null&&r.stock_slot?slotPlace(Number(r.stock_slot),ranges.get(r.website_id)||[]):null}))};
 }

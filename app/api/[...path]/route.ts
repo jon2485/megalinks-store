@@ -1,4 +1,4 @@
-import {supplierDirectory,supplierDetail,supplierSettlements,supplierRequestContext} from '@/lib/admin-suppliers';
+import {supplierDirectory,supplierDetail,supplierSettlements,supplierRequestContext, supplierOverview } from '@/lib/admin-suppliers';
 import {supplierArticles} from '@/lib/admin-content';
 import {adminContent} from '@/lib/admin-content';
 import {prepareOrderStatement} from '@/lib/order-statement';
@@ -56,6 +56,9 @@ import { articleDocx } from '@/lib/delivery-docx';
 import { closeMonth } from '@/lib/monthly';
 import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-content';
 import { dispatchArticle } from '@/lib/publication';
+import { siteStock, addStockPackage, linkOrphanSites } from '@/lib/supplier-stock';
+import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManualSupplierMonths } from '@/lib/supplier-month';
+import { DEFAULT_SUPPLIER_EMAIL } from '@/lib/supplier-presentation';
 import { contentHtml, signature, matchingSignature } from '@/lib/integrations';
 import { aiArticleHtml } from '@/lib/ai-article-content';
 import { env } from 'cloudflare:workers';
@@ -164,7 +167,7 @@ async function handle(r: Request,access:ResponseAccess) {
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
     if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);return response(await releaseScheduledApprovals(new URL(r.url).origin));}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
-    if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);return response(await closeSellerMonths(new URL(r.url).origin));}
+    if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
     const knowledgePublic=await knowledgePublicRoutes(r,p);if(knowledgePublic)return knowledgePublic;
     if(p[0]==='catalog-logo'&&p[1]&&method==='GET'){
@@ -205,8 +208,10 @@ async function handle(r: Request,access:ResponseAccess) {
         await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
         return response({ ok: true });
     }
+    if (p[0] === 'supplier-invoice' && p[1]) return response(await supplierInvoiceRoute(r, p[1], method));
     if (p[0] === 'supplier' && p[1]) {
         const token = await one('SELECT * FROM tokens WHERE hash=? AND kind=?', await hash(p[1]), 'supplier');
+        if (token?.used && (await one("SELECT status FROM articles WHERE id=?", token.resource))?.status === 'cancelled') assert(false, 'הכתבה בוטלה, ואין צורך לפרסם אותה', 410);
         assert(token && !token.used && Date.parse(token.expires) > Date.now(), 'קישור הספק אינו תקף', 403);
         const a = await one('SELECT a.*,w.name AS website_name FROM articles a JOIN websites w ON w.id=a.website_id WHERE a.id=?', token.resource);
         assert(a, 'כתבה לא נמצאה', 404);
@@ -773,10 +778,10 @@ if (p[0] === 'cart') {
             assert(b.name || b.title || b.subject, 'יש להזין שם או כותרת');
             if(kind==='supplier'){
                 b.name=String(b.name||'').trim();assert(b.name&&b.name.length<=200,'יש להזין שם ספק תקין');
-                b.email=String(b.email||'').trim().toLowerCase();assert(!b.email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)&&b.email.length<=254,'דוא״ל הספק אינו תקין');
+                b.email=String(b.email||'').trim().toLowerCase()||DEFAULT_SUPPLIER_EMAIL;assert(!b.email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)&&b.email.length<=254,'דוא״ל הספק אינו תקין');
                 for(const key of ['contact','phone','url','notes','workflow'])if(b[key]!==undefined)assert(typeof b[key]==='string'&&b[key].length<=(['notes','workflow'].includes(key)?6000:1000),'פרט ספק ארוך מדי');
                 if(b.url)b.url=httpUrl(b.url);
-                if(b.email){const existing=await one("SELECT id FROM records WHERE kind='supplier' AND lower(json_extract(data,'$.email'))=?",b.email);if(existing)return response({id:existing.id,existing:true});}
+                if(b.email&&b.email!==DEFAULT_SUPPLIER_EMAIL){const existing=await one("SELECT id FROM records WHERE kind='supplier' AND lower(json_extract(data,'$.email'))=?",b.email);if(existing)return response({id:existing.id,existing:true});}
             }
             if(kind==='instruction'){b={name:String(b.name||'').trim(),text:String(b.text||'').trim()};assert(b.name&&b.name.length<=200&&b.text&&b.text.length<=20000,'יש למלא שם ותוכן הנחיה תקינים');}
             if(kind==='ticket')assert(b.payment_method!=='bank_transfer'&&!b.amount_cents,'בקשות הטענה נשלחות דרך הארנק');
@@ -839,7 +844,11 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
-        if(p[1]==='suppliers'){assert(method==='GET','פעולה לא נתמכת',405);if(p[2]&&p[3]==='articles')return response(await supplierArticles(decodeURIComponent(p[2])));return response(p[2]?await supplierDetail(decodeURIComponent(p[2]),query):await supplierDirectory(query));}
+        if(p[1]==='supplier-stock'&&p[2]){const site=decodeURIComponent(p[2]);if(method==='GET')return response(await siteStock(site));assert(method==='POST','פעולה לא נתמכת',405);const result=await addStockPackage(u,site,await json(r));let resent=0;for(const id of result.retry){const a=parse(await one('SELECT * FROM articles WHERE id=?',id));if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;}catch{}}return response({...result,resent});}
+        if(p[1]==='supplier-overview'&&method==='GET')return response(await supplierOverview());
+        if(p[1]==='supplier-invoice-file'&&method==='GET')return await supplierInvoiceFile(String(query.get('key')||''));
+        if(p[1]==='supplier-months'&&p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendSupplierMonth(new URL(r.url).origin,String(b.supplier_id||''),String(b.month||''),u.id,true));}
+        if(p[1]==='suppliers'){assert(method==='GET','פעולה לא נתמכת',405);if(!p[2])await linkOrphanSites(u.id);if(p[2]&&p[3]==='articles')return response(await supplierArticles(decodeURIComponent(p[2])));return response(p[2]?await supplierDetail(decodeURIComponent(p[2]),query):await supplierDirectory(query));}
         if(p[1]==='supplier-request-context'){assert(method==='GET','פעולה לא נתמכת',405);return response(await supplierRequestContext(query.get('id')||''));}
         if(p[1]==='supplier-settlements'){assert(method==='GET','פעולה לא נתמכת',405);return response(await supplierSettlements(query));}
         if(p[1]==='content'){

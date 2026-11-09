@@ -4,13 +4,13 @@ export const adminAreas = [
  {id:'admin-approvals',label:'תוכן ופרסום',description:'בדיקה, כתיבה, אישור ומעקב עד לפרסום.',pages:[['admin-articles','כתבות'],['admin-instructions','הנחיות כתיבה'],['admin-knowledge','ניהול בלוג']]},
  {id:'admin-users',label:'לקוחות והרשאות',description:'תיקי לקוח, הרשאות ומסגרות אשראי.',pages:[['admin-users','לקוחות והרשאות']]},
  {id:'admin-websites',label:'קטלוג ותמחור',description:'אתרים, סנכרון Google Sheets ומחירים ללקוחות.',pages:[['admin-websites','קטלוג ותמחור']]},
- {id:'admin-suppliers',label:'ספקים',description:'פרטי ספקים, האתרים שלהם ותשלומים על פרסומים.',pages:[['admin-suppliers','ספקים ואתרים'],['admin-seller-requests','בקשות וחשבוניות'],['admin-supplier-finance','התחשבנות']]},
+ {id:'admin-suppliers',label:'ספקים',description:'פרטי ספקים, האתרים שלהם ותשלומים על פרסומים.',pages:[['admin-supplier-overview','סקירה'],['admin-suppliers','כל הספקים'],['admin-seller-requests','בקשות וחשבוניות'],['admin-supplier-finance','התחשבנות']]},
  {id:'admin-promotions',label:'מבצעים וחבילות',description:'חבילות פרסום, מבצעים, קופונים וחבילות יתרה.',pages:[['admin-promotions','מבצעים וחבילות']]},
  {id:'admin-support',label:'פניות שירות',description:'פניות הלקוחות והמשך הטיפול בהן.',pages:[['admin-support','פניות']]},
  {id:'admin-connections',label:'מערכת ודוחות',description:'הגדרות, דוחות, דיוור והיסטוריית פעולות.',pages:[['admin-connections','חיבורים והגדרות'],['admin-reports','דוחות'],['admin-notifications','דיוור'],['admin-jobs','יומן חיבורים'],['admin-audit','יומן פעילות']]},
 ] as const;
 export function adminArea(view:string){
- if(view.startsWith('admin-supplier/')||view.startsWith('admin-supplier-invoice/')||view.startsWith('admin-seller-request/'))return adminAreas[5];
+ if(/^admin-supplier(-articles|-stock)?\//.test(view)||view.startsWith('admin-supplier-invoice/')||view.startsWith('admin-seller-request/'))return adminAreas[5];
  if(view.startsWith('admin-order/'))return adminAreas[1];
  if(view.startsWith('admin-support/'))return adminAreas[7];
  if(['admin-approvals','admin-publication','admin-writing'].includes(view)||view.startsWith('admin-knowledge/'))return adminAreas[2];

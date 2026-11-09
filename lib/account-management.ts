@@ -1,3 +1,4 @@
+import {releaseSlotStatements} from './supplier-stock';
 import {closeOrderForStatement,orderStatementId,prepareOrderStatement,refreshOrderStatement,renderOrderStatementPdf} from './order-statement';
 import {paymentEvidenceRows,orderPaymentEvidence} from './payment-evidence';
 import {orderSummarySql} from './order-summary';
@@ -57,6 +58,8 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
   const refundEntry={at:stamp,amount:open?0:amount.gross,removed_amount:open?amount.gross:0,destination,note:refundNote,reason,actor_id:actor.id,mode:b.mode,previous_status:a.status,...(overpaid?{overpaid_action:overpaid,overpaid_note:overpaidNote}:{})};
 
   const d={...a.data,publication_refunded:!!a.publication_refunded||amount.publication,writing_refunded:!!a.writing_refunded||amount.writing,refund_total:Number(a.refund_total||0)+amount.gross,refund_net:Number(a.refund_net||0)+amount.net,refund_reason:reason,refunded_at:stamp,refund_destination:destination,refund_note:refundNote,refund_history:[...(a.refund_history||[]),refundEntry],cancel_pending:false};
+  // Cancelled before publication: the slot goes back to the site's stock and the supplier link stops working.
+  if(amount.publication&&a.status!=='published')ops.push(...releaseSlotStatements(a.id,actor.id,reason));
   ops.push(stmt("UPDATE articles SET status='cancelled',data=?,updated=? WHERE id=?",JSON.stringify(d),stamp,a.id));
   const net=amount.net,gross=amount.gross;
   if(open){if(charge){const col=charge.demo?'demo_balance':'balance';ops.push(stmt(`UPDATE credit_accounts SET ${col}=${col}-? WHERE user_id=?`,gross,target.id),stmt('UPDATE monthly_charges SET amount=CASE WHEN settled=0 THEN amount-? ELSE NULL END WHERE order_id=?',gross,order.id));}ops.push(stmt("UPDATE orders SET subtotal=subtotal-?,vat=vat-?,total=total-?,data=json_set(data,'$.refund_total',COALESCE(json_extract(data,'$.refund_total'),0)+?,'$.original_total',COALESCE(json_extract(data,'$.original_total'),total)),updated=? WHERE id=?",net,gross-net,gross,gross,stamp,order.id));}

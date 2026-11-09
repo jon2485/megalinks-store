@@ -5,3 +5,6 @@ export const supplierStatementStates:Record<string,string>={awaiting_invoice:'מ
 export const supplierTone=(s:string)=>['approved','ready','paid'].includes(s)?'success':['rejected','missing_cost'].includes(s)?'danger':['pending','awaiting_invoice','invoice_review','contract','cost','email','paused'].includes(s)?'pending':'muted';
 
 export const supplierPaymentMethods:Record<string,string>={bank_transfer:'העברה בנקאית',check:'צ׳ק',cash:'מזומן',card:'כרטיס אשראי',app:'ביט / פייבוקס',other:'אחר'};
+
+// A supplier always has an email. Sites and suppliers without one use the system's address.
+export const DEFAULT_SUPPLIER_EMAIL='asher.megalinks@gmail.com';

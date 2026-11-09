@@ -9,5 +9,7 @@ export function supplierPublicationNotes(article:Row):string {
         ['תיאור קצר / תיאור מטא',data.meta_description],
         ['הערות לפרסום',data.client_notes],
         ['הנחיות המנהל לפרסום',data.admin_notes],
+        ['קרדיט לתמונה הראשית',[data.image_credit,data.image_credit_url].filter(Boolean).join(' · ')],
+        ['קרדיט לתמונה נוספת',data.secondary_image_credit],
     ].filter(([,value])=>String(value||'').trim()).map(([label,value])=>label+':\n'+String(value).trim()).join('\n\n');
 }
