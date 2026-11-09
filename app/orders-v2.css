@@ -2,7 +2,7 @@
 .sv2-orders{max-width:1180px}
 .sv2-areas>*{display:inline-flex;align-items:center;gap:6px}
 .sv2-areas .admin-v172-attention{all:unset;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#b25000!important;color:#fff!important;font-size:11px;font-weight:700;display:inline-grid;place-items:center;border:0!important;box-shadow:none!important}
-.sv2-areas>span[aria-current=page]{background:#1d1d1f;color:#fff}
+
 .sv2-sumbtn.hot .big{color:#b25000}
 .sv2-select{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 4px 0 0;padding-inline-start:12px;border-radius:12px;background:#f5f5f7;color:#424245}
 .sv2-orders .sv2-select select,.sv2-body .sv2-select select{height:40px;padding:0 6px 0 12px!important;border:0!important;background:transparent!important;box-shadow:none!important;font:inherit;font-size:14px;color:#1d1d1f;cursor:pointer}
@@ -23,7 +23,7 @@
 .sv2-more{margin-inline-start:6px;font-weight:600}
 .sv2-pubcell{font-size:13px;min-width:0}
 .sv2-pubcell :is(b,strong){font-size:15px;font-weight:800}
-.sv2-dots.is-close{background:#1d1d1f;color:#fff}
+
 .sv2-pager button.on{background:#1d1d1f;color:#fff}
 .sv2-pager button{font-size:13px;font-weight:600}
 
@@ -49,7 +49,6 @@
 }
 @media(max-width:640px){
  .sv2-orders .sv2-ph h2{font-size:28px!important}
- .sv2-orders .sv2-areas{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}
  .sv2-orders .sv2-areas>*{white-space:nowrap}
  .sv2-orders .sv2-sum.is-4{grid-template-columns:1fr 1fr;gap:8px}
  .sv2-orders .sv2-sumbtn{padding:12px 14px!important;border-radius:16px!important}
@@ -73,7 +72,7 @@
 }
 
 .sv2-areas .admin-v172-attention .admin-v172-visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-.sv2-areas>span[aria-current=page] .admin-v172-attention{background:#ffcf8a!important;color:#1d1d1f!important}
+
 .sv2-orders .om-order{margin:0!important;border:0!important;border-top:1px solid #f0f1f4!important;border-radius:0!important;box-shadow:none!important;background:none!important;overflow:visible!important}
 .sv2-orders .om-order::before,.sv2-orders .om-order::after{display:none!important}
 .sv2-orders .om-panel dl{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}

@@ -659,3 +659,8 @@
 - All capabilities kept: search, month and status filters, the 4 views (now cards), export, review report, handle cancellation, open the full order, in-row detail, customer file, all the customer orders. New: an actions menu (⋯) and email to the customer.
 - Phone: cards and the existing detail sheet, which needs a parent without backdrop-filter (inline style on the card).
 - Other orders-area pages (month close and the rest) are still in the old design.
+
+## 10.11.2026: Orders polish
+- "All orders" = bucket all (it was active and hid unpaid orders).
+- Item rows are tighter (date beside the article), "show the whole order" expands in place.
+- Wide area tabs with icons (orders and suppliers), light selected state, light close button, press/hover/focus feedback on every control.

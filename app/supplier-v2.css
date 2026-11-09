@@ -274,3 +274,36 @@ a.sv2-who:hover b{color:var(--sv-blue2)}
 .sv2-grp.n0{background:#f7f8fa;color:#424245}
 .sv2-grp.n0 .n{background:#86868b}
 select.sv2-native{display:block;width:100%;height:44px;margin-top:6px;padding:0 12px;border:0;border-radius:12px;background:#f5f5f7;font:inherit;font-size:14px;color:#1d1d1f}
+
+/* ---- 10.11.2026: wide area tabs, light selected state, feedback on every control ---- */
+.sv2 .sv2-areas{display:grid!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);justify-self:stretch!important;width:100%;gap:6px;padding:6px;border-radius:20px;background:rgba(255,255,255,.92);box-shadow:0 0 0 1px rgba(0,0,0,.05),0 8px 22px rgba(20,40,80,.05);font-size:15px}
+.sv2 .sv2-areas>a,.sv2 .sv2-areas>span{display:flex!important;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:8px 12px!important;border-radius:14px!important;background:transparent!important;color:#424245!important;font-weight:700;text-decoration:none;white-space:nowrap;transition:background-color .15s,color .15s,transform .1s,box-shadow .2s}
+.sv2 .sv2-areas>a svg{color:#86868b;flex:none}
+.sv2 .sv2-areas>a:hover{background:#f5f5f7!important;color:#1d1d1f!important}
+.sv2 .sv2-areas>a:active{transform:scale(.97)}
+.sv2 .sv2-areas>span[aria-current=page]{background:rgba(0,113,227,.09)!important;color:#0066cc!important;box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.55)}
+.sv2 .sv2-areas>span[aria-current=page] svg{color:#0071e3}
+.sv2 .sv2-areas .admin-v172-attention{background:#b25000!important;color:#fff!important}
+.sv2 .sv2-areas>span[aria-current=page] .admin-v172-attention{background:#0071e3!important;color:#fff!important}
+.sv2 .sv2-dots.is-close{background:rgba(0,113,227,.09)!important;color:#0066cc!important}
+.sv2 .sv2-dots.is-close:hover{background:rgba(0,113,227,.16)!important}
+/* press, hover and focus feedback */
+.sv2 :is(.sv2-btn,.sv2-act,.sv2-dots,.sv2-kpi,.sv2-tab,.sv2-sumbtn,.sv2-chip,.sv2-seg button,.sv2-pager button,.sv2-pick button,.sv2-clear){transition:transform .1s ease,background-color .15s,box-shadow .2s,color .15s}
+.sv2 :is(.sv2-btn,.sv2-act,.sv2-dots,.sv2-kpi,.sv2-tab,.sv2-sumbtn,.sv2-chip,.sv2-seg button,.sv2-pager button,.sv2-pick button,.sv2-clear):active:not(:disabled){transform:scale(.96)}
+.sv2 :is(.sv2-seg button,.sv2-pager button):hover:not(:disabled):not(.on){background:rgba(0,0,0,.05)}
+.sv2 :is(a,button,select,input,[role=menuitem]):focus-visible{outline:3px solid rgba(0,113,227,.4);outline-offset:2px}
+.sv2 .sv2-select:hover{background:#ececf0}
+.sv2 .sv2-orow:active{background:#f3f7ff}
+.sv2 :is(.sv2-btn,.sv2-act)[aria-busy=true]{opacity:.75;cursor:progress}
+/* compact order items */
+.sv2-orders .om-panel .om-item{padding:10px 0!important;min-height:0!important;align-items:center}
+.sv2-orders .om-panel .om-item-site{display:grid;gap:2px}
+.sv2-orders .om-panel .om-item-line{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px}
+.sv2-orders .om-panel .om-item-date{font-size:12px!important;color:#86868b!important;margin:0!important}
+.sv2-orders .om-panel .om-article{font-size:13px!important;margin:0!important}
+.sv2-orders .om-panel .om-cancel-reason{margin:0!important;font-size:12px!important}
+.sv2-orders .om-panel .sk-morebar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid #f0f1f4;font-size:13px;color:#86868b}
+@media(max-width:900px){
+ .sv2 .sv2-areas{grid-auto-columns:minmax(150px,1fr);overflow-x:auto;scrollbar-width:none}
+ .sv2 .sv2-areas::-webkit-scrollbar{display:none}
+}

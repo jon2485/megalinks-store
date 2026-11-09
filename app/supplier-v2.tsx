@@ -12,6 +12,7 @@ import {supplierPaymentMethods,supplierRequestKinds,supplierRequestStates,suppli
 import {openAddStock,supplierKinds} from './supplier-pages';
 import type {Ctx} from './workspace';
 import './supplier-v2.css';
+import {areaIcons} from './orders-area-head';
 
 // Pieces that live in the suppliers workspace, passed in to avoid a circular import.
 export type SupplierKit={
@@ -306,7 +307,7 @@ function PackagePayment({ctx,site,number,pack:p,close}:{ctx:Ctx;site:string;numb
 export const supplierAreaPages:[string,string][]=[['admin-supplier-overview','סקירה'],['admin-suppliers','כל הספקים'],['admin-seller-requests','בקשות וחשבוניות'],['admin-supplier-finance','התחשבנות כללית']];
 export function SupplierAreaHead({current,title,sub,action,go}:{current:string;title:string;sub:string;action?:React.ReactNode;go:(page:string)=>void}){
  return <>
-  <nav className="sv2-areas" aria-label="אזור הספקים">{supplierAreaPages.map(([page,label])=>page===current?<span key={page} aria-current="page">{label}</span>:<a key={page} href={'/'+page} onClick={e=>{if(!plain(e))return;e.preventDefault();go(page);}}>{label}</a>)}</nav>
+  <nav className="sv2-areas" aria-label="אזור הספקים">{supplierAreaPages.map(([page,label])=>{const Icon=areaIcons[page];const inner=<>{Icon&&<Icon size={18} aria-hidden="true"/>}<span className="lbl">{label}</span></>;return page===current?<span key={page} aria-current="page">{inner}</span>:<a key={page} href={'/'+page} onClick={e=>{if(!plain(e))return;e.preventDefault();go(page);}}>{inner}</a>;})}</nav>
   <div className="sv2-ph"><div><h2>{title}</h2><p>{sub}</p></div>{action}</div>
  </>;
 }
