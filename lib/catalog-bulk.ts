@@ -2,7 +2,7 @@ import {catalogPricingMeta,pricingGuard,warnPricing} from './pricing';
 import {minimumWarning,customerPrice} from './pricing-rules';
 import {Row,httpUrl} from './shared';
 import {admin,all,db,stmt,assert,parse,now,uid,hash,ApiError} from './server';
-const texts=['name','url','category','logo_url','language','website_type','sale_title','sale_ends','public_notes','customer_notes','publishing_restrictions','city','tier_badge','pixel_option','wordpress_connection'];
+const texts=['name','url','category','logo_url','language','website_type','sale_title','sale_ends','public_notes','customer_notes','admin_notes','publishing_restrictions','city','tier_badge','pixel_option','wordpress_connection'];
 const flags=['active','is_on_sale','single_link_only','procurement_verified'];
 const numbers=['price_ils','cost_ils','sale_price_ils','dr','ur','turnaround_days'];
 const lists=['tags','features','example_articles','recommended_topics','content_tags'];

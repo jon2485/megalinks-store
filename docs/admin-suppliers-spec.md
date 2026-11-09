@@ -51,3 +51,24 @@ Fixed: the column headings didn't match the content.
 
 ## Not changing
 Approval, rejection, payment and recalculation logic stays as it is (`lib/customer-sellers.ts`, `lib/admin-suppliers.ts`). A payment report can't be recorded before the invoice is approved, or while the supplier's payment details are unapproved or awaiting a change.
+
+## Update 09.11.2026: supplier page and payments (after owner feedback)
+**Supplier page** (`admin-supplier/<id>`):
+- Top card: name, type, contact person, email, phone and supplier website as links.
+- Quick buttons: "האתרים של הספק (N)", "כתבות שפורסמו אצלו" (articles screen filtered to published), "התחשבנות ותשלומים" (filtered to the supplier), "בקשות" (supplier with an account, with a pending-request count).
+- "פרטים ואופן התנהלות" tab:
+  - Details form, plus a new "אופן ההתנהלות" field (how to send articles, response times, who to contact about payment).
+  - Agreement and internal notes, payment details, snapshot.
+- "אתרים" tab: a table with:
+  - Site columns: site, price list shown on the site, cost price, margin, notes (internal + publishing restrictions), status (active / paused + "בקשה ממתינה").
+  - Actions per site: "עריכה" (quick window: price list, cost, internal notes, visible in catalog). The "⋯" menu has: full edit, articles on the site, open the site, remove from supplier.
+  - Above the table: "צירוף אתרים לספק" (window with search, multi-select, marks a site that's moving from another supplier, up to 100 per action) and "אתר חדש".
+- There's no supplier-level cost: each site is priced on its own.
+- Removing a site from a supplier: it stays in the catalog without a supplier, with a recommended option to pause it until a new supplier is linked.
+
+**Supplier payments:**
+- Statements are split into "תשלומים שטרם בוצעו" (default) / "תשלומים שבוצעו" / "הכול".
+- "דיווח תשלום" opens a window with: summary (supplier, month, articles, invoice, amount), payment date, payment method (bank transfer / check / cash / card / Bit or PayBox / other), reference number, note to the supplier (goes into the email), and the confirmation "העברתי את התשלום לספק בפועל".
+- After saving: status "שולם", and the supplier gets an email with the date, method, reference and note.
+- Each paid row shows the payment date and method.
+- Rules haven't changed: for a supplier with an account, you can't record a payment before the invoice is approved or while the payment details are unapproved.

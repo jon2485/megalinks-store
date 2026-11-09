@@ -773,7 +773,7 @@ if (p[0] === 'cart') {
             if(kind==='supplier'){
                 b.name=String(b.name||'').trim();assert(b.name&&b.name.length<=200,'יש להזין שם ספק תקין');
                 b.email=String(b.email||'').trim().toLowerCase();assert(!b.email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)&&b.email.length<=254,'דוא״ל הספק אינו תקין');
-                for(const key of ['contact','phone','url','notes'])if(b[key]!==undefined)assert(typeof b[key]==='string'&&b[key].length<=(key==='notes'?6000:1000),'פרט ספק ארוך מדי');
+                for(const key of ['contact','phone','url','notes','workflow'])if(b[key]!==undefined)assert(typeof b[key]==='string'&&b[key].length<=(['notes','workflow'].includes(key)?6000:1000),'פרט ספק ארוך מדי');
                 if(b.url)b.url=httpUrl(b.url);
                 if(b.email){const existing=await one("SELECT id FROM records WHERE kind='supplier' AND lower(json_extract(data,'$.email'))=?",b.email);if(existing)return response({id:existing.id,existing:true});}
             }
