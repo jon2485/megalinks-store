@@ -8,7 +8,7 @@ import {api,useData} from '@/lib/client';
 import {money,type Row} from '@/lib/shared';
 import {contentTime,contentUrl} from '@/lib/content-presentation';
 import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
-import {supplierPaymentMethods,supplierRequestKinds,supplierRequestStates} from '@/lib/supplier-presentation';
+import {supplierPaymentMethods,supplierRequestKinds,supplierRequestStates,supplierStatementStates} from '@/lib/supplier-presentation';
 import {openAddStock,supplierKinds} from './supplier-pages';
 import type {Ctx} from './workspace';
 import './supplier-v2.css';
@@ -300,4 +300,84 @@ function PackagePayment({ctx,site,number,pack:p,close}:{ctx:Ctx;site:string;numb
   {error&&<p role="alert" className="supplier-error">{error}</p>}
   <div className="om-pay-actions"><span className="om-foot-status is-ready">מוכן לשמירה</span><button type="submit" className="om-btn is-primary" disabled={busy}>{busy?'שומר…':'שמירת פרטי התשלום'}</button><button type="button" className="om-btn" disabled={busy} onClick={close}>ביטול</button></div>
  </form>;
+}
+
+/* ---------- Shared head for every page of the suppliers area ---------- */
+export const supplierAreaPages:[string,string][]=[['admin-supplier-overview','סקירה'],['admin-suppliers','כל הספקים'],['admin-seller-requests','בקשות וחשבוניות'],['admin-supplier-finance','התחשבנות כללית']];
+export function SupplierAreaHead({current,title,sub,action,go}:{current:string;title:string;sub:string;action?:React.ReactNode;go:(page:string)=>void}){
+ return <>
+  <nav className="sv2-areas" aria-label="אזור הספקים">{supplierAreaPages.map(([page,label])=>page===current?<span key={page} aria-current="page">{label}</span>:<a key={page} href={'/'+page} onClick={e=>{if(!plain(e))return;e.preventDefault();go(page);}}>{label}</a>)}</nav>
+  <div className="sv2-ph"><div><h2>{title}</h2><p>{sub}</p></div>{action}</div>
+ </>;
+}
+export function SupplierFrame({ctx,crumbs,children}:{ctx:Ctx;crumbs:[string,string?][];children:React.ReactNode}){
+ return <div className="sv2 sv2-legacy" dir="rtl"><nav className="sv2-crumb" aria-label="מיקום">{crumbs.map(([label,page],i)=><React.Fragment key={i}>{i>0&&<ChevronLeft size={14} aria-hidden="true"/>}{page?<a href={'/'+page} onClick={e=>{if(!plain(e))return;e.preventDefault();ctx.go(page);}}>{label}</a>:<span>{label}</span>}</React.Fragment>)}</nav><div className="sv2-legacy-body">{children}</div></div>;
+}
+
+/* ---------- General billing: every supplier, every month ---------- */
+const setDefaults={search:'',q:'',status:'all',kind:'all',supplier:'all',page:1,open:'',tab:'requests',month:'',history:false,pay:'unpaid'};
+const setPill:Record<string,string>={paid:'p-paid',approved:'p-open',invoice_review:'p-inv',awaiting_invoice:'p-wait',rejected:'p-wait',awaiting_payment:'p-inv',open_period:'p-man',missing_cost:'p-wait',cancelled:'p-man',demo:'p-man'};
+const supplierStatementLabel=(s:string)=>s==='awaiting_invoice'?'ממתינה לחשבונית':s==='open_period'?'הזמנה פתוחה':supplierStatementStates[s]||s;
+export function SettlementsV2({ctx,guard,kit,invoices=false,embedded=false}:{ctx:Ctx;guard:Guard;kit:SupplierKit;invoices?:boolean;embedded?:boolean}){
+ const key='suppliers:'+(invoices?'invoices':'settlements'),[v,setV]=useState(()=>({...setDefaults,...adminViewState(key,setDefaults)})),set=(patch:Partial<typeof setDefaults>)=>guard.confirm(()=>setV(o=>{const n={...o,...patch};saveAdminViewState(key,n);return n;}));
+ const params=new URLSearchParams({q:v.q,month:v.month,status:v.status,supplier:v.supplier,history:'0',invoices:invoices?'1':'0',pay:invoices?'all':v.pay||'unpaid',page:String(v.page)}),state=useData('admin/supplier-settlements?'+params,ctx.revision),current=state.data?.request_key===params.toString(),rows:Row[]=current?state.data.rows:[],sum:Row=state.data?.summary||{},names:Row=state.data?.supplier_options||{};
+ const go=(page:string)=>guard.confirm(()=>ctx.go(page));
+ const cards:[string,string,Row|undefined,string][]=[['approved','לתשלום עכשיו',sum.pay,'כולל מע״מ לפי החשבוניות'],['invoice_review','חשבוניות לבדיקה',sum.review,'לאשר או להחזיר לתיקון'],['needs_invoice','ממתינים לחשבונית',sum.invoice,'כולל חשבוניות שהוחזרו'],['awaiting_payment','ספקים ידניים לתשלום',sum.manual,'לפני מע״מ']];
+ const cols={gridTemplateColumns:'minmax(200px,1.6fr) 100px 130px minmax(140px,1fr) 170px 210px'};
+ const body=<>
+  {!invoices&&<div className="sv2-sum is-4">{cards.map(([k,label,c,hint])=><button key={k} type="button" className={'sv2-card sv2-pad sv2-sumbtn'+(v.status===k?' on':'')} aria-pressed={v.status===k} onClick={()=>set({status:v.status===k?'all':k,page:1})}><span className="lbl">{label}</span><b className="big">{money(Number(c?.amount||0))}</b><span className="hint">{Number(c?.count||0)} הזמנות · {hint}</span></button>)}</div>}
+  <section className="sv2-card">
+   <div className="sv2-tools">
+    {!invoices&&<div className="sv2-seg" role="tablist" aria-label="מצב תשלום">{([['unpaid','לא שולמו'],['paid','שולמו'],['all','הכול']] as [string,string][]).map(([k,l])=><button key={k} type="button" role="tab" aria-selected={(v.pay||'unpaid')===k} className={(v.pay||'unpaid')===k?'on':''} onClick={()=>set({pay:k,page:1})}>{l}</button>)}</div>}
+    <label className="sv2-search"><Search size={17} aria-hidden="true"/><input value={v.search} placeholder="חיפוש ספק, חודש או כתבה" aria-label="חיפוש ספק, חודש או כתבה" onChange={e=>{const x=e.target.value;setV(o=>{const n={...o,search:x,q:x.trim(),page:1};saveAdminViewState(key,n);return n;});}}/></label>
+    {v.supplier!=='all'&&<button type="button" className="sv2-chip" onClick={()=>set({supplier:'all',page:1})}>ספק: {names[v.supplier]||'נבחר'}<X size={14} aria-hidden="true"/></button>}
+    {v.status!=='all'&&<button type="button" className="sv2-chip" onClick={()=>set({status:'all',page:1})}>{cards.find(c=>c[0]===v.status)?.[1]||supplierStatementLabel(v.status)}<X size={14} aria-hidden="true"/></button>}
+   </div>
+   {state.error&&!current?<div className="sv2-empty"><h3>ההתחשבנות לא נטענה</h3><p>{state.error}</p></div>:!current?<p className="sv2-loading" role="status">טוען…</p>:!rows.length?<div className="sv2-empty"><h3>{invoices?'אין חשבוניות':'אין הזמנות בתצוגה הזו'}</h3><p>נסו לשנות את הסינון.</p></div>:<>
+    <div className="sv2-th" style={cols} aria-hidden="true"><span>ספק וחודש</span><span>פרסומים</span><span>סכום</span><span>חשבונית</span><span>סטטוס</span><span/></div>
+    {rows.map(r=>{const total=r.source==='statement'?(r.total??r.net):r.net,inv=r.source==='statement'?(r.invoice_file_id?{n:r.invoice_number||'חשבונית',u:'/api/selling/invoice?'+new URLSearchParams({id:r.statement_id})}:null):r.manual_invoice?{n:r.manual_invoice.number,u:'/api/admin/supplier-invoice-file?'+new URLSearchParams({key:r.id})}:null;
+     const primary=r.status==='invoice_review'&&r.statement_id?<button type="button" className="sv2-btn primary sm" onClick={()=>go('admin-supplier-invoice/'+r.statement_id)}>בדיקת החשבונית<ChevronLeft size={15} aria-hidden="true"/></button>:kit.canPay(r)?<button type="button" className="sv2-btn primary sm" onClick={()=>kit.openPayment(ctx,r)}><CreditCard size={15} aria-hidden="true"/>דיווח תשלום</button>:null;
+     return <div key={r.id} className={'sv2-tr'+(primary?' is-wait':'')} style={cols}>
+      <div className="sv2-title">{r.supplier_id?<a href={'/admin-supplier/'+r.supplier_id} onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-supplier/'+r.supplier_id);}}>{r.supplier_name}</a>:<b>{r.supplier_name}</b>}<small>{monthName(r.month)}{r.account?' · ספק עם חשבון':' · ספק ידני'}</small></div>
+      <span><small className="sv2-ml">פרסומים</small><b className="sv2-num lg">{r.count}</b></span>
+      <span className="sv2-num"><small className="sv2-ml">סכום</small>{total==null?<em className="sv2-warn">חסרה עלות</em>:money(total)}</span>
+      <span><small className="sv2-ml">חשבונית</small>{inv?<a className="sv2-lk" href={inv.u} target="_blank" rel="noreferrer"><FileText size={14} aria-hidden="true"/> <bdi>{inv.n}</bdi></a>:r.month_mail?<span className="sv2-muted">בקשה נשלחה {dm(r.month_mail.sent_at)}</span>:<span className="sv2-muted">—</span>}</span>
+      <span><span className={'sv2-pill '+(setPill[r.status]||'p-man')}><i/>{supplierStatementLabel(r.status)}</span></span>
+      <span className="sv2-rowact">{primary}{r.supplier_id&&<button type="button" className={'sv2-btn sm '+(primary?'quiet':'tint')} onClick={()=>go('admin-supplier-order/'+encodeURIComponent(r.id))}>{primary?'פירוט':'פתיחת ההזמנה'}{!primary&&<ChevronLeft size={15} aria-hidden="true"/>}</button>}</span>
+     </div>;})}
+    <div className="sv2-foot"><span>{state.data.total} הזמנות</span>{state.data.total>20&&<span className="sv2-pager"><button type="button" disabled={state.data.page<=1} onClick={()=>set({page:state.data.page-1})} aria-label="עמוד קודם">‹</button><span>עמוד {state.data.page} מתוך {Math.ceil(state.data.total/20)}</span><button type="button" disabled={state.data.page*20>=state.data.total} onClick={()=>set({page:state.data.page+1})} aria-label="עמוד הבא">›</button></span>}</div>
+   </>}
+  </section>
+ </>;
+ if(embedded)return body;
+ return <div className="sv2" dir="rtl"><SupplierAreaHead current="admin-supplier-finance" title="התחשבנות כללית" sub="כל ההזמנות מכל הספקים. לחיצה על כרטיס מסננת את הרשימה." go={go}/>{body}</div>;
+}
+
+/* ---------- Requests and invoices ---------- */
+const reqDefaults={search:'',q:'',status:'pending',kind:'all',tab:'requests'};
+const reqPill:Record<string,string>={pending:'p-inv',approved:'p-paid',rejected:'p-wait',cancelled:'p-man'};
+export function RequestsV2({ctx,guard,kit}:{ctx:Ctx;guard:Guard;kit:SupplierKit}){
+ const[v,setV]=useState(()=>({...reqDefaults,...adminViewState('suppliers:requests-v2',reqDefaults)})),set=(patch:Partial<typeof reqDefaults>)=>setV(o=>{const n={...o,...patch};saveAdminViewState('suppliers:requests-v2',n);return n;});
+ const state=useData('admin/seller-requests',ctx.revision),all:Row[]=state.data?.requests||[],pending=all.filter(r=>r.status==='pending').length;
+ const rows=all.filter(r=>(v.status==='all'||r.status===v.status)&&(v.kind==='all'||r.kind===v.kind)&&JSON.stringify([r.id,r.user_name,r.user_email,r.proposal,r.note]).toLocaleLowerCase('he').includes(v.q.toLocaleLowerCase('he'))).sort((a,b)=>b.created.localeCompare(a.created));
+ const[more,setMore]=useState(30),go=(page:string)=>guard.confirm(()=>ctx.go(page));
+ const cols={gridTemplateColumns:'minmax(170px,1.2fr) minmax(200px,1.5fr) 140px 140px 170px'};
+ return <div className="sv2" dir="rtl">
+  <SupplierAreaHead current="admin-seller-requests" title="בקשות וחשבוניות" sub="בקשות של ספקים עם חשבון, וחשבוניות שהספקים העלו." go={go} action={<button type="button" className="sv2-btn quiet" onClick={ctx.refresh}>רענון</button>}/>
+  <div className="sv2-seg sv2-bigseg" role="tablist" aria-label="בקשות או חשבוניות"><button type="button" role="tab" aria-selected={v.tab==='requests'} className={v.tab==='requests'?'on':''} onClick={()=>set({tab:'requests'})}>בקשות ספקים{pending>0&&<b className="hot">{pending}</b>}</button><button type="button" role="tab" aria-selected={v.tab==='invoices'} className={v.tab==='invoices'?'on':''} onClick={()=>set({tab:'invoices'})}>חשבוניות ספקים</button></div>
+  {v.tab==='invoices'?<SettlementsV2 ctx={ctx} guard={guard} kit={kit} invoices embedded/>:<section className="sv2-card">
+   <div className="sv2-tools"><div className="sv2-seg" role="tablist" aria-label="מצב בקשה">{([['pending','ממתינות',pending],['approved','אושרו'],['rejected','נדחו'],['all','הכול',all.length]] as [string,string,number?][]).map(([k,l,n])=><button key={k} type="button" role="tab" aria-selected={v.status===k} className={v.status===k?'on':''} onClick={()=>set({status:k})}>{l}{n!=null&&<b>{n}</b>}</button>)}</div><label className="sv2-search"><Search size={17} aria-hidden="true"/><input value={v.search} placeholder="חיפוש בקשה, ספק או אתר" aria-label="חיפוש בקשה, ספק או אתר" onChange={e=>set({search:e.target.value,q:e.target.value.trim()})}/></label><label className="sv2-select"><span className="sr-only">סוג בקשה</span><select value={v.kind} onChange={e=>set({kind:e.target.value})}><option value="all">כל סוגי הבקשות</option>{Object.entries(supplierRequestKinds).map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></label></div>
+   {state.error&&!state.data?<div className="sv2-empty"><h3>הבקשות לא נטענו</h3><p>{state.error}</p></div>:!state.data?<p className="sv2-loading" role="status">טוען בקשות…</p>:!rows.length?<div className="sv2-empty"><h3>{v.status==='pending'?'אין בקשות שממתינות לך':'אין בקשות בתצוגה הזו'}</h3><p>בקשות להוספת אתר, שינוי מחיר, השהיה או פרטי תשלום יופיעו כאן.</p></div>:<>
+    <div className="sv2-th" style={cols} aria-hidden="true"><span>בקשה</span><span>ספק ואתר</span><span>תאריך</span><span>מצב</span><span/></div>
+    {rows.slice(0,more).map(r=><div key={r.id} className={'sv2-tr'+(r.status==='pending'?' is-wait':'')} style={cols}>
+     <div className="sv2-title"><b>{supplierRequestKinds[r.kind]||r.kind}</b><small>בקשה <bdi>#{String(r.id).slice(-8)}</bdi></small></div>
+     <div className="sv2-title"><b>{r.user_name}</b><small><bdi>{linkText(r.proposal?.url)||r.user_email}</bdi></small></div>
+     <span className="sv2-num"><small className="sv2-ml">תאריך</small>{d2(r.created)}</span>
+     <span><span className={'sv2-pill '+(reqPill[r.status]||'p-man')}><i/>{supplierRequestStates[r.status]}</span></span>
+     <span className="sv2-rowact"><button type="button" className={'sv2-btn sm '+(r.status==='pending'?'primary':'tint')} onClick={()=>go('admin-seller-request/'+r.id)}>{r.status==='pending'?'בדיקת הבקשה':'פירוט'}<ChevronLeft size={15} aria-hidden="true"/></button></span>
+    </div>)}
+    <div className="sv2-foot"><span>{rows.length} בקשות</span>{rows.length>more&&<button type="button" className="sv2-lk" onClick={()=>setMore(more+30)}>הצגת עוד</button>}</div>
+   </>}
+  </section>}
+ </div>;
 }

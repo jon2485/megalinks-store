@@ -239,3 +239,35 @@ a.sv2-who:hover b{color:var(--sv-blue2)}
  .sv2-tab .badge{min-width:20px;height:20px;padding:0 6px;font-size:11px}
  .sv2-sum .big{font-size:26px}
 }
+
+/* Every supplier page in the v2 language (09.11.2026) */
+.sv2-areas{justify-self:start}
+.sv2-chip{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 12px;border:0;border-radius:999px;background:rgba(0,113,227,.08);color:#0066cc;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.sv2-chip:hover{background:rgba(0,113,227,.14)}
+.sv2-select select{height:40px;padding:0 14px 0 34px;border:0;border-radius:12px;background:#f5f5f7;font:inherit;font-size:14px;color:#1d1d1f;cursor:pointer}
+.sv2-bigseg{justify-self:start}
+.sv2-bigseg button{padding:9px 18px;font-size:14.5px}
+.sv2-seg b.hot{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#b25000;color:#fff;display:inline-grid;place-items:center;font-size:11.5px}
+.sv2-sum.is-4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.sv2-sumbtn{display:grid;gap:2px;border:0;font:inherit;text-align:right;color:inherit;cursor:pointer;transition:transform .1s,box-shadow .2s}
+.sv2-sumbtn:hover{box-shadow:0 0 0 1px rgba(0,113,227,.3),0 12px 32px rgba(20,40,80,.08)}
+.sv2-sumbtn:active{transform:scale(.98)}
+.sv2-sumbtn.on{box-shadow:0 0 0 2px #0071e3,0 10px 24px rgba(0,113,227,.15)}
+.sv2-sumbtn .big{font-size:26px!important}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+/* screens that keep their working forms inside the v2 frame */
+.sv2-legacy-body{display:grid;gap:14px}
+.sv2-legacy .om-top-actions{display:none!important}
+.sv2-legacy :is(.supplier-page,.orders-reference-panel,.sh-stock-hero){background:rgba(255,255,255,.92)!important;border:0!important;border-radius:24px!important;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 12px 32px rgba(20,40,80,.07)!important;padding:20px 22px!important;backdrop-filter:blur(18px)}
+.sv2-legacy .supplier-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 14px;padding:0;border:0;background:none}
+.sv2-legacy .supplier-panel-heading h2{margin:0;font-size:24px!important;font-weight:800!important;letter-spacing:-.02em;color:#1d1d1f!important}
+.sv2-legacy :is(button,a)[data-slot=button]{border-radius:999px!important;font-weight:600}
+.sh-overview.sv2{max-width:1180px}
+@media(max-width:1100px){.sv2-sum.is-4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.sv2-sum.is-4{grid-template-columns:1fr 1fr}.sv2-sumbtn .big{font-size:20px!important}}
+
+.sv2-legacy .sh-section{margin-top:0;padding:18px 20px;border-radius:24px;background:rgba(255,255,255,.92);box-shadow:0 0 0 1px rgba(0,0,0,.04),0 12px 32px rgba(20,40,80,.07)}
+.sv2-legacy .sh-section>h3{font-size:16px!important;color:#1d1d1f!important}
+.sv2-legacy .sh-stock>.orders-reference-panel{background:none!important;box-shadow:none!important;padding:0!important;display:grid;gap:14px}
+.sv2-legacy .sh-stock-hero{margin:0!important}
+.sv2-legacy .supplier-page{max-width:none!important;width:100%}

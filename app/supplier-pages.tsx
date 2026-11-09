@@ -13,7 +13,7 @@ import {OrderFilter,OrderPager,OrderSearch,OrderViews} from './order-list-parts'
 import type {Ctx} from './workspace';
 import {toast} from 'sonner';
 import './supplier-hub.css';
-import {Av,billingPill,kindPill,openAddStockFor} from './supplier-v2';
+import {Av,billingPill,kindPill,openAddStockFor,SupplierAreaHead} from './supplier-v2';
 
 // Shared with the suppliers workspace view state (same keys and defaults).
 const listDefaults={search:'',q:'',status:'all',kind:'all',supplier:'all',page:1,open:'',tab:'requests',month:'',history:false,pay:'unpaid'};
@@ -78,8 +78,8 @@ export function SupplierOverview({ctx}:{ctx:Ctx}){
   ['דרוש מלאי',stockNeed,d.waiting.count?plural(d.waiting.count,'כתבה אחת מחכה למלאי','כתבות מחכות למלאי'):d.stock.count?plural(d.stock.count,'אתר אחד עומד להיגמר','אתרים עומדים להיגמר'):'המלאי תקין','stock',Boxes,hub({billing:'stock'}),!!stockNeed],
   ['ספקים להשלמה',d.partial,d.partial?'חסרים שם, איש קשר או טלפון':'כל הפרטים מלאים','partial',UserRoundPen,hub({type:'partial'}),!!d.partial],
  ];
- return <div className="orders-match-screen om-finance om-content om-suppliers sh-overview" dir="rtl">
-  <header className="sh-hello"><div><h2>מה צריך ממך היום</h2><p>{d.suppliers} ספקים במערכת. כל כרטיס מוביל ישר לרשימה המסוננת.</p></div><div className="sh-hello-actions"><button type="button" className="om-btn is-primary" onClick={()=>ctx.go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button><button type="button" className="om-btn is-tinted" onClick={hub({})}><Globe size={17} aria-hidden="true"/>כל הספקים</button></div></header>
+ return <div className="orders-match-screen om-finance om-content om-suppliers sv2 sh-overview" dir="rtl">
+  <SupplierAreaHead current="admin-supplier-overview" title="מה צריך ממך היום" sub={d.suppliers+' ספקים במערכת. כל כרטיס מוביל ישר לרשימה המסוננת.'} go={ctx.go} action={<button type="button" className="sv2-btn primary lg" onClick={()=>ctx.go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button>}/>
   <div className="sh-cards">{cards.map(([title,value,hint,key,Icon,go,hot])=><button key={key} type="button" className={'sh-card is-'+key+(hot?' is-hot':' is-calm')} onClick={go}><span className="sh-card-icon"><Icon size={18} aria-hidden="true"/></span><span className="sh-card-title">{title}</span><b className="sh-card-value"><bdi>{value}</bdi></b><span className="sh-card-hint">{hot?hint:<><CheckCircle2 size={14} aria-hidden="true"/>{hint}</>}</span></button>)}</div>
   <div className="sh-columns">
    <section className="sh-block"><header><h3><Clock3 size={17} aria-hidden="true"/>באיחור אצל ספקים</h3>{d.late.count>5&&<span>מוצגות 5 מתוך {d.late.count}</span>}</header>
@@ -109,8 +109,7 @@ export function SupplierHub({ctx,confirm}:{ctx:Ctx;confirm:(run:()=>void)=>void}
  const open=(s:Row)=>(e:React.MouseEvent)=>{if(!plain(e))return;e.preventDefault();tab(s,'sites')();};
  const cols={gridTemplateColumns:'minmax(260px,2fr) 150px 220px 120px 150px'};
  return <div className="orders-match-screen om-finance om-content om-suppliers sv2 sv2-hub" dir="rtl">
-  <nav className="sv2-areas" aria-label="אזור הספקים"><a href="/admin-supplier-overview" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-supplier-overview');}}>סקירה</a><span aria-current="page">כל הספקים</span><a href="/admin-seller-requests" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-seller-requests');}}>בקשות וחשבוניות</a><a href="/admin-supplier-finance" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-supplier-finance');}}>התחשבנות כללית</a></nav>
-  <div className="sv2-ph"><div><h2>כל הספקים</h2><p>לחיצה על ספק פותחת את האתרים שלו. כל השאר בכפתור "פעולות".</p></div><button type="button" className="sv2-btn primary lg" onClick={()=>go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button></div>
+  <SupplierAreaHead current="admin-suppliers" title="כל הספקים" sub='לחיצה על ספק פותחת את האתרים שלו. כל השאר בכפתור "פעולות".' go={go} action={<button type="button" className="sv2-btn primary lg" onClick={()=>go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button>}/>
   <section className="sv2-card">
    <div className="sv2-tools">
     <div className="sv2-seg" role="tablist" aria-label="סוג ספק">{([['all','הכול',counts.all],['account','עם חשבון',counts.account],['manual','ידניים',counts.manual],['partial','להשלמה',counts.partial]] as [string,string,number][]).map(([k,l,n])=><button key={k} type="button" role="tab" aria-selected={v.type===k} className={v.type===k?'on':''} onClick={()=>set({type:k,page:1})}>{l}{n!=null&&<b>{n}</b>}</button>)}</div>

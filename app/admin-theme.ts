@@ -4,9 +4,10 @@ import {useLayoutEffect,useState} from 'react';
 // Kept in the browser only. Read after mount so the server and the first client frame match.
 export type AdminTheme='dark'|'light';
 const KEY='wc2-theme',EVENT='admin-theme';
-function stored():AdminTheme{try{return localStorage.getItem(KEY)==='light'?'light':'dark';}catch{return 'dark';}}
+// Light is the default from 09.11.2026 (owner's decision); dark only when chosen.
+function stored():AdminTheme{try{return localStorage.getItem(KEY)==='dark'?'dark':'light';}catch{return 'light';}}
 export function useAdminTheme():[AdminTheme,()=>void]{
- const [theme,setTheme]=useState<AdminTheme>('dark');
+ const [theme,setTheme]=useState<AdminTheme>('light');
  useLayoutEffect(()=>{
   const sync=()=>{const t=stored();setTheme(t);document.documentElement.dataset.adminTheme=t;};
   sync();window.addEventListener(EVENT,sync);window.addEventListener('storage',sync);

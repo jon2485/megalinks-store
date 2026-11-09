@@ -630,3 +630,16 @@
 - Checked with a script: all the main buttons lead to the right place or open the right dialog. Also checked on phone (390px) with no sideways scroll.
 - Open: the admin system's default theme is dark (app/admin-theme.ts). The owner works in light mode. Changing the default to light needs approval.
 - Old components (SupplierPage, SiteTable, SupplierArticlesPage) are no longer reachable. They were left in the code and can be deleted with approval.
+
+## 09.11.2026: Every supplier page in the v2 design, light as the default
+- app/admin-theme.ts: the admin default is light. Dark only when someone chooses it. Owner's decision.
+- All supplier views (^admin-supplier, ^admin-seller-request) get the v2 frame (sv2-body) and drop the old sky heading.
+- New in app/supplier-v2.tsx:
+  - SupplierAreaHead: shared head with the overview / all suppliers / requests and invoices / general billing row
+  - SettlementsV2 (general billing)
+  - RequestsV2 (requests, with an invoices tab)
+  - SupplierFrame: frame and breadcrumb for the request, invoice, new supplier and site stock screens
+- The old components SettlementList and SupplierRequests are no longer reachable. They were left in the code.
+- Checked:
+  - screenshots of all the pages
+  - buttons: overview cards, billing filter, payment report, opening an order, supplier link, area row, breadcrumb
