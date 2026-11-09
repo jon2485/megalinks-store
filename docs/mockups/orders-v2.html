@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orders v2 mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1d1d1f;--copy:#424245;--mute:#86868b;--line:#e8e8ed;--well:#f5f5f7;--blue:#0071e3;--blue2:#0066cc;--tint:rgba(0,113,227,.08);--green:#1a7f37;--gtint:#e9f7ee;--orange:#b25000;--otint:#fff4e5;--red:#d70015;--rtint:#ffebee;--violet:#6e3fd6;--vtint:#f2edff}
+*{box-sizing:border-box}html,body{overflow-x:hidden}
+body{margin:0;font-family:Heebo,system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;background:#f4f7fb}
+.screen{display:none;min-height:100vh;padding:28px;background:radial-gradient(1200px 500px at 85% -10%,#dbeafe 0,transparent 60%),radial-gradient(900px 400px at 0% 0%,#e9e3ff 0,transparent 55%),#f4f7fb}
+body[data-s="1"] #s1,body[data-s="2"] #s2,body[data-s="3"] #s3,body[data-s="4"] #s4{display:block}
+.frame{max-width:1180px;margin:0 auto;display:grid;gap:14px}
+.tag-mock{justify-self:start;padding:4px 10px;border-radius:999px;background:#fff;color:var(--mute);font-size:12px;font-weight:600;box-shadow:0 0 0 1px var(--line)}
+.areas{justify-self:start;display:inline-flex;flex-wrap:wrap;gap:4px;padding:4px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px var(--line);font-size:13px;font-weight:600}
+.areas span{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;color:var(--mute)}
+.areas span.on{background:var(--ink);color:#fff}
+.areas b{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--orange);color:#fff;font-size:11px;display:inline-grid;place-items:center}
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px}
+.ph h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.025em}
+.ph p{margin:6px 0 0;color:var(--mute);font-size:15px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 16px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:600;white-space:nowrap}
+.btn.primary{background:var(--blue);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 6px 16px rgba(0,113,227,.28)}
+.btn.tint{background:var(--tint);color:var(--blue2)}
+.btn.quiet{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.btn.danger{background:var(--rtint);color:var(--red)}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}.btn.lg{height:46px;padding:0 22px;font-size:15px}
+.btn svg{width:16px;height:16px}
+.card{background:rgba(255,255,255,.92);border-radius:24px;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 12px 32px rgba(20,40,80,.07)}
+.pad{padding:20px 22px}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.sumc{display:grid;gap:2px;padding:16px 18px;border-radius:20px;background:rgba(255,255,255,.92);box-shadow:0 0 0 1px rgba(0,0,0,.04),0 10px 26px rgba(20,40,80,.06)}
+.sumc .l{font-size:13px;font-weight:600;color:var(--mute)}.sumc b{font-size:28px;font-weight:800;letter-spacing:-.02em}.sumc small{font-size:12.5px;color:var(--copy)}
+.sumc.on{box-shadow:0 0 0 2px var(--blue),0 10px 24px rgba(0,113,227,.15)}
+.sumc.hot b{color:var(--orange)}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.search{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--well);color:var(--mute);font-size:14px}
+.sel{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--well);font-size:14px;font-weight:500;color:var(--copy)}
+.th,.tr{display:grid;align-items:center;gap:14px;padding:0 20px}
+.th{height:40px;font-size:12px;font-weight:600;color:var(--mute)}
+.tr{min-height:76px;border-top:1px solid #f0f1f4}
+.tr.sel-row{background:#fafcff;box-shadow:inset 3px 0 0 var(--blue)}
+.ord b{display:block;font-size:16px;font-weight:800}.ord small{font-size:12.5px;color:var(--mute)}
+.who{display:flex;align-items:center;gap:12px;min-width:0}
+.av{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px;flex:none}
+.who b{display:block;font-size:15px;font-weight:700}.who small{font-size:12.5px;color:var(--mute)}
+.sites{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--copy)}
+.fav{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,#e8eefc,#f6f8ff);box-shadow:0 0 0 1px var(--line);display:grid;place-items:center;font-size:9px;font-weight:800;color:#5a6b8c;margin-inline-start:-8px;border:2px solid #fff}
+.fav:first-child{margin:0}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.p-paid{background:var(--gtint);color:var(--green)}.p-wait{background:var(--otint);color:var(--orange)}.p-blue{background:var(--tint);color:var(--blue2)}.p-gray{background:var(--well);color:var(--copy)}.p-red{background:var(--rtint);color:var(--red)}.p-violet{background:var(--vtint);color:var(--violet)}
+.sub{display:block;font-size:12.5px;color:var(--mute);margin-top:3px}
+.prog b{font-size:15px;font-weight:800;font-variant-numeric:tabular-nums}.prog small{display:block;font-size:12.5px;color:var(--mute)}
+.alert{display:inline-flex;align-items:center;gap:5px;margin-top:3px;font-size:12.5px;font-weight:700;color:var(--red)}
+.num{font-variant-numeric:tabular-nums;font-weight:800;font-size:16px}
+.acts{display:flex;align-items:center;gap:6px;justify-content:flex-end}
+.dots{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--well)}
+.foot{display:flex;justify-content:space-between;padding:14px 20px;border-top:1px solid #f0f1f4;font-size:13px;color:var(--mute)}
+/* expanded detail */
+.detail{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;padding:16px 20px 20px;background:#fafcff;border-top:1px solid #eef1f6}
+.items .ih,.items .ir{display:grid;grid-template-columns:minmax(200px,1.6fr) 110px 110px 150px;gap:12px;align-items:center;padding:0 14px}
+.items .ih{height:34px;font-size:12px;color:var(--mute);font-weight:600}
+.items .ir{min-height:62px;border-top:1px solid #f0f1f4}
+.items .ir.x{opacity:.55}
+.items .ir.x .s{text-decoration:line-through}
+.items a{color:var(--blue2);text-decoration:none;font-weight:700;font-size:14px}
+.items small{display:block;font-size:12px;color:var(--mute)}
+.side{display:grid;gap:12px;align-content:start}
+.side h3{margin:0 0 10px;font-size:15px;font-weight:800}
+.facts{display:grid;gap:9px;margin:0}
+.facts div{display:flex;justify-content:space-between;gap:10px;font-size:13.5px}
+.facts dt{color:var(--mute)}.facts dd{margin:0;font-weight:600}
+.stack{display:grid;gap:8px}.stack .btn{width:100%;justify-content:flex-start}
+.note{padding:10px 12px;border-radius:12px;font-size:13px;background:var(--rtint);color:#8a0010}
+/* mobile */
+.phone{width:390px;margin:0 auto;padding:16px;display:grid;gap:12px}
+.m-head h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}.m-head p{margin:2px 0 0;color:var(--mute);font-size:14px}
+.m-areas{display:flex;gap:6px;overflow:hidden;white-space:nowrap}
+.m-areas span{padding:7px 12px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px var(--line);font-size:13px;font-weight:600;color:var(--copy)}
+.m-areas span.on{background:var(--ink);color:#fff;box-shadow:none}
+.m-areas b{margin-inline-start:4px;color:var(--orange)}
+.m-areas span.on b{color:#ffcf8a}
+.m-sum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.m-sum .sumc{padding:12px 14px;border-radius:16px}.m-sum .sumc b{font-size:22px}
+.m-tools{display:flex;gap:8px}
+.m-tools .search{min-width:0}
+.icon-btn{width:40px;height:40px;border-radius:12px;background:#fff;box-shadow:0 0 0 1px var(--line);display:grid;place-items:center;flex:none}
+.ocard{padding:14px 16px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 8px 22px rgba(20,40,80,.06);display:grid;gap:10px}
+.ocard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.ocard .top b{font-size:16px;font-weight:800}.ocard .top small{display:block;font-size:12.5px;color:var(--mute)}
+.ocard .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--copy)}
+.ocard .btns{display:grid;grid-template-columns:1fr auto;gap:8px}
+.ocard .btns .btn{width:100%}
+.ocard.hot{box-shadow:inset 3px 0 0 var(--red),0 8px 22px rgba(20,40,80,.06)}
+.sheet{border-radius:24px 24px 0 0;background:#fff;box-shadow:0 -10px 40px rgba(20,40,80,.15);padding:10px 16px 18px;display:grid;gap:12px}
+.grab{width:40px;height:5px;border-radius:999px;background:#d2d2d7;justify-self:center}
+.m-items .ir{display:grid;grid-template-columns:1fr auto;gap:4px 10px;padding:10px 0;border-top:1px solid #f0f1f4}
+.m-items .ir a{color:var(--blue2);font-weight:700;text-decoration:none;font-size:14px}
+.m-items .ir small{display:block;font-size:12px;color:var(--mute)}.m-items .ir a{display:block}
+.sticky{position:sticky;bottom:0;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding-top:6px}
+.sticky .btn{width:100%}
+svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+ <symbol id="chev" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+ <symbol id="dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+ <symbol id="dl" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+ <symbol id="search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+ <symbol id="filter" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></symbol>
+ <symbol id="cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+ <symbol id="user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+ <symbol id="list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol>
+ <symbol id="ext" viewBox="0 0 24 24"><path d="M14 4h6v6M10 14 20 4M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+ <symbol id="undo" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-3"/></symbol>
+ <symbol id="card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></symbol>
+ <symbol id="doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></symbol>
+ <symbol id="mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+ <symbol id="x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+</svg>
+
+<!-- 1. Desktop list -->
+<section class="screen" id="s1"><div class="frame">
+ <span class="tag-mock">הדמיה 1 · הזמנות · מחשב</span>
+ <nav class="areas"><span class="on">הזמנות <b>1</b></span><span>סגירת חודש</span><span>דיווחי תשלום</span><span>חשבוניות וקבלות <b>17</b></span><span>הטענות יתרה</span><span>חשבונות חודשיים <b>1</b></span></nav>
+ <div class="ph"><div><h1>הזמנות</h1><p>כל ההזמנות והכספים במקום אחד. כל כרטיס הוא גם סינון.</p></div><button class="btn quiet"><svg><use href="#dl"/></svg>ייצוא נתונים</button></div>
+ <div class="sum">
+  <div class="sumc"><span class="l">כל ההזמנות</span><b>128</b><small>₪1.84M החודש</small></div>
+  <div class="sumc on hot"><span class="l">לטיפול</span><b>1</b><small>בקשת ביטול פתוחה</small></div>
+  <div class="sumc"><span class="l">ממתינות לתשלום</span><b>3</b><small>₪14,900 פתוח</small></div>
+  <div class="sumc"><span class="l">חודשיות</span><b>2</b><small>נסגרות ב־30.11</small></div>
+ </div>
+ <div class="card">
+  <div class="tools"><div class="search"><svg width="17" height="17"><use href="#search"/></svg>חיפוש לקוח, מספר הזמנה או אתר</div><span class="sel"><svg width="16" height="16"><use href="#cal"/></svg>כל החודשים</span><span class="sel"><svg width="16" height="16"><use href="#filter"/></svg>כל המצבים</span></div>
+  <div class="th" style="grid-template-columns:110px minmax(200px,1.5fr) 150px 150px 150px 130px 200px"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span></span></div>
+  <div class="tr sel-row" style="grid-template-columns:110px minmax(200px,1.5fr) 150px 150px 150px 130px 200px"><div class="ord"><b>#1017</b><small>01.11.2026</small></div><div class="who"><span class="av" style="background:#0071e3">ל</span><span><b>לקוח בדיקה חודשי</b><small>הזמנה חודשית · 49 פריטים</small></span></div><div class="sites"><span class="fav">ynet</span><span class="fav">mako</span><span class="fav">gl</span><span>+46</span></div><div><span class="pill p-paid"><i></i>שולם</span><span class="sub">צ׳ק · QA-50264</span></div><div class="prog"><b>1 מתוך 46</b><small>פורסמו</small><span class="alert"><svg width="13" height="13"><use href="#undo"/></svg>בקשת ביטול לפריט אחד</span></div><span class="num">₪225,380</span><div class="acts"><button class="btn primary sm">טיפול בביטול<svg><use href="#chev"/></svg></button><span class="dots"><svg width="16" height="16"><use href="#dots"/></svg></span></div></div>
+  <div class="tr" style="grid-template-columns:110px minmax(200px,1.5fr) 150px 150px 150px 130px 200px"><div class="ord"><b>#1016</b><small>31.10.2026</small></div><div class="who"><span class="av" style="background:#30a46c">ש</span><span><b>שירה כהן</b><small>הזמנה רגילה · 3 פריטים</small></span></div><div class="sites"><span class="fav">ynet</span><span class="fav">walla</span><span>+1</span></div><div><span class="pill p-wait"><i></i>ממתין לתשלום</span><span class="sub">העברה בנקאית</span></div><div class="prog"><b>0 מתוך 3</b><small>טרם התחיל</small></div><span class="num">₪8,400</span><div class="acts"><button class="btn primary sm">אישור תשלום<svg><use href="#chev"/></svg></button><span class="dots"><svg width="16" height="16"><use href="#dots"/></svg></span></div></div>
+  <div class="tr" style="grid-template-columns:110px minmax(200px,1.5fr) 150px 150px 150px 130px 200px"><div class="ord"><b>#1015</b><small>30.10.2026</small></div><div class="who"><span class="av" style="background:#bf5af2">ד</span><span><b>דיגיטל פלוס</b><small>סוכנות · 5 פריטים</small></span></div><div class="sites"><span class="fav">gl</span><span class="fav">ynet</span><span>+3</span></div><div><span class="pill p-paid"><i></i>שולם</span><span class="sub">ארנק</span></div><div class="prog"><b>5 מתוך 5</b><small>הושלמה</small></div><span class="num">₪16,200</span><div class="acts"><button class="btn tint sm">פירוט<svg><use href="#chev"/></svg></button><span class="dots"><svg width="16" height="16"><use href="#dots"/></svg></span></div></div>
+  <div class="tr" style="grid-template-columns:110px minmax(200px,1.5fr) 150px 150px 150px 130px 200px"><div class="ord"><b>#1014</b><small>29.10.2026</small></div><div class="who"><span class="av" style="background:#ff9f0a">א</span><span><b>אבי לוי</b><small>הזמנה רגילה · 1 פריט</small></span></div><div class="sites"><span class="fav">mako</span></div><div><span class="pill p-blue"><i></i>דווח תשלום</span><span class="sub">ממתין לאימות שלך</span></div><div class="prog"><b>0 מתוך 1</b><small>טרם התחיל</small></div><span class="num">₪3,200</span><div class="acts"><button class="btn primary sm">בדיקת הדיווח<svg><use href="#chev"/></svg></button><span class="dots"><svg width="16" height="16"><use href="#dots"/></svg></span></div></div>
+  <div class="foot"><span>מציג 1–20 מתוך 128 · בתפריט ⋯: פתיחת כל ההזמנה, תיק לקוח, כל ההזמנות של הלקוח, הורדת סיכום</span><span>‹ עמוד 1 מתוך 7 ›</span></div>
+ </div>
+</div></section>
+
+<!-- 2. Desktop: row opened -->
+<section class="screen" id="s2"><div class="frame">
+ <span class="tag-mock">הדמיה 2 · שורה פתוחה · מחשב</span>
+ <div class="card">
+  <div class="tr sel-row" style="grid-template-columns:110px minmax(200px,1.5fr) 150px 150px 150px 130px 200px"><div class="ord"><b>#1017</b><small>01.11.2026</small></div><div class="who"><span class="av" style="background:#0071e3">ל</span><span><b>לקוח בדיקה חודשי</b><small>הזמנה חודשית · 49 פריטים</small></span></div><div class="sites"><span class="fav">ynet</span><span class="fav">mako</span><span class="fav">gl</span><span>+46</span></div><div><span class="pill p-paid"><i></i>שולם</span><span class="sub">צ׳ק · QA-50264</span></div><div class="prog"><b>1 מתוך 46</b><small>פורסמו</small></div><span class="num">₪225,380</span><div class="acts"><button class="btn primary sm">טיפול בביטול<svg><use href="#chev"/></svg></button><span class="dots" style="background:var(--ink);color:#fff"><svg width="16" height="16"><use href="#x"/></svg></span></div></div>
+  <div class="detail">
+   <div class="card items">
+    <div class="tools" style="border:0"><b style="font-size:15px">פריטים בהזמנה</b><span style="margin-inline-start:auto;font-size:13px;color:var(--mute)">49 אתרים · 1 פורסם · 2 בוטלו</span><div class="search" style="flex:0 0 220px;height:34px">חיפוש פריט</div></div>
+    <div class="ih"><span>אתר וכתבה</span><span>מצב</span><span>לפני מע״מ</span><span></span></div>
+    <div class="ir"><div><a>www.ynet.co.il/laisha</a><small>נוסף 01.11.2026 · QA סיכום 2</small></div><span class="pill p-blue"><i></i>טיוטה</span><span class="num" style="font-size:14px">₪4,500</span><div class="acts"><button class="btn quiet sm"><svg><use href="#doc"/></svg>פתיחה</button><button class="btn danger sm"><svg><use href="#undo"/></svg>ביטול וזיכוי</button></div></div>
+    <div class="ir"><div><a>www.mako.co.il</a><small>נוסף 01.11.2026 · מתכוני סתיו</small></div><span class="pill p-paid"><i></i>פורסם</span><span class="num" style="font-size:14px">₪6,000</span><div class="acts"><button class="btn quiet sm"><svg><use href="#ext"/></svg>הכתבה באתר</button></div></div>
+    <div class="ir x"><div><a class="s">www.ynet.co.il</a><small>בוטל 02.11.26 · ביקש לבטל בוואטסאפ</small></div><span class="pill p-gray"><i></i>בוטל</span><span class="num s" style="font-size:14px">₪4,500</span><div class="acts"><small>זוכה לארנק</small></div></div>
+    <div class="ir x"><div><a class="s">www.ynet.co.il/capital</a><small>בוטל · האתר לא אישר את הפרסום</small></div><span class="pill p-gray"><i></i>בוטל</span><span class="num s" style="font-size:14px">₪2,900</span><div class="acts"><small>זוכה לארנק</small></div></div>
+    <div class="foot"><span>ועוד 45 פריטים</span><a style="color:var(--blue2);font-weight:600">הצגת הכול</a></div>
+   </div>
+   <div class="side">
+    <div class="note"><b>בקשת ביטול לפריט אחד</b> · www.ynet.co.il/laisha. אחרי הטיפול הסכום יעודכן.</div>
+    <div class="card pad"><h3>לקוח</h3><div class="who"><span class="av" style="background:#0071e3">ל</span><span><b>לקוח בדיקה חודשי</b><small>monthly@example.test · 050-0000000</small></span></div><div class="stack" style="margin-top:12px"><button class="btn quiet"><svg><use href="#user"/></svg>תיק לקוח</button><button class="btn quiet"><svg><use href="#list"/></svg>כל ההזמנות של הלקוח</button><button class="btn quiet"><svg><use href="#mail"/></svg>שליחת מייל ללקוח</button></div></div>
+    <div class="card pad"><h3>פרטי ההזמנה והחיוב</h3><dl class="facts"><div><dt>סוג</dt><dd>חודשית · 49 פריטים</dd></div><div><dt>תאריך</dt><dd>01.11.2026, 18:31</dd></div><div><dt>אמצעי תשלום</dt><dd>צ׳ק</dd></div><div><dt>תשלום אושר</dt><dd>01.11.2026, 21:49</dd></div><div><dt>אסמכתה</dt><dd>QA-50264</dd></div><div><dt>חודש שיוך</dt><dd>נובמבר 2026</dd></div></dl></div>
+    <button class="btn primary lg" style="width:100%">פתיחת כל ההזמנה<svg><use href="#chev"/></svg></button>
+   </div>
+  </div>
+ </div>
+</div></section>
+
+<!-- 3. Mobile list -->
+<section class="screen" id="s3"><div class="phone">
+ <span class="tag-mock">הדמיה 3 · הזמנות · נייד</span>
+ <div class="m-head"><h1>הזמנות</h1><p>כל ההזמנות והכספים במקום אחד</p></div>
+ <div class="m-areas"><span class="on">הזמנות<b>1</b></span><span>סגירת חודש</span><span>דיווחי תשלום</span><span>חשבוניות<b>17</b></span></div>
+ <div class="m-sum"><div class="sumc"><span class="l">כל ההזמנות</span><b>128</b></div><div class="sumc on hot"><span class="l">לטיפול</span><b>1</b></div><div class="sumc"><span class="l">ממתינות לתשלום</span><b>3</b></div><div class="sumc"><span class="l">חודשיות</span><b>2</b></div></div>
+ <div class="m-tools"><div class="search"><svg width="17" height="17"><use href="#search"/></svg>חיפוש</div><span class="icon-btn"><svg width="18" height="18"><use href="#filter"/></svg></span><span class="icon-btn"><svg width="18" height="18"><use href="#dl"/></svg></span></div>
+ <div class="ocard hot"><div class="top"><div><b>#1017 · לקוח בדיקה חודשי</b><small>01.11.2026 · הזמנה חודשית · 49 פריטים</small></div><span class="num">₪225,380</span></div><div class="row"><span class="pill p-paid"><i></i>שולם · צ׳ק</span><span>1 מתוך 46 פורסמו</span></div><span class="alert" style="margin:0"><svg width="13" height="13"><use href="#undo"/></svg>בקשת ביטול לפריט אחד</span><div class="btns"><button class="btn primary">טיפול בביטול<svg><use href="#chev"/></svg></button><span class="icon-btn"><svg width="18" height="18"><use href="#dots"/></svg></span></div></div>
+ <div class="ocard"><div class="top"><div><b>#1016 · שירה כהן</b><small>31.10.2026 · 3 פריטים</small></div><span class="num">₪8,400</span></div><div class="row"><span class="pill p-wait"><i></i>ממתין לתשלום</span><span>טרם התחיל</span></div><div class="btns"><button class="btn primary">אישור תשלום<svg><use href="#chev"/></svg></button><span class="icon-btn"><svg width="18" height="18"><use href="#dots"/></svg></span></div></div>
+ <div class="ocard"><div class="top"><div><b>#1015 · דיגיטל פלוס</b><small>30.10.2026 · 5 פריטים</small></div><span class="num">₪16,200</span></div><div class="row"><span class="pill p-paid"><i></i>שולם · ארנק</span><span>5 מתוך 5 · הושלמה</span></div><div class="btns"><button class="btn tint">פירוט<svg><use href="#chev"/></svg></button><span class="icon-btn"><svg width="18" height="18"><use href="#dots"/></svg></span></div></div>
+</div></section>
+
+<!-- 4. Mobile: order sheet -->
+<section class="screen" id="s4"><div class="phone">
+ <span class="tag-mock">הדמיה 4 · פירוט הזמנה · נייד</span>
+ <div class="sheet">
+  <span class="grab"></span>
+  <div class="top" style="display:flex;justify-content:space-between;align-items:flex-start"><div><b style="font-size:20px;font-weight:800">#1017</b><div style="font-size:13px;color:var(--mute)">לקוח בדיקה חודשי · 01.11.2026</div></div><span class="icon-btn"><svg width="18" height="18"><use href="#x"/></svg></span></div>
+  <div class="m-sum"><div class="sumc"><span class="l">סכום</span><b style="font-size:20px">₪225,380</b></div><div class="sumc"><span class="l">פורסמו</span><b style="font-size:20px">1/46</b></div></div>
+  <div class="note"><b>בקשת ביטול לפריט אחד</b> · ynet.co.il/laisha</div>
+  <div class="m-items"><b style="font-size:15px">פריטים</b>
+   <div class="ir"><div><a>ynet.co.il/laisha</a><small>טיוטה · ₪4,500</small></div><button class="btn danger sm">ביטול וזיכוי</button></div>
+   <div class="ir"><div><a>mako.co.il</a><small>פורסם · ₪6,000</small></div><button class="btn quiet sm">הכתבה</button></div>
+   <div class="ir" style="opacity:.55"><div><a style="text-decoration:line-through">ynet.co.il</a><small>בוטל · זוכה לארנק</small></div><span></span></div>
+   <div class="ir"><span style="color:var(--blue2);font-weight:600;font-size:13px">הצגת כל 49 הפריטים</span><span></span></div>
+  </div>
+  <div class="card pad" style="box-shadow:0 0 0 1px var(--line)"><dl class="facts"><div><dt>תשלום</dt><dd>שולם · צ׳ק</dd></div><div><dt>אסמכתה</dt><dd>QA-50264</dd></div><div><dt>חודש שיוך</dt><dd>נובמבר 2026</dd></div></dl></div>
+  <div class="stack"><button class="btn quiet"><svg><use href="#user"/></svg>תיק לקוח</button><button class="btn quiet"><svg><use href="#list"/></svg>כל ההזמנות של הלקוח</button></div>
+  <div class="sticky"><button class="btn primary lg">טיפול בביטול</button><button class="btn tint lg">כל ההזמנה</button></div>
+ </div>
+</div></section>
+<script>const s=new URLSearchParams(location.search).get('s');if(s)document.body.dataset.s=s;</script>
+</body>
+</html>
