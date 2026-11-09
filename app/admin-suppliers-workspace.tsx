@@ -52,7 +52,7 @@ function SupplierPanel({ctx,supplier:s}:{ctx:Ctx;supplier:Row}){
   <section className="om-customer"><h3>מעבר מהיר</h3>
    {link('/admin-supplier/'+s.id,Pencil,'פרטי הספק ועריכה',go('admin-supplier/'+s.id))}
    {link('/admin-supplier-finance',CreditCard,'התחשבנות הספק',go('admin-supplier-finance',()=>saveAdminViewState('suppliers:settlements',{...defaults,supplier:s.id})))}
-   {link('/admin-articles',FileText,'כתבות של הספק',go('admin-articles',()=>saveAdminViewState('admin-articles',{search:'',status:'all',route:'all',page:1,open:'',supplier:s.id,supplier_name:s.name})))}
+   {link('/admin-supplier/'+s.id,FileText,'כתבות של הספק',go('admin-supplier/'+s.id,()=>saveAdminViewState('supplier-editor:'+s.id,{site:'',tab:'articles',all:false})))}
    {link('/admin-supplier/'+s.id,Link2,'צירוף או הסרה של אתרים',go('admin-supplier/'+s.id,()=>saveAdminViewState('supplier-editor:'+s.id,{site:'',tab:'sites',all:false})))}
   </section>
   <section className="om-sup-sites-panel"><h3>האתרים של הספק · {s.site_count}</h3><SiteTable ctx={ctx} supplier={s} compact onEdit={w=>{saveAdminViewState('supplier-editor:'+s.id,{site:w?w.id:'new',tab:'sites',all:false});ctx.go('admin-supplier/'+s.id);}}/></section>
@@ -175,7 +175,7 @@ function PaidLine({row:r}:{row:Row}){const p=r.source==='statement'?r:r.payment|
 /* ---------- Supplier page (09.11.2026) ---------- */
 const host=(u?:string)=>{try{return new URL(contentUrl(u)||'').hostname.replace(/^www\./,'');}catch{return '';}};
 function SupplierPage({ctx,id,guard}:{ctx:Ctx;id:string;guard:Guard}){
- const[initial]=useState(()=>adminViewState('supplier-editor:'+id,{site:'',tab:'overview',all:false})),[tab,setTab]=useState(initial.site?'sites':initial.tab==='sites'?'sites':'overview'),[editing,setEditing]=useState<string>(initial.site||''),[editRow,setEditRow]=useState<Row|null>(null),[page]=useState(1),[query]=useState('');
+ const[initial]=useState(()=>adminViewState('supplier-editor:'+id,{site:'',tab:'overview',all:false})),[tab,setTab]=useState(initial.site?'sites':['sites','articles','requests'].includes(initial.tab)?initial.tab:'overview'),[editing,setEditing]=useState<string>(initial.site||''),[editRow,setEditRow]=useState<Row|null>(null),[page]=useState(1),[query]=useState('');
  const params=new URLSearchParams({page:String(page),q:query,all:'0',selected:editing&&editing!=='new'?editing:''}),state=useData('admin/suppliers/'+encodeURIComponent(id)+'?'+params,ctx.revision),current=state.data?.request_key===params.toString(),s:Row|undefined=state.data?.supplier,sites:Row[]=current?state.data.sites:[];
  const reqState=useData('admin/seller-requests',ctx.revision,!!s?.account_user_id),requests:Row[]=(reqState.data?.requests||[]).filter((r:Row)=>r.user_id===s?.account_user_id).sort((a:Row,b:Row)=>b.created.localeCompare(a.created)),pendingRequests=requests.filter(r=>r.status==='pending');
  const go=(page:string,before?:()=>void)=>()=>guard.confirm(()=>{before?.();ctx.go(page);});
@@ -191,12 +191,12 @@ function SupplierPage({ctx,id,guard}:{ctx:Ctx;id:string;guard:Guard}){
     <div className="om-sup-hero-main"><h2>{s.name}</h2><p><span className={'om-pill is-'+(s.account_user_id?'month':'unreported')}>{s.account_user_id?'ספק עם חשבון':'ספק ידני'}</span>{s.contact&&<span>{s.contact}</span>}{s.email&&<a href={'mailto:'+s.email}><Mail size={15} aria-hidden="true"/><bdi>{s.email}</bdi></a>}{s.phone&&<a href={'tel:'+s.phone}><Phone size={15} aria-hidden="true"/><bdi>{s.phone}</bdi></a>}{contentUrl(s.url)&&<a href={contentUrl(s.url)} target="_blank" rel="noreferrer"><ExternalLink size={15} aria-hidden="true"/>אתר הספק</a>}</p></div>
     <nav className="om-sup-quick" aria-label="פעולות מהירות לספק">
      <button type="button" className="om-btn is-primary" onClick={()=>switchTab('sites')}><Globe size={17} aria-hidden="true"/>האתרים של הספק<b>{s.site_count}</b></button>
-     <button type="button" className="om-btn" onClick={go('admin-articles',()=>saveAdminViewState('admin-articles',{search:'',status:'published',route:'all',page:1,open:'',supplier:s.id,supplier_name:s.name}))}><FileText size={17} aria-hidden="true"/>כתבות שפורסמו אצלו</button>
+     <button type="button" className="om-btn" onClick={()=>switchTab('articles')}><FileText size={17} aria-hidden="true"/>כתבות שפורסמו אצלו</button>
      <button type="button" className="om-btn" onClick={go('admin-supplier-finance',()=>saveAdminViewState('suppliers:settlements',{...defaults,supplier:s.id}))}><CreditCard size={17} aria-hidden="true"/>התחשבנות ותשלומים</button>
      {s.account_user_id&&<button type="button" className="om-btn" onClick={()=>switchTab('requests')}><Bell size={17} aria-hidden="true"/>בקשות{pendingRequests.length>0&&<b className="is-alert">{pendingRequests.length}</b>}</button>}
     </nav>
    </header>
-   <OrderViews label="חלקי עמוד הספק" value={tab} onChange={switchTab} views={[['overview','פרטים ואופן התנהלות'],['sites','אתרים',Number(s.site_count)],...(s.account_user_id?[['requests','בקשות',pendingRequests.length] as [string,string,number]]:[])]}/>
+   <OrderViews label="חלקי עמוד הספק" value={tab} onChange={switchTab} views={[['overview','פרטים ואופן התנהלות'],['sites','אתרים',Number(s.site_count)],['articles','כתבות'],...(s.account_user_id?[['requests','בקשות',pendingRequests.length] as [string,string,number]]:[])]}/>
    {tab==='overview'&&<div className="om-sup-overview">
     <section className="om-sup-card"><h3>פרטי הספק</h3><SupplierProfileForm key={s.id+':'+s.updated} ctx={ctx} supplier={s} onDirty={dirty=>guard.mark('supplier-profile',dirty)} saved={()=>guard.mark('supplier-profile',false)}/></section>
     <aside className="om-sup-side">
@@ -207,6 +207,7 @@ function SupplierPage({ctx,id,guard}:{ctx:Ctx;id:string;guard:Guard}){
     </aside>
    </div>}
    {tab==='sites'&&(editing?<div className="om-sup-card om-sup-site-editor"><div className="om-sup-card-head"><h3>{editing==='new'?'אתר חדש לספק':'עריכה מלאה · '+(site?.name||'')}</h3><button type="button" className="om-btn" onClick={()=>guard.confirm(()=>{guard.mark('supplier-site',false);setEditing('');})}><ArrowRight size={16} aria-hidden="true"/>חזרה לטבלת האתרים</button></div>{editing!=='new'&&!site?<div className="orders-reference-loading" role="status">טוען…</div>:<CatalogWebsiteForm key={editing} ctx={ctx} site={site} defaultSupplier={id} presentation="supplier" onDirtyChange={dirty=>guard.mark('supplier-site',dirty)} close={()=>{guard.mark('supplier-site',false);setEditing('');ctx.refresh();}}/>}</div>:<SiteTable ctx={ctx} supplier={s} guard={guard} pendingRequests={pendingRequests} onEdit={w=>{setEditRow(w);setEditing(w?w.id:'new');}}/>)}
+   {tab==='articles'&&<SupplierArticles ctx={ctx} supplier={s}/>}
    {tab==='requests'&&<div className="om-sup-requests-list">{reqState.loading&&!reqState.data?<div className="orders-reference-loading" role="status">טוען בקשות…</div>:!requests.length?<div className="orders-reference-empty"><h3>אין בקשות מהספק</h3><p>בקשות להוספת אתר, שינוי מחיר, השהיה או שינוי פרטי תשלום יופיעו כאן.</p></div>:requests.map(r=><div key={r.id} className="om-row om-req-mini"><div className="om-who"><b>{supplierRequestKinds[r.kind]}</b><span><bdi>{r.proposal?.url||r.proposal?.name||''}</bdi></span></div><time>{contentTime(r.created)}</time><span className={'om-pill is-'+pillTone[supplierTone(r.status)]}>{supplierRequestStates[r.status]}</span><button type="button" className={'om-btn'+(r.status==='pending'?' is-primary':'')} onClick={go('admin-seller-request/'+r.id)}>{r.status==='pending'?'בדיקת הבקשה':'פירוט'}<ChevronLeft size={16} aria-hidden="true"/></button></div>)}</div>}
   </div>
  </section>;
@@ -253,12 +254,13 @@ function SiteTable({ctx,supplier:s,guard,pendingRequests=[],onEdit,compact=false
  return <div className={'om-site-table'+(compact?' is-compact':'')}>
   <div className="om-site-tools"><OrderSearch label="חיפוש באתרי הספק" value={query} onChange={v=>{setQuery(v);setPage(1);}}/><button type="button" className="om-btn is-primary" onClick={()=>ctx.open({kind:'admin-finance',title:'צירוף אתרים לספק',description:'בחר אתרים מהקטלוג שיעברו לספק '+s.name+'.',render:(close:()=>void)=><SiteAttach ctx={ctx} supplier={s} close={close}/>})}><Link2 size={16} aria-hidden="true"/>צירוף אתרים</button><button type="button" className="om-btn is-tinted" onClick={()=>onEdit(null)}><Plus size={16} aria-hidden="true"/>אתר חדש</button></div>
   {!current?<div className="orders-reference-loading" role="status">טוען אתרים…</div>:!sites.length?<div className="orders-reference-empty"><h3>{query?'לא נמצאו אתרים לחיפוש':'עדיין אין אתרים אצל הספק'}</h3><p>אפשר לצרף אתרים קיימים מהקטלוג או להוסיף אתר חדש.</p></div>:<>
-   <div className="om-site-table-head" aria-hidden="true"><span>אתר</span><span>מחירון באתר</span><span>מחיר עלות</span><span>רווח</span><span>הערות</span><span>מצב</span><span/></div>
+   <div className="om-site-table-head" aria-hidden="true"><span>אתר</span><span>מחירון באתר</span><span>מחיר עלות</span><span>רווח</span><span>מלאי</span><span>הערות</span><span>מצב</span><span/></div>
    <div className="om-site-list" aria-label="אתרי הספק">{sites.map(w=>{const margin=w.cost_cents==null?null:Number(w.price)-Number(w.cost_cents),pending=pendingRequests.find(r=>host(r.proposal?.url)&&host(r.proposal?.url)===host(w.url)),notes=[w.admin_notes,w.publishing_restrictions].filter(Boolean).join(' · ');return <div key={w.id} className="om-site-table-row">
-    <div className="om-site-cell-name"><SiteThumb site={w}/><span><b>{w.name}</b><Url value={w.url}/>{w.stock_total!=null&&<small className="om-site-stock">מלאי {w.stock_remaining} מתוך {w.stock_total}</small>}</span></div>
+    <div className="om-site-cell-name"><SiteThumb site={w}/><span><b>{w.name}</b><Url value={w.url}/></span></div>
     <div><small className="om-phone-label">מחירון באתר</small><bdi className="om-num">{money(w.price)}</bdi></div>
     <div><small className="om-phone-label">מחיר עלות</small>{w.cost_cents==null?<span className="om-report-warn">לא הוגדר</span>:<bdi className="om-num">{money(w.cost_cents)}</bdi>}</div>
     <div><small className="om-phone-label">רווח</small>{margin==null?<span className="om-muted">—</span>:<bdi className={'om-num'+(margin<0?' is-negative':' is-positive')}>{money(margin)}</bdi>}</div>
+    <div className="om-site-stock-cell"><small className="om-phone-label">מלאי</small>{w.stock_total==null?<span className="om-muted">ללא הגבלה</span>:<span className={'om-stock'+(Number(w.stock_remaining)<=0?' is-empty':Number(w.stock_remaining)<=2?' is-low':'')} title={'נותרו '+w.stock_remaining+' פרסומים'}><span>{Number(w.stock_sent||0)}</span><i>/</i><b>{w.stock_total}</b></span>}</div>
     <div className="om-site-notes" title={notes}>{notes||<span className="om-muted">—</span>}</div>
     <div className="om-site-states"><span className={'om-dot-state is-'+(w.active?'on':'off')}>{w.active?'פעיל':'מושהה'}</span>{pending&&<button type="button" className="om-dot-state is-alert" onClick={()=>leave('admin-seller-request/'+pending.id)}>בקשה ממתינה</button>}</div>
     <div className="om-site-actions"><button type="button" className="om-btn is-tinted om-btn-sm" onClick={()=>quick(w)}><Pencil size={14} aria-hidden="true"/>עריכה</button><DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="om-btn om-icon-btn om-btn-sm" aria-label={'עוד פעולות עבור '+w.name}><MoreHorizontal size={16}/></button></DropdownMenuTrigger><DropdownMenuContent className="om-menu"><DropdownMenuItem onSelect={()=>onEdit(w)}><Pencil size={15}/>עריכה מלאה של האתר</DropdownMenuItem><DropdownMenuItem onSelect={()=>leave('admin-articles',()=>saveAdminViewState('admin-articles',{search:w.name,status:'all',route:'all',page:1,open:''}))}><FileText size={15}/>כתבות באתר הזה</DropdownMenuItem><DropdownMenuItem onSelect={()=>window.open(contentUrl(w.url),'_blank','noopener')}><ExternalLink size={15}/>פתיחת האתר</DropdownMenuItem><DropdownMenuItem className="om-menu-danger" onSelect={()=>ctx.open({kind:'admin-finance',title:'הסרת אתר מהספק',description:w.name+' · '+s.name,render:(close:()=>void)=><SiteDetach ctx={ctx} site={w} supplier={s} close={close}/>})}><X size={15}/>הסרה מהספק</DropdownMenuItem></DropdownMenuContent></DropdownMenu></div>
@@ -266,5 +268,37 @@ function SiteTable({ctx,supplier:s,guard,pendingRequests=[],onEdit,compact=false
    <p className="om-note">המחירים לפני מע״מ. כל אתר מתומחר בנפרד. עלויות הספק גלויות רק בניהול.</p>
   </>}
   {current&&state.data.total>20&&<OrderPager page={state.data.page} total={state.data.total} size={20} onChange={setPage}/>}
+ </div>;
+}
+
+/* ---------- Supplier articles and stock (09.11.2026) ---------- */
+const shortDate=(v?:string)=>v?new Date(v).toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit',year:'2-digit'}):'—';
+const daysSince=(v?:string)=>v?Math.max(0,Math.floor((Date.now()-Date.parse(v))/864e5)):0;
+const linkText=(u?:string)=>String(u||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
+function AnchorCell({a}:{a:Row}){const pairs=[[a.anchor,a.target_url],[a.anchor_2,a.target_url_2]].filter(([t,u])=>t||u);return pairs.length?<div className="om-anchor-cell">{pairs.map(([t,u],i)=><span key={i}><b>{t||'ללא ביטוי'}</b>{contentUrl(u)?<a href={contentUrl(u)} target="_blank" rel="noreferrer" title={u}><bdi>{linkText(u)}</bdi></a>:<small>ללא קישור</small>}</span>)}</div>:<span className="om-muted">—</span>;}
+function SupplierArticles({ctx,supplier:s}:{ctx:Ctx;supplier:Row}){
+ const state=useData('admin/suppliers/'+encodeURIComponent(s.id)+'/articles',ctx.revision),all:Row[]=state.data?.articles||[],[site,setSite]=useState('all');
+ const sites=[...new Map(all.map(a=>[a.website_id,a.website_name||linkText(a.website_url)])).entries()];
+ const rows=all.filter(a=>site==='all'||a.website_id===site),waiting=rows.filter(a=>a.stage==='with_supplier'),published=rows.filter(a=>a.stage==='published');
+ const open=(a:Row)=>(e:React.MouseEvent)=>{if(!plain(e))return;e.preventDefault();saveAdminViewState('content-parent','admin-articles');ctx.go('admin-article/'+a.id);};
+ const row=(a:Row,n:number)=>{const late=!!a.supplier_late,days=daysSince(a.supplier_sent_at);return <div key={a.id} className={'om-art-row'+(a.stage==='with_supplier'?' is-waiting':'')}>
+  <span className="om-art-n">{n}</span>
+  <div className="om-art-title"><a href={'/admin-article/'+a.id} onClick={open(a)}>{a.title||a.topic||'כתבה ללא כותרת'}</a><small>הזמנה <bdi>{String(a.number||'').startsWith('#')?a.number:'#'+a.number}</bdi></small></div>
+  <div className="om-art-site"><small className="om-phone-label">אתר</small>{a.website_name||linkText(a.website_url)}</div>
+  <div><small className="om-phone-label">נשלחה לספק</small><bdi className="om-num">{shortDate(a.supplier_sent_at)}</bdi></div>
+  <div><small className="om-phone-label">ביטוי וקישור</small><AnchorCell a={a}/></div>
+  <div className="om-art-pub">{a.stage==='published'?(contentUrl(a.published_url)?<a href={contentUrl(a.published_url)} target="_blank" rel="noreferrer" className="om-art-live"><ExternalLink size={14} aria-hidden="true"/><bdi>{linkText(a.published_url)}</bdi></a>:<span className="om-muted">לא נשמר קישור</span>):<span className={'om-dot-state is-'+(late?'late':'alert')}>{late?'באיחור · '+days+' ימים אצל הספק':'ממתינה לפרסום · '+(days?days+' ימים':'היום')}</span>}</div>
+  <div><small className="om-phone-label">תאריך פרסום</small><bdi className="om-num">{a.stage==='published'?shortDate(a.published_at):'—'}</bdi></div>
+ </div>;};
+ if(state.error&&!state.data)return <FinanceEmpty error={state.error} retry={ctx.refresh}/>;
+ if(!state.data)return <div className="orders-reference-loading" role="status">טוען כתבות…</div>;
+ return <div className="om-art">
+  <div className="om-art-head-bar"><h3>כתבות של {s.name}</h3><span>{all.length} כתבות שנשלחו לספק · כתבות שעוד אצל הלקוח לא מוצגות כאן</span></div>
+  {sites.length>1&&<OrderViews label="סינון לפי אתר" value={site} onChange={setSite} views={[['all','כל האתרים',all.length],...sites.map(([id,name])=>[id,name,all.filter(a=>a.website_id===id).length] as [string,string,number])]}/>}
+  {!rows.length?<div className="orders-reference-empty"><h3>אין עדיין כתבות שנשלחו לספק{site!=='all'?' באתר הזה':''}</h3><p>כתבות יופיעו כאן מרגע שהן נשלחות לספק לפרסום.</p></div>:<div className="om-art-table">
+   <div className="om-art-cols" aria-hidden="true"><span>#</span><span>כתבה</span><span>אתר</span><span>נשלחה לספק</span><span>ביטוי וקישור</span><span>הכתבה שפורסמה</span><span>תאריך פרסום</span></div>
+   {waiting.length>0&&<><div className="om-art-group is-waiting"><b>ממתינות לפרסום</b><span>{waiting.length}</span></div>{waiting.map((a,i)=>row(a,i+1))}</>}
+   {published.length>0&&<><div className="om-art-group"><b>פורסמו</b><span>{published.length}</span></div>{published.map((a,i)=>row(a,i+1))}</>}
+  </div>}
  </div>;
 }

@@ -1,7 +1,7 @@
 import {all,one} from './server';
 import {SUPPLIER_LATE_DAYS,writingCodeSql} from './writing-workflow';
 // A content-only projection. Financial fields and article bodies stay out of lists.
-const contentSource=`WITH history AS (
+export const contentSource=`WITH history AS (
  SELECT resource,
  MIN(CASE WHEN action='סטטוס: admin_review' THEN created END) AS submitted,
  MIN(CASE WHEN action IN ('סטטוס: approved','כתיבה מקצועית אושרה לפרסום ללא החזרה') THEN created END) AS approved,
@@ -94,4 +94,9 @@ export async function adminContent(query:URLSearchParams,exported=false){
   SUM(editorial=1 AND workable=1 AND stage='writing_new') AS writing_new,SUM(editorial=1 AND workable=1 AND stage='writing_fix') AS writing_fix,SUM(editorial=1 AND workable=1 AND stage='customer_review') AS customer_review
   FROM visible`);
  return {articles,total,page,size,counts,request_key:query.toString()};
+}
+
+/** Articles a supplier has received: waiting for publication and published. Articles still with the customer never appear (09.11.2026). */
+export async function supplierArticles(supplierId:string){
+ return {articles:await all(contentSource+` SELECT v.id,v.title,v.topic,v.website_id,v.website_url,w2.name AS website_name,v.stage,v.status,v.supplier_sent_at,v.published_at,v.published_url,v.anchor,v.target_url,v.anchor_2,v.target_url_2,v.number,v.waiting_since,v.supplier_late,v.delivery_status FROM visible v JOIN websites w2 ON w2.id=v.website_id WHERE v.supplier_id=? AND v.stage IN ('with_supplier','published') ORDER BY CASE WHEN v.stage='with_supplier' THEN 0 ELSE 1 END,CASE WHEN v.stage='with_supplier' THEN v.supplier_sent_at END ASC,COALESCE(v.published_at,v.updated) DESC,v.id`,supplierId)};
 }

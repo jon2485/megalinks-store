@@ -1,4 +1,5 @@
 import {supplierDirectory,supplierDetail,supplierSettlements,supplierRequestContext} from '@/lib/admin-suppliers';
+import {supplierArticles} from '@/lib/admin-content';
 import {adminContent} from '@/lib/admin-content';
 import {prepareOrderStatement} from '@/lib/order-statement';
 import {completeWalletCard} from '@/lib/wallet-card';
@@ -838,7 +839,7 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
-        if(p[1]==='suppliers'){assert(method==='GET','פעולה לא נתמכת',405);return response(p[2]?await supplierDetail(decodeURIComponent(p[2]),query):await supplierDirectory(query));}
+        if(p[1]==='suppliers'){assert(method==='GET','פעולה לא נתמכת',405);if(p[2]&&p[3]==='articles')return response(await supplierArticles(decodeURIComponent(p[2])));return response(p[2]?await supplierDetail(decodeURIComponent(p[2]),query):await supplierDirectory(query));}
         if(p[1]==='supplier-request-context'){assert(method==='GET','פעולה לא נתמכת',405);return response(await supplierRequestContext(query.get('id')||''));}
         if(p[1]==='supplier-settlements'){assert(method==='GET','פעולה לא נתמכת',405);return response(await supplierSettlements(query));}
         if(p[1]==='content'){
