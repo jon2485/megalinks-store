@@ -167,3 +167,56 @@ body:has(.admin-design-v172) [data-slot=dialog-content] label{font-size:13.5px;f
  body:has(.admin-design-v172) :is([data-slot=dialog-header],[data-slot=alert-dialog-header]){padding:18px 16px 14px!important;padding-inline-end:60px!important}
  body:has(.admin-design-v172) :is([data-slot=dialog-title],[data-slot=alert-dialog-title]){font-size:19px!important}
 }
+
+/* 09.11.2026 (2): header icon badge, wider two-column body, sticky action row, same as the AI-writing window. */
+body:has(.admin-design-v172) :is([data-slot=dialog-header]){display:flex!important;flex-direction:row;align-items:center;gap:14px!important;text-align:right}
+body:has(.admin-design-v172) .admin-dialog-badge{flex:none;width:48px;height:48px;border-radius:15px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#1673e6,#7c5cff);box-shadow:0 8px 20px rgba(22,115,230,.28)}
+body:has(.admin-design-v172) .admin-dialog-head-text{display:grid;gap:3px;min-width:0}
+body:has(.admin-design-v172) [data-slot=dialog-content]:has(:is(.om-steps,.om-attach)){width:min(640px,calc(100vw - 24px))!important}
+body:has(.admin-design-v172) [data-slot=dialog-content]{max-height:min(92dvh,860px)!important}
+/* fields: taller, rounder, like the AI window */
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,[data-slot=select-trigger]){min-height:48px!important;height:48px;border-radius:14px!important;padding-inline:14px;font-size:15px}
+body:has(.admin-design-v172) [data-slot=dialog-content] textarea{border-radius:14px!important;padding:12px 14px;font-size:15px}
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select):focus{border-color:#1673e6!important;box-shadow:0 0 0 4px rgba(22,115,230,.16)!important}
+/* sticky action row: status on the start side, wide primary button, quiet cancel */
+body:has(.admin-design-v172) :is(.om-pay-actions,.supplier-actions,.approved-refund-actions){position:sticky;bottom:-22px;z-index:2;display:flex;align-items:center;gap:10px;margin:8px -24px -22px!important;padding:14px 24px 20px;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-top:1px solid #e3e9f1}
+body:has(.admin-design-v172) .om-pay-actions .om-btn.is-primary{order:2;flex:1 1 auto;min-height:48px;border-radius:14px;background:#1673e6;box-shadow:0 6px 16px rgba(22,115,230,.26);color:#fff}
+body:has(.admin-design-v172) .om-pay-actions .om-btn.is-primary:hover:not(:disabled){background:#0f66d4}
+body:has(.admin-design-v172) .om-pay-actions .om-btn:not(.is-primary){order:3;min-height:48px;border-radius:14px;background:#f1f5fa;box-shadow:none;color:#0b1b2f}
+body:has(.admin-design-v172) .om-pay-actions .om-btn:disabled{background:#dbe5f0;box-shadow:none;color:#fff}
+body:has(.admin-design-v172) .om-foot-status{order:1;flex:none;max-width:34%;font-size:14.5px;font-weight:700;color:#1673e6}
+body:has(.admin-design-v172) .om-foot-status.is-ready{color:#1d7d3a}
+/* numbered steps */
+.om-steps{position:relative;display:grid;gap:22px!important}
+.om-step{position:relative;display:grid;gap:12px;padding-inline-end:54px}
+.om-step::before{content:"";position:absolute;inset-inline-end:16px;top:38px;bottom:-22px;width:2px;background:#e3e9f1}
+.om-step:last-child::before{display:none}
+.om-step h4{margin:0;min-height:34px;display:flex;align-items:center;font-size:17px;font-weight:800;color:#0b1b2f}
+.om-step-node{position:absolute;inset-inline-end:0;top:0;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;border:2px solid #dbe5f0;background:#fff;color:#7a8aa0;font-size:14px;font-weight:700}
+.om-step:first-child .om-step-node{border-color:#1673e6;color:#1673e6;box-shadow:0 0 0 5px rgba(22,115,230,.12)}
+.om-pay-form .om-pay-grid{gap:14px}
+.om-pay-form .om-pay-confirm{border-radius:14px;background:#f5f7fa;box-shadow:inset 0 0 0 1px #e3e9f1}
+.om-pay-form select{height:48px!important;border-radius:14px!important;border:1px solid #e3e9f1!important;background:#f5f7fa!important;padding-inline:14px}
+/* attach window */
+.om-attach .orders-reference-search{display:flex!important;align-items:center;gap:8px;width:100%;height:48px;padding:0 14px;border-radius:14px;background:#f5f7fa;box-shadow:inset 0 0 0 1px #e3e9f1}
+.om-attach .orders-reference-search svg{flex:none;position:static;color:#7a8aa0}
+.om-attach .orders-reference-search input{flex:1;min-width:0;height:44px!important;min-height:0!important;border:0!important;background:transparent!important;box-shadow:none!important;padding:0!important}
+.om-attach-row{border-radius:14px;box-shadow:inset 0 0 0 1px #e3e9f1}
+.om-attach .orders-reference-pagination{margin:0;padding:4px 2px}
+@media(max-width:640px){
+ body:has(.admin-design-v172) :is(.om-pay-actions,.supplier-actions,.approved-refund-actions){margin-inline:-16px!important;padding-inline:16px;flex-wrap:wrap}
+ body:has(.admin-design-v172) .om-foot-status{max-width:none;flex:1 1 100%}
+ .om-step{padding-inline-end:46px}
+}
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(.supplier-field-hint,label small){display:block;font-size:12.5px!important;font-weight:500!important;color:#7a8aa0!important;line-height:1.5}
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(.om-pay-note,.om-attach p,.om-pay-warn){font-size:13.5px;font-weight:500;line-height:1.6}
+body:has(.admin-design-v172) [data-slot=dialog-content] .om-pay-note{color:#5b6b82}
+body:has(.admin-design-v172) [data-slot=dialog-content] .om-attach .orders-reference-search input{border:0!important;background:transparent!important;box-shadow:none!important;height:44px;min-height:0!important;padding:0!important;border-radius:0!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] .om-attach-row [role=checkbox]{border-radius:8px}
+body:has(.admin-design-v172) [data-slot=dialog-content] .om-attach .orders-reference-search input:not([type=checkbox]):not([type=radio]):not([type=file]){border:0!important;background:transparent!important;box-shadow:none!important;height:44px!important;min-height:0!important;padding:0!important;border-radius:0!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] .om-attach .orders-reference-search input:focus{box-shadow:none!important}
+body:has(.admin-design-v172) .om-attach .orders-reference-search:focus-within{box-shadow:inset 0 0 0 2px #1673e6,0 0 0 4px rgba(22,115,230,.16)}
+.om-attach .orders-reference-pagination{display:flex!important;flex-direction:row;align-items:center;justify-content:space-between;gap:12px}
+.om-attach .orders-reference-pagination nav{display:flex;flex-direction:row;align-items:center;gap:6px}
+.om-attach .orders-reference-pagination nav button{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:#f1f5fa;border:0}
+.om-attach-foot{border-top:0!important;padding-top:0!important}
