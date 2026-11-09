@@ -194,3 +194,14 @@ body:has(.admin-editorial-surface) .admin-glass-menu .admin-v172-area li a {font
 @media(prefers-reduced-motion:reduce) {.admin-design-v172 .admin-editorial-surface :is(button,a) {transition:none!important;transform:none!important;}}
 @media(forced-colors:active) {.admin-design-v172 .admin-editorial-surface :is(.panel,.table-wrap,.connection-card) {background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important;}}
 @media print {.admin-editorial-breadcrumb,.admin-design-v172 .admin-editorial-surface .admin-section-tabs {display:none!important;}.admin-design-v172:has(.admin-editorial-surface) > .workspace-page-content > main {padding:0!important;max-width:none!important;}.admin-design-v172 .admin-editorial-surface table[data-admin-cards] {display:table;}}
+/* 09.11.2026: "התנהלות מול הספק" sits in the side column, above the site logo, instead of falling below everything. */
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .catalog-website-form>fieldset{grid-template-areas:"identity price" "details procure" "details logo" "visibility visibility"}
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .catalog-website-form>fieldset>section.supplier-procurement{grid-area:procure}
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .catalog-website-form>fieldset>details{align-self:start}
+@media(max-width:1000px){.admin-design-v172 .admin-editorial-surface .admin-full-editor .catalog-website-form>fieldset{grid-template-areas:"identity" "price" "procure" "logo" "details" "visibility"}}
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .catalog-website-form>fieldset{grid-template-areas:"identity price" "details procure" "details logo" "details ." "visibility visibility";grid-template-rows:auto auto auto 1fr auto}
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .supplier-procurement :is(select,[data-slot=select-trigger]){width:100%}
+@media(max-width:1000px){.admin-design-v172 .admin-editorial-surface .admin-full-editor .catalog-website-form>fieldset{grid-template-areas:"identity" "price" "procure" "logo" "details" "visibility";grid-template-rows:none}}
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .supplier-procurement label{display:grid;gap:6px}
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .supplier-procurement select{width:100%!important;max-width:none!important}
+.admin-design-v172 .admin-editorial-surface .admin-full-editor .supplier-procurement .catalog-form-grid{grid-template-columns:minmax(0,1fr)}
