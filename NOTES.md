@@ -643,3 +643,13 @@
 - Checked:
   - screenshots of all the pages
   - buttons: overview cards, billing filter, payment report, opening an order, supplier link, area row, breadcrumb
+
+## 09.11.2026: Supplier QA (local, fictional data)
+- 44 data checks passed across supplier types (with an account, needs completing / default email, monthly orders, packages). Also checked:
+  - a new manual supplier without an email gets the default email
+  - adding stock with zero quantity or without a cost is refused
+  - lowering stock is refused
+  - an invalid invoice link is refused
+- Stock flow: two articles took slots 4-5, cancelling one returned slot 4 and blocked its supplier link.
+- 12 supplier screens load without errors.
+- Temporary (local only): more QA articles "כתבת מלאי" on jpost. The test manual supplier was deleted.
