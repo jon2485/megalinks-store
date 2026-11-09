@@ -1,7 +1,7 @@
 import {all,one,stmt,parse,now,assert,audit} from './server';
 import type {Row} from './shared';
 import {money} from './shared';
-import {supplierSettlements,supplierKind} from './admin-suppliers';
+import {supplierSettlements,supplierKind,supplierBillingType} from './admin-suppliers';
 import {siteStock,stockState,STOCK_LOW} from './supplier-stock';
 import {publicationPeriod} from './publication-period';
 import {queueMail} from './mail';
@@ -24,6 +24,7 @@ async function settlementRows(supplierId:string){
 // open: the month is still running · awaiting: closed, no invoice yet ·
 // invoice: an invoice arrived (or is approved) · paid.
 function orderStatus(g:Row,current:string){
+ if(g.stage)return g.stage;
  if(g.month>=current)return 'open';
  if(g.status==='paid')return 'paid';
  if(g.source==='statement'?['invoice_review','approved'].includes(g.status):!!g.manual_invoice)return 'invoice';
@@ -57,10 +58,10 @@ export async function supplierBilling(supplierId:string){
  const supplier=await supplierRow(supplierId),current=publicationPeriod().month,year=current.slice(0,4);
  const rows=(await settlementRows(supplierId)).filter(g=>!g.demo).sort((a,b)=>b.month.localeCompare(a.month));
  const orders=rows.map(g=>orderSummary(g,current));
- const due=orders.filter(o=>o.status==='invoice'&&(o.source!=='statement'||o.raw_status==='approved')),open=orders.find(o=>o.status==='open'),paid=orders.filter(o=>o.status==='paid'&&String(o.paid_on||o.month).startsWith(year));
+ const due=orders.filter(o=>o.status==='invoice'),open=orders.find(o=>o.status==='open'),paid=orders.filter(o=>o.status==='paid'&&String(o.paid_on||o.month).startsWith(year));
  const stock=await stockPackages(supplierId);
  const stockSites=await all("SELECT id,name,json_extract(data,'$.stock_total') AS stock_total FROM websites WHERE json_extract(data,'$.supplier_id')=? ORDER BY name",supplierId);
- return {supplier:{id:supplier.id,name:supplier.name,email:supplier.email,kind:supplier.kind,account_user_id:supplier.account_user_id||''},current,orders,summary:{due:{amount:due.reduce((n,o)=>n+Number(o.total||0),0),orders:due.length,first:due[due.length-1]||null},open:open?{count:open.count,month:open.month,closes:monthEnd(open.month)}:null,paid:{amount:paid.reduce((n,o)=>n+Number(o.total||0),0),count:paid.length}},stock,sites:stockSites};
+ return {supplier:{id:supplier.id,name:supplier.name,email:supplier.email,kind:supplier.kind,account_user_id:supplier.account_user_id||'',billing:supplierBillingType(supplier,stockSites)},current,orders,summary:{due:{amount:due.reduce((n,o)=>n+Number(o.total||0),0),orders:due.length,first:due[due.length-1]||null},open:open?{count:open.count,month:open.month,closes:monthEnd(open.month)}:null,paid:{amount:paid.reduce((n,o)=>n+Number(o.total||0),0),count:paid.length}},stock,sites:stockSites};
 }
 
 export async function supplierOrder(key:string){

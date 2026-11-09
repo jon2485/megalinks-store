@@ -54,6 +54,8 @@ const cents=(v:any)=>{if(v===''||v===null||v===undefined)return null;const n=Mat
 export async function addStockPackage(actor:Row,websiteId:string,b:Row){
  const w=await one('SELECT id,name,data FROM websites WHERE id=?',websiteId);assert(w,'האתר לא נמצא',404);
  const d=JSON.parse(w.data||'{}'),quantity=Number(b.quantity);
+ const sup=d.supplier_id?await one("SELECT data FROM records WHERE id=? AND kind='supplier'",d.supplier_id):null,supData=sup?JSON.parse(sup.data||'{}'):{},stocked=d.supplier_id?Number((await one("SELECT COUNT(*) AS n FROM websites WHERE json_extract(data,'$.supplier_id')=? AND json_extract(data,'$.stock_total') IS NOT NULL",d.supplier_id))?.n||0):0;
+ assert(supData.billing==='stock'||!supData.billing&&stocked>0,'הספק מוגדר בהתחשבנות חודשית. כדי להוסיף מלאי, שנו בפרטי הספק את סוג התשלום ל"מלאי".',409);
  assert(Number.isSafeInteger(quantity)&&quantity>0&&quantity<=100000,'יש להזין כמות פרסומים שלמה וחיובית');
  const totalCents=cents(b.total_ils);let unit=cents(b.unit_ils);
  assert(totalCents!==null||unit!==null,'יש להזין את עלות החבילה או את המחיר ליחידה');

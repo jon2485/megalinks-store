@@ -64,17 +64,16 @@ function AddStock({ctx,site,close}:{ctx:Ctx;site:Row;close:()=>void}){
 /* ---------- Overview: what needs me today ---------- */
 export function SupplierOverview({ctx}:{ctx:Ctx}){
  const state=useData('admin/supplier-overview',ctx.revision),d:Row|undefined=state.data;
- const settle=(status:string)=>()=>{saveAdminViewState('suppliers:settlements',{...listDefaults,status,pay:'unpaid'});ctx.go('admin-supplier-finance');};
+ const settle=(stage:string)=>()=>{saveAdminViewState('suppliers:settlements',{...listDefaults,stage,status:'all',pay:'all'});ctx.go('admin-supplier-finance');};
  const hub=(patch:Row)=>()=>{saveAdminViewState('suppliers:hub',{...hubDefaults,...patch});ctx.go('admin-suppliers');};
  const supplierArticles=(id:string)=>ctx.go('admin-supplier-articles/'+id);
  if(state.error&&!d)return <div className="orders-reference-empty"><h3>הסקירה לא נטענה</h3><p>{state.error}</p><button type="button" className="om-btn" onClick={ctx.refresh}>ניסיון נוסף</button></div>;
  if(!d)return <div className="orders-reference-loading" role="status">טוען סקירה…</div>;
  const s=d.summary||{},stockNeed=d.waiting.count+d.stock.count;
  const cards:[string,React.ReactNode,string,string,React.ElementType,()=>void,boolean][]=[
-  ['לתשלום עכשיו',money(Number(s.pay?.amount||0)),s.pay?.count?plural(s.pay.count,'התחשבנות אחת מאושרת','התחשבנויות מאושרות'):'אין תשלומים מאושרים','pay',CreditCard,settle('approved'),!!s.pay?.count],
-  ['חשבוניות לבדיקה',s.review?.count||0,s.review?.count?'לאשר או להחזיר לתיקון':'הכול נבדק','review',Receipt,settle('invoice_review'),!!s.review?.count],
+  ['לתשלום עכשיו',money(Number(s.invoice?.amount||0)),s.invoice?.count?plural(s.invoice.count,'הזמנה אחת עם חשבונית','הזמנות עם חשבונית'):'אין חשבוניות שמחכות לתשלום','pay',CreditCard,settle('invoice'),!!s.invoice?.count],
+  ['ממתינים לחשבונית',s.awaiting?.count||0,s.awaiting?.count?'החודש נסגר ועוד אין חשבונית':'כל החשבוניות התקבלו','review',Receipt,settle('awaiting'),!!s.awaiting?.count],
   ['בקשות מספקים',d.requests,d.requests?'מחכות להחלטה שלך':'אין בקשות פתוחות','req',Bell,()=>ctx.go('admin-seller-requests'),!!d.requests],
-  ['באיחור אצל ספקים',d.late.count,d.late.count?'מעל 3 ימים בלי קישור':'כולם בזמן','late',Clock3,hub({status:'attention'}),!!d.late.count],
   ['דרוש מלאי',stockNeed,d.waiting.count?plural(d.waiting.count,'כתבה אחת מחכה למלאי','כתבות מחכות למלאי'):d.stock.count?plural(d.stock.count,'אתר אחד עומד להיגמר','אתרים עומדים להיגמר'):'המלאי תקין','stock',Boxes,hub({billing:'stock'}),!!stockNeed],
   ['ספקים להשלמה',d.partial,d.partial?'חסרים שם, איש קשר או טלפון':'כל הפרטים מלאים','partial',UserRoundPen,hub({type:'partial'}),!!d.partial],
  ];
@@ -82,10 +81,7 @@ export function SupplierOverview({ctx}:{ctx:Ctx}){
   <SupplierAreaHead current="admin-supplier-overview" title="מה צריך ממך היום" sub={d.suppliers+' ספקים במערכת. כל כרטיס מוביל ישר לרשימה המסוננת.'} go={ctx.go} action={<button type="button" className="sv2-btn primary lg" onClick={()=>ctx.go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button>}/>
   <div className="sh-cards">{cards.map(([title,value,hint,key,Icon,go,hot])=><button key={key} type="button" className={'sh-card is-'+key+(hot?' is-hot':' is-calm')} onClick={go}><span className="sh-card-icon"><Icon size={18} aria-hidden="true"/></span><span className="sh-card-title">{title}</span><b className="sh-card-value"><bdi>{value}</bdi></b><span className="sh-card-hint">{hot?hint:<><CheckCircle2 size={14} aria-hidden="true"/>{hint}</>}</span></button>)}</div>
   <div className="sh-columns">
-   <section className="sh-block"><header><h3><Clock3 size={17} aria-hidden="true"/>באיחור אצל ספקים</h3>{d.late.count>5&&<span>מוצגות 5 מתוך {d.late.count}</span>}</header>
-    {!d.late.rows.length?<p className="sh-calm"><CheckCircle2 size={16} aria-hidden="true"/>אין כתבות באיחור. כל הספקים מחזירים קישורים בזמן.</p>:<ul className="sh-list">{d.late.rows.map((r:Row)=><li key={r.id}><div><b>{r.title||'כתבה'}</b><span>{r.supplier_name} · {r.site_name}</span></div><span className="sh-tag is-late">{r.days} ימים</span><button type="button" className="om-btn om-btn-sm" onClick={()=>supplierArticles(r.supplier_id)}>לכתבות הספק<ChevronLeft size={14} aria-hidden="true"/></button></li>)}</ul>}
-   </section>
-   <section className="sh-block"><header><h3><Boxes size={17} aria-hidden="true"/>מלאי שדורש תשומת לב</h3><span>עומד להיגמר = {d.stock.low_limit} או פחות</span></header>
+      <section className="sh-block"><header><h3><Boxes size={17} aria-hidden="true"/>מלאי שדורש תשומת לב</h3><span>עומד להיגמר = {d.stock.low_limit} או פחות</span></header>
     {d.waiting.rows.length>0&&<ul className="sh-list">{d.waiting.rows.map((r:Row)=><li key={r.id} className="is-waiting"><div><b>{r.title||'כתבה'}</b><span>מחכה למלאי · {r.site_name} · {r.supplier_name}</span></div><span className="sh-tag is-empty">מחכה</span><button type="button" className="om-btn om-btn-sm is-primary" onClick={()=>ctx.go('admin-supplier-stock/'+r.site_id)}>הוספת מלאי<ChevronLeft size={14} aria-hidden="true"/></button></li>)}</ul>}
     {!d.stock.rows.length&&!d.waiting.rows.length?<p className="sh-calm"><CheckCircle2 size={16} aria-hidden="true"/>לכל האתרים שבחבילה יש מספיק מלאי.</p>:<ul className="sh-list">{d.stock.rows.map((w:Row)=><li key={w.id}><div><b>{w.name}</b><span>{w.supplier_name} · נותרו {w.left}</span></div><StockFigure used={w.used} total={w.total} state={w.state}/><button type="button" className="om-btn om-btn-sm" onClick={()=>ctx.go('admin-supplier-stock/'+w.id)}>ניהול מלאי<ChevronLeft size={14} aria-hidden="true"/></button></li>)}</ul>}
    </section>
@@ -125,9 +121,9 @@ export function SupplierHub({ctx,confirm}:{ctx:Ctx;confirm:(run:()=>void)=>void}
      <span className="sv2-sites"><small className="sv2-ml">אתרים</small><b>{s.site_count}</b><small>{!s.site_count?'אין אתרים':s.paused_count?<><bdi>{s.active_count}</bdi> פעילים</>:s.site_count===1?'פעיל':'כולם פעילים'}</small></span>
      <span className="sv2-actcell"><DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="sv2-act" aria-label={'פעולות עבור '+s.name}>פעולות<span className="chev" aria-hidden="true"><ChevronLeft size={15}/></span></button></DropdownMenuTrigger><DropdownMenuContent className="sv2-menu" align="end" sideOffset={8}>
       <DropdownMenuItem className="is-first" onSelect={tab(s,'sites')}><Globe size={17}/>האתרים של הספק<small>{s.site_count}</small></DropdownMenuItem>
-      <DropdownMenuItem onSelect={()=>go('admin-supplier-articles/'+s.id)}><FileText size={17}/>כתבות שנשלחו אליו{s.open>0&&<small>{s.open} ממתינות</small>}</DropdownMenuItem>
+      <DropdownMenuItem onSelect={()=>go('admin-supplier-articles/'+s.id)}><FileText size={17}/>כתבות שנשלחו אליו</DropdownMenuItem>
       <DropdownMenuItem onSelect={()=>go('admin-supplier-billing/'+s.id)}><CreditCard size={17}/>התחשבנות והזמנות</DropdownMenuItem>
-      <DropdownMenuItem onSelect={()=>openAddStockFor(ctx,s)}><Boxes size={17}/>הוספת מלאי</DropdownMenuItem>
+      {s.billing==='stock'&&<DropdownMenuItem onSelect={()=>openAddStockFor(ctx,s)}><Boxes size={17}/>הוספת מלאי</DropdownMenuItem>}
       <DropdownMenuSeparator/>
       <DropdownMenuItem onSelect={tab(s,'details')}><UserRoundPen size={17}/>פרטים ואופן התנהלות</DropdownMenuItem>
       {s.account_user_id&&<DropdownMenuItem onSelect={tab(s,'details')}><Bell size={17}/>בקשות הספק{s.requests>0&&<small className="is-hot">{s.requests}</small>}</DropdownMenuItem>}

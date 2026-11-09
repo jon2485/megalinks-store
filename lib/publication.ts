@@ -26,6 +26,8 @@ export async function dispatchArticle(article:Row,actor:Row,origin:string){
  if(!job)await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,article.user_id,'supplier_publication','requested',JSON.stringify(data),stamp,stamp).run();
  const claim=await stmt("UPDATE jobs SET status='writing',data=?,updated=? WHERE id=? AND status IN ('requested','blocked','failed')",JSON.stringify(data),stamp,id).run();
  if(!claim.meta.changes)return parse(await one('SELECT * FROM jobs WHERE id=?',id));
+ const stockSupplier=!!supplier&&(supplier.billing==='stock'||!supplier.billing&&!!(await one("SELECT 1 FROM websites WHERE json_extract(data,'$.supplier_id')=? AND json_extract(data,'$.stock_total') IS NOT NULL LIMIT 1",supplier.id)));
+ if(!demo&&stockSupplier&&(w.stock_total===null||w.stock_total===undefined)){data.error='הספק עובד במלאי ולאתר עדיין אין חבילה. הוסיפו מלאי והכתבה תישלח לספק.';await stmt("UPDATE jobs SET status='blocked',data=?,updated=? WHERE id=?",JSON.stringify(data),now(),id).run();return {...data,status:'blocked'};}
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||(!demo&&!w.procurement_verified)){
   data.error=!email?'יש להזין מייל לספק':!demo&&!w.procurement_verified?'יש לאמת את הסכם הפרסום באתר':'מייל הספק אינו תקין';
   await stmt("UPDATE jobs SET status='blocked',data=?,updated=? WHERE id=?",JSON.stringify(data),now(),id).run();return {...data,status:'blocked'};
