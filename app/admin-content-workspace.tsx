@@ -1,6 +1,6 @@
 'use client';
 import React,{useEffect,useRef,useState} from 'react';
-import {Bell,ChevronLeft,List,Download,ExternalLink,Eye,FileText,History,Link2,PenLine,Plus,RotateCw,Send,Settings,ShoppingCart,SlidersHorizontal,UserRound} from 'lucide-react';
+import {Bell,ChevronLeft,List,X,Download,ExternalLink,Eye,FileText,History,Link2,PenLine,Plus,RotateCw,Send,Settings,ShoppingCart,SlidersHorizontal,UserRound} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
@@ -78,10 +78,11 @@ function ArticlePanel({ctx,a,open,busy,dispatch,remind,message}:{ctx:Ctx;a:Row;o
  </div>;
 }
 function Articles({ctx,view}:{ctx:Ctx;view:string}){
- const [saved]=useState(()=>adminViewState(view,{search:'',status:view==='admin-writing'?'open':'all',route:'all',page:1,open:''}));
+ const [saved]=useState(()=>adminViewState(view,{search:'',status:view==='admin-writing'?'open':'all',route:'all',page:1,open:'',supplier:'',supplier_name:''} as Row));
+ const [supplier,setSupplier]=useState<{id:string;name:string}>(()=>({id:saved.supplier||'',name:saved.supplier_name||''}));
  const [search,setSearch]=useState(saved.search),[status,setStatus]=useState(saved.status),[route,setRoute]=useState(saved.route),[page,setPage]=useState(saved.page),[open,setOpen]=useState(saved.open),[busy,setBusy]=useState(''),[message,setMessage]=useState<Row|null>(null),lock=useRef(false);
- useEffect(()=>{saveAdminViewState(view,{search,status,route,page,open});},[view,search,status,route,page,open]);
- const tab=tabs.find(t=>t[0]===view)||tabs[0],writing=view==='admin-writing',params=new URLSearchParams({view:tab[1],q:search.trim(),status,route,page:String(page)}),key=params.toString(),state=useData('admin/content?'+key,ctx.revision),current=state.data?.request_key===key,rows:Row[]=current?state.data?.articles||[]:[],counts=state.data?.counts||{},total=current?Number(state.data?.total||0):0;
+ useEffect(()=>{saveAdminViewState(view,{search,status,route,page,open,supplier:supplier.id,supplier_name:supplier.name});},[view,search,status,route,page,open,supplier]);
+ const tab=tabs.find(t=>t[0]===view)||tabs[0],writing=view==='admin-writing',params=new URLSearchParams({view:tab[1],q:search.trim(),status,route,page:String(page),...(supplier.id?{supplier:supplier.id}:{})}),key=params.toString(),state=useData('admin/content?'+key,ctx.revision),current=state.data?.request_key===key,rows:Row[]=current?state.data?.articles||[]:[],counts=state.data?.counts||{},total=current?Number(state.data?.total||0):0;
  const openArticle=(a:Row)=>{saveAdminViewState('content-parent',view);ctx.go('admin-article/'+a.id);};
  const run=async(a:Row,work:()=>Promise<string>)=>{if(lock.current)return;lock.current=true;setBusy(a.id);setMessage(null);try{setMessage({id:a.id,text:await work()});}catch(e){setMessage({id:a.id,text:(e as Error).message,error:true});}finally{lock.current=false;setBusy('');}};
  const dispatch=(a:Row)=>run(a,async()=>{const r=await ctx.run(()=>api('articles/'+a.id+'/dispatch','POST',{}),'');if(r.status==='blocked'||r.status==='failed')throw new Error(r.error||'השליחה לא הושלמה. יש לבדוק את פרטי הספק.');return 'הכתבה נשלחה לספק.';});
@@ -90,7 +91,7 @@ function Articles({ctx,view}:{ctx:Ctx;view:string}){
  const exportRows=async()=>{const response=await fetch('/api/admin/content?'+key+'&export=1');if(!response.ok){const d=await response.json() as {error?:string};throw new Error(d.error||'ייצוא הכתבות נכשל');}const url=URL.createObjectURL(await response.blob()),link=document.createElement('a');link.href=url;link.download='articles.xlsx';link.click();setTimeout(()=>URL.revokeObjectURL(url),5000);};
  const changeStatus=(v:string)=>{setStatus(v);setPage(1);setOpen('');};
  return <section className="orders-match-screen om-finance om-content" dir="rtl"><div className="om-top-actions"><OrderExport run={exportRows} disabled={!total}/></div><div className="orders-reference-panel">
-  <div className="om-content-views"><OrderViews label="איזה כתבות להציג" value={view} onChange={ctx.go} views={tabs.map(([page,,label,count])=>[page,label,counts[count]] as [string,string,number])}/></div>
+  {supplier.id&&<div className="om-filter-chip-row"><span className="om-filter-chip">ספק: <b>{supplier.name||'ספק'}</b><button type="button" aria-label="הסרת הסינון לפי ספק" onClick={()=>{setSupplier({id:'',name:''});setPage(1);setOpen('');}}><X size={14} aria-hidden="true"/></button></span></div>}<div className="om-content-views"><OrderViews label="איזה כתבות להציג" value={view} onChange={ctx.go} views={tabs.map(([page,,label,count])=>[page,label,counts[count]] as [string,string,number])}/></div>
   {writing&&<OrderSummary items={[['בקשות חדשות לכתיבה',<bdi key="n">{Number(counts.writing_new||0)}</bdi>,Number(counts.writing_new)?'report':undefined],['תיקונים מהלקוח',<bdi key="f">{Number(counts.writing_fix||0)}</bdi>,Number(counts.writing_fix)?'report':undefined],['אצל הלקוח לבדיקה',<bdi key="c">{Number(counts.customer_review||0)}</bdi>]]}/>}
   <div className={'orders-reference-toolbar om-toolbar'+(writing?'':' is-one')+(statusOptions[view]?'':' is-search')}><OrderSearch label={writing?'חיפוש מזהה כתבה (ML-…), נושא, לקוח או הזמנה':'חיפוש כתבה, מזהה, לקוח, הזמנה, אתר או ספק'} value={search} onChange={v=>{setSearch(v);setPage(1);}}/>{statusOptions[view]&&<OrderFilter label="סינון לפי מצב" icon={<SlidersHorizontal size={20}/>} value={status} onChange={changeStatus} options={statusOptions[view]}/>}{writing&&<OrderFilter label="סינון לפי המשך" icon={<Send size={20}/>} value={route} onChange={v=>{setRoute(v);setPage(1);}} options={{all:'כל המסלולים',review:'חוזר ללקוח לבדיקה',direct:'לפרסום ישיר'}}/>}</div>
   {state.error&&!rows.length?<div className="orders-reference-error" role="alert"><p>{state.error}</p><button type="button" onClick={ctx.refresh}>ניסיון נוסף</button></div>:!current?<div className="orders-reference-loading" role="status">טוען כתבות…</div>:!rows.length?<div className="orders-reference-empty"><h3>{search?'לא נמצאו כתבות לחיפוש הזה':view==='admin-approvals'?'אין כתבות שממתינות לאישור שלך':writing?'אין כתבות לכותב התוכן בתצוגה הזו':view==='admin-publication'?'אין כתבות בדרך לפרסום':'אין כתבות בתצוגה הזו'}</h3><p>אפשר לשנות את הסינון או לנקות את החיפוש.</p></div>:<>

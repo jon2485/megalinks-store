@@ -71,7 +71,9 @@ const stages=['cancel_pending','delivery_failed','with_supplier','admin_review',
 export async function adminContent(query:URLSearchParams,exported=false){
  const view=['approvals','publication','writing'].includes(query.get('view')||'')?query.get('view')!:'articles';
  const status=query.get('status')||'all',route=query.get('route')||'all',q=(query.get('q')||'').trim().slice(0,200),requested=Math.max(1,Math.floor(Number(query.get('page'))||1));
- const where=["(?='' OR instr(lower(COALESCE(title,'')||' '||topic||' '||user_name||' '||website_url||' '||number||' '||supplier_name||' '||article_code),lower(?))>0)"],args:unknown[]=[q,q];
+ const where=["(?='' OR instr(lower(COALESCE(title,'')||' '||COALESCE(topic,'')||' '||COALESCE(user_name,'')||' '||COALESCE(website_url,'')||' '||COALESCE(number,'')||' '||COALESCE(supplier_name,'')||' '||COALESCE(article_code,'')),lower(?))>0)"],args:unknown[]=[q,q];
+ // Articles of one supplier, from the supplier page (09.11.2026).
+ const supplier=(query.get('supplier')||'').slice(0,200);if(supplier){where.push('supplier_id=?');args.push(supplier);}
  if(view==='approvals')where.push("stage='admin_review' AND workable=1");
  if(view==='publication')where.push(publicationStages);
  if(view==='writing')where.push('editorial=1 AND workable=1');

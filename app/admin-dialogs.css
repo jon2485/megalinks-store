@@ -129,3 +129,41 @@ body:has(.admin-design-v172) .catalog-supplier-dialog[data-slot=dialog-content]{
 .om-dialog .om-dialog-check>span{font-size:15px!important;font-weight:600!important;color:inherit!important}
 .om-drop-box b{color:#0a66c2!important}
 .om-drop-box small{font-weight:400!important;color:var(--ad-copy)!important}
+
+/* 09.11.2026: every admin window follows the customer "AI writing" window: white header, large dark title, round close at the top, soft fields and Apple-blue buttons. Light only. */
+body:has(.admin-design-v172){--ad-blue:#0071e3;--ad-blue-hover:#0077ed;--ad-blue-press:#006edb;--ad-field:#f5f7fa;--ad-field-line:#e3e9f1}
+body:has(.admin-design-v172) [data-slot=dialog-overlay]{background:rgba(11,27,47,.42)!important;-webkit-backdrop-filter:blur(6px)!important;backdrop-filter:blur(6px)!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]){gap:14px!important;padding:0 0 22px!important;border-radius:26px!important;box-shadow:0 30px 80px rgba(7,31,75,.26),0 0 0 1px rgba(15,40,80,.06)!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content])>:not([data-slot=dialog-header],[data-slot=alert-dialog-header],[data-slot=dialog-close]){margin-inline:24px}
+body:has(.admin-design-v172) :is([data-slot=dialog-header],[data-slot=alert-dialog-header]){gap:4px!important;padding:22px 24px 16px!important;padding-inline-end:68px!important;background:#fff!important;border-bottom:1px solid #e3e9f1!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-title],[data-slot=alert-dialog-title]){font-size:22px!important;font-weight:800!important;line-height:1.25!important;letter-spacing:-.01em;color:#0b1b2f!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-description],[data-slot=alert-dialog-description]){font-size:14px!important;line-height:1.5!important;color:#5b6b82!important}
+body:has(.admin-design-v172) [data-slot=dialog-close]{top:20px!important;inset-inline-end:18px!important;width:36px;height:36px;min-width:36px;min-height:36px;border-radius:12px!important;background:#f1f5fa!important;color:#475569!important;transition:background-color .15s,transform .12s}
+body:has(.admin-design-v172) [data-slot=dialog-close]:hover{background:#e6edf5!important;color:#0b1b2f!important}
+body:has(.admin-design-v172) [data-slot=dialog-close]:active{transform:scale(.94)}
+/* payment slip keeps its tear-off, now light */
+body:has(.admin-design-v172) [data-slot=dialog-content]:has(.om-slip) [data-slot=dialog-title]{font-size:15.5px!important;font-weight:650!important;color:#5b6b82!important}
+body:has(.admin-design-v172) .om-slip{margin:-14px -24px 6px;padding:8px 24px 20px;background:linear-gradient(180deg,#fff,#f2f8ff);color:#0b1b2f}
+body:has(.admin-design-v172) .om-slip>div{color:#5b6b82}
+body:has(.admin-design-v172) .om-slip:before{background:radial-gradient(circle 9px at 0 50%,#6b7889 97%,transparent),radial-gradient(circle 9px at 100% 50%,#6b7889 97%,transparent)}
+/* buttons */
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-slot=button],.lobby-primary,.lobby-outline){min-height:44px;border-radius:12px!important;font-size:15px!important;font-weight:600!important;transition:background-color .15s,transform .1s,box-shadow .15s}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-slot=button],.lobby-primary,.lobby-outline):active:not(:disabled){transform:scale(.97)}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-slot=button]:not([data-variant]),[data-variant=default],.lobby-primary){background:var(--ad-blue)!important;border:0!important;color:#fff!important;box-shadow:0 1px 2px rgba(0,60,140,.18)}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-variant=default],.lobby-primary):hover:not(:disabled){background:var(--ad-blue-hover)!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-variant=default],.lobby-primary):active:not(:disabled){background:var(--ad-blue-press)!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-variant=outline],[data-variant=secondary],.lobby-outline){background:rgba(0,113,227,.08)!important;border:0!important;color:#0066cc!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-variant=outline],[data-variant=secondary],.lobby-outline):hover:not(:disabled){background:rgba(0,113,227,.14)!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is([data-variant=destructive],.finance-danger,.is-danger){background:#e5383b!important;border:0!important}
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]) :is(button,a,input,textarea,select,summary,[role=combobox]):focus-visible{outline:3px solid rgba(0,113,227,.45);outline-offset:2px}
+/* fields */
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,[data-slot=select-trigger]){min-height:44px!important;height:44px;background:var(--ad-field)!important;border:1px solid var(--ad-field-line)!important;border-radius:12px!important;box-shadow:none!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] textarea{background:var(--ad-field)!important;border:1px solid var(--ad-field-line)!important;border-radius:12px!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select):focus{background:#fff!important;border-color:var(--ad-blue)!important;box-shadow:0 0 0 3px rgba(0,113,227,.18)!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] :is(input[type=checkbox],input[type=radio]){accent-color:var(--ad-blue)}
+body:has(.admin-design-v172) [data-slot=dialog-content] label{font-size:13.5px;font-weight:600;color:#3b4b61}
+@media(max-width:640px){
+ body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content])>:not([data-slot=dialog-header],[data-slot=alert-dialog-header],[data-slot=dialog-close]){margin-inline:16px}
+ body:has(.admin-design-v172) :is([data-slot=dialog-header],[data-slot=alert-dialog-header]){padding:18px 16px 14px!important;padding-inline-end:60px!important}
+ body:has(.admin-design-v172) :is([data-slot=dialog-title],[data-slot=alert-dialog-title]){font-size:19px!important}
+}
