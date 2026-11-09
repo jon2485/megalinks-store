@@ -653,3 +653,9 @@
 - Stock flow: two articles took slots 4-5, cancelling one returned slot 4 and blocked its supplier link.
 - 12 supplier screens load without errors.
 - Temporary (local only): more QA articles "כתבת מלאי" on jpost. The test manual supplier was deleted.
+
+## 10.11.2026: Orders screen in the v2 design
+- Built from docs/mockups/orders-v2.html: admin-order-history.tsx (render), orders-area-head.tsx, orders-v2.css; the sv2-body frame also covers admin-orders.
+- All capabilities kept: search, month and status filters, the 4 views (now cards), export, review report, handle cancellation, open the full order, in-row detail, customer file, all the customer orders. New: an actions menu (⋯) and email to the customer.
+- Phone: cards and the existing detail sheet, which needs a parent without backdrop-filter (inline style on the card).
+- Other orders-area pages (month close and the rest) are still in the old design.

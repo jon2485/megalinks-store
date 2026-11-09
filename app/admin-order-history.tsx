@@ -1,6 +1,10 @@
 'use client';
 import React,{useCallback,useEffect,useRef,useState} from 'react';
-import {Search,Download,X,CalendarDays,ChevronDown,ChevronLeft,ChevronRight,ChevronUp,Loader2,Maximize2,SlidersHorizontal,XCircle} from 'lucide-react';
+import {Search,Download,X,CalendarDays,ChevronDown,ChevronLeft,ExternalLink,FileText,List,Loader2,Mail,MoreHorizontal,SlidersHorizontal,UserRound} from 'lucide-react';
+import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+import {OrdersAreaHead} from './orders-area-head';
+import './supplier-v2.css';
+import './orders-v2.css';
 import {api,useData} from '@/lib/client';
 import {adminViewState,saveAdminViewState,takeAdminViewState} from '@/lib/admin-view-state';
 import {paymentConfirmed,israelDate,ORDER_ABANDONED_DAYS,type AdminOrderFilterBucket} from '@/lib/admin-order-buckets';
@@ -12,7 +16,7 @@ import {downloadAdminWorkbook} from './admin-export';
 import './orders-reference.css';
 import './orders-modern.css';
 import {OrderPanel} from './admin-order-panel';
-import {OrderFilter,OrderFilters,orderSites,siteLabel,OrderPublication as Publication,RecordPanel} from './order-list-parts';
+import {orderSites,siteLabel,OrderPublication as Publication,RecordPanel} from './order-list-parts';
 import {orderMoney} from './order-presentation';
 import {ReportReview} from './payment-reports';
 
@@ -62,35 +66,54 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
  const counts:Row=state.data?.counts||{};
  const months=[...new Set([monthNow(),saved.month,...(state.data?.months||[])].filter(Boolean))].sort().reverse();
  const first=Math.max(1,Math.min(page-2,pages-4)),shownPages=Array.from({length:Math.min(5,pages)},(_,i)=>first+i);
- return <section className="orders-match-screen" dir="rtl" aria-labelledby="orders-list-title">
-  <button type="button" className="orders-reference-export" onClick={exportOrders} disabled={exporting||!current}><span>{exporting?'מייצא…':'ייצוא נתונים'}</span><Download size={18}/></button>
-  <section className="orders-reference-panel">
+ const statusFilter=saved.bucket==='closed'||saved.bucket==='archive'?saved.bucket:'any';
+ const cardHint:Record<string,string>={active:'כל ההזמנות הפעילות',attention:'דיווחי תשלום ובקשות ביטול',awaiting:'טרם שולמו',monthly:'חיוב בסוף החודש'};
+ const cols={gridTemplateColumns:'92px minmax(170px,1.4fr) 100px 140px 130px 115px 185px',gap:12};
+ return <section className="orders-match-screen sv2 sv2-orders" dir="rtl" aria-labelledby="orders-list-title">
+  <OrdersAreaHead ctx={ctx} current="admin-orders" title="הזמנות" sub="כל ההזמנות והכספים במקום אחד. כל כרטיס הוא גם סינון." action={<button type="button" className="sv2-btn quiet" onClick={exportOrders} disabled={exporting||!current}><Download size={16} aria-hidden="true"/>{exporting?'מייצא…':'ייצוא נתונים'}</button>}/>
+  <div className="sv2-sum is-4" role="group" aria-label="איזה הזמנות להציג">{chips.map(([key,label])=>{const n=Number(counts[key]||0),on=saved.bucket===key||(key==='active'&&(saved.bucket==='closed'||saved.bucket==='archive'));return <button type="button" key={key} className={'sv2-card sv2-pad sv2-sumbtn'+(on?' on':'')+(key==='attention'&&n>0?' hot':'')} aria-pressed={on} onClick={()=>commit({bucket:key})}><span className="lbl">{label}</span><b className="big">{state.data?n:'—'}</b><span className="hint">{cardHint[key]}</span></button>;})}</div>
+  <section className="sv2-card" style={{backdropFilter:'none',WebkitBackdropFilter:'none'}}>
    <h2 id="orders-list-title" className="om-hidden">רשימת הזמנות</h2>
-   <form className="orders-reference-toolbar om-toolbar" noValidate role="search" onSubmit={e=>{e.preventDefault();if(!composing)commit({q:draft.trim()});}}>
-    <div className="orders-reference-search"><Search size={21} aria-hidden="true"/><input ref={input} type="search" maxLength={120} aria-label="חיפוש לקוח, מספר הזמנה או אתר" placeholder="חיפוש לקוח, מספר הזמנה או אתר" value={draft} onCompositionStart={()=>setComposing(true)} onCompositionEnd={e=>{setDraft(e.currentTarget.value);setComposing(false);}} onChange={e=>setDraft(e.target.value)}/>{draft&&<button type="button" aria-label="ניקוי חיפוש הזמנות" onClick={()=>{setDraft('');commit({q:''});input.current?.focus();}}><X size={17}/></button>}</div>
-    <OrderFilters active={(saved.month?1:0)+(saved.bucket==='closed'||saved.bucket==='archive'?1:0)}><OrderFilter label="סינון לפי חודש" icon={<CalendarDays size={20}/>} value={saved.month||'all'} onChange={v=>commit({month:v==='all'?'':v})} options={{all:'כל החודשים',...Object.fromEntries(months.map(m=>[m,monthText(m)]))}}/><OrderFilter label="סינון לפי מצב" icon={<SlidersHorizontal size={20}/>} value={saved.bucket==='closed'||saved.bucket==='archive'?saved.bucket:'any'} onChange={v=>commit({bucket:(v==='any'?'active':v) as AdminOrderFilterBucket})} options={{any:'כל המצבים',closed:'סגורות',archive:'בוטלו והדגמות'}}/></OrderFilters>
+   <form className="sv2-tools" noValidate role="search" onSubmit={e=>{e.preventDefault();if(!composing)commit({q:draft.trim()});}}>
+    <label className="sv2-search"><Search size={17} aria-hidden="true"/><input ref={input} type="search" maxLength={120} aria-label="חיפוש לקוח, מספר הזמנה או אתר" placeholder="חיפוש לקוח, מספר הזמנה או אתר" value={draft} onCompositionStart={()=>setComposing(true)} onCompositionEnd={e=>{setDraft(e.currentTarget.value);setComposing(false);}} onChange={e=>setDraft(e.target.value)}/>{draft&&<button type="button" className="sv2-clear" aria-label="ניקוי חיפוש הזמנות" onClick={()=>{setDraft('');commit({q:''});input.current?.focus();}}><X size={15}/></button>}</label>
+    <label className="sv2-select"><CalendarDays size={16} aria-hidden="true"/><span className="sr-only">סינון לפי חודש</span><select value={saved.month||'all'} onChange={e=>commit({month:e.target.value==='all'?'':e.target.value})}><option value="all">כל החודשים</option>{months.map(m=><option key={m} value={m}>{monthText(m)}</option>)}</select></label>
+    <label className="sv2-select"><SlidersHorizontal size={16} aria-hidden="true"/><span className="sr-only">סינון לפי מצב</span><select value={statusFilter} onChange={e=>commit({bucket:(e.target.value==='any'?'active':e.target.value) as AdminOrderFilterBucket})}><option value="any">כל המצבים</option><option value="closed">סגורות</option><option value="archive">בוטלו והדגמות</option></select></label>
    </form>
-   <div className="om-chips" role="group" aria-label="איזה הזמנות להציג">{chips.map(([key,label])=>{const n=Number(counts[key]||0);return <button type="button" key={key} className={'is-'+key} aria-pressed={saved.bucket===key||(key==='active'&&(saved.bucket==='closed'||saved.bucket==='archive'))} onClick={()=>commit({bucket:key})}>{label}{key!=='active'&&state.data&&n>0&&<b>{n}</b>}</button>;})}</div>
-   {(error||state.error)&&<div className="orders-reference-error" role="alert"><p>{error||state.error}</p><button type="button" onClick={ctx.refresh}>ניסיון נוסף</button></div>}
-   {!current&&!state.error?<div className="orders-reference-loading" role="status">טוען הזמנות…</div>:current&&!rows.length?<div className="orders-reference-empty"><h3>{saved.bucket==='attention'&&!saved.q&&!saved.month?'אין כרגע הזמנות לטיפול':'אין הזמנות שמתאימות לסינון'}</h3><p>{saved.bucket==='attention'&&!saved.q&&!saved.month?'דיווחי תשלום ובקשות ביטול חדשים יופיעו כאן.':'אפשר לשנות את החודש או את המצב, או לנקות את החיפוש.'}</p><button type="button" onClick={()=>{setDraft('');commit({bucket:'active',month:'',q:''});}}>הצגת כל ההזמנות</button></div>:<>
-    <div className="om-head" aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span/><span/></div>
-    <div className="om-list" aria-label="רשימת ההזמנות">
-     {rows.map((o,index)=>{const startsAbandoned=(saved.bucket==='awaiting')&&isAbandoned(o)&&(index===0||!isAbandoned(rows[index-1])),open=expanded===o.id,pay=orderPaymentState(o),sites=orderSites(o),cancelAsk=Number(o.cancel_pending_count)>0,askReview=!cancelAsk&&reportPending(o),busy=opening===o.id,label=busy?'פותח…':cancelAsk?'טיפול בביטול':askReview?'בדיקת הדיווח':open?'פתיחה בעמוד מלא':'ניהול הזמנה',full=open&&!cancelAsk&&!askReview;return <React.Fragment key={o.id}>{startsAbandoned&&<h3 className="om-section">נזנחו, מעל {ORDER_ABANDONED_DAYS} ימים</h3>}<article className={'om-order is-tone-'+pay.tone+(cancelAsk?' has-cancel':'')+(open?' is-open':'')}>
-      <div className="om-row" onClick={()=>setExpanded(open?'':o.id)}>
-       <div className="om-id"><strong><bdi>#{String(o.number).replace(/^#/,'')}</bdi></strong><time dateTime={o.created}>{orderDate(o.created)}</time></div>
-       <div className="om-who"><b>{o.user_name||o.name}</b>{o.on_account||o.payment==='monthly'||o.billing_month?<span className="is-monthly">הזמנה חודשית</span>:<span>הזמנה רגילה</span>}</div>
-       <div className="om-sites">{sites[0]?<span className="om-site" dir="ltr" title={sites.map((x:Row)=>siteLabel(x)).join(', ')}>{siteLabel(sites[0])}</span>:<span className="om-muted">אין פריטים</span>}{sites.length>1&&<span className="om-plus"><bdi dir="ltr">+{sites.length-1}</bdi></span>}</div>
-       <div className="om-pay"><span className={'om-pill is-'+pay.tone}>{pay.label}</span>{pay.note&&<small>{pay.note}</small>}</div>
-       <div className="om-pub"><Publication o={o}/></div>
-       <div className="om-amount"><bdi>{orderMoney(o.amounts.total)}</bdi></div>
-       <a className={'om-btn om-action'+(cancelAsk||askReview?' is-primary':'')+(busy?' is-opening':'')} href={'/admin-order/'+o.id} aria-busy={busy||undefined} onClick={e=>{e.stopPropagation();if(!plain(e))return;e.preventDefault();if(askReview)review(o);else detail(o);}}>{full&&!busy&&<Maximize2 size={15} aria-hidden="true"/>}<span>{label}</span>{busy?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:!full&&<ChevronLeft size={16} aria-hidden="true"/>}</a>
-       <button type="button" className="om-expand" title={open?"סגירה":"פירוט"} aria-label={(open?'סגירת פירוט הזמנה ':'פירוט הזמנה ')+o.number} aria-expanded={open} aria-controls={'order-inline-'+o.id} onClick={e=>{e.stopPropagation();setExpanded(open?'':o.id);}}>{open?<><span className="om-expand-text">סגירה</span><ChevronUp size={18} aria-hidden="true"/></>:<ChevronDown size={19} aria-hidden="true"/>}</button>
+   {(error||state.error)&&<div className="sv2-error" role="alert"><p>{error||state.error}</p><button type="button" className="sv2-btn quiet sm" onClick={ctx.refresh}>ניסיון נוסף</button></div>}
+   {!current&&!state.error?<p className="sv2-loading" role="status">טוען הזמנות…</p>:current&&!rows.length?<div className="sv2-empty"><h3>{saved.bucket==='attention'&&!saved.q&&!saved.month?'אין כרגע הזמנות לטיפול':'אין הזמנות שמתאימות לסינון'}</h3><p>{saved.bucket==='attention'&&!saved.q&&!saved.month?'דיווחי תשלום ובקשות ביטול חדשים יופיעו כאן.':'אפשר לשנות את החודש או את המצב, או לנקות את החיפוש.'}</p><button type="button" className="sv2-btn tint" onClick={()=>{setDraft('');commit({bucket:'active',month:'',q:''});}}>הצגת כל ההזמנות</button></div>:<>
+    <div className="sv2-th" style={cols} aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span/></div>
+    <div className="om-list sv2-olist" aria-label="רשימת ההזמנות">
+     {rows.map((o,index)=>{const startsAbandoned=(saved.bucket==='awaiting')&&isAbandoned(o)&&(index===0||!isAbandoned(rows[index-1])),open=expanded===o.id,pay=orderPaymentState(o),sites=orderSites(o),cancelAsk=Number(o.cancel_pending_count)>0,askReview=!cancelAsk&&reportPending(o),busy=opening===o.id,label=busy?'פותח…':cancelAsk?'טיפול בביטול':askReview?'בדיקת הדיווח':'פירוט',primary=cancelAsk||askReview,monthly=o.on_account||o.payment==='monthly'||o.billing_month,name=String(o.user_name||o.name||''),toggle=()=>setExpanded(open?'':o.id);
+      return <React.Fragment key={o.id}>{startsAbandoned&&<div className="sv2-grp n0">נזנחו, מעל {ORDER_ABANDONED_DAYS} ימים</div>}<article className={'om-order sv2-order is-tone-'+pay.tone+(cancelAsk?' has-cancel':'')+(open?' is-open':'')}>
+      <div className="sv2-tr sv2-orow" style={cols} onClick={toggle}>
+       <div className="sv2-ord"><b><bdi>#{String(o.number).replace(/^#/,'')}</bdi></b><time dateTime={o.created}>{orderDate(o.created)}</time></div>
+       <div className="sv2-who"><span className="sv2-av sm" style={{background:avatarTone(name)}} aria-hidden="true">{name.trim().slice(0,1)||'ל'}</span><span><b>{name||'לקוח'}</b><small>{monthly?'הזמנה חודשית':'הזמנה רגילה'}{sites.length?' · '+(sites.length===1?'אתר אחד':sites.length+' אתרים'):''}</small></span></div>
+       <div className="sv2-favs"><small className="sv2-ml">אתרים</small>{sites.slice(0,3).map((x:Row,i:number)=><span key={i} className="sv2-fav" title={siteLabel(x)} dir="ltr">{siteShort(siteLabel(x))}</span>)}{sites.length>3&&<span className="sv2-more"><bdi dir="ltr">+{sites.length-3}</bdi></span>}{!sites.length&&<span className="sv2-muted">אין פריטים</span>}</div>
+       <div><small className="sv2-ml">תשלום</small><span className={'sv2-pill '+payPill(pay.tone)}><i/>{pay.label}</span>{pay.note&&<small className="sv2-sub">{pay.note}</small>}</div>
+       <div className="sv2-pubcell"><small className="sv2-ml">פרסום</small><Publication o={o}/></div>
+       <span className="sv2-num lg"><small className="sv2-ml">סכום</small><bdi>{orderMoney(o.amounts.total)}</bdi></span>
+       <div className="sv2-rowact" onClick={e=>e.stopPropagation()}>
+        <a className={'sv2-btn sm '+(primary?'primary':'tint')} href={'/admin-order/'+o.id} aria-busy={busy||undefined} onClick={e=>{if(!plain(e))return;e.preventDefault();if(askReview)review(o);else if(cancelAsk)detail(o);else toggle();}}>{busy?<Loader2 className="om-spin" size={15} aria-hidden="true"/>:null}<span>{open&&!primary?'סגירת הפירוט':label}</span>{!busy&&<ChevronLeft size={15} aria-hidden="true"/>}</a>
+        {open?<button type="button" className="sv2-dots is-close" aria-label={'סגירת פירוט הזמנה '+o.number} aria-expanded={open} aria-controls={'order-inline-'+o.id} onClick={toggle}><X size={16}/></button>:
+        <DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="sv2-dots" aria-label={'עוד פעולות להזמנה '+o.number}><MoreHorizontal size={16}/></button></DropdownMenuTrigger><DropdownMenuContent className="sv2-menu" align="end">
+         <DropdownMenuItem className="is-first" onSelect={()=>detail(o)}><ExternalLink size={16}/>פתיחת כל ההזמנה</DropdownMenuItem>
+         <DropdownMenuItem onSelect={toggle}><ChevronDown size={16}/>פירוט בשורה</DropdownMenuItem>
+         {askReview&&<DropdownMenuItem onSelect={()=>review(o)}><FileText size={16}/>בדיקת דיווח התשלום</DropdownMenuItem>}
+         <DropdownMenuSeparator/>
+         <DropdownMenuItem onSelect={()=>ctx.go('admin-customer-account/'+o.user_id)}><UserRound size={16}/>תיק לקוח</DropdownMenuItem>
+         <DropdownMenuItem onSelect={()=>ctx.go('admin-customer-account/'+o.user_id+'/orders')}><List size={16}/>כל ההזמנות של הלקוח</DropdownMenuItem>
+         {(o.user_email||o.email)&&<DropdownMenuItem onSelect={()=>{window.location.href='mailto:'+(o.user_email||o.email);}}><Mail size={16}/>שליחת מייל ללקוח</DropdownMenuItem>}
+        </DropdownMenuContent></DropdownMenu>}
+       </div>
       </div>
-      {open&&<RecordPanel id={'order-inline-'+o.id} title={<>הזמנה <bdi>#{String(o.number).replace(/^#/,'')}</bdi></>} badge={<span className={'om-pill is-'+pay.tone}>{pay.label}</span>} onClose={()=>setExpanded('')}><OrderPanel ctx={ctx} order={o} manage={()=>detail(o)}/></RecordPanel>}
+      {open&&<RecordPanel id={'order-inline-'+o.id} title={<>הזמנה <bdi>#{String(o.number).replace(/^#/,'')}</bdi></>} badge={<span className={'sv2-pill '+payPill(pay.tone)}><i/>{pay.label}</span>} onClose={()=>setExpanded('')}><OrderPanel ctx={ctx} order={o} manage={()=>detail(o)}/></RecordPanel>}
      </article></React.Fragment>;})}
     </div>
    </>}
-   {current&&total>0&&<footer className="orders-reference-pagination"><span role="status">מציג {(page-1)*size+1}–{Math.min(page*size,total)} מתוך {total} הזמנות</span><nav aria-label="עמודי הזמנות"><button type="button" aria-label="העמוד הקודם" disabled={page<=1||state.loading} onClick={()=>commit({page:page-1})}><ChevronRight size={20}/></button>{shownPages.map(n=><button type="button" key={n} aria-label={'עמוד '+n} aria-current={n===page?'page':undefined} disabled={state.loading} onClick={()=>commit({page:n})}>{n}</button>)}<button type="button" aria-label="העמוד הבא" disabled={page>=pages||state.loading} onClick={()=>commit({page:page+1})}><ChevronLeft size={20}/></button></nav></footer>}
+   {current&&total>0&&<footer className="sv2-foot"><span role="status">מציג {(page-1)*size+1}–{Math.min(page*size,total)} מתוך {total} הזמנות</span><nav className="sv2-pager" aria-label="עמודי הזמנות"><button type="button" aria-label="העמוד הקודם" disabled={page<=1||state.loading} onClick={()=>commit({page:page-1})}>‹</button>{shownPages.map(n=><button type="button" key={n} className={n===page?'on':''} aria-label={'עמוד '+n} aria-current={n===page?'page':undefined} disabled={state.loading} onClick={()=>commit({page:n})}>{n}</button>)}<button type="button" aria-label="העמוד הבא" disabled={page>=pages||state.loading} onClick={()=>commit({page:page+1})}>›</button></nav></footer>}
   </section>
  </section>;
 }
+const payPill=(tone:string)=>tone==='ok'?'p-paid':tone==='report'?'p-open':tone==='month'?'p-month':tone==='cancelled'?'p-man':'p-inv';
+const avatarTone=(s:string)=>['#0071e3','#30a46c','#bf5af2','#ff9f0a','#ff375f','#0a84ff','#5e5ce6'][[...String(s||'')].reduce((n,c)=>n+c.charCodeAt(0),0)%7];
+const siteShort=(s:string)=>String(s||'').replace(/^https?:\/\//,'').replace(/^www\./,'').split('.')[0].slice(0,5);

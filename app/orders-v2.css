@@ -1,0 +1,85 @@
+/* Orders in the v2 design (docs/mockups/orders-v2.html). Light only. */
+.sv2-orders{max-width:1180px}
+.sv2-areas>*{display:inline-flex;align-items:center;gap:6px}
+.sv2-areas .admin-v172-attention{all:unset;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#b25000!important;color:#fff!important;font-size:11px;font-weight:700;display:inline-grid;place-items:center;border:0!important;box-shadow:none!important}
+.sv2-areas>span[aria-current=page]{background:#1d1d1f;color:#fff}
+.sv2-sumbtn.hot .big{color:#b25000}
+.sv2-select{display:inline-flex;align-items:center;gap:6px;height:40px;padding:0 4px 0 0;padding-inline-start:12px;border-radius:12px;background:#f5f5f7;color:#424245}
+.sv2-orders .sv2-select select,.sv2-body .sv2-select select{height:40px;padding:0 6px 0 12px!important;border:0!important;background:transparent!important;box-shadow:none!important;font:inherit;font-size:14px;color:#1d1d1f;cursor:pointer}
+.sv2-clear{width:26px;height:26px;border:0;border-radius:50%;background:#e8e8ed;display:grid;place-items:center;cursor:pointer;color:#424245}
+.sv2-error{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 16px 0;padding:10px 14px;border-radius:12px;background:#ffebee;color:#8a0010;font-size:14px}
+.sv2-error p{margin:0}
+.sv2-olist{display:block}
+.sv2-order{border-top:1px solid #f0f1f4}
+.sv2-order:first-child{border-top:0}
+.sv2-orow{border-top:0!important;cursor:pointer}
+.sv2-order.has-cancel .sv2-orow,.sv2-order.is-open .sv2-orow{box-shadow:inset -3px 0 0 #0071e3;background:#fafcff}
+.sv2-order.has-cancel .sv2-orow{box-shadow:inset -3px 0 0 #d70015}
+.sv2-ord{display:grid}.sv2-ord b{font-size:16px;font-weight:800}.sv2-ord time{font-size:12.5px;color:#86868b}
+.sv2-who .sv2-av.sm{width:40px;height:40px;border-radius:12px;font-size:16px}
+.sv2-favs{display:flex;align-items:center;gap:0;font-size:13px;color:#424245;min-width:0}
+.sv2-fav{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#e8eefc,#f6f8ff);box-shadow:0 0 0 1px #e8e8ed;border:2px solid #fff;display:grid;place-items:center;font-size:9px;font-weight:800;color:#5a6b8c;margin-inline-start:-8px;overflow:hidden}
+.sv2-fav:first-of-type{margin-inline-start:0}
+.sv2-more{margin-inline-start:6px;font-weight:600}
+.sv2-pubcell{font-size:13px;min-width:0}
+.sv2-pubcell :is(b,strong){font-size:15px;font-weight:800}
+.sv2-dots.is-close{background:#1d1d1f;color:#fff}
+.sv2-pager button.on{background:#1d1d1f;color:#fff}
+.sv2-pager button{font-size:13px;font-weight:600}
+
+/* Row opened: items card beside customer and order cards */
+.sv2-orders .om-panel{display:grid!important;grid-template-columns:minmax(0,1fr) 300px!important;gap:14px!important;padding:16px 20px 20px!important;margin:0!important;background:#fafcff!important;border:0!important;border-top:1px solid #eef1f6!important;border-radius:0!important;box-shadow:none!important}
+.sv2-orders .om-panel>section.om-items,.sv2-orders .om-panel .sk-card{background:#fff!important;border:0!important;border-radius:20px!important;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 10px 26px rgba(20,40,80,.06)!important;padding:16px 18px!important;color:#1d1d1f}
+.sv2-orders .om-panel .sk-side{display:grid!important;gap:12px!important;align-content:start}
+.sv2-orders .om-panel .sk-head h3{font-size:15px!important;font-weight:800!important;color:#1d1d1f!important;margin:0}
+.sv2-orders .om-panel .sk-head small{color:#86868b}
+.sv2-orders .om-panel .om-items-head{font-size:12px;color:#86868b;font-weight:600}
+.sv2-orders .om-panel .om-item{border-top:1px solid #f0f1f4!important;background:none!important}
+.sv2-orders .om-panel .om-pill{border-radius:999px!important;font-weight:700!important}
+.sv2-orders .om-panel .om-danger{height:32px;padding:0 12px;border:0!important;border-radius:999px!important;background:#ffebee!important;color:#d70015!important;font-weight:700;cursor:pointer}
+.sv2-orders .om-panel .om-btn{border-radius:999px!important;font-weight:600}
+.sv2-orders .om-panel .om-btn.is-primary,.sv2-orders .om-panel .sk-actions .om-btn.is-primary{background:#0071e3!important;color:#fff!important;box-shadow:0 6px 16px rgba(0,113,227,.28)!important;border:0!important}
+.sv2-orders .om-panel .sk-actions{display:grid!important;gap:8px}
+.sv2-orders .om-panel .sk-actions .om-btn{width:100%;justify-content:center;height:44px}
+.sv2-orders .om-panel dl div{border:0!important}
+.sv2-orders .om-panel .om-sum{border-radius:14px;background:#f5f5f7!important}
+
+@media(max-width:1100px){
+ .sv2-orders .om-panel{grid-template-columns:1fr!important}
+}
+@media(max-width:640px){
+ .sv2-orders .sv2-ph h2{font-size:28px!important}
+ .sv2-orders .sv2-areas{flex-wrap:nowrap;overflow-x:auto;max-width:100%;scrollbar-width:none}
+ .sv2-orders .sv2-areas>*{white-space:nowrap}
+ .sv2-orders .sv2-sum.is-4{grid-template-columns:1fr 1fr;gap:8px}
+ .sv2-orders .sv2-sumbtn{padding:12px 14px!important;border-radius:16px!important}
+ .sv2-orders .sv2-sumbtn .hint{display:none}
+ .sv2-orders .sv2-tools{gap:8px}
+ .sv2-orders .sv2-select{flex:1}
+ .sv2-orders .sv2-select select{width:100%}
+ .sv2-orders .sv2-order{margin:10px 12px;border:0;border-radius:20px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 8px 22px rgba(20,40,80,.06)}
+ .sv2-orders .sv2-orow{grid-template-columns:1fr 1fr!important;gap:8px 12px;padding:14px 16px;background:none!important;border-radius:20px}
+ .sv2-orders .sv2-order.has-cancel .sv2-orow{box-shadow:inset -3px 0 0 #d70015}
+ .sv2-orders .sv2-orow>.sv2-ord{order:1}
+ .sv2-orders .sv2-orow>.sv2-num{order:2;justify-self:end;text-align:left}
+ .sv2-orders .sv2-orow>.sv2-who{order:3;grid-column:1/-1}
+ .sv2-orders .sv2-orow>.sv2-favs{display:none}
+ .sv2-orders .sv2-orow>div:nth-child(4){order:4}
+ .sv2-orders .sv2-orow>.sv2-pubcell{order:5}
+ .sv2-orders .sv2-orow>.sv2-rowact{order:6;grid-column:1/-1;display:grid;grid-template-columns:1fr auto;gap:8px}
+ .sv2-orders .sv2-orow>.sv2-rowact .sv2-btn{height:44px;font-size:15px;width:100%}
+ .sv2-orders .sv2-orow>.sv2-num .sv2-ml{display:none}
+ .sv2-orders .sv2-foot{padding:14px 16px}
+}
+
+.sv2-areas .admin-v172-attention .admin-v172-visually-hidden{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.sv2-areas>span[aria-current=page] .admin-v172-attention{background:#ffcf8a!important;color:#1d1d1f!important}
+.sv2-orders .om-order{margin:0!important;border:0!important;border-top:1px solid #f0f1f4!important;border-radius:0!important;box-shadow:none!important;background:none!important;overflow:visible!important}
+.sv2-orders .om-order::before,.sv2-orders .om-order::after{display:none!important}
+.sv2-orders .om-panel dl{display:grid!important;grid-template-columns:1fr!important;gap:9px!important}
+.sv2-orders .om-panel dl>div{display:flex!important;justify-content:space-between;gap:10px;padding:0!important;background:none!important;border:0!important;box-shadow:none!important;font-size:13.5px}
+.sv2-orders .om-panel dl dt{color:#86868b}.sv2-orders .om-panel dl dd{margin:0;font-weight:600;text-align:left}
+/* fixed-position sheets need an ancestor without backdrop-filter */
+.sv2-orders .sv2-card{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+.admin-design-v172 .admin-workspace-body.orders-sky.orders-sky.sv2-body .sv2-orders .sv2-ph h2{display:block!important}
+@media(max-width:1100px){.sv2-orders .sv2-orow>.sv2-ord{grid-column:auto!important}}
