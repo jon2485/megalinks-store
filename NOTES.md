@@ -611,3 +611,22 @@
   - QA articles "כתבת מלאי"
   - two articles moved to 2026-10
   - invoice INV-7788
+
+## 09.11.2026: Suppliers v2, built exactly from the approved mockups
+- Mockups: docs/mockups/suppliers-v2.html (7 screens). Approved by the owner.
+- New code: app/supplier-v2.tsx, app/supplier-v2.css, lib/supplier-orders.ts.
+- The suppliers list was rebuilt in app/supplier-pages.tsx.
+- On these screens the old sky frame (waves, big title, tiles, breadcrumb) is off, via the `sv2-body` class in workspace.tsx and admin-shell.tsx. A small pill row on the suppliers list replaces the tiles: overview, requests, general billing.
+- Routes:
+  - admin-supplier/<id> (sites, or details by saved state)
+  - admin-supplier-articles/<id>
+  - admin-supplier-billing/<id>
+  - admin-supplier-order/<supplier:month:0>
+  - admin-supplier-package/<site>~<number>
+- Billing:
+  - every month with publications is an order: open → awaiting invoice → invoice received → paid
+  - every stock package is an order
+- Detail screens: payment report, invoice view or check, send details, print to PDF, reminders, send package status, edit payment details.
+- Checked with a script: all the main buttons lead to the right place or open the right dialog. Also checked on phone (390px) with no sideways scroll.
+- Open: the admin system's default theme is dark (app/admin-theme.ts). The owner works in light mode. Changing the default to light needs approval.
+- Old components (SupplierPage, SiteTable, SupplierArticlesPage) are no longer reachable. They were left in the code and can be deleted with approval.

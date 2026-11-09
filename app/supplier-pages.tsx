@@ -1,9 +1,9 @@
 'use client';
 import React,{useRef,useState} from 'react';
-import {AlertTriangle,ArrowRight,Bell,Boxes,CalendarClock,CheckCircle2,ChevronLeft,Clock3,CreditCard,ExternalLink,FileText,Globe,Mail,MoreHorizontal,PackagePlus,PauseCircle,Plus,Receipt,SlidersHorizontal,UserRoundPen} from 'lucide-react';
+import {Search,AlertTriangle,ArrowRight,Bell,Boxes,CalendarClock,CheckCircle2,ChevronLeft,Clock3,CreditCard,ExternalLink,FileText,Globe,Mail,MoreHorizontal,PackagePlus,PauseCircle,Plus,Receipt,SlidersHorizontal,UserRoundPen} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
-import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
+import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
 import {api,useData} from '@/lib/client';
 import {money,type Row} from '@/lib/shared';
 import {contentTime,contentUrl} from '@/lib/content-presentation';
@@ -13,6 +13,7 @@ import {OrderFilter,OrderPager,OrderSearch,OrderViews} from './order-list-parts'
 import type {Ctx} from './workspace';
 import {toast} from 'sonner';
 import './supplier-hub.css';
+import {Av,billingPill,kindPill,openAddStockFor} from './supplier-v2';
 
 // Shared with the suppliers workspace view state (same keys and defaults).
 const listDefaults={search:'',q:'',status:'all',kind:'all',supplier:'all',page:1,open:'',tab:'requests',month:'',history:false,pay:'unpaid'};
@@ -104,32 +105,39 @@ export function SupplierHub({ctx,confirm}:{ctx:Ctx;confirm:(run:()=>void)=>void}
  const[v,setV]=useState(()=>adminViewState('suppliers:hub',hubDefaults)),set=(patch:Partial<typeof hubDefaults>)=>setV(o=>{const next={...o,...patch};saveAdminViewState('suppliers:hub',next);return next;});
  const params=new URLSearchParams({q:v.q,type:v.type,billing:v.billing,status:v.status==='attention'?'all':v.status,attention:v.status==='attention'?'1':'0',page:String(v.page)}),state=useData('admin/suppliers?'+params,ctx.revision),current=state.data?.request_key===params.toString(),rows:Row[]=current?state.data.suppliers:[],counts:Row=state.data?.counts||{};
  const go=(page:string,before?:()=>void)=>confirm(()=>{before?.();ctx.go(page);});
- const open=(s:Row)=>(e:React.MouseEvent)=>{if(!plain(e))return;e.preventDefault();go('admin-supplier/'+s.id);};
- return <div className="orders-match-screen om-finance om-content om-suppliers sh-hub" dir="rtl">
-  <div className="om-top-actions"><button type="button" className="om-btn is-primary" onClick={()=>go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button></div>
-  <div className="orders-reference-panel">
-   <OrderViews label="סוג ספק" value={v.type} onChange={type=>set({type,page:1})} views={[['all','כל הספקים',counts.all],['account','עם חשבון',counts.account],['manual','ידניים',counts.manual],['partial','להשלמה',counts.partial]]}/>
-   <div className="orders-reference-toolbar om-toolbar sh-toolbar"><OrderSearch label="חיפוש ספק, איש קשר, מייל או אתר" value={v.search} onChange={x=>set({search:x,q:x.trim(),page:1})}/><OrderFilter label="סוג אתר" icon={<Boxes size={20}/>} value={v.billing} onChange={billing=>set({billing,page:1})} options={{all:'כל סוגי האתרים',monthly:'התחשבנות חודשית',stock:'מלאי (חבילה מראש)'}}/><OrderFilter label="מצב" icon={<SlidersHorizontal size={20}/>} value={v.status} onChange={status=>set({status,page:1})} options={{all:'כל המצבים',attention:'דורש טיפול',...supplierReadiness}}/></div>
-   {state.error&&!current?<div className="orders-reference-empty"><h3>הרשימה לא נטענה</h3><p>{state.error}</p></div>:!current?<div className="orders-reference-loading" role="status">טוען ספקים…</div>:!rows.length?<div className="orders-reference-empty"><h3>לא נמצאו ספקים</h3><p>{v.q||v.type!=='all'||v.billing!=='all'||v.status!=='all'?'נסו לנקות את הסינון.':'הוסיפו ספק ראשון.'}</p></div>:<div className="sh-table">
-    <div className="sh-cols" aria-hidden="true"><span>ספק</span><span>סוג ספק</span><span>סוג אתר</span><span>אתרים</span><span>לטיפול</span><span/></div>
-    {rows.map(s=>{const todo=[s.requests&&['req',plural(s.requests,'בקשה ממתינה','בקשות ממתינות')],s.waiting_stock&&['empty',plural(s.waiting_stock,'כתבה מחכה למלאי','כתבות מחכות למלאי')],s.late&&['late',plural(s.late,'כתבה באיחור','כתבות באיחור')],s.readiness!=='ready'&&s.readiness!=='empty'&&['wait',supplierReadiness[s.readiness]]].filter(Boolean) as [string,string][];return <div key={s.id} className="sh-row">
-     <a className="sh-name" href={'/admin-supplier/'+s.id} onClick={open(s)}><Avatar name={s.name}/><span><b dir="auto">{s.name}</b><small>{s.contact||<bdi>{s.email}</bdi>}{s.contact&&s.email&&<> · <bdi>{s.email}</bdi></>}</small></span></a>
-     <div><small className="om-phone-label">סוג ספק</small><span className={'om-pill is-'+kindTone[s.kind]}>{supplierKinds[s.kind]}</span></div>
-     <div className="sh-billing"><small className="om-phone-label">סוג אתר</small>{s.billing==='none'?<span className="om-muted">אין אתרים</span>:<>{s.monthly_count>0&&<span className="sh-bill is-monthly">חודשי{s.billing==='mixed'&&<> · {s.monthly_count}</>}</span>}{s.stock&&<span className="sh-bill is-stock"><span>מלאי{s.billing==='mixed'&&<> · {s.stock.sites}</>}</span><StockFigure used={s.stock.used} total={s.stock.total} state={s.stock.state}/><small className={'is-'+s.stock.state}>נותרו {s.stock.left}{s.stock.state!=='ok'&&(s.stock.sites>1?(s.stock.state==='empty'?' · באחד האתרים המלאי אזל':' · אחד האתרים עומד להיגמר'):' · '+stockWord[s.stock.state])}</small></span>}</>}</div>
-     <div className="sh-sites"><small className="om-phone-label">אתרים</small><b>{s.site_count}</b><small>{s.paused_count?<><bdi>{s.active_count}</bdi> פעילים, <bdi>{s.paused_count}</bdi> מושהים</>:s.site_count?'כולם פעילים':''}</small></div>
-     <div className="sh-todo"><small className="om-phone-label">לטיפול</small>{todo.length?todo.map(([tone,label])=><span key={label} className={'sh-tag is-'+tone}>{label}</span>):<span className="sh-ok"><CheckCircle2 size={14} aria-hidden="true"/>הכול תקין</span>}</div>
-     <div className="sh-actions"><DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="om-btn om-btn-sm is-tinted" aria-label={'פעולות עבור '+s.name}>פעולות<MoreHorizontal size={16} aria-hidden="true"/></button></DropdownMenuTrigger><DropdownMenuContent className="om-menu" align="end">
-      <DropdownMenuItem onSelect={()=>go('admin-supplier/'+s.id)}><UserRoundPen size={15}/>דף הספק ופרטים</DropdownMenuItem>
-      <DropdownMenuItem onSelect={()=>go('admin-supplier/'+s.id,()=>saveAdminViewState('supplier-editor:'+s.id,{site:'',tab:'sites',all:false}))}><Globe size={15}/>האתרים של הספק</DropdownMenuItem>
-      <DropdownMenuItem onSelect={()=>go('admin-supplier-articles/'+s.id)}><FileText size={15}/>הכתבות של הספק</DropdownMenuItem>
-      <DropdownMenuItem onSelect={()=>go('admin-supplier-finance',()=>saveAdminViewState('suppliers:settlements',{...listDefaults,supplier:s.id}))}><CreditCard size={15}/>התחשבנות ותשלומים</DropdownMenuItem>
-      {s.requests>0&&<DropdownMenuItem onSelect={()=>go('admin-supplier/'+s.id,()=>saveAdminViewState('supplier-editor:'+s.id,{site:'',tab:'requests',all:false}))}><Bell size={15}/>בקשות הספק</DropdownMenuItem>}
-      {s.email&&<DropdownMenuItem onSelect={()=>{window.location.href='mailto:'+s.email;}}><Mail size={15}/>שליחת מייל</DropdownMenuItem>}
-     </DropdownMenuContent></DropdownMenu></div>
-    </div>;})}
-   </div>}
-   <OrderPager page={current?state.data.page:v.page} total={current?state.data.total:0} size={20} onChange={page=>set({page})}/>
-  </div>
+ const tab=(s:Row,t:string)=>()=>go('admin-supplier/'+s.id,()=>saveAdminViewState('supplier-editor:'+s.id,{site:'',tab:t,all:false}));
+ const open=(s:Row)=>(e:React.MouseEvent)=>{if(!plain(e))return;e.preventDefault();tab(s,'sites')();};
+ const cols={gridTemplateColumns:'minmax(260px,2fr) 150px 220px 120px 150px'};
+ return <div className="orders-match-screen om-finance om-content om-suppliers sv2 sv2-hub" dir="rtl">
+  <nav className="sv2-areas" aria-label="אזור הספקים"><a href="/admin-supplier-overview" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-supplier-overview');}}>סקירה</a><span aria-current="page">כל הספקים</span><a href="/admin-seller-requests" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-seller-requests');}}>בקשות וחשבוניות</a><a href="/admin-supplier-finance" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-supplier-finance');}}>התחשבנות כללית</a></nav>
+  <div className="sv2-ph"><div><h2>כל הספקים</h2><p>לחיצה על ספק פותחת את האתרים שלו. כל השאר בכפתור "פעולות".</p></div><button type="button" className="sv2-btn primary lg" onClick={()=>go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button></div>
+  <section className="sv2-card">
+   <div className="sv2-tools">
+    <div className="sv2-seg" role="tablist" aria-label="סוג ספק">{([['all','הכול',counts.all],['account','עם חשבון',counts.account],['manual','ידניים',counts.manual],['partial','להשלמה',counts.partial]] as [string,string,number][]).map(([k,l,n])=><button key={k} type="button" role="tab" aria-selected={v.type===k} className={v.type===k?'on':''} onClick={()=>set({type:k,page:1})}>{l}{n!=null&&<b>{n}</b>}</button>)}</div>
+    <label className="sv2-search"><Search size={17} aria-hidden="true"/><input value={v.search} placeholder="חיפוש ספק, מייל או אתר" aria-label="חיפוש ספק, מייל או אתר" onChange={e=>set({search:e.target.value,q:e.target.value.trim(),page:1})}/></label>
+    <div className="sv2-seg" role="tablist" aria-label="סוג תשלום">{([['all','כל סוגי התשלום'],['monthly','חודשי'],['stock','מלאי']] as [string,string][]).map(([k,l])=><button key={k} type="button" role="tab" aria-selected={v.billing===k} className={v.billing===k?'on':''} onClick={()=>set({billing:k,page:1})}>{l}</button>)}</div>
+   </div>
+   {state.error&&!current?<div className="sv2-empty"><h3>הרשימה לא נטענה</h3><p>{state.error}</p></div>:!current?<p className="sv2-loading" role="status">טוען ספקים…</p>:!rows.length?<div className="sv2-empty"><h3>לא נמצאו ספקים</h3><p>{v.q||v.type!=='all'||v.billing!=='all'?'נסו לנקות את הסינון.':'הוסיפו ספק ראשון.'}</p></div>:<>
+    <div className="sv2-th" style={cols} aria-hidden="true"><span>ספק</span><span>סוג ספק</span><span>סוג תשלום</span><span>אתרים</span><span/></div>
+    {rows.map(s=><div key={s.id} className="sv2-tr" style={cols}>
+     <a className="sv2-who" href={'/admin-supplier/'+s.id} onClick={open(s)}><Av name={s.name}/><span><b dir="auto">{s.name}</b><small>{s.contact?<>{s.contact} · </>:s.kind==='partial'?'חסרים שם ואיש קשר · ':''}<bdi>{s.email}</bdi></small></span></a>
+     <span><small className="sv2-ml">סוג ספק</small>{kindPill(s.kind)}</span>
+     <span><small className="sv2-ml">סוג תשלום</small>{billingPill(s.billing)}</span>
+     <span className="sv2-sites"><small className="sv2-ml">אתרים</small><b>{s.site_count}</b><small>{!s.site_count?'אין אתרים':s.paused_count?<><bdi>{s.active_count}</bdi> פעילים</>:s.site_count===1?'פעיל':'כולם פעילים'}</small></span>
+     <span className="sv2-actcell"><DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="sv2-act" aria-label={'פעולות עבור '+s.name}>פעולות<span className="chev" aria-hidden="true"><ChevronLeft size={15}/></span></button></DropdownMenuTrigger><DropdownMenuContent className="sv2-menu" align="end" sideOffset={8}>
+      <DropdownMenuItem className="is-first" onSelect={tab(s,'sites')}><Globe size={17}/>האתרים של הספק<small>{s.site_count}</small></DropdownMenuItem>
+      <DropdownMenuItem onSelect={()=>go('admin-supplier-articles/'+s.id)}><FileText size={17}/>כתבות שנשלחו אליו{s.open>0&&<small>{s.open} ממתינות</small>}</DropdownMenuItem>
+      <DropdownMenuItem onSelect={()=>go('admin-supplier-billing/'+s.id)}><CreditCard size={17}/>התחשבנות והזמנות</DropdownMenuItem>
+      <DropdownMenuItem onSelect={()=>openAddStockFor(ctx,s)}><Boxes size={17}/>הוספת מלאי</DropdownMenuItem>
+      <DropdownMenuSeparator/>
+      <DropdownMenuItem onSelect={tab(s,'details')}><UserRoundPen size={17}/>פרטים ואופן התנהלות</DropdownMenuItem>
+      {s.account_user_id&&<DropdownMenuItem onSelect={tab(s,'details')}><Bell size={17}/>בקשות הספק{s.requests>0&&<small className="is-hot">{s.requests}</small>}</DropdownMenuItem>}
+      {s.email&&<DropdownMenuItem onSelect={()=>{window.location.href='mailto:'+s.email;}}><Mail size={17}/>שליחת מייל לספק</DropdownMenuItem>}
+     </DropdownMenuContent></DropdownMenu></span>
+    </div>)}
+    <div className="sv2-foot"><span>מציג {(state.data.page-1)*20+1}–{Math.min(state.data.page*20,state.data.total)} מתוך {state.data.total}</span>{state.data.total>20?<span className="sv2-pager"><button type="button" disabled={state.data.page<=1} onClick={()=>set({page:state.data.page-1})} aria-label="עמוד קודם">‹</button><span>עמוד {state.data.page} מתוך {Math.ceil(state.data.total/20)}</span><button type="button" disabled={state.data.page*20>=state.data.total} onClick={()=>set({page:state.data.page+1})} aria-label="עמוד הבא">›</button></span>:<span/>}</div>
+   </>}
+  </section>
  </div>;
 }
 

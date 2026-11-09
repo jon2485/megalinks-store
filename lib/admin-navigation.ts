@@ -10,7 +10,7 @@ export const adminAreas = [
  {id:'admin-connections',label:'מערכת ודוחות',description:'הגדרות, דוחות, דיוור והיסטוריית פעולות.',pages:[['admin-connections','חיבורים והגדרות'],['admin-reports','דוחות'],['admin-notifications','דיוור'],['admin-jobs','יומן חיבורים'],['admin-audit','יומן פעילות']]},
 ] as const;
 export function adminArea(view:string){
- if(/^admin-supplier(-articles|-stock)?\//.test(view)||view.startsWith('admin-supplier-invoice/')||view.startsWith('admin-seller-request/'))return adminAreas[5];
+ if(/^admin-supplier(-articles|-stock|-billing|-order|-package)?\//.test(view)||view.startsWith('admin-supplier-invoice/')||view.startsWith('admin-seller-request/'))return adminAreas[5];
  if(view.startsWith('admin-order/'))return adminAreas[1];
  if(view.startsWith('admin-support/'))return adminAreas[7];
  if(['admin-approvals','admin-publication','admin-writing'].includes(view)||view.startsWith('admin-knowledge/'))return adminAreas[2];

@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Suppliers v2 mockups</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1d1d1f;--copy:#424245;--mute:#86868b;--line:#e8e8ed;--well:#f5f5f7;--blue:#0071e3;--blue2:#0066cc;--tint:rgba(0,113,227,.08);--green:#1a7f37;--gtint:#e9f7ee;--orange:#b25000;--otint:#fff4e5;--red:#d70015;--rtint:#ffebee;--violet:#6e3fd6;--vtint:#f2edff}
+*{box-sizing:border-box}
+html,body{overflow-x:hidden}body{margin:0;background:#eef3f9;font-family:Heebo,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased}
+.screen{display:none;min-height:100vh;padding:28px;background:radial-gradient(1200px 500px at 85% -10%,#dbeafe 0,transparent 60%),radial-gradient(900px 400px at 0% 0%,#e9e3ff 0,transparent 55%),#f4f7fb}
+body[data-s="1"] #s1,body[data-s="2"] #s2,body[data-s="3"] #s3,body[data-s="4"] #s4,body[data-s="5"] #s5,body[data-s="6"] #s6,body[data-s="7"] #s7{display:block}
+body:not([data-s]) .screen{display:block;border-bottom:8px solid #dfe6f0}
+.frame{max-width:1180px;margin:0 auto}
+.tag-mock{display:inline-block;margin-bottom:10px;padding:4px 10px;border-radius:999px;background:#fff;color:var(--mute);font-size:12px;font-weight:600;box-shadow:0 0 0 1px var(--line)}
+/* page head */
+.ph{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:18px}
+.ph h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.025em;line-height:1.1}
+.ph p{margin:6px 0 0;color:var(--mute);font-size:15px}
+.crumb{display:flex;align-items:center;gap:6px;margin-bottom:10px;font-size:13px;color:var(--mute)}
+.crumb a{color:var(--blue2);text-decoration:none;font-weight:600}
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:38px;padding:0 16px;border:0;border-radius:999px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;transition:transform .1s,box-shadow .2s,background-color .15s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--blue);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.25) inset,0 6px 16px rgba(0,113,227,.28)}
+.btn.tint{background:var(--tint);color:var(--blue2)}
+.btn.quiet{background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.btn.sm{height:32px;padding:0 12px;font-size:13px}
+.btn.lg{height:46px;padding:0 22px;font-size:15px}
+.btn svg{width:16px;height:16px;flex:none}
+.act{height:40px;padding:0 8px 0 18px;background:linear-gradient(180deg,#1a86f5,#0071e3);color:#fff;box-shadow:0 1px 0 rgba(255,255,255,.3) inset,0 8px 18px rgba(0,113,227,.3)}
+.act .chev{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.2)}
+/* glass card */
+.card{background:rgba(255,255,255,.9);backdrop-filter:blur(18px) saturate(170%);border-radius:24px;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 12px 32px rgba(20,40,80,.07)}
+.pad{padding:20px 22px}
+/* toolbar */
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;padding:4px;border-radius:999px;background:var(--well);gap:2px}
+.seg span{padding:7px 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--copy)}
+.seg span.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.seg b{margin-inline-start:6px;font-size:12px;color:var(--mute);font-weight:600}
+.search{flex:1;min-width:220px;display:flex;align-items:center;gap:8px;height:40px;padding:0 14px;border-radius:12px;background:var(--well);color:var(--mute);font-size:14px}
+/* table */
+.th,.tr{display:grid;align-items:center;gap:16px;padding:0 22px}
+.th{height:40px;font-size:12px;font-weight:600;color:var(--mute);letter-spacing:.01em}
+.tr{min-height:74px;border-top:1px solid #f0f1f4}
+.tr:hover{background:#fafcff}
+.who{display:flex;align-items:center;gap:13px;min-width:0}
+.av{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:18px;flex:none}
+.who b{display:block;font-size:15.5px;font-weight:700}
+.who small{display:block;font-size:13px;color:var(--mute)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.p-acc{background:var(--vtint);color:var(--violet)}.p-man{background:var(--well);color:var(--copy)}.p-part{background:var(--otint);color:var(--orange)}
+.p-month{background:var(--tint);color:var(--blue2)}.p-stock{background:#eefaf3;color:#127a3a}
+.p-open{background:var(--tint);color:var(--blue2)}.p-inv{background:var(--otint);color:var(--orange)}.p-paid{background:var(--gtint);color:var(--green)}.p-red{background:var(--rtint);color:var(--red)}
+.num{font-variant-numeric:tabular-nums;font-weight:700}
+.sites b{font-size:18px}.sites small{display:block;font-size:12.5px;color:var(--mute);font-weight:500}
+.stock{display:inline-flex;align-items:baseline;gap:3px;direction:ltr;font-variant-numeric:tabular-nums}
+.stock span{font-size:15px;font-weight:500}.stock i{font-style:normal;color:var(--mute)}.stock b{font-size:19px;font-weight:800;color:#000}
+/* menu */
+.menu{position:absolute;z-index:5;inset-inline-start:0;top:48px;width:260px;padding:6px;border-radius:16px;background:rgba(255,255,255,.96);backdrop-filter:blur(20px);box-shadow:0 0 0 1px rgba(0,0,0,.06),0 18px 40px rgba(20,40,80,.18)}
+.menu div{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;font-size:14px;font-weight:500}
+.menu div:first-child{background:var(--tint);color:var(--blue2);font-weight:700}
+.menu hr{border:0;border-top:1px solid var(--line);margin:4px 6px}
+.menu svg{width:17px;height:17px;color:var(--mute)}
+.menu div:first-child svg{color:var(--blue2)}
+.menu small{margin-inline-start:auto;color:var(--mute);font-size:12px}
+/* supplier hero */
+.hero{display:grid;grid-template-columns:auto 1fr auto;gap:18px;align-items:center;padding:22px 24px}
+.hero .av{width:64px;height:64px;border-radius:20px;font-size:26px}
+.hero h2{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em}
+.hero .meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:6px;font-size:13.5px;color:var(--copy)}
+.hero .meta a{color:var(--blue2);text-decoration:none}
+.kpis{display:flex;gap:10px}
+.kpi{min-width:118px;padding:12px 16px;border-radius:16px;background:var(--well)}
+.kpi span{display:block;font-size:12px;color:var(--mute);font-weight:600}
+.kpi b{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.kpi.hot{background:var(--otint)}.kpi.hot b{color:var(--orange)}
+/* big tab bar */
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+.tabx{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:18px;background:rgba(255,255,255,.75);box-shadow:0 0 0 1px rgba(0,0,0,.04);cursor:pointer}
+.tabx .ic{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;background:var(--well);color:var(--copy)}
+.tabx b{display:block;font-size:15px}.tabx small{display:block;font-size:12.5px;color:var(--mute)}
+.tabx.on{background:#fff;box-shadow:0 0 0 2px var(--blue),0 10px 24px rgba(0,113,227,.15)}
+.tabx.on .ic{background:var(--blue);color:#fff}
+.tabx .badge{margin-inline-start:auto;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--orange);color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+.ic svg{width:19px;height:19px}
+/* site row */
+.thumb{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#e8eefc,#f6f8ff);display:grid;place-items:center;font-weight:800;color:#5a6b8c;font-size:13px;flex:none;box-shadow:0 0 0 1px var(--line)}
+.state{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600}
+.state i{width:8px;height:8px;border-radius:50%}
+.on i{background:#34c759}.off i{background:#c7c7cc}
+.dots{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:var(--well)}
+/* group header */
+.grp{display:flex;align-items:center;gap:10px;padding:12px 22px;font-size:14px;font-weight:800}
+.grp.w{background:linear-gradient(90deg,#fff7ea,#fffaf3);color:#8a4b00}
+.grp .n{min-width:24px;height:24px;border-radius:999px;display:grid;place-items:center;background:var(--orange);color:#fff;font-size:12px}
+.grp.p .n{background:var(--green)}
+.late{color:var(--red)}.wait{color:var(--orange)}
+a.lk{color:var(--blue2);text-decoration:none;font-weight:600;font-size:13.5px}
+/* order detail */
+.ordhead{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;padding:24px}
+.ordhead h2{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em}
+.ordhead .sub{margin-top:6px;color:var(--mute);font-size:14px}
+.steps{display:flex;align-items:center;gap:0;margin-top:18px}
+.st{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:var(--mute)}
+.st .dot{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--well);color:var(--mute);font-size:12px}
+.st.done{color:var(--green)}.st.done .dot{background:var(--green);color:#fff}
+.st.now{color:var(--blue2)}.st.now .dot{background:var(--blue);color:#fff;box-shadow:0 0 0 5px rgba(0,113,227,.15)}
+.bar{width:56px;height:2px;margin:0 10px;background:var(--line)}.bar.done{background:var(--green)}
+.total{min-width:260px;padding:18px 20px;border-radius:20px;background:var(--well)}
+.total span{display:block;font-size:12.5px;color:var(--mute);font-weight:600}
+.total b{display:block;font-size:34px;font-weight:800;letter-spacing:-.02em;margin:2px 0 8px}
+.total .row{display:flex;justify-content:space-between;font-size:13.5px;color:var(--copy);padding:3px 0}
+.layout{display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start}
+.side .card{margin-bottom:12px}
+.side h3,.card h3{margin:0 0 12px;font-size:16px;font-weight:800}
+.facts{display:grid;gap:10px;margin:0}
+.facts div{display:flex;justify-content:space-between;gap:10px;font-size:14px}
+.facts dt{color:var(--mute)}.facts dd{margin:0;font-weight:600;text-align:left}
+.stack{display:grid;gap:8px}
+.stack .btn{width:100%;justify-content:flex-start}
+.stack .btn .grow{margin-inline-start:auto;font-size:12px;opacity:.7}
+.doc{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--well)}
+.doc .pdf{width:40px;height:48px;border-radius:8px;background:#fff;box-shadow:0 0 0 1px var(--line);display:grid;place-items:center;font-size:11px;font-weight:800;color:var(--red)}
+.doc b{display:block;font-size:14px}.doc small{font-size:12.5px;color:var(--mute)}
+.note{padding:12px 14px;border-radius:14px;font-size:13.5px;line-height:1.5}
+.note.o{background:#fff8ec;color:#6b3a00}
+.note.b{background:var(--tint);color:#00418a}
+.big{display:flex;align-items:baseline;gap:6px;direction:ltr;justify-content:flex-end}
+.big span{font-size:30px;font-weight:500}.big i{font-style:normal;font-size:30px;color:var(--mute)}.big b{font-size:44px;font-weight:800}
+.meter{display:grid;grid-template-columns:repeat(50,1fr);gap:3px;margin-top:12px;direction:ltr}
+.meter i{height:16px;border-radius:4px;background:#e3e8f0}.meter i.u{background:var(--blue)}.meter i.w{background:#9cc7f7}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--mute);margin-top:8px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:-1px}
+.slot{font-weight:800;font-variant-numeric:tabular-nums;font-size:15px}
+.foot{display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-top:1px solid #f0f1f4;font-size:13px;color:var(--mute)}
+svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+ <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></symbol>
+ <symbol id="i-chev" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+ <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+ <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+ <symbol id="i-card" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/></symbol>
+ <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+ <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+ <symbol id="i-box" viewBox="0 0 24 24"><path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="M3 8l9 5 9-5M12 13v8"/></symbol>
+ <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+ <symbol id="i-send" viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></symbol>
+ <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+ <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21h4"/></symbol>
+ <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1M14 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></symbol>
+ <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol>
+ <symbol id="i-back" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+ <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></symbol>
+ <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+ <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M10 14 20 4M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></symbol>
+</svg>
+
+<!-- 1. All suppliers -->
+<section class="screen" id="s1"><div class="frame">
+ <span class="tag-mock">הדמיה 1 · כל הספקים</span>
+ <div class="ph"><div><h1>כל הספקים</h1><p>לחיצה על ספק פותחת את האתרים שלו. כל השאר בכפתור "פעולות".</p></div><button class="btn primary lg"><svg><use href="#i-plus"/></svg>הוספת ספק</button></div>
+ <div class="card">
+  <div class="tools"><div class="seg"><span class="on">הכול<b>24</b></span><span>עם חשבון<b>6</b></span><span>ידניים<b>15</b></span><span>להשלמה<b>3</b></span></div><div class="search"><svg width="17" height="17"><use href="#i-search"/></svg>חיפוש ספק, מייל או אתר</div><div class="seg"><span class="on">כל סוגי התשלום</span><span>חודשי</span><span>מלאי</span></div></div>
+  <div class="th" style="grid-template-columns:minmax(260px,2fr) 150px 210px 120px 150px"><span>ספק</span><span>סוג ספק</span><span>סוג תשלום</span><span>אתרים</span><span></span></div>
+  <div class="tr" style="grid-template-columns:minmax(260px,2fr) 150px 210px 120px 150px"><div class="who"><span class="av" style="background:#0071e3">מ</span><span><b>מדיה פלוס בע״מ</b><small>דני לוי · media@plus.co.il</small></span></div><span><span class="pill p-man">ספק ידני</span></span><span><span class="pill p-month"><i></i>התחשבנות חודשית</span></span><span class="sites"><b class="num">12</b><small>11 פעילים</small></span><span><button class="btn act">פעולות<span class="chev"><svg width="15" height="15"><use href="#i-chev"/></svg></span></button></span></div>
+  <div class="tr" style="grid-template-columns:minmax(260px,2fr) 150px 210px 120px 150px;position:relative"><div class="who"><span class="av" style="background:#30a46c">ג</span><span><b>גלובל ניוז</b><small>רונית כהן · ronit@globalnews.co.il</small></span></div><span><span class="pill p-acc">ספק עם חשבון</span></span><span><span class="pill p-stock"><i></i>מלאי · חבילה מראש</span></span><span class="sites"><b class="num">3</b><small>כולם פעילים</small></span><span style="position:relative"><button class="btn act" style="box-shadow:0 0 0 4px rgba(0,113,227,.18),0 8px 18px rgba(0,113,227,.3)">פעולות<span class="chev"><svg width="15" height="15"><use href="#i-chev"/></svg></span></button>
+   <div class="menu"><div><svg><use href="#i-globe"/></svg>האתרים של הספק<small>3</small></div><div><svg><use href="#i-doc"/></svg>כתבות שנשלחו אליו<small>48</small></div><div><svg><use href="#i-card"/></svg>התחשבנות והזמנות</div><div><svg><use href="#i-box"/></svg>הוספת מלאי</div><hr><div><svg><use href="#i-user"/></svg>פרטים ואופן התנהלות</div><div><svg><use href="#i-bell"/></svg>בקשות הספק<small style="color:var(--orange);font-weight:700">2</small></div><div><svg><use href="#i-mail"/></svg>שליחת מייל לספק</div></div></span></div>
+  <div class="tr" style="grid-template-columns:minmax(260px,2fr) 150px 210px 120px 150px"><div class="who"><span class="av" style="background:#ff9f0a">s</span><span><b>sites@shop.co.il</b><small>חסרים שם ואיש קשר</small></span></div><span><span class="pill p-part">ספק להשלמה</span></span><span><span class="pill p-month"><i></i>התחשבנות חודשית</span></span><span class="sites"><b class="num">1</b><small>פעיל</small></span><span><button class="btn act">פעולות<span class="chev"><svg width="15" height="15"><use href="#i-chev"/></svg></span></button></span></div>
+  <div class="tr" style="grid-template-columns:minmax(260px,2fr) 150px 210px 120px 150px"><div class="who"><span class="av" style="background:#bf5af2">ת</span><span><b>תוכן ישראלי</b><small>אבי שמש · avi@tochen.co.il</small></span></div><span><span class="pill p-man">ספק ידני</span></span><span><span class="pill p-month"><i></i>חודשי</span> <span class="pill p-stock"><i></i>מלאי</span></span><span class="sites"><b class="num">7</b><small>6 פעילים</small></span><span><button class="btn act">פעולות<span class="chev"><svg width="15" height="15"><use href="#i-chev"/></svg></span></button></span></div>
+  <div class="foot"><span>מציג 1–20 מתוך 24</span><span>עמוד 1 מתוך 2 ‹ ›</span></div>
+ </div>
+</div></section>
+
+<!-- 2. Supplier page: sites first -->
+<section class="screen" id="s2"><div class="frame">
+ <span class="tag-mock">הדמיה 2 · לחיצה על ספק · נפתח על האתרים שלו</span>
+ <div class="crumb"><a>כל הספקים</a><svg width="14" height="14"><use href="#i-chev"/></svg><span>מדיה פלוס בע״מ</span></div>
+ <div class="card hero"><span class="av" style="background:#0071e3">מ</span><div><h2>מדיה פלוס בע״מ</h2><div class="meta"><span class="pill p-man">ספק ידני</span><span class="pill p-month"><i></i>התחשבנות חודשית</span><span>דני לוי</span><a>media@plus.co.il</a><a>050-1234567</a></div></div><div class="kpis"><div class="kpi"><span>אתרים</span><b>12</b></div><div class="kpi hot"><span>ממתינות לפרסום</span><b>3</b></div><div class="kpi"><span>לתשלום</span><b>₪6,400</b></div></div></div>
+ <div class="tabs"><div class="tabx on"><span class="ic"><svg><use href="#i-globe"/></svg></span><span><b>אתרים</b><small>12 אתרים · 11 פעילים</small></span></div><div class="tabx"><span class="ic"><svg><use href="#i-doc"/></svg></span><span><b>כתבות שנשלחו</b><small>החדשות למעלה</small></span><span class="badge">3</span></div><div class="tabx"><span class="ic"><svg><use href="#i-card"/></svg></span><span><b>התחשבנות</b><small>הזמנות לפי חודש</small></span></div><div class="tabx"><span class="ic"><svg><use href="#i-user"/></svg></span><span><b>פרטים</b><small>אנשי קשר ואופן התנהלות</small></span></div></div>
+ <div class="card">
+  <div class="tools"><div class="search"><svg width="17" height="17"><use href="#i-search"/></svg>חיפוש באתרי הספק</div><button class="btn tint"><svg><use href="#i-link"/></svg>צירוף אתרים</button><button class="btn primary"><svg><use href="#i-plus"/></svg>אתר חדש</button></div>
+  <div class="th" style="grid-template-columns:minmax(220px,2fr) 110px 110px 100px 120px 90px 140px"><span>אתר</span><span>מחיר באתר</span><span>עלות</span><span>רווח</span><span>כתבות החודש</span><span>מצב</span><span></span></div>
+  <div class="tr" style="grid-template-columns:minmax(220px,2fr) 110px 110px 100px 120px 90px 140px"><div class="who"><span class="thumb">ynet</span><span><b>Ynet</b><small>ynet.co.il</small></span></div><span class="num">₪1,450</span><span class="num">₪900</span><span class="num" style="color:var(--green)">₪550</span><span class="num">6</span><span class="state on"><i></i>פעיל</span><span style="display:flex;gap:6px"><button class="btn tint sm"><svg><use href="#i-edit"/></svg>עריכה</button><span class="dots"><svg width="16" height="16"><use href="#i-dots"/></svg></span></span></div>
+  <div class="tr" style="grid-template-columns:minmax(220px,2fr) 110px 110px 100px 120px 90px 140px"><div class="who"><span class="thumb">mako</span><span><b>מאקו</b><small>mako.co.il</small></span></div><span class="num">₪1,300</span><span class="num">₪800</span><span class="num" style="color:var(--green)">₪500</span><span class="num">5</span><span class="state on"><i></i>פעיל</span><span style="display:flex;gap:6px"><button class="btn tint sm"><svg><use href="#i-edit"/></svg>עריכה</button><span class="dots"><svg width="16" height="16"><use href="#i-dots"/></svg></span></span></div>
+  <div class="tr" style="grid-template-columns:minmax(220px,2fr) 110px 110px 100px 120px 90px 140px"><div class="who"><span class="thumb">walla</span><span><b>וואלה אוכל</b><small>food.walla.co.il</small></span></div><span class="num">₪700</span><span class="num">₪420</span><span class="num" style="color:var(--green)">₪280</span><span class="num">3</span><span class="state on"><i></i>פעיל</span><span style="display:flex;gap:6px"><button class="btn tint sm"><svg><use href="#i-edit"/></svg>עריכה</button><span class="dots"><svg width="16" height="16"><use href="#i-dots"/></svg></span></span></div>
+  <div class="tr" style="grid-template-columns:minmax(220px,2fr) 110px 110px 100px 120px 90px 140px"><div class="who"><span class="thumb">gl</span><span><b>גלובס</b><small>globes.co.il</small></span></div><span class="num">₪1,600</span><span class="num">₪1,000</span><span class="num" style="color:var(--green)">₪600</span><span class="num">2</span><span class="state off"><i></i>מושהה</span><span style="display:flex;gap:6px"><button class="btn tint sm"><svg><use href="#i-edit"/></svg>עריכה</button><span class="dots"><svg width="16" height="16"><use href="#i-dots"/></svg></span></span></div>
+  <div class="foot"><span>המחירים לפני מע״מ · בתפריט ⋯: עריכה מלאה, כתבות באתר, פתיחת האתר, הסרה מהספק</span><span>4 מתוך 12</span></div>
+ </div>
+</div></section>
+
+<!-- 3. Articles sent -->
+<section class="screen" id="s3"><div class="frame">
+ <span class="tag-mock">הדמיה 3 · כתבות שנשלחו לספק · ממתינות למעלה, ובכל קבוצה מהחדשה לישנה</span>
+ <div class="crumb"><a>כל הספקים</a><svg width="14" height="14"><use href="#i-chev"/></svg><a>מדיה פלוס בע״מ</a><svg width="14" height="14"><use href="#i-chev"/></svg><span>כתבות שנשלחו</span></div>
+ <div class="tabs"><div class="tabx"><span class="ic"><svg><use href="#i-globe"/></svg></span><span><b>אתרים</b><small>12 אתרים</small></span></div><div class="tabx on"><span class="ic"><svg><use href="#i-doc"/></svg></span><span><b>כתבות שנשלחו</b><small>48 כתבות</small></span><span class="badge">3</span></div><div class="tabx"><span class="ic"><svg><use href="#i-card"/></svg></span><span><b>התחשבנות</b><small>הזמנות לפי חודש</small></span></div><div class="tabx"><span class="ic"><svg><use href="#i-user"/></svg></span><span><b>פרטים</b><small>אנשי קשר</small></span></div></div>
+ <div class="card">
+  <div class="tools"><div class="seg"><span class="on">כל האתרים<b>48</b></span><span>Ynet<b>18</b></span><span>מאקו<b>14</b></span><span>וואלה אוכל<b>9</b></span><span>גלובס<b>7</b></span></div><div class="search"><svg width="17" height="17"><use href="#i-search"/></svg>חיפוש כתבה</div></div>
+  <div class="th" style="grid-template-columns:36px minmax(220px,2fr) 110px 100px minmax(170px,1.3fr) minmax(170px,1.3fr) 100px"><span>#</span><span>כתבה</span><span>אתר</span><span>נשלחה</span><span>ביטוי וקישור</span><span>הכתבה שפורסמה</span><span>פורסמה</span></div>
+  <div class="grp w"><span class="n">3</span>ממתינות לפרסום</div>
+  <div class="tr" style="grid-template-columns:36px minmax(220px,2fr) 110px 100px minmax(170px,1.3fr) minmax(170px,1.3fr) 100px;background:#fffdf8"><span class="num" style="color:var(--mute)">1</span><div><b>מדריך לבחירת מזרן לחדר שינה</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנה #1042</small></div><span>Ynet</span><span class="num">09.11.26</span><span><b style="font-size:13.5px">מזרן אורתופדי</b><br><a class="lk">sleep.co.il/mattress</a></span><span class="state wait"><i style="background:var(--orange)"></i>ממתינה · היום</span><span>—</span></div>
+  <div class="tr" style="grid-template-columns:36px minmax(220px,2fr) 110px 100px minmax(170px,1.3fr) minmax(170px,1.3fr) 100px;background:#fffdf8"><span class="num" style="color:var(--mute)">2</span><div><b>5 טיפים לגינה קטנה</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנה #1038</small></div><span>מאקו</span><span class="num">07.11.26</span><span><b style="font-size:13.5px">עציצים לבית</b><br><a class="lk">garden.co.il</a></span><span class="state wait"><i style="background:var(--orange)"></i>ממתינה · 2 ימים</span><span>—</span></div>
+  <div class="tr" style="grid-template-columns:36px minmax(220px,2fr) 110px 100px minmax(170px,1.3fr) minmax(170px,1.3fr) 100px;background:#fff8f8"><span class="num" style="color:var(--mute)">3</span><div><b>איך בוחרים רואה חשבון</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנה #1031</small></div><span>גלובס</span><span class="num">01.11.26</span><span><b style="font-size:13.5px">רואה חשבון</b><br><a class="lk">cpa.co.il</a></span><span class="state late"><i style="background:var(--red)"></i>באיחור · 8 ימים</span><span>—</span></div>
+  <div class="grp p" style="background:#f6fbf7;color:#145c2c"><span class="n">44</span>פורסמו</div>
+  <div class="tr" style="grid-template-columns:36px minmax(220px,2fr) 110px 100px minmax(170px,1.3fr) minmax(170px,1.3fr) 100px"><span class="num" style="color:var(--mute)">1</span><div><b>המדריך לחופשה בצפון</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנה #1029</small></div><span>Ynet</span><span class="num">03.11.26</span><span><b style="font-size:13.5px">צימרים בגליל</b><br><a class="lk">zimmer.co.il</a></span><a class="lk">ynet.co.il/travel/8812</a><span class="num">05.11.26</span></div>
+  <div class="tr" style="grid-template-columns:36px minmax(220px,2fr) 110px 100px minmax(170px,1.3fr) minmax(170px,1.3fr) 100px"><span class="num" style="color:var(--mute)">2</span><div><b>מתכון לפסטה ביתית</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנה #1024</small></div><span>וואלה אוכל</span><span class="num">29.10.26</span><span><b style="font-size:13.5px">פסטה טרייה</b><br><a class="lk">pasta.co.il</a></span><a class="lk">food.walla.co.il/7712</a><span class="num">31.10.26</span></div>
+  <div class="foot"><span>כתבות שעוד אצל הלקוח לא מוצגות כאן</span><span>‹ עמוד 1 מתוך 3 ›</span></div>
+ </div>
+</div></section>
+
+<!-- 4. Settlement: monthly orders -->
+<section class="screen" id="s4"><div class="frame">
+ <span class="tag-mock">הדמיה 4 · התחשבנות של ספק חודשי · כל חודש = הזמנה</span>
+ <div class="crumb"><a>כל הספקים</a><svg width="14" height="14"><use href="#i-chev"/></svg><a>מדיה פלוס בע״מ</a><svg width="14" height="14"><use href="#i-chev"/></svg><span>התחשבנות</span></div>
+ <div class="tabs"><div class="tabx"><span class="ic"><svg><use href="#i-globe"/></svg></span><span><b>אתרים</b><small>12 אתרים</small></span></div><div class="tabx"><span class="ic"><svg><use href="#i-doc"/></svg></span><span><b>כתבות שנשלחו</b><small>48 כתבות</small></span></div><div class="tabx on"><span class="ic"><svg><use href="#i-card"/></svg></span><span><b>התחשבנות</b><small>5 הזמנות</small></span></div><div class="tabx"><span class="ic"><svg><use href="#i-user"/></svg></span><span><b>פרטים</b><small>אנשי קשר</small></span></div></div>
+ <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px">
+  <div class="card pad"><span style="font-size:13px;color:var(--mute);font-weight:600">לתשלום עכשיו</span><div style="font-size:30px;font-weight:800;letter-spacing:-.02em">₪6,400</div><span style="font-size:13px;color:var(--copy)">אוקטובר · חשבונית התקבלה</span></div>
+  <div class="card pad"><span style="font-size:13px;color:var(--mute);font-weight:600">הזמנה פתוחה</span><div style="font-size:30px;font-weight:800;letter-spacing:-.02em">16 פרסומים</div><span style="font-size:13px;color:var(--copy)">נובמבר · נסגרת ב־30.11</span></div>
+  <div class="card pad"><span style="font-size:13px;color:var(--mute);font-weight:600">שולם השנה</span><div style="font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--green)">₪41,200</div><span style="font-size:13px;color:var(--copy)">9 הזמנות</span></div>
+ </div>
+ <div class="card">
+  <div class="th" style="grid-template-columns:minmax(170px,1.3fr) 130px 140px 200px minmax(150px,1fr) 170px"><span>חודש ההזמנה</span><span>פרסומים</span><span>סכום</span><span>סטטוס</span><span>חשבונית</span><span></span></div>
+  <div class="tr" style="grid-template-columns:minmax(170px,1.3fr) 130px 140px 200px minmax(150px,1fr) 170px"><div><b style="font-size:16px">נובמבר 2026</b><small style="display:block;color:var(--mute)">הזמנה SUP-1126</small></div><span><b class="num" style="font-size:18px">16</b> <small style="color:var(--mute)">פרסומים</small></span><span class="num">₪12,800</span><span><span class="pill p-open"><i></i>הזמנה פתוחה</span></span><span style="color:var(--mute);font-size:13.5px">תתבקש ב־01.12</span><span><button class="btn primary sm">פתיחת ההזמנה<svg><use href="#i-chev"/></svg></button></span></div>
+  <div class="tr" style="grid-template-columns:minmax(170px,1.3fr) 130px 140px 200px minmax(150px,1fr) 170px;background:#fffcf6"><div><b style="font-size:16px">אוקטובר 2026</b><small style="display:block;color:var(--mute)">הזמנה SUP-1026</small></div><span><b class="num" style="font-size:18px">8</b> <small style="color:var(--mute)">פרסומים</small></span><span class="num">₪6,400</span><span><span class="pill p-inv"><i></i>התקבלה חשבונית</span></span><span><a class="lk"><svg width="14" height="14" style="vertical-align:-2px"><use href="#i-doc"/></svg> INV-7788</a></span><span><button class="btn primary sm">פתיחת ההזמנה<svg><use href="#i-chev"/></svg></button></span></div>
+  <div class="tr" style="grid-template-columns:minmax(170px,1.3fr) 130px 140px 200px minmax(150px,1fr) 170px"><div><b style="font-size:16px">ספטמבר 2026</b><small style="display:block;color:var(--mute)">הזמנה SUP-0926</small></div><span><b class="num" style="font-size:18px">11</b> <small style="color:var(--mute)">פרסומים</small></span><span class="num">₪8,800</span><span><span class="pill p-paid"><i></i>שולמה · 08.10</span></span><span><a class="lk">INV-7701</a></span><span><button class="btn tint sm">פתיחת ההזמנה<svg><use href="#i-chev"/></svg></button></span></div>
+  <div class="tr" style="grid-template-columns:minmax(170px,1.3fr) 130px 140px 200px minmax(150px,1fr) 170px"><div><b style="font-size:16px">אוגוסט 2026</b><small style="display:block;color:var(--mute)">הזמנה SUP-0826</small></div><span><b class="num" style="font-size:18px">14</b> <small style="color:var(--mute)">פרסומים</small></span><span class="num">₪11,200</span><span><span class="pill p-paid"><i></i>שולמה · 07.09</span></span><span><a class="lk">INV-7650</a></span><span><button class="btn tint sm">פתיחת ההזמנה<svg><use href="#i-chev"/></svg></button></span></div>
+  <div class="foot"><span>כל חודש שבו פורסמו כתבות אצל הספק הוא הזמנה אחת · סכומים לפני מע״מ</span><span>‹ 1 מתוך 2 ›</span></div>
+ </div>
+</div></section>
+
+<!-- 5. Monthly order detail -->
+<section class="screen" id="s5"><div class="frame">
+ <span class="tag-mock">הדמיה 5 · פתיחת הזמנה חודשית · כמו הזמנה של לקוח</span>
+ <div class="crumb"><a>מדיה פלוס בע״מ</a><svg width="14" height="14"><use href="#i-chev"/></svg><a>התחשבנות</a><svg width="14" height="14"><use href="#i-chev"/></svg><span>אוקטובר 2026</span></div>
+ <div class="card ordhead"><div><span class="pill p-inv"><i></i>התקבלה חשבונית · ממתינה לתשלום</span><h2 style="margin-top:10px">הזמנה SUP-1026 · אוקטובר 2026</h2><div class="sub">מדיה פלוס בע״מ · 8 פרסומים ב־4 אתרים · נסגרה ב־01.11.26</div>
+  <div class="steps"><span class="st done"><span class="dot"><svg width="14" height="14"><use href="#i-check"/></svg></span>הזמנה נסגרה</span><span class="bar done"></span><span class="st done"><span class="dot"><svg width="14" height="14"><use href="#i-check"/></svg></span>בקשת חשבונית נשלחה</span><span class="bar done"></span><span class="st done"><span class="dot"><svg width="14" height="14"><use href="#i-check"/></svg></span>התקבלה חשבונית</span><span class="bar"></span><span class="st now"><span class="dot">4</span>תשלום</span></div></div>
+  <div class="total"><span>סה״כ לתשלום כולל מע״מ</span><b>₪7,552</b><div class="row"><span>8 פרסומים לפני מע״מ</span><span class="num">₪6,400</span></div><div class="row"><span>מע״מ לפי החשבונית</span><span class="num">₪1,152</span></div><button class="btn primary lg" style="width:100%;margin-top:10px"><svg><use href="#i-card"/></svg>דיווח תשלום לספק</button></div></div>
+ <div class="layout" style="margin-top:14px">
+  <div class="card">
+   <div class="tools"><b style="font-size:16px">הכתבות שפורסמו בהזמנה</b><span style="margin-inline-start:auto;font-size:13px;color:var(--mute)">מהחדשה לישנה</span></div>
+   <div class="th" style="grid-template-columns:30px minmax(200px,2fr) 110px 100px minmax(150px,1.3fr) 100px"><span>#</span><span>כתבה</span><span>אתר</span><span>פורסמה</span><span>קישור</span><span>עלות</span></div>
+   <div class="tr" style="grid-template-columns:30px minmax(200px,2fr) 110px 100px minmax(150px,1.3fr) 100px;min-height:62px"><span style="color:var(--mute)">1</span><div><b>חופשה בצפון עם ילדים</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנת לקוח #1012</small></div><span>Ynet</span><span class="num">28.10</span><a class="lk">ynet.co.il/travel/8701</a><span class="num">₪900</span></div>
+   <div class="tr" style="grid-template-columns:30px minmax(200px,2fr) 110px 100px minmax(150px,1.3fr) 100px;min-height:62px"><span style="color:var(--mute)">2</span><div><b>איך לבחור מזגן</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנת לקוח #1008</small></div><span>מאקו</span><span class="num">22.10</span><a class="lk">mako.co.il/home/4410</a><span class="num">₪800</span></div>
+   <div class="tr" style="grid-template-columns:30px minmax(200px,2fr) 110px 100px minmax(150px,1.3fr) 100px;min-height:62px"><span style="color:var(--mute)">3</span><div><b>מתכון לעוגת שוקולד</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנת לקוח #1003</small></div><span>וואלה אוכל</span><span class="num">15.10</span><a class="lk">food.walla.co.il/7520</a><span class="num">₪420</span></div>
+   <div class="foot"><span>ועוד 5 כתבות</span><a class="lk">הצגת הכול</a></div>
+  </div>
+  <div class="side">
+   <div class="card pad"><h3>החשבונית</h3><div class="doc"><span class="pdf">PDF</span><span><b>INV-7788</b><small>התקבלה במייל · 03.11.26</small></span></div><div class="stack" style="margin-top:10px"><button class="btn tint"><svg><use href="#i-ext"/></svg>צפייה בחשבונית</button><button class="btn quiet"><svg><use href="#i-send"/></svg>בקשת חשבונית מתוקנת</button></div></div>
+   <div class="card pad"><h3>טיפול מול הספק</h3><div class="stack"><button class="btn quiet"><svg><use href="#i-mail"/></svg>שליחת פירוט ההזמנה לספק</button><button class="btn quiet"><svg><use href="#i-dl"/></svg>הורדת פירוט PDF</button><button class="btn quiet"><svg><use href="#i-doc"/></svg>כל הכתבות של הספק</button><button class="btn quiet"><svg><use href="#i-user"/></svg>פרטי הספק ואופן התנהלות</button></div></div>
+   <div class="card pad"><h3>היסטוריה</h3><dl class="facts"><div><dt>01.11 · הזמנה נסגרה</dt><dd>מערכת</dd></div><div><dt>01.11 · בקשת חשבונית</dt><dd>מייל לספק</dd></div><div><dt>03.11 · חשבונית התקבלה</dt><dd>הספק</dd></div></dl></div>
+  </div>
+ </div>
+</div></section>
+
+<!-- 6. Settlement: stock packages -->
+<section class="screen" id="s6"><div class="frame">
+ <span class="tag-mock">הדמיה 6 · התחשבנות של ספק במלאי · כל חבילה = הזמנה</span>
+ <div class="crumb"><a>כל הספקים</a><svg width="14" height="14"><use href="#i-chev"/></svg><a>גלובל ניוז</a><svg width="14" height="14"><use href="#i-chev"/></svg><span>התחשבנות</span></div>
+ <div class="tabs"><div class="tabx"><span class="ic"><svg><use href="#i-globe"/></svg></span><span><b>אתרים</b><small>3 אתרים</small></span></div><div class="tabx"><span class="ic"><svg><use href="#i-doc"/></svg></span><span><b>כתבות שנשלחו</b><small>48 כתבות</small></span></div><div class="tabx on"><span class="ic"><svg><use href="#i-card"/></svg></span><span><b>התחשבנות</b><small>3 חבילות</small></span></div><div class="tabx"><span class="ic"><svg><use href="#i-user"/></svg></span><span><b>פרטים</b><small>אנשי קשר</small></span></div></div>
+ <div class="card pad" style="display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center;margin-bottom:14px"><div><span style="font-size:13px;color:var(--mute);font-weight:600">מלאי פעיל בכל האתרים</span><div style="display:flex;align-items:baseline;gap:14px;margin-top:2px"><span class="stock"><span style="font-size:26px">38</span><i style="font-size:26px">/</i><b style="font-size:36px">100</b></span><span style="font-size:14px;color:var(--copy)">נותרו <b>62</b> פרסומים · כל אתר עם חבילות משלו</span></div></div><button class="btn primary lg"><svg><use href="#i-box"/></svg>הוספת מלאי (הזמנה חדשה)</button></div>
+ <div class="card">
+  <div class="th" style="grid-template-columns:minmax(180px,1.3fr) 150px 150px 150px 170px 150px"><span>הזמנה</span><span>שומשו מתוך</span><span>נוספה למערכת</span><span>עלות החבילה</span><span>סטטוס</span><span></span></div>
+  <div class="tr" style="grid-template-columns:minmax(180px,1.3fr) 150px 150px 150px 170px 150px"><div><b style="font-size:16px">Ynet · חבילה 2 · 50 פרסומים</b><small style="display:block;color:var(--mute)">הזמנה STK-0312</small></div><span class="stock"><span>12</span><i>/</i><b>50</b></span><span class="num">01.11.26</span><span><b class="num">₪30,000</b><small style="display:block;color:var(--mute)">₪600 ליחידה</small></span><span><span class="pill p-open"><i></i>בשימוש · שולמה</span></span><span><button class="btn primary sm">פתיחת ההזמנה<svg><use href="#i-chev"/></svg></button></span></div>
+  <div class="tr" style="grid-template-columns:minmax(180px,1.3fr) 150px 150px 150px 170px 150px"><div><b style="font-size:16px">גלובס · חבילה 1 · 30 פרסומים</b><small style="display:block;color:var(--mute)">הזמנה STK-0207</small></div><span class="stock"><span>26</span><i>/</i><b style="color:var(--orange)">30</b></span><span class="num">10.07.26</span><span><b class="num">₪21,000</b><small style="display:block;color:var(--mute)">₪700 ליחידה</small></span><span><span class="pill p-inv"><i></i>עומדת להיגמר · 4</span></span><span><button class="btn primary sm">פתיחת ההזמנה<svg><use href="#i-chev"/></svg></button></span></div>
+  <div class="tr" style="grid-template-columns:minmax(180px,1.3fr) 150px 150px 150px 170px 150px"><div><b style="font-size:16px">Ynet · חבילה 1 · 20 פרסומים</b><small style="display:block;color:var(--mute)">הזמנה STK-0115</small></div><span class="stock"><span>20</span><i>/</i><b>20</b></span><span class="num">15.01.26</span><span><b class="num">₪11,000</b><small style="display:block;color:var(--mute)">₪550 ליחידה</small></span><span><span class="pill p-paid"><i></i>נוצלה במלואה</span></span><span><button class="btn tint sm">פתיחת ההזמנה<svg><use href="#i-chev"/></svg></button></span></div>
+  <div class="foot"><span>לכל אתר חבילות משלו, וחבילה חדשה מתחילה רק כשהקודמת באותו אתר נגמרת · אפשר רק להוסיף מלאי</span><span>3 הזמנות</span></div>
+ </div>
+</div></section>
+
+<!-- 7. Package detail -->
+<section class="screen" id="s7"><div class="frame">
+ <span class="tag-mock">הדמיה 7 · פתיחת הזמנת מלאי (חבילה)</span>
+ <div class="crumb"><a>גלובל ניוז</a><svg width="14" height="14"><use href="#i-chev"/></svg><a>התחשבנות</a><svg width="14" height="14"><use href="#i-chev"/></svg><span>Ynet · חבילה 2</span></div>
+ <div class="card ordhead"><div><span class="pill p-open"><i></i>בשימוש · שולמה</span><h2 style="margin-top:10px">Ynet · חבילה 2 · 50 פרסומים</h2><div class="sub">גלובל ניוז · התחילה אחרי שחבילה 1 נגמרה · נוספה למערכת ב־01.11.26 על ידי מנהל בדיקה</div>
+  <div class="meter"><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="u"></i><i class="w"></i><i class="w"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="legend"><span><i style="background:var(--blue)"></i>פורסמו · 10</span><span><i style="background:#9cc7f7"></i>אצל הספק · 2</span><span><i style="background:#e3e8f0"></i>פנויים · 38</span></div></div>
+  <div class="total"><span>שומשו מתוך החבילה</span><div class="big"><span>12</span><i>/</i><b>50</b></div><div class="row"><span>עלות החבילה לפני מע״מ</span><span class="num">₪30,000</span></div><div class="row"><span>מחיר ליחידה</span><span class="num">₪600</span></div><button class="btn primary lg" style="width:100%;margin-top:10px"><svg><use href="#i-box"/></svg>הוספת מלאי</button></div></div>
+ <div class="layout" style="margin-top:14px">
+  <div class="card">
+   <div class="tools"><b style="font-size:16px">הכתבות שתפסו מקום בחבילה</b><span style="margin-inline-start:auto;font-size:13px;color:var(--mute)">ממתינות למעלה</span></div>
+   <div class="th" style="grid-template-columns:70px minmax(200px,2fr) 100px 100px minmax(150px,1.2fr) 120px"><span>מקום</span><span>כתבה</span><span>אתר</span><span>נשלחה</span><span>קישור</span><span>מצב</span></div>
+   <div class="tr" style="grid-template-columns:70px minmax(200px,2fr) 100px 100px minmax(150px,1.2fr) 120px;min-height:62px;background:#fffdf8"><span class="slot">12/50</span><div><b>מדריך לבחירת מזרן</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנת לקוח #1042</small></div><span>Ynet</span><span class="num">09.11</span><span style="color:var(--mute)">—</span><span class="pill p-inv"><i></i>אצל הספק</span></div>
+   <div class="tr" style="grid-template-columns:70px minmax(200px,2fr) 100px 100px minmax(150px,1.2fr) 120px;min-height:62px;background:#fffdf8"><span class="slot">11/50</span><div><b>5 טיפים לגינה קטנה</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנת לקוח #1038</small></div><span>Ynet</span><span class="num">07.11</span><span style="color:var(--mute)">—</span><span class="pill p-inv"><i></i>אצל הספק</span></div>
+   <div class="tr" style="grid-template-columns:70px minmax(200px,2fr) 100px 100px minmax(150px,1.2fr) 120px;min-height:62px"><span class="slot">10/50</span><div><b>חופשה בצפון</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנת לקוח #1029</small></div><span>Ynet</span><span class="num">03.11</span><a class="lk">ynet.co.il/travel/8812</a><span class="pill p-paid"><i></i>פורסמה</span></div>
+   <div class="tr" style="grid-template-columns:70px minmax(200px,2fr) 100px 100px minmax(150px,1.2fr) 120px;min-height:62px"><span class="slot">9/50</span><div><b>איך לבחור מזגן</b><small style="display:block;color:var(--mute);font-size:12.5px">הזמנת לקוח #1024</small></div><span>Ynet</span><span class="num">02.11</span><a class="lk">ynet.co.il/home/4410</a><span class="pill p-paid"><i></i>פורסמה</span></div>
+   <div class="foot"><span>מקום 4 הוחזר לחבילה אחרי ביטול לפני פרסום, וקיבל כתבה חדשה</span><a class="lk">הצגת כל 12</a></div>
+  </div>
+  <div class="side">
+   <div class="card pad"><h3>התשלום על החבילה</h3><dl class="facts"><div><dt>מתי שולם</dt><dd>31.10.26</dd></div><div><dt>איך שולם</dt><dd>העברה בנקאית</dd></div><div><dt>סכום</dt><dd>₪30,000 + מע״מ</dd></div><div><dt>הערה</dt><dd>אסמכתה 445812</dd></div></dl><div class="note b" style="margin-top:12px">את הפרטים האלה מזינים בחלון "הוספת מלאי".</div></div>
+   <div class="card pad"><h3>בדיקות מול הספק</h3><div class="stack"><button class="btn quiet"><svg><use href="#i-bell"/></svg>תזכורת על 2 כתבות שממתינות</button><button class="btn quiet"><svg><use href="#i-mail"/></svg>שליחת מצב החבילה לספק</button><button class="btn quiet"><svg><use href="#i-dl"/></svg>הורדת פירוט החבילה</button><button class="btn quiet"><svg><use href="#i-doc"/></svg>כל הכתבות של הספק</button><button class="btn quiet"><svg><use href="#i-edit"/></svg>עריכת פרטי התשלום</button></div></div>
+  </div>
+ </div>
+</div></section>
+<script>const s=new URLSearchParams(location.search).get('s');if(s)document.body.dataset.s=s;</script>
+</body>
+</html>
