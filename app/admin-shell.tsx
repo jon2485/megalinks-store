@@ -13,7 +13,6 @@ import BrandLogo from './brand-logo';
 import {useAdminTheme} from './admin-theme';
 import Link from 'next/link';
 import {WorkspaceAccountControls} from './workspace-account-controls';
-import AdminLobby from './admin-lobby';
 import AdminUpdateFeed from './admin-update-feed';
 import {adminMenuSections,adminAreaLabel,useAdminAttention,AdminAttentionBadge} from './admin-attention';
 
@@ -46,7 +45,8 @@ export function AdminMobileDock({ctx,view}:{ctx:Ctx;view:string}){
  return <nav className="admin-mobile-dock" aria-label="קיצורי דרך לניהול" dir="rtl"><span className={'admin-dock-indicator'+(active<0?' is-hidden':'')} aria-hidden="true" style={{'--dock-index':Math.max(0,active)} as React.CSSProperties}/>{dock.map(([page,label,Icon],i)=><a key={page} href={'/'+page} aria-current={i===active?'page':undefined} onClick={e=>{if(e.button!==0||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();ctx.go(page);}}><span className="admin-dock-icon"><Icon size={22}/><AdminAttentionBadge pages={[page]} scope={page==='admin-orders'?'area:admin-orders':undefined} state={attention}/></span><span>{label}</span></a>)}</nav>;
 }
 export function AdminControlCenter({ctx}:{ctx:Ctx}){
- return <><AdminUpdateFeed ctx={ctx}/><details className="admin-extra-queues" id="admin-extra-queues"><summary><span>תורי טיפול נוספים</span><span>כספים, ספקים, ביטולים, מחירים וחיבורים</span><ChevronDown size={20}/></summary><AdminLobby ctx={ctx}/></details></>;
+ // The folding "more queues" desk was removed 10.11.2026: the lobby itself leads to every one of its destinations.
+ return <AdminUpdateFeed ctx={ctx}/>;
 }
 export function AdminSectionTabs({ctx,view}:{ctx:Ctx;view:string}){
  const area=adminArea(view),attention=useAdminAttention(ctx),[theme,toggleTheme]=useAdminTheme();
