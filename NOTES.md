@@ -952,3 +952,10 @@ Owner approved `docs/mockups/lobby-v1.html` and three decisions: the folding "ת
 - `tsc --noEmit` clean in the real checkout. `admin-lobby-panels` passes; `admin-full-design-preservation` and `admin-shell-ui` fail as before (see above).
 - Left running by the lobby session: a private server on port 5190 (private copy of the tree and database). Not part of the repository; can be stopped any time.
 - Nothing pushed. No "לפני העלאה" items.
+
+## 11.11.2026: Deployed to Railway Staging (owner: "תעלה הכל לריליי, לטסטים")
+
+- Pushed `design/orders-sky-20261108` to GitHub (new remote branch). Staging (`megalinks-web`, environment staging) was switched from `staging/all-20261108` @ `3a94ab9` to `design/orders-sky-20261108` @ `5c33940`, staged for Staging only and accepted. Production untouched, nothing merged into `main`.
+- Before: `3a94ab9` is an ancestor of `5c33940`, so nothing on Staging was dropped (67 new commits). No database, script or secret files changed since `3a94ab9`. Railway's build steps passed locally: `tsc --noEmit`, `cart-checkout-actions`, `checkout-phone-actions`, `cart-add-feedback`; `pnpm build` passed on the same code (shared local build).
+- Goes up: admin article screen v2, lobby v1 (with the "לובי" rename), order panel in the customer file (`9cfd184`), and the earlier work on this branch.
+- Not on Staging (older branches, not in this branch): `staging/editor-20261106` @ `766255b` (editor redesign), `design/orders-apex-20261102` @ `f65cc68`. They were not on Staging before either.
