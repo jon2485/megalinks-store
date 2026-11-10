@@ -567,7 +567,7 @@
 /* 10.11.2026 inner screens of content, users, catalog and tickets (article, blog editor, customer file,
    price list, ticket): v2 frame, the area strip on content pages, buttons in the same look with feedback.
    Page layout and controls are unchanged. */
-.sv2-inner-strip{margin:0 0 16px}
+.sv2-orders.sv2-inner-strip{margin:0 0 16px;padding-bottom:0}
 .workspace-page-content:has(.sv2-inner)>.megalinks-footer{display:none}
 .admin-workspace-body.sv2-body.sv2-inner [data-slot=button]{border-radius:999px!important;transition:background-color .15s,box-shadow .15s,color .15s,transform .1s!important}
 .admin-workspace-body.sv2-body.sv2-inner [data-slot=button]:active:not(:disabled){transform:scale(.97)}
