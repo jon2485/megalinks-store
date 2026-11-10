@@ -839,3 +839,17 @@ Owner decisions: a scheduled article shows in the approval list right away and m
 - Light pass only: blog editor, single ticket page.
 - Outside the four areas: single order page (`admin-order/<id>`), promotions, system and reports (connections, reports, mailing, logs), work center.
 - 10.11.2026 follow-up (owner): the article page header shows three bold tiles under the title: customer (opens the customer file), site (opens the site), and "שליחה לספק" with the date in plain words: "מיד אחרי האישור", the chosen day "DD.MM.YYYY, 7:00", "עוד לא נשלחה" after a failed delivery, or the date it was sent. Files: `app/admin-article-decision.tsx`, `app/admin-article-review.css`. Screenshots: `docs/mockups/article-admin-facts*.png`.
+
+## 10.11.2026: Customer file, personal price list, site editor, Sheets tab; cancelled articles
+
+Built from the approved mockup (owner asked why they were not built yet: they were mocked up and approved, building them was asked now).
+- **Customer file** (`app/customer-account-admin.tsx`, `app/customer-file-v2.css`): head card (back, name, email, phone, role, monthly account pill, "מחירון אישי" shortcut, "הזמנה עבור הלקוח"), four tiles (credit green, balance due orange), tabs with counts, calmer tab cards. Checked: shortcut, new order dialog, tabs, profile save (header updates right away), back. Note: the check saved the name field by mistake once; restored to "לקוח בדיקה חודשי".
+- **Personal price list** (`app/pricing-admin.tsx` `PersonalPricebook`, `app/pricebook-v2.css`): rows instead of catalog cards: site, DR, list price, tier price, personal price (blue), customer saving (green). `embedded` prop hides the back link inside the customer file. Checked: set a personal price (passes the existing "no cost price" confirmation), remove it ("חזרה למחיר לפי רמה"), search, paste list dialog, pager, fold. Test data back to 0 personal prices.
+- **Site editor** (`app/catalog-pricing-workspace.tsx`, `app/catalog-website-form.tsx`, `app/catalog-v2-editors.css`): head card, two columns, live profit line under prices (green / red / hidden without cost), sticky save bar. Supplier's own editor unchanged (styles scoped to `.admin-full-editor`). Checked: profit line, unsaved-changes guard on cancel, save hits the existing price-check confirmation.
+- **Sheets tab** (`app/catalog-sheets.tsx`): three ordered steps with the current one marked and a reason under unavailable buttons; refresh in the header. Checked: setup toggle, disabled reasons, refresh, history, sheet link.
+- **Cancelled articles** (`lib/admin-month-report.ts`, `app/admin-month-close.tsx`): owner decision, a cancelled article adds no cost, profit or loss. `purchaseCosts` skips cancelled articles and refunded publications (kept writing still counts); month close shows "אין רווח או הפסד" on cancelled rows. Unit checks in `tests/admin-order-report.mjs` pass; that file still stops later at an old fixture check (0 orders on its fixed date), not related.
+- Screenshots: `docs/mockups/inner-v2-*.png`, `docs/mockups/month-close-cancelled.png`. Nothing pushed.
+
+### Still not in the new design
+- Blog editor and single ticket page (light pass only).
+- Outside the four areas: single order page, promotions, system and reports, work center.
