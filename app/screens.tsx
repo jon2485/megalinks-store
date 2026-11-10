@@ -10,6 +10,7 @@ import {paymentMethodLabel,paymentStatusLabel,isAwaitingPayment,isBankPayment,is
 import {orderCancellation,orderCancellationLabel,effectiveOrderTotal} from '@/lib/order-finance';
 import BrandLogo from './brand-logo';
 import { supportStatus, supportStatusLabels, type SupportStatus } from '@/lib/support-status';
+import { AdminSupportList } from './admin-support-list';
 import BillingWorkspace, {InvoiceAttachment} from './billing-workspace';
 import {BankSettings} from './admin-finance';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
@@ -170,6 +171,7 @@ function SupportView({ ctx, admin }: { ctx: Ctx; admin: boolean }) {
     const rows = all.filter(r => [r.name, r.message, r.reply, r.order_number, r.id, r.user_name].some(v => String(v || '').toLocaleLowerCase('he').includes(query)));
     const edit = (row?: Row) => ctx.open({ kind: 'support-ticket', title: row ? 'פרטי הפנייה' : 'פתיחת פנייה', description: row ? 'פרטי הבקשה ותשובת הצוות.' : 'כתבו את נושא הפנייה ואת הפרטים שיעזרו לנו לטפל בה.', render: (close: () => void) => <SupportTicketForm ctx={ctx} row={row} admin={admin} close={close}/> });
     const remove = (row: Row) => ctx.open({ title: 'מחיקת פנייה', description: row.name, render: (close: () => void) => <Button variant="destructive" onClick={() => ctx.run(() => api('records/ticket/' + row.id, 'DELETE'), 'הפנייה נמחקה').then(close).catch(() => {})}>אישור מחיקה</Button> });
+    if (admin) return <AdminSupportList ctx={ctx} state={state} edit={edit} remove={remove}/>;
     return <section className="support-page azure-page-theme" dir="rtl">
         <header className="support-hero" data-design="support-blue-wave-v77" style={{background:'radial-gradient(ellipse at 105% 85%, #049cb5 0%, #08789e 24%, transparent 63%), linear-gradient(110deg, #071d4d 0%, #073575 62%, #075884 100%)'}}><div className="support-hero-inner"><h1>איך אפשר לעזור?</h1><p>{admin ? 'פניות הלקוחות והטיפול בכל בקשה, במקום אחד.' : 'שלחו פנייה לצוות ונרכז כאן את כל ההתכתבות.'}</p><div className="support-hero-actions"><Button className="support-primary" onClick={() => edit()}><Plus size={19}/>פתיחת פנייה</Button></div></div><svg className="support-wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12 Q720 110 1440 12 V70 H0Z" fill="#f5f7fb"/></svg></header>
         <div className="support-content"><div className="support-list-panel"><div className="support-list-heading"><h2><span className="support-heading-icon"><Headset size={25}/></span>{admin ? 'פניות הלקוחות' : 'הפניות שלי'}</h2>{!state.loading && !state.error && <span>{all.length} פניות</span>}</div><div className="support-search"><Search size={21} aria-hidden="true"/><Input aria-label="חיפוש פניות" placeholder="חיפוש לפי נושא או מספר פנייה" value={search} onChange={e => setSearch(e.target.value)}/>{search && <Button variant="ghost" size="icon-sm" aria-label="ניקוי חיפוש" onClick={() => setSearch('')}><X size={17}/></Button>}</div>

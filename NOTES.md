@@ -773,3 +773,12 @@ Done in this step (list pages):
 - Files: `app/orders-area-head.tsx`, `app/admin-content-workspace.tsx`, `app/knowledge-admin.tsx`, `app/users-admin.tsx`, `app/catalog-pricing-workspace.tsx`, `app/admin-shell.tsx`, `app/workspace.tsx`, `app/orders-v2.css` (block "content, users and catalog pages").
 - Checked locally on the real build, desktop 1440 and phone 390: export, chips, search, filters, row open and close, area tabs, catalog tabs and summary cards, add site and edit site (open the editor), new and edit instruction dialogs, edit tier dialog, blog edit link, customer file and personal price list links. No console errors, no horizontal overflow. tsc and build pass.
 - Not yet: service tickets, and the inner screens (article, customer file, price list, blog editor, site editor, ticket). Nothing pushed.
+
+## 10.11.2026: Service tickets (admin) in the approved orders look
+
+- New `app/admin-support-list.tsx`: the admin list of tickets with the shared head, search, status chips (all, waiting for reply, answered, resolved) with counts, card rows with a side stripe (red waiting for our reply, blue answered, green resolved), row opens in place with the full message and the team reply.
+- Same actions as before, same dialogs: open ticket, view and handle, delete (trash icon in the row and a button in the open ticket). `SupportView` hands its own `edit` and `remove` to the new list, so the dialogs and API calls are unchanged.
+- The customer's own support page (`/support`) is untouched: the new list renders only when `admin` is true.
+- Also fixed for all v2 list pages: the list panel can no longer grow wider than the phone screen when a chip row is long (it pushed the users page sideways).
+- Files: `app/admin-support-list.tsx` (new), `app/screens.tsx` (one line + import), `app/admin-shell.tsx`, `app/workspace.tsx`, `app/orders-v2.css` (block "service tickets").
+- Checked locally on the real build, desktop 1440 and phone 390: open ticket, view and handle, delete (dialog opens, not confirmed), chips, search, row open and close. No horizontal overflow on any of the 14 v2 list pages. tsc and build pass. Nothing pushed.
