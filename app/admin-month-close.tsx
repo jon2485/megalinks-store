@@ -38,7 +38,7 @@ export default function AdminMonthClose({ctx}:{ctx:Ctx}){
    <OrderViews label="איזה הזמנות להציג" value={view} onChange={v=>{setView(v);setPage(1);setOpen('');}} views={[['all','כל ההזמנות',allOrders.length],['missing','חסרה עלות',missingCost]]}/>
    {!orders.length?<div className="orders-reference-empty"><h3>אין הזמנות בתצוגה הזו</h3><p>לא נמצאו הזמנות ששולמו ואושרו בטווח שנבחר.</p></div>:<>
     <div className="om-head" aria-hidden="true"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>עלות ורווח</span><span>הכנסה נטו</span><span/><span/></div>
-    <div className="om-list" aria-label="הזמנות בתקופה">{orders.slice((shownPage-1)*20,shownPage*20).map(o=>{const isOpen=open===o.id,pay=orderPaymentState(o);return <OrderRecord key={o.id} id={o.id} tone={pay.tone} label={orderNumber(o)} open={isOpen} onToggle={()=>setOpen(isOpen?'':o.id)} panel={<OrderPanel ctx={ctx} order={o} manage={()=>ctx.go('admin-order/'+o.id)} section={()=><OrderProfit o={o}/>}/>}>
+    <div className="om-list" aria-label="הזמנות בתקופה">{orders.slice((shownPage-1)*20,shownPage*20).map(o=>{const isOpen=open===o.id,pay=orderPaymentState(o);return <OrderRecord key={o.id} id={o.id} tone={pay.tone} label={orderNumber(o)} open={isOpen} onToggle={()=>setOpen(isOpen?'':o.id)} panel={<OrderPanel ctx={ctx} order={o} profit manage={()=>ctx.go('admin-order/'+o.id)} section={()=><OrderProfit o={o}/>}/>}>
       <div className="om-id"><strong><bdi>{orderNumber(o)}</bdi></strong><time>{orderDate(o.paid_date||o.paid_at)}</time></div>
       <div className="om-who"><b>{o.user_name||o.name}</b><span>{o.on_account||o.payment==='monthly'||o.billing_month?<span className="is-monthly">הזמנה חודשית</span>:'הזמנה רגילה'}</span></div>
       <OrderSites order={o}/>

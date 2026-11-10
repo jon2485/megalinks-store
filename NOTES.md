@@ -730,3 +730,11 @@ Owner asked: bring month close, payment reports, invoices and receipts, balance 
 - Checked locally on the real build, desktop 1440 and phone 390, all five pages: export, bank details dialog, chips, search, period buttons, date range, row open and close, row action (manage order link, attach document, month close dialog, details), phone filter sheet. No console errors, no horizontal overflow, tsc and build pass. Screenshots: `docs/mockups/orders-inner-*.png`.
 - Not checked: real phone, tablet width 761-1100, pager (not enough local rows on most pages), submitting the dialogs (only opened).
 - Next: owner review on http://127.0.0.1:5180/admin-month-close and the other tabs. Nothing pushed.
+
+## 10.11.2026: Payment and profit rows on all inner pages
+
+Owner asked to align the inner pages with the orders screen. The open order on month close, payment reports, invoices and monthly accounts now shows the same compact rows (before VAT, VAT, total, expenses, profit in green) instead of the old totals block. This replaces the round 4 scope note: `OrderPanel` now gets `profit` from every screen that uses it. Top-ups have no order panel, so nothing changed there.
+
+- Files: `app/admin-month-close.tsx`, `app/payment-reports.tsx`, `app/admin-finance.tsx`, `app/monthly-admin.tsx` (one prop each).
+- Checked locally on the real build, desktop 1440 and phone 390, on the four pages. tsc and build pass. Screenshot: `docs/mockups/orders-inner-money-rows.png`.
+- Not checked: a loss state (no such fictional order locally). Nothing pushed.
