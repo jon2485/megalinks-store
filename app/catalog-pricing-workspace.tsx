@@ -2,8 +2,9 @@
 import React,{useEffect,useState,useRef} from 'react';
 import {saveAdminViewState,takeAdminViewState} from '@/lib/admin-view-state';
 import {OrdersAreaHead} from './orders-area-head';
+import './catalog-v2-editors.css';
 import {useAdminDraftGuard} from './admin-draft-guard';
-import {Globe,Users,FileText,RefreshCw,Plus,Search,Download,ChevronLeft,ExternalLink,Pencil,SlidersHorizontal,ShieldCheck,Crown,Building2,Save,Trash2,AlertTriangle} from 'lucide-react';
+import {ArrowRight,Globe,Users,FileText,RefreshCw,Plus,Search,Download,ChevronLeft,ExternalLink,Pencil,SlidersHorizontal,ShieldCheck,Crown,Building2,Save,Trash2,AlertTriangle} from 'lucide-react';
 import {OrderFilter,OrderPager,OrderRecord,OrderSearch} from './order-list-parts';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -34,7 +35,12 @@ export default function CatalogPricingWorkspace({ctx,initialTab='sites',customer
  const exportFile=()=>exportSpreadsheet('megalinks-catalog.xlsx',[['מזהה אתר (קיים בלבד)',...columns.map(c=>c.label)],...rows.filter(w=>matches.some(m=>m.id===w.id)).map(w=>[w.id,...columns.map(c=>c.kind==='flag'?w[c.key]?'כן':'לא':w[c.key]??'')])],'קטלוג אתרים');
  if(!allowed)return <p role="alert">נדרשת הרשאת מנהל.</p>;
  if(editing!==undefined)return <section dir="rtl" className="catalog-pricing-workspace admin-full-editor">
-  <header className="page-heading"><div><h1 ref={editorHeading} tabIndex={-1}>{editing?'עריכת אתר — '+editing.name:'הוספת אתר'}</h1><p>פרטי האתר, מחירים, לוגו, ספק והנחיות לפרסום.</p></div><div className="heading-actions"><Button variant="outline" disabled={websiteBusy} onClick={()=>draft.confirm(closeWebsite)}>חזרה לאתרים</Button></div></header>
+  <header className="se-head">
+   <div className="se-head-top"><button type="button" className="se-back" disabled={websiteBusy} onClick={()=>draft.confirm(closeWebsite)}><ArrowRight size={18} aria-hidden="true"/>חזרה לאתרים</button>{editing&&<span className={'se-pill'+(editing.active?' is-green':'')}>{editing.active?'מוצג בקטלוג':'מוסתר מהקטלוג'}</span>}</div>
+   <div className="se-head-main">{editing?.logo_url?<img src={editing.logo_url} alt="" className="se-logo"/>:<span className="se-logo" aria-hidden="true"><Globe size={22}/></span>}
+    <div className="se-head-copy"><small>{editing?'עריכת אתר':'הוספת אתר לקטלוג'}</small><h1 ref={editorHeading} tabIndex={-1}>{editing?editing.name:'אתר חדש'}</h1>{editing?.url&&<p className="se-chips"><a href={editing.url} target="_blank" rel="noopener noreferrer"><ExternalLink size={13} aria-hidden="true"/><bdi>{String(editing.url).replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</bdi></a></p>}</div>
+   </div>
+  </header>
   <CatalogWebsiteForm key={editing?.id||'new'} expandedDetails ctx={ctx} site={editing} onBusyChange={setWebsiteBusy} onDirtyChange={dirty=>draft.mark('website',dirty)} close={()=>draft.confirm(closeWebsite)}/>
  </section>;
 

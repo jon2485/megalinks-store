@@ -1,0 +1,83 @@
+/* 10.11.2026 Catalog site editor (admin) and the Sheets tab in the approved v2 look.
+   The editor styles are scoped to the admin wrapper (.admin-full-editor); the supplier's site editor is unchanged. */
+.admin-full-editor{display:grid;gap:16px;color:#1d1d1f}
+.admin-full-editor .se-head{display:grid;gap:12px;padding:22px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05)}
+.admin-full-editor .se-head-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.admin-full-editor .se-back{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:#424245;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background-color .15s,transform .1s}
+.admin-full-editor .se-back:hover{background:#f5f5f7;color:#1d1d1f}
+.admin-full-editor .se-back:active{transform:scale(.97)}
+.admin-full-editor .se-back:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+.admin-full-editor .se-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;background:#f2f2f7;color:#6e6e73;font-size:12.5px;font-weight:700}
+.admin-full-editor .se-pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.admin-full-editor .se-pill.is-green{background:#e9f7ee;color:#1a7f3c}
+.admin-full-editor .se-head-main{display:flex;align-items:center;gap:16px}
+.admin-full-editor .se-logo{width:56px;height:56px;flex:none;display:grid;place-items:center;padding:6px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.08);object-fit:contain;color:#86868b}
+.admin-full-editor .se-head-copy{display:grid;gap:4px;min-width:0}
+.admin-full-editor .se-head-copy small{font-size:13px;color:#86868b}
+.admin-full-editor .se-head-copy h1{margin:0;font-size:28px;font-weight:800;letter-spacing:-.02em;line-height:1.15;color:#1d1d1f;outline:0}
+.admin-full-editor .se-chips{margin:0}
+.admin-full-editor .se-chips a{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 12px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.08);color:#0066cc;font-size:13px;text-decoration:none}
+.admin-full-editor .se-chips a:hover{box-shadow:0 0 0 1px rgba(0,113,227,.4)}
+
+/* form: details on the right, prices, logo and supplier on the left; save bar stays at the bottom */
+.admin-full-editor .catalog-website-form>fieldset{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:16px;align-items:start;margin:0;padding:0;border:0;min-width:0}
+.admin-full-editor .catalog-website-form>fieldset>section,.admin-full-editor .catalog-website-form>fieldset>details{margin:0!important;padding:20px 22px!important;border:0!important;border-radius:20px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05)!important}
+.admin-full-editor .catalog-website-form>fieldset>section:nth-of-type(1){grid-column:1;grid-row:1}
+.admin-full-editor .catalog-website-form>fieldset>details{grid-column:1;grid-row:2/span 3}
+.admin-full-editor .catalog-website-form>fieldset>section:nth-of-type(2){grid-column:2;grid-row:1}
+.admin-full-editor .catalog-website-form>fieldset>section:nth-of-type(3){grid-column:2;grid-row:2}
+.admin-full-editor .catalog-website-form>fieldset>section.supplier-procurement{grid-column:2;grid-row:3}
+.admin-full-editor .catalog-website-form>fieldset>.catalog-visibility{grid-column:2;grid-row:4;margin:0;padding:16px 18px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+html body .admin-full-editor .catalog-website-form h3,html body .admin-full-editor .catalog-website-form details>summary{margin:0 0 12px!important;padding:0!important;border:0!important;background:none!important;font-size:16px;font-weight:800;color:#1d1d1f}
+.admin-full-editor .catalog-website-form details>summary{cursor:pointer}
+.admin-full-editor .catalog-website-form .catalog-form-grid{gap:12px 14px}
+.admin-full-editor .catalog-website-form>fieldset>section:nth-of-type(2) .catalog-form-grid,.admin-full-editor .catalog-website-form>fieldset>section.supplier-procurement .catalog-form-grid{grid-template-columns:1fr 1fr}
+.admin-full-editor .catalog-website-form label{font-size:13px;font-weight:600;color:#424245}
+html body .admin-full-editor.admin-full-editor .catalog-website-form input:not([type=checkbox]):not([type=file]),html body .admin-full-editor.admin-full-editor .catalog-website-form select,html body .admin-full-editor.admin-full-editor .catalog-website-form textarea{border:0!important;border-radius:12px!important;background:#f5f5f7!important;box-shadow:none!important;font-size:15px;color:#1d1d1f;transition:box-shadow .15s,background-color .15s}
+.admin-full-editor .catalog-website-form input:not([type=checkbox]):not([type=file]),.admin-full-editor .catalog-website-form select{height:44px}
+html body .admin-full-editor.admin-full-editor .catalog-website-form input:focus-visible,html body .admin-full-editor.admin-full-editor .catalog-website-form select:focus-visible,html body .admin-full-editor.admin-full-editor .catalog-website-form textarea:focus-visible{background:#fff!important;box-shadow:0 0 0 2px #0071e3!important;outline:0}
+.admin-full-editor .catalog-website-form .catalog-info{font-size:12.5px;color:#86868b}
+.admin-full-editor .catalog-profit{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 0;padding:10px 14px;border-radius:12px;background:#e9f7ee;color:#1a7f3c;font-weight:700}
+.admin-full-editor .catalog-profit bdi{font-size:17px;font-weight:800;font-family:Arial,sans-serif;font-variant-numeric:tabular-nums}
+.admin-full-editor .catalog-profit.is-loss{background:#ffebee;color:#c4001a}
+.admin-full-editor .catalog-logo-upload{border-radius:16px!important;background:#f5f5f7!important;border:1.5px dashed #d2d2d7!important;transition:border-color .15s,background-color .15s}
+.admin-full-editor .catalog-logo-upload:hover{border-color:#0071e3!important;background:#f0f7ff!important}
+.admin-full-editor .catalog-form-footer{position:sticky;bottom:12px;z-index:5;display:flex;flex-direction:row-reverse;justify-content:flex-start;gap:8px;margin-top:16px;padding:12px 16px;border-radius:18px;background:rgba(255,255,255,.88);backdrop-filter:blur(18px) saturate(180%);box-shadow:0 0 0 1px rgba(0,0,0,.06),0 8px 24px rgba(20,40,80,.1)}
+.admin-full-editor .catalog-form-footer .catalog-primary{background:#0071e3!important;background-image:none!important;color:#fff!important;border:0!important;box-shadow:none!important}
+.admin-full-editor .catalog-form-footer .catalog-primary:hover{background:#0077ed!important}
+.admin-full-editor .catalog-error{margin:12px 0 0;padding:10px 14px;border-radius:12px;background:#ffebee;color:#c4001a}
+
+/* Sheets tab: three steps in order */
+.catalog-sheets-panel .sheets-flow [data-slot=button][data-variant=default]{background:#0071e3!important;background-image:none!important;color:#fff!important;border:0!important;box-shadow:none!important;border-radius:999px!important}
+.catalog-sheets-panel .sheets-flow [data-slot=button][data-variant=default]:hover{background:#0077ed!important}
+.catalog-sheets-panel .sheets-flow [data-slot=button]{border-radius:999px!important;transition:transform .1s,background-color .15s}
+.catalog-sheets-panel .sheets-flow [data-slot=button]:active:not(:disabled){transform:scale(.97)}
+.catalog-sheets-panel .catalog-table-card{border:0!important;border-radius:20px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05)!important}
+.catalog-sheets-panel .catalog-sheets-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.catalog-sheets-panel .catalog-sheets-heading svg{color:#1a7f3c}
+.catalog-sheets-panel .catalog-sync-summary>div{border-radius:16px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.06)!important;border:0!important}
+.catalog-sheets-panel .sheets-flow{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.catalog-sheets-panel .sheets-flow>li{display:grid;gap:8px;align-content:start;padding:16px;border-radius:16px;background:#f5f5f7}
+.catalog-sheets-panel .sheets-flow>li[data-state=current]{background:#f0f7ff;box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.4)}
+.catalog-sheets-panel .sheets-flow>li[data-state=done]{background:#f3faf5}
+.catalog-sheets-panel .sheets-flow header{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;color:#1d1d1f}
+.catalog-sheets-panel .sheets-flow header i{width:26px;height:26px;flex:none;display:grid;place-items:center;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 1.5px #d2d2d7;font-style:normal;font-size:13px;color:#424245}
+.catalog-sheets-panel .sheets-flow [data-state=current] header i{background:#0071e3;color:#fff;box-shadow:none}
+.catalog-sheets-panel .sheets-flow [data-state=done] header i{background:#34c759;color:#fff;box-shadow:none}
+.catalog-sheets-panel .sheets-flow p{margin:0;font-size:13px;color:#424245;line-height:1.55}
+.catalog-sheets-panel .sheets-flow-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.catalog-sheets-panel .sheets-link{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.1);color:#1d1d1f;font-size:14px;font-weight:600;text-decoration:none;transition:box-shadow .15s,color .15s,transform .1s}
+.catalog-sheets-panel .sheets-link:hover{color:#0066cc;box-shadow:0 0 0 1px rgba(0,113,227,.45)}
+.catalog-sheets-panel .sheets-link:active{transform:scale(.97)}
+.catalog-sheets-panel .sheets-why{font-size:12px;color:#86868b}
+
+@media(max-width:900px){
+ .admin-full-editor .catalog-website-form>fieldset{grid-template-columns:minmax(0,1fr)}
+ .admin-full-editor .catalog-website-form>fieldset>*{grid-column:1!important;grid-row:auto!important}
+ .admin-full-editor .catalog-website-form>fieldset>section:nth-of-type(2){order:-1}
+ .admin-full-editor .se-head{padding:16px}
+ .admin-full-editor .se-head-copy h1{font-size:22px}
+ .admin-full-editor .catalog-form-footer>*{flex:1}
+ .catalog-sheets-panel .sheets-flow{grid-template-columns:minmax(0,1fr)}
+}
+@media(prefers-reduced-motion:reduce){.admin-full-editor .se-back,.catalog-sheets-panel .sheets-link{transition:none}}
