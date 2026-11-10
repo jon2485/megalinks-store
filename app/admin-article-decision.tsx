@@ -26,6 +26,17 @@ const future=(day?:string)=>!!day&&publicationDay(day)>israelDay();
 const dayText=(day?:string)=>day?displayPublicationDay(day):'';
 const ago=(stamp?:string)=>{const t=Date.parse(stamp||'');if(!Number.isFinite(t))return '';const d=Math.floor((Date.now()-t)/864e5);return d<=0?'היום':d===1?'אתמול':'לפני '+d+' ימים';};
 const site=(s:AdminStudio)=>s.w?.name||s.a.website_name||'האתר';
+const fullDate=(stamp?:string)=>{const t=Date.parse(stamp||'');return Number.isFinite(t)?new Date(t).toLocaleDateString('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}):'';};
+/** When the supplier gets (or got) the article, in plain words. */
+function sendDate(a:Row,stage:AdminStage):[string,string]{
+ const day=dayText(a.scheduled),sent=fullDate(a.supplier_sent_at||a.dispatch_attempted_at);
+ if(stage==='cancelled')return ['—','הכתבה בוטלה'];
+ if(stage==='published'||stage==='supplier')return [sent||'נשלחה',stage==='published'?'פורסמה'+(a.published_at?' ב־'+fullDate(a.published_at):''):'נשלחה לספק'];
+ if(stage==='waiting_day')return [day+', 7:00','אושרה, תישלח אוטומטית'];
+ if(stage==='delivery')return ['עוד לא נשלחה','השליחה לספק לא הושלמה'];
+ if(day)return [day+', 7:00',future(a.scheduled)?'התאריך שהלקוח בחר, אחרי האישור':'התאריך שבחר עבר, תישלח מיד אחרי האישור'];
+ return ['מיד אחרי האישור','הלקוח לא בחר תאריך'];
+}
 
 export function adminStage(a:Row,professionalPending:boolean):AdminStage{
  if(a.status==='cancelled'||a.publication_refunded)return 'cancelled';
@@ -66,8 +77,13 @@ export function AdminArticleHeader({s,stage}:{s:AdminStudio;stage:AdminStage}){
    </div>
   </div>
   <div className="ar-title">{w?.logo_url?<img src={w.logo_url} alt="" className="ar-logo"/>:<span className="ar-logo" aria-hidden="true"><FileText size={20}/></span>}
-   <div><h1>{a.title||'כתבה ללא כותרת'}</h1><p>{w?.url?<a href={w.url} target="_blank" rel="noreferrer">{site(s)}<ExternalLink size={12} aria-hidden="true"/></a>:site(s)}{o?.number&&<> · הזמנה <bdi>{String(o.number).replace(/^#/,'')}</bdi></>}{(a.user_name||o?.name)&&<> · {a.user_name||o?.name}</>}</p></div>
+   <div><h1>{a.title||'כתבה ללא כותרת'}</h1>{o?.number&&<p>הזמנה <bdi>{String(o.number).replace(/^#/,'')}</bdi></p>}</div>
   </div>
+  <dl className="ar-facts">
+   <div><dt>לקוח</dt><dd>{a.user_id?<button type="button" onClick={()=>ctx.go('admin-customer-account/'+a.user_id)}>{a.user_name||o?.name||'לקוח'}</button>:(a.user_name||o?.name||'לקוח')}</dd>{(a.user_email||o?.email)&&<small><bdi>{a.user_email||o?.email}</bdi></small>}</div>
+   <div><dt>האתר</dt><dd>{w?.url?<a href={w.url} target="_blank" rel="noreferrer">{site(s)}<ExternalLink size={14} aria-hidden="true"/></a>:site(s)}</dd>{w?.url&&<small><bdi>{w.url.replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</bdi></small>}</div>
+   <div className="is-date"><dt>שליחה לספק</dt><dd><bdi>{sendDate(a,stage)[0]}</bdi></dd><small>{sendDate(a,stage)[1]}</small></div>
+  </dl>
   <p className="ar-now">{now[stage]}</p>
   {at>=0&&<ol className="ar-who" aria-label="אצל מי הכתבה">{steps.map(([who,what],i)=><li key={who} data-state={i<at||at===4?'done':i===at?'current':'todo'}><span className="ar-dot" aria-hidden="true">{i<at||at===4?<Check size={16}/>:i+1}</span><b>{who}</b><small>{what}</small>{i===at&&at===1&&<em>אתה כאן</em>}</li>)}</ol>}
  </header>;

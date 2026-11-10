@@ -838,3 +838,4 @@ Owner decisions: a scheduled article shows in the approval list right away and m
 - From the approved mockup, not built yet: customer file, personal price list, site editor, Sheets tab (now frame and buttons only).
 - Light pass only: blog editor, single ticket page.
 - Outside the four areas: single order page (`admin-order/<id>`), promotions, system and reports (connections, reports, mailing, logs), work center.
+- 10.11.2026 follow-up (owner): the article page header shows three bold tiles under the title: customer (opens the customer file), site (opens the site), and "שליחה לספק" with the date in plain words: "מיד אחרי האישור", the chosen day "DD.MM.YYYY, 7:00", "עוד לא נשלחה" after a failed delivery, or the date it was sent. Files: `app/admin-article-decision.tsx`, `app/admin-article-review.css`. Screenshots: `docs/mockups/article-admin-facts*.png`.
