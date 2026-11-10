@@ -745,3 +745,10 @@ Owner saw cost and profit twice on month close: in the list row ("cost and profi
 - Other inner pages (payment reports, invoices, monthly) have no cost/profit in the row, so they keep the expenses and profit rows inside the open order.
 - Files: `app/admin-order-panel.tsx` (optional `paymentOnly` prop), `app/admin-month-close.tsx`.
 - Checked locally, desktop 1440 and phone 390. tsc and build pass. Screenshot: `docs/mockups/orders-inner-month-close-no-dup.png`. Nothing pushed.
+
+## 10.11.2026: Correction, full money rows everywhere, no bottom note
+
+Owner clarified: every orders-area screen shows the full money rows (before VAT, VAT, total, expenses, profit), and the small note "item prices before VAT" under them goes away. The previous entry (month close without cost and profit) is undone: `paymentOnly` removed.
+- The note is hidden wherever the money rows show (all five screens pass `profit`). The column header "before VAT" above the item prices stays.
+- Files: `app/admin-order-panel.tsx`, `app/admin-month-close.tsx`. Screenshot `docs/mockups/orders-inner-money-rows.png` updated, `orders-inner-month-close-no-dup.png` removed.
+- Checked locally on the orders screen, month close, payment reports, invoices and monthly accounts (desktop 1440). tsc and build pass. Nothing pushed.
