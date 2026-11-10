@@ -515,7 +515,10 @@ if (p[0] === 'cart') {
             if(data.secondary_image_id)owns(u,await one('SELECT * FROM files WHERE id=?',data.secondary_image_id));
             if (data.image_id)
                 owns(u, await one('SELECT * FROM files WHERE id=?', data.image_id));
-            const result = await stmt('UPDATE articles SET title=?,content=?,data=?,status=?,version=version+1,updated=? WHERE id=? AND version=?', title, content, JSON.stringify(data), ['approved','admin_review'].includes(a.status)?(writingSubmitted(a)?'writing':'draft'):a.status, now(), a.id, a.version).run();
+            // An admin fixing an article during review keeps it waiting for approval.
+            // Any other edit of a submitted or approved article sends it back for editing.
+            const keepReview = u.role==='admin' && a.status==='admin_review';
+            const result = await stmt('UPDATE articles SET title=?,content=?,data=?,status=?,version=version+1,updated=? WHERE id=? AND version=?', title, content, JSON.stringify(data), keepReview?a.status:['approved','admin_review'].includes(a.status)?(writingSubmitted(a)?'writing':'draft'):a.status, now(), a.id, a.version).run();
             assert(result.meta.changes, 'הכתבה עודכנה במקביל', 409);
             await audit(u, a.id, 'תוכן נשמר', { version: a.version + 1 });
             return response({ version: a.version + 1 });

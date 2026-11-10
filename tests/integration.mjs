@@ -67,6 +67,7 @@ await req('articles/'+article.id,'PATCH',{title:'גרסה ישנה',content:'י�
 await req('articles/'+article.id+'/status','POST',{status:'admin_review',version:2},'customer');
 article=(await req('articles/'+article.id,'GET',undefined,'customer')).article;
 check(!article.content.includes('<script>'),'uploaded HTML is escaped');
+await req('articles/'+article.id,'PATCH',{title:article.title,content:article.content+'\n\nתיקון קטן של המנהל.',version:article.version},'owner');article=(await req('articles/'+article.id,'GET',undefined,'customer')).article;check(article.status==='admin_review','admin edit during review keeps the article waiting for approval');
 await req('articles/'+article.id+'/status','POST',{status:'approved',version:article.version},'owner');
 article=(await req('articles/'+article.id,'GET',undefined,'customer')).article;await req('articles/'+article.id,'PATCH',{title:'כותרת מעודכנת',content:'עדכון תוכן אחרי אישור',version:article.version},'customer');article=(await req('articles/'+article.id,'GET',undefined,'customer')).article;check(article.status==='draft','editing approved article revokes approval');await req('articles/'+article.id+'/status','POST',{status:'admin_review',version:article.version},'customer');article=(await req('articles/'+article.id,'GET',undefined,'customer')).article;await req('articles/'+article.id+'/status','POST',{status:'approved',version:article.version},'owner');
 const supplier=await req('articles/'+article.id+'/supplier-link','POST',{},'owner');check(supplier.url.includes('/supplier/'),'supplier token created');
