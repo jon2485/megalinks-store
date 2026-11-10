@@ -131,3 +131,12 @@
  .sv2-orders .om-panel,.sv2-orders .om-panel .om-items article,.sv2-orders .sv2-olist,.sv2-orders .sv2-empty,.sv2-orders .sv2-error,.sv2-menu,.sv2-orders .sv2-clear,.sv2-orders .sv2-sumbtn.is-loading .big,.ofx-skel-row i{animation:none!important}
  .sv2-orders .ofx-chev{transition:none}.sv2-orders .sv2-orow:hover .ofx-chev{transform:none}
 }
+
+/* ---- 10.11.2026: sites cell shows one full name and a count; area tabs share the width by content ---- */
+.sv2-orders .sv2-favs{gap:6px;flex-wrap:nowrap}
+.sv2-orders .sv2-site1{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;font-weight:600;color:#1d1d1f}
+.sv2-orders .sv2-more{flex:none;margin:0;padding:2px 7px;border-radius:999px;background:#f0f1f4;color:#424245;font-size:12px;font-weight:700;white-space:nowrap}
+.sv2 nav.sv2-areas{display:flex!important;flex-wrap:nowrap}
+.sv2 nav.sv2-areas>a,.sv2 nav.sv2-areas>span{flex:1 1 auto}
+.sv2 nav.sv2-areas .admin-v172-attention{flex:none}
+@media(max-width:900px){.sv2 nav.sv2-areas>a,.sv2 nav.sv2-areas>span{flex:0 0 auto}}

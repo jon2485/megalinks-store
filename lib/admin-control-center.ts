@@ -60,10 +60,12 @@ export async function adminControlCenter(){
  for(const [page,ids] of Object.entries(adminPageQueues))memberships.set(page,new Set(ids));
  for(const area of adminAreas){const ids=new Set(area.id==='admin'?queues.map(q=>q.id):area.pages.flatMap(([page])=>adminPageQueues[page]||[]));memberships.set('area:'+area.id,ids);}
  memberships.set('admin',new Set(queues.map(q=>q.id)));
+ // The orders screen counts its own rows; the rest of that area is every other page's queues.
+ {const own=new Set(adminPageQueues['admin-orders']),area=adminAreas.find(a=>a.id==='admin-orders');memberships.set('rest:admin-orders',new Set((area?.pages||[]).flatMap(([page])=>adminPageQueues[page]||[]).filter(id=>!own.has(id))));}
  const scopes=[...memberships].flatMap(([scope,ids])=>[...ids].map(id=>`('${scope}','${id}')`));
  const counts=await all(`WITH ${adminUnionCtes('tasks',taskSources)}, scopes(scope,queue_id) AS (VALUES ${scopes.join(',')}) SELECT scopes.scope,COUNT(DISTINCT tasks.task_key) AS count FROM scopes JOIN tasks USING(queue_id) GROUP BY scopes.scope`);
  const attention_counts=Object.fromEntries([...memberships].map(([scope])=>[scope,Number(counts.find(row=>row.scope===scope)?.count||0)]));
  // Badges for these two screens count the rows those screens show.
- attention_counts.admin=attention_counts['area:admin']=await adminOpenActionCount();attention_counts['admin-orders']=await adminOrdersAttentionCount();
+ attention_counts.admin=attention_counts['area:admin']=await adminOpenActionCount();attention_counts['admin-orders']=await adminOrdersAttentionCount();attention_counts['area:admin-orders']=attention_counts['admin-orders']+Number(attention_counts['rest:admin-orders']||0);
  return {queues,attention_counts,cancellations,content,support:support.map(parse),prices:prices.map(parse),reports:reports.map(parse),email_ready:emailReady,updated:now()};
 }

@@ -14,7 +14,7 @@ const viewSql:Record<string,string>={attention:`(cancel_pending_count>0 OR ${rep
 export function orderFilter(query:URLSearchParams){
  const bucket=query.get('bucket')||'monthly';assert(Object.hasOwn(adminOrderFilterLabels,bucket),'סוג הזמנות לא תקין');
  const month=query.get('month')||'',q=(query.get('q')||'').trim().slice(0,120);assert(!month||month==='unknown'||/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'חודש לא תקין');
- const field=bucket==='closed'?'confirmed_date':bucket==='all'||bucket==='cancel'||bucket==='active'?"CASE WHEN COALESCE(json_extract(data,'$.demo'),0)=0 AND (paid=1 OR payment_settled=1) THEN confirmed_date ELSE created END":'created',broad=bucket==='all'||((bucket==='active'||bucket==='attention')&&!!q),clauses=broad?[]:viewSql[bucket]?[viewSql[bucket]]:['bucket=?'],args:(string|number)[]=broad||viewSql[bucket]?[]:[bucket];
+ const field=bucket==='closed'?'confirmed_date':bucket==='cancel'?"CASE WHEN COALESCE(json_extract(data,'$.demo'),0)=0 AND (paid=1 OR payment_settled=1) THEN confirmed_date ELSE created END":'created',broad=bucket==='all'||((bucket==='active'||bucket==='attention')&&!!q),clauses=broad?[]:viewSql[bucket]?[viewSql[bucket]]:['bucket=?'],args:(string|number)[]=broad||viewSql[bucket]?[]:[bucket];
  if(month==='unknown')clauses.push(`(${field} IS NULL OR ${field}='')`);
  else if(month){const to=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0,12)).toISOString().slice(0,10);const range=dateRangeClause(field,month+'-01',to);clauses.push(range.sql);args.push(...range.args);}
  if(q){clauses.push("(number||' '||COALESCE(user_name,'')||' '||COALESCE(user_email,'')||' '||COALESCE(site_search,'')) LIKE ? ESCAPE '\\'");args.push('%'+q.replace(/[\\%_]/g,x=>'\\'+x)+'%');}

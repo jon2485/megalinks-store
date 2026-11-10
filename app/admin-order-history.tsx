@@ -71,7 +71,7 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
  const statusFilter=saved.bucket==='closed'||saved.bucket==='archive'?saved.bucket:'any';
  const cardHint:Record<string,string>={all:'כולל ממתינות, סגורות ומבוטלות',attention:'דיווחי תשלום ובקשות ביטול',awaiting:'טרם שולמו',monthly:'חיוב בסוף החודש'};
  const searching=draft.trim()!==saved.q||(!current&&!state.error&&!!saved.q);
- const cols={gridTemplateColumns:'92px minmax(170px,1.4fr) 100px 140px 130px 115px 185px',gap:12};
+ const cols={gridTemplateColumns:'92px minmax(160px,1.3fr) minmax(110px,.9fr) 140px 130px 115px 185px',gap:12};
  return <section className="orders-match-screen sv2 sv2-orders" dir="rtl" aria-labelledby="orders-list-title">
   <OrdersAreaHead ctx={ctx} current="admin-orders" title="הזמנות" sub="כל ההזמנות והכספים במקום אחד. כל כרטיס הוא גם סינון." action={<button type="button" className={'sv2-btn quiet'+(exported?' fx-done':'')} onClick={exportOrders} disabled={exporting||!current} aria-busy={exporting||undefined}>{exporting?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:exported?<Check size={16} aria-hidden="true"/>:<Download size={16} aria-hidden="true"/>}<span aria-live="polite">{exporting?'מייצא…':exported?'הקובץ ירד':'ייצוא נתונים'}</span></button>}/>
   <div className="sv2-sum is-4" role="group" aria-label="איזה הזמנות להציג">{chips.map(([key,label])=>{const n=Number(counts[key]||0),on=saved.bucket===key||(key==='all'&&['active','closed','archive'].includes(saved.bucket));return <button type="button" key={key} className={'sv2-card sv2-pad sv2-sumbtn'+(on?' on':'')+(key==='attention'&&n>0?' hot':'')+(on&&!current&&!state.error?' is-loading':'')} aria-pressed={on} onClick={()=>commit({bucket:key})}><span className="lbl">{label}</span><b className="big">{state.data?n:'—'}</b><span className="hint">{cardHint[key]}</span></button>;})}</div>
@@ -91,7 +91,7 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
       <div className="sv2-tr sv2-orow" style={cols} onClick={toggle}>
        <div className="sv2-ord"><b><bdi>#{String(o.number).replace(/^#/,'')}</bdi></b><time dateTime={o.created}>{orderDate(o.created)}</time></div>
        <div className="sv2-who"><span className="sv2-av sm" style={{background:avatarTone(name)}} aria-hidden="true">{name.trim().slice(0,1)||'ל'}</span><span><b>{name||'לקוח'}</b><small>{monthly?'הזמנה חודשית':'הזמנה רגילה'}{sites.length?' · '+(sites.length===1?'אתר אחד':sites.length+' אתרים'):''}</small></span></div>
-       <div className="sv2-favs"><small className="sv2-ml">אתרים</small>{sites.slice(0,3).map((x:Row,i:number)=><span key={i} className="sv2-fav" title={siteLabel(x)} dir="ltr">{siteShort(siteLabel(x))}</span>)}{sites.length>3&&<span className="sv2-more"><bdi dir="ltr">+{sites.length-3}</bdi></span>}{!sites.length&&<span className="sv2-muted">אין פריטים</span>}</div>
+       <div className="sv2-favs"><small className="sv2-ml">אתרים</small>{sites.length>0&&<bdi className="sv2-site1" dir="ltr" title={sites.map((x:Row)=>siteLabel(x)).join(', ')}>{siteName(siteLabel(sites[0]))}</bdi>}{sites.length>1&&<span className="sv2-more" title={sites.slice(1).map((x:Row)=>siteLabel(x)).join(', ')}><bdi dir="ltr">+{sites.length-1}</bdi></span>}{!sites.length&&<span className="sv2-muted">אין פריטים</span>}</div>
        <div><small className="sv2-ml">תשלום</small><span className={'sv2-pill '+payPill(pay.tone)}><i/>{pay.label}</span>{pay.note&&<small className="sv2-sub">{pay.note}</small>}</div>
        <div className="sv2-pubcell"><small className="sv2-ml">פרסום</small><Publication o={o}/></div>
        <span className="sv2-num lg"><small className="sv2-ml">סכום</small><bdi>{orderMoney(o.amounts.total)}</bdi></span>
@@ -119,4 +119,4 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
 }
 const payPill=(tone:string)=>tone==='ok'?'p-paid':tone==='report'?'p-open':tone==='month'?'p-month':tone==='cancelled'?'p-man':'p-inv';
 const avatarTone=(s:string)=>['#0071e3','#30a46c','#bf5af2','#ff9f0a','#ff375f','#0a84ff','#5e5ce6'][[...String(s||'')].reduce((n,c)=>n+c.charCodeAt(0),0)%7];
-const siteShort=(s:string)=>String(s||'').replace(/^https?:\/\//,'').replace(/^www\./,'').split('.')[0].slice(0,5);
+const siteName=(s:string)=>String(s||'').replace(/^https?:\/\//,'').replace(/^www\./,'');

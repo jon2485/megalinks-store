@@ -676,3 +676,16 @@
 - An active month or status filter is tinted blue; the current page is light blue (not dark).
 - Export: spinner, then "file downloaded" with a check for 2 seconds. Page change scrolls back to the top of the list.
 - Reduced motion turns the animations off. Not checked on a real phone.
+
+## 10.11.2026: Orders screen fixes 1-5 (after the visual review)
+
+Decided and why:
+- Sidebar and phone dock badge of the orders area now equal the sum of what its tabs show (orders screen rows + the other pages' tasks). Before: 24 in the sidebar against 1 on the tab.
+- Sites cell shows the first site name in full and "+N" for the rest (the tiny chips were unreadable and "+46" wrapped).
+- Area tabs take width by content (flex), so the last badge is not clipped; on the phone they scroll sideways. The rule is shared with the supplier area tabs.
+- "All orders" and "active" are ordered and month-filtered by the order date the row shows (was payment-confirmation date for paid orders).
+
+Files: lib/admin-control-center.ts, lib/admin-order-data.ts, app/admin-order-history.tsx, app/admin-shell.tsx, app/orders-v2.css.
+
+Not finished: items 6-16 of the review are a mockup only (docs/mockups/orders-v3.html), waiting for approval.
+Checked locally by screenshots (desktop and phone). Not pushed.
