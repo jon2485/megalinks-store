@@ -27,36 +27,47 @@ try{
  async function purchase(editorial=false){await req('cart','POST',{website_id:site,topic:'איך בוחרים אתר לפרסום',editorial,editorial_words:400},'client',201);const q=await req('quote','POST',{},'client');const o=await req('checkout','POST',{payment:'invoice',phone:'0500000000',invoice_name:'Client',accepted:true,idempotency:randomUUID(),pricing_token:q.pricing_token,expected_total:q.total},'client',201);await req('orders/'+o.id+'/paid','POST',{reference:'test-'+o.id,confirmed:true,payment_date:dates.israelDay()});return (await req('orders/'+o.id,'GET',undefined,'client')).articles.at(-1);}
  const load=async a=>(await req('articles/'+a.id,'GET',undefined,'client')).article;
  const content='<p>מדריך מקצועי לבחירת אתר לפרסום. <a href="https://example.com/">לפרטים נוספים</a></p>';
- async function submit(a){await req('articles/'+a.id,'PATCH',{version:a.version,title:'מדריך לפרסום',content,content_format:'html',scheduled:future},'client');a=await load(a);const result=await req('articles/'+a.id+'/status','POST',{version:a.version,status:'admin_review'},'client');assert.equal(result.status,'scheduled');return load(a);}
+ const jobs=async id=>(await db.prepare('SELECT COUNT(*) n FROM jobs WHERE id=?').bind('publication:'+id).first()).n;
+ const stageOf=async id=>(await req('admin/content?view=articles&q=')).articles.find(x=>x.id===id)?.stage;
+ // A future day no longer holds the submission: it goes to the manager's approval queue right away.
+ async function submit(a){await req('articles/'+a.id,'PATCH',{version:a.version,title:'מדריך לפרסום',content,content_format:'html',scheduled:future},'client');a=await load(a);const result=await req('articles/'+a.id+'/status','POST',{version:a.version,status:'admin_review'},'client');assert.equal(result.status,'admin_review');return load(a);}
  let a=await submit(await purchase());
- assert.equal(a.scheduled,dates.israelDayStart(future));
- await req('articles/'+a.id,'PATCH',{version:a.version,title:'שינוי מוקדם',content},'client',400);
- await req('articles/'+a.id+'/unschedule','POST',{version:a.version},'other',403);
- await req('articles/'+a.id+'/status','POST',{version:a.version,status:'approved'},'owner',400);
+ assert.equal(a.status,'admin_review');assert.equal(a.scheduled,dates.israelDayStart(future));
+ assert.equal(await stageOf(a.id),'admin_review','a scheduled submission is listed for approval');
+ // The manager may approve early. The supplier gets it at 07:00 Israel time on the chosen day, not now.
+ const approved=await req('articles/'+a.id+'/status','POST',{version:a.version,status:'approved'});a=await load(a);
+ assert.equal(a.status,'approved');assert.equal(approved.dispatch_at,'2099-11-01T05:00:00.000Z');assert.equal(a.dispatch_at,'2099-11-01T05:00:00.000Z');
+ assert.equal(await jobs(a.id),0,'no supplier dispatch before the chosen day');
+ assert.equal(await stageOf(a.id),'dispatch_scheduled','approved and waiting for its day, not a failed delivery');
  await req('articles/'+a.id+'/supplier-link','POST',{},'owner',409);
- assert.equal((await db.prepare('SELECT COUNT(*) n FROM jobs WHERE id=?').bind('publication:'+a.id).first()).n,0);
- assert.equal((await db.prepare("SELECT COUNT(*) n FROM jobs WHERE instr(id,?)=1").bind('email:submitted:'+a.id+':').first()).n,0,'manager notification must wait until the chosen day');
- const release=(key='isolated-test-key',expected=200)=>req('maintenance/scheduled-articles','POST',{},null,expected,key);
- await release('wrong',403);assert.equal((await release()).released,0);
- assert.equal((await req('admin/control-center')).queues.find(q=>q.id==='approval')?.count||0,0);
- await req('articles/'+a.id+'/unschedule','POST',{version:a.version},'client');a=await load(a);assert.equal(a.status,'draft');
- await req('articles/'+a.id,'PATCH',{version:a.version,title:a.title,content,content_format:'html',scheduled:'2026-02-30'},'client',400);
- a=await submit(a);
- const held=await submit(await purchase()),unpaid=await submit(await purchase()),cancelled=await submit(await purchase());
+ await req('articles/'+a.id+'/dispatch','POST',{},'owner',409);
+ const run=(key='isolated-test-key',expected=200)=>req('maintenance/scheduled-articles','POST',{},null,expected,key);
+ await run('wrong',403);let tick=await run();assert.equal(tick.dispatched,0);assert.equal(tick.released,0);
+ // An admin fix after approval keeps it approved and waiting for the day.
+ await req('articles/'+a.id,'PATCH',{version:a.version,title:a.title,content:content+'<p>תיקון של המנהל.</p>',content_format:'html'});a=await load(a);
+ assert.equal(a.status,'approved');assert.equal(a.dispatch_at,'2099-11-01T05:00:00.000Z');
+ // Three more approved early: a cancellation request, an unpaid order and a cancelled order must not be sent.
+ const held=[];for(let i=0;i<3;i++){let x=await submit(await purchase());await req('articles/'+x.id+'/status','POST',{version:x.version,status:'approved'});held.push(await load(x));}
+ await db.prepare("UPDATE articles SET data=json_set(data,'$.cancel_pending',1) WHERE id=?").bind(held[0].id).run();
+ await db.prepare("UPDATE orders SET paid=0,data=json_set(data,'$.on_account',0,'$.payment_settled',0) WHERE id=?").bind(held[1].order_id).run();
+ await db.prepare("UPDATE orders SET status='cancelled' WHERE id=?").bind(held[2].order_id).run();
+ // The chosen day arrives (07:00 has passed).
  const past='2000-01-01T00:00:00.000Z';
- for(const row of [a,held,unpaid,cancelled])await db.prepare("UPDATE articles SET data=json_set(data,'$.scheduled',?) WHERE id=?").bind(past,row.id).run();
- await db.prepare("UPDATE articles SET data=json_set(data,'$.cancel_pending',1) WHERE id=?").bind(held.id).run();
- await db.prepare("UPDATE orders SET paid=0,data=json_set(data,'$.on_account',0,'$.payment_settled',0) WHERE id=?").bind(unpaid.order_id).run();
- await db.prepare("UPDATE orders SET status='cancelled' WHERE id=?").bind(cancelled.order_id).run();
- const due=await release();assert.equal(due.released,1,JSON.stringify(await db.prepare('SELECT a.id,a.status,a.data,o.status order_status,o.paid,o.data order_data FROM articles a JOIN orders o ON o.id=a.order_id WHERE a.id=?').bind(a.id).first()));a=await load(a);assert.equal(a.status,'admin_review');
- assert.equal((await release()).released,0);
- assert.equal((await load(held)).status,'scheduled');assert.equal((await load(unpaid)).status,'scheduled');assert.equal((await load(cancelled)).status,'scheduled');
- assert.equal((await db.prepare("SELECT COUNT(*) n FROM activity WHERE resource=? AND user_id='system:schedule'").bind(a.id).first()).n,1);
- assert.equal((await db.prepare('SELECT COUNT(*) n FROM jobs WHERE id=?').bind('publication:'+a.id).first()).n,0);
- await req('articles/'+a.id+'/status','POST',{version:a.version,status:'approved'});assert(['approved','sent'].includes((await load(a)).status));
- assert.equal((await db.prepare('SELECT COUNT(*) n FROM jobs WHERE id=?').bind('publication:'+a.id).first()).n,1);
- // A completed writing service with no customer review must still wait for the chosen day and manager approval.
- let w=await purchase(true);await req('articles/'+w.id,'PATCH',{version:w.version,title:'מדריך לפרסום',content:'',scheduled:future,brief:{topic:'מדריך לפרסום',target_url:'https://example.com/',anchor:'לפרטים נוספים',publish_without_review:true}},'client');w=await load(w);await req('articles/'+w.id+'/writing-request','POST',{version:w.version},'client');w=(await req('articles/'+w.id)).article;await req('articles/'+w.id,'PATCH',{version:w.version,title:'מדריך לפרסום',content,content_format:'html'});w=(await req('articles/'+w.id)).article;assert.equal((await req('articles/'+w.id+'/writing-complete','POST',{version:w.version,action:'publish'})).status,'scheduled');
- assert.equal((await db.prepare('SELECT COUNT(*) n FROM jobs WHERE id=?').bind('publication:'+w.id).first()).n,0);
- console.log('PUBLICATION SCHEDULING PASS:',checks,'requests/date checks; future submissions held, Israel midnight, authorization, CAS editing lock, cancellation, due queue idempotency, unpaid/cancelled exclusion, manual approval before supplier dispatch, writing route. No real messages sent.');
+ for(const row of [a,...held])await db.prepare("UPDATE articles SET data=json_set(data,'$.scheduled',?,'$.dispatch_at',?) WHERE id=?").bind(past,past,row.id).run();
+ tick=await run();assert.equal(tick.dispatched,1,'only the clear article is sent on its day');
+ assert.equal(await jobs(a.id),1);assert(['approved','sent'].includes((await load(a)).status));
+ for(const row of held)assert.equal(await jobs(row.id),0,'held, unpaid and cancelled orders are not sent');
+ assert.equal((await run()).dispatched,0,'each article is sent once');
+ // Approving after the day has passed sends right away.
+ let late=await submit(await purchase());await db.prepare("UPDATE articles SET data=json_set(data,'$.scheduled',?) WHERE id=?").bind(past,late.id).run();late=await load(late);
+ const lateResult=await req('articles/'+late.id+'/status','POST',{version:late.version,status:'approved'});assert.equal(lateResult.dispatch_at,'');assert.equal(await jobs(late.id),1);
+ // Older articles still waiting as 'scheduled' move to the approval queue right away, whatever the date.
+ let legacy=await submit(await purchase());await db.prepare("UPDATE articles SET status='scheduled',data=json_set(data,'$.scheduled',?) WHERE id=?").bind(dates.israelDayStart(future),legacy.id).run();
+ tick=await run();assert.equal(tick.released,1);assert.equal((await load(legacy)).status,'admin_review');
+ assert.equal((await db.prepare("SELECT COUNT(*) n FROM activity WHERE resource=? AND user_id='system:schedule'").bind(legacy.id).first()).n,1);
+ // A completed writing service published without customer review: approved now, sent on the day.
+ let w=await purchase(true);await req('articles/'+w.id,'PATCH',{version:w.version,title:'מדריך לפרסום',content:'',scheduled:future,brief:{topic:'מדריך לפרסום',target_url:'https://example.com/',anchor:'לפרטים נוספים',publish_without_review:true}},'client');w=await load(w);await req('articles/'+w.id+'/writing-request','POST',{version:w.version},'client');w=(await req('articles/'+w.id)).article;await req('articles/'+w.id,'PATCH',{version:w.version,title:'מדריך לפרסום',content,content_format:'html'});w=(await req('articles/'+w.id)).article;
+ assert.equal((await req('articles/'+w.id+'/writing-complete','POST',{version:w.version,action:'publish'})).status,'approved');
+ w=(await req('articles/'+w.id)).article;assert.equal(w.dispatch_at,'2099-11-01T05:00:00.000Z');assert.equal(await jobs(w.id),0);
+ console.log('PUBLICATION SCHEDULING PASS:',checks,'requests/date checks; future submissions go to approval, early approval waits for 07:00 on the day, one dispatch per article, held/unpaid/cancelled excluded, late approval sends now, legacy scheduled released, admin fix keeps approval, writing route. No real messages sent.');
 }finally{await mf.dispose();await fetchMock.close();}

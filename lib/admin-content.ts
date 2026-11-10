@@ -23,7 +23,7 @@ export const contentSource=`WITH history AS (
  json_extract(a.data,'$.writing_requested_at') AS writing_requested_at,json_extract(a.data,'$.writing_returned_at') AS writing_returned_at,json_extract(a.data,'$.writing_completed_at') AS writing_completed_at,
  json_extract(a.data,'$.writing_revision_requested_at') AS writing_revision_requested_at,json_extract(a.data,'$.writing_revision_note') AS writing_revision_note,
  COALESCE(NULLIF(json_extract(a.data,'$.topic'),''),'') AS topic,json_extract(a.data,'$.editorial_words') AS editorial_words,json_extract(a.data,'$.keywords') AS keywords,json_extract(a.data,'$.brand') AS brand,json_extract(a.data,'$.audience') AS audience,json_extract(a.data,'$.style') AS style,json_extract(a.data,'$.target_url') AS target_url,json_extract(a.data,'$.anchor') AS anchor,json_extract(a.data,'$.target_url_2') AS target_url_2,json_extract(a.data,'$.anchor_2') AS anchor_2,json_extract(a.data,'$.notes') AS notes,
- j.status AS delivery_status,json_extract(j.data,'$.error') AS delivery_error,w.active AS website_active,
+ json_extract(a.data,'$.dispatch_at') AS dispatch_at,j.status AS delivery_status,json_extract(j.data,'$.error') AS delivery_error,w.active AS website_active,
  CASE WHEN o.status<>'cancelled' AND (o.paid=1 OR json_extract(o.data,'$.demo')=1 OR json_extract(o.data,'$.on_account')=1 OR json_extract(o.data,'$.payment_settled')=1) THEN 1 ELSE 0 END AS workable
  FROM articles a JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id JOIN websites w ON w.id=a.website_id
  LEFT JOIN history h ON h.resource=a.id
@@ -35,6 +35,7 @@ export const contentSource=`WITH history AS (
   WHEN cancel_pending=1 THEN 'cancel_pending'
   WHEN status='demo_completed' THEN 'demo_completed'
   WHEN status='published' OR COALESCE(published_url,'')<>'' THEN 'published'
+  WHEN status='approved' AND COALESCE(delivery_status,'')='' AND COALESCE(dispatch_at,'')>strftime('%Y-%m-%dT%H:%M:%fZ','now') THEN 'dispatch_scheduled'
   WHEN status IN ('approved','sent') AND delivery_status IN ('failed','blocked') THEN 'delivery_failed'
   WHEN status='approved' AND COALESCE(delivery_status,'') NOT IN ('succeeded','demo','writing','requested','completed','demo_completed') THEN 'delivery_failed'
   WHEN status='approved' THEN 'with_supplier'
@@ -65,9 +66,9 @@ export const contentSource=`WITH history AS (
  FROM staged
 ), visible AS (SELECT * FROM rated WHERE stage<>'awaiting_brief' AND (workable=1 OR submitted_at IS NOT NULL OR status IN ('admin_review','approved','sent','published','revisions','demo_completed')))`;
 
-const publicationStages="stage IN ('delivery_failed','with_supplier')";
+const publicationStages="stage IN ('delivery_failed','dispatch_scheduled','with_supplier')";
 const writingStages="stage IN ('writing_new','writing_fix','customer_review')";
-const stages=['cancel_pending','delivery_failed','with_supplier','admin_review','writing_new','writing_fix','customer_review','awaiting_brief','with_customer','customer_fix','scheduled','published','cancelled','demo_completed'];
+const stages=['cancel_pending','delivery_failed','dispatch_scheduled','with_supplier','admin_review','writing_new','writing_fix','customer_review','awaiting_brief','with_customer','customer_fix','scheduled','published','cancelled','demo_completed'];
 
 export async function adminContent(query:URLSearchParams,exported=false){
  const view=['approvals','publication','writing'].includes(query.get('view')||'')?query.get('view')!:'articles';

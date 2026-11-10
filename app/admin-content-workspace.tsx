@@ -18,8 +18,8 @@ import './content-workspace.css';
 
 const tabs:[string,string,string,string][]=[['admin-articles','articles','כל הכתבות','needs_articles'],['admin-approvals','approvals','ממתינים לאישור','approvals'],['admin-publication','publication','ממתינים לפרסום','needs_publication'],['admin-writing','writing','כתבות לכותב התוכן','needs_writing']];
 const statusOptions:Record<string,Record<string,string>>={
- 'admin-articles':{all:'כל המצבים',needs:'דורשות טיפול',admin_review:'לאישור מנהל',writing_new:'בקשת כתיבה',writing_fix:'תיקונים לכותב',customer_review:'אצל הלקוח לבדיקה',with_customer:'אצל הלקוח',customer_fix:'הוחזרה ללקוח לתיקון',scheduled:'מתוזמנת',delivery_failed:'השליחה לספק נכשלה',with_supplier:'אצל הספק',published:'פורסמה',cancel_pending:'בקשת ביטול',cancelled:'בוטלה'},
- 'admin-publication':{all:'כל המצבים',needs:'דורשות טיפול',delivery_failed:'השליחה לספק נכשלה',with_supplier:'אצל הספק'},
+ 'admin-articles':{all:'כל המצבים',needs:'דורשות טיפול',admin_review:'לאישור מנהל',writing_new:'בקשת כתיבה',writing_fix:'תיקונים לכותב',customer_review:'אצל הלקוח לבדיקה',with_customer:'אצל הלקוח',customer_fix:'הוחזרה ללקוח לתיקון',scheduled:'מתוזמנת',delivery_failed:'השליחה לספק נכשלה',dispatch_scheduled:'אושרה, תישלח בתאריך',with_supplier:'אצל הספק',published:'פורסמה',cancel_pending:'בקשת ביטול',cancelled:'בוטלה'},
+ 'admin-publication':{all:'כל המצבים',needs:'דורשות טיפול',delivery_failed:'השליחה לספק נכשלה',dispatch_scheduled:'אושרה, תישלח בתאריך',with_supplier:'אצל הספק'},
  'admin-writing':{open:'בטיפול',writing_new:'בקשה חדשה לכתיבה',writing_fix:'תיקונים מהלקוח',customer_review:'אצל הלקוח לבדיקה',done:'יצאה מהכתיבה'},
 };
 const routeLabel=(a:Row)=>a.publish_without_review?'פרסום ישיר':'חוזר ללקוח לצפייה';

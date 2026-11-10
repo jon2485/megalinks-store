@@ -6,7 +6,8 @@ import {completeWalletCard} from '@/lib/wallet-card';
 import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
 import {publicationPeriod} from '@/lib/publication-period';
 import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
-import {releaseScheduledApprovals,futureArticleDate} from '@/lib/scheduled-approval';
+import {releaseScheduledApprovals,dispatchAtFor,dispatchDue} from '@/lib/scheduled-approval';
+import {dispatchScheduledArticles} from '@/lib/scheduled-dispatch';
 import {normalizeRequestedPublication} from '@/lib/publication-date';
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
 import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server';
@@ -166,7 +167,7 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);return response(await releaseScheduledApprovals(new URL(r.url).origin));}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin)});}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
@@ -250,7 +251,7 @@ async function handle(r: Request,access:ResponseAccess) {
     else
         u = await actor();
     access.privileged=u.role==='admin';
-    if(u.role==='admin'&&method==='GET')await releaseScheduledApprovals(new URL(r.url).origin);
+    if(u.role==='admin'&&method==='GET'){const origin=new URL(r.url).origin;await releaseScheduledApprovals(origin);await dispatchScheduledArticles(origin);}
     if(p[0]==='selling'&&p[1]==='articles'&&p[2]&&method==='POST'){
         const delivery=await one("SELECT j.id FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') JOIN seller_sites s ON s.website_id=a.website_id WHERE j.id=? AND j.kind='supplier_publication' AND json_extract(j.data,'$.owner_user_id')=? AND s.user_id=? AND COALESCE(json_extract(j.data,'$.demo'),0)=0",decodeURIComponent(p[2]),u.id,u.id);
         assert(delivery,'הפרסום לא נמצא',404);p.splice(0,p.length,'supplier-inbox',delivery.id);
@@ -515,9 +516,10 @@ if (p[0] === 'cart') {
             if(data.secondary_image_id)owns(u,await one('SELECT * FROM files WHERE id=?',data.secondary_image_id));
             if (data.image_id)
                 owns(u, await one('SELECT * FROM files WHERE id=?', data.image_id));
-            // An admin fixing an article during review keeps it waiting for approval.
-            // Any other edit of a submitted or approved article sends it back for editing.
-            const keepReview = u.role==='admin' && a.status==='admin_review';
+            // An admin fixing an article during review or after approval keeps its status.
+            // A customer edit of a submitted or approved article sends it back for editing.
+            const keepReview = u.role==='admin' && ['admin_review','approved'].includes(a.status);
+            if(keepReview&&a.status==='approved'&&(data.scheduled||'')!==(priorData.scheduled||'')){const at=dispatchAtFor(data);data.dispatch_at=at&&Date.parse(at)>Date.parse(now())?at:now();delete data.dispatch_attempted_at;}
             const result = await stmt('UPDATE articles SET title=?,content=?,data=?,status=?,version=version+1,updated=? WHERE id=? AND version=?', title, content, JSON.stringify(data), keepReview?a.status:['approved','admin_review'].includes(a.status)?(writingSubmitted(a)?'writing':'draft'):a.status, now(), a.id, a.version).run();
             assert(result.meta.changes, 'הכתבה עודכנה במקביל', 409);
             await audit(u, a.id, 'תוכן נשמר', { version: a.version + 1 });
@@ -539,8 +541,7 @@ if (p[0] === 'cart') {
             assert(b.version === a.version, 'הכתבה עודכנה במקביל', 409);
             if(next==='admin_review'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);}
             if(next==='revisions')assert(maxText(b.note,3000).trim(),'יש לפרט את הסיבה להחזרה לתיקון');
-            if(next==='approved')assert(!futureArticleDate(a),'טרם הגיע מועד הכתבה לאישור. הכתבה תיכנס לתור האישורים בתאריך שנבחר',409);
-            const statusData=JSON.parse(a.data);if(next==='admin_review'){statusData.first_submitted_at||=now();statusData.submitted_at=now();statusData.review_requested_at=now();}if(next==='published')statusData.published_at=now();if(next==='admin_review'&&futureArticleDate(a)){next='scheduled';statusData.scheduled_submitted_at=now();statusData.scheduled_from_status=a.status;}
+            const statusData=JSON.parse(a.data);if(next==='admin_review'){statusData.first_submitted_at||=now();statusData.submitted_at=now();statusData.review_requested_at=now();}if(next==='published')statusData.published_at=now();if(next==='approved'){const at=dispatchAtFor(statusData);if(at&&Date.parse(at)>Date.parse(now())){statusData.dispatch_at=at;delete statusData.dispatch_attempted_at;}else delete statusData.dispatch_at;}
             const url = next === 'published' ? httpUrl(b.url || '') : a.published_url;
             if (next === 'published'){assert(url,'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);assert(!JSON.parse(order!.data).demo,'הדגמה אינה פרסום אמיתי');}
             const publication=publicationPeriod();if(next==='published')statusData.published_month=publication.month;
@@ -549,18 +550,19 @@ if (p[0] === 'cart') {
             if(next==='admin_review'||next==='revisions'||next==='published')await articleMail({...a,version:a.version+1,published_url:url},next==='admin_review'?'submitted':next==='revisions'?'revisions':'published',new URL(r.url).origin,maxText(b.note,3000));
             await audit(u, a.id, 'סטטוס: ' + next, { note: maxText(b.note, 3000), url });
             await notify(u, 'article_status', { article_id: a.id, status: next, recipient_email: (await one('SELECT email FROM users WHERE id=?', a.user_id))?.email, recipient_phone: (await one('SELECT phone FROM users WHERE id=?', a.user_id))?.phone });
-            if (next === 'approved') await dispatchArticle({...a,status:'approved',version:a.version+1},u,new URL(r.url).origin);
+            // A chosen future day: approved now, the supplier gets it at 07:00 that day (dispatchScheduledArticles).
+            if (next === 'approved' && !statusData.dispatch_at) await dispatchArticle({...a,status:'approved',version:a.version+1},u,new URL(r.url).origin);
             await syncOrder(a.order_id);
             const remaining = await one("SELECT COUNT(*) AS n FROM articles WHERE order_id=? AND status NOT IN ('published','cancelled')", a.order_id);
             if (!remaining?.n)
                 await stmt("UPDATE orders SET status='completed',updated=? WHERE id=?", now(), a.order_id).run();
-            return response({ ok: true,status:next,scheduled:statusData.scheduled||'' });
+            return response({ ok: true,status:next,scheduled:statusData.scheduled||'',dispatch_at:statusData.dispatch_at||'' });
         }
         if(p[2]==='remind'&&method==='POST'){admin(u);assert(a.status==='sent','הכתבה אינה ממתינה לספק');const d=JSON.parse(a.data);const original=parse(await one("SELECT * FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));assert(original,'לא נוצר מייל ספק',409);const result=await queueMail('reminder:'+a.id+':'+now().slice(0,10),a.user_id,{...original.data,subject:'תזכורת לפרסום: '+a.title});return response(result);}
         if (p[2] === 'dispatch' && method === 'POST') { admin(u); assert(a.status==='approved' || a.status==='sent','הכתבה טרם אושרה'); return response(await dispatchArticle(a,u,new URL(r.url).origin)); }
         if (p[2] === 'supplier-link' && method === 'POST') {
             admin(u);
-            assert(!futureArticleDate(a),'טרם הגיע מועד השליחה לאישור מנהל',409);
+            assert(dispatchDue(a),'הכתבה תישלח לספק ביום שנבחר, ב־7:00 בבוקר',409);
             assert(a.status === 'approved' || a.status === 'sent', 'הכתבה חייבת להיות מאושרת');
             assert(!JSON.parse((await one('SELECT data FROM orders WHERE id=?',a.order_id))!.data).demo,'להזמנת הדגמה משתמשים בפורטל הספק בלבד');
             const token = uid() + uid();
