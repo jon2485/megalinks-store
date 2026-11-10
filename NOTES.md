@@ -886,3 +886,9 @@ Built from the approved mockup (owner asked why they were not built yet: they we
 - **Top:** monthly account with the open order number (or "תיפתח הזמנה חדשה"), free credit, price tier. Warning when the total is above the free credit. Search, category and sort (name, price, DR); site logo and DR in each row (`lib/account-management.ts` now returns `dr`, `category`, `logo_url` for the picker).
 - **Files:** `app/customer-order-picker.tsx`, `app/customer-order-picker.css` (dialog 900px, clear of the admin side menu; one column under 700px of dialog width; phone rows on two lines).
 - **Checked locally:** added 2 and 3 sites, writing on (+₪60 for 400 words), totals 329.00 + 59.22 = 388.22 matched the server, confirm created fictional order #1031 and the list refreshed; desktop 1440, 1280 and phone 390.
+
+### Status after the three builds (10.11.2026)
+- Commits (local only, nothing pushed): a81d10e tickets, 256d58d customer file orders, dbc03f2 new order dialog, f45d3e6 small fix + screenshots (`docs/mockups/ticket-conversation-*.png`, `customer-file-orders.png`, `new-order-two-panes.png`).
+- Tests: `tests/admin-glass-actions.mjs` passes until its last import (`tests/admin-order-history.mjs`, already failing: stale stubs and an old "desktop table" check). `tests/integration.mjs` passes all ticket checks and stops at the known stock-count check (line 407). `tests/admin-lobby-panels.mjs` passes. `tests/customer-articles-ui.mjs` and `tests/page-crash-regression.mjs` do not start on Windows (fixture path and CSS loader in the test harness); their source checks were updated to the approved customer file.
+- Nothing temporary was added for these builds; no "before upload" items.
+- Next: owner reviews the three screens on the local link.
