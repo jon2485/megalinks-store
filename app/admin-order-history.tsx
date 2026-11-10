@@ -124,3 +124,6 @@ function Pub({o}:{o:Row}){const all=Math.max(0,Number(o.article_count||0)-Number
 const payPill=(tone:string)=>tone==='ok'?'p-paid':tone==='report'?'p-open':tone==='month'?'p-month':tone==='cancelled'?'p-man':'p-inv';
 const avatarTone=(s:string)=>['#0071e3','#30a46c','#bf5af2','#ff9f0a','#ff375f','#0a84ff','#5e5ce6'][[...String(s||'')].reduce((n,c)=>n+c.charCodeAt(0),0)%7];
 const siteName=(s:string)=>String(s||'').replace(/^https?:\/\//,'').replace(/^www\./,'');
+
+// Shared with the customer file's orders tab (10.11.2026).
+export {Pub as OrderPub,payPill as orderPayPill};

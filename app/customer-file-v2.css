@@ -66,3 +66,45 @@
  .cf .cf-tabs.cf-tabs>button{flex:none}
 }
 @media(prefers-reduced-motion:reduce){.cf .cf-back,.cf .cf-tabs>button{transition:none}}
+
+/* 10.11.2026 Orders tab in the orders-screen look (.cfo): rows and open panel reuse the orders styles;
+   only the bar, the item price button, the payment card and the phone layout without a customer column live here. */
+.cf .cfo.cfo{display:grid;gap:12px;margin:0;padding:0;background:none}
+.cf .cfo .cfo-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cf .cfo .cfo-bar .om-chips{margin:0}
+.cf .cfo .cfo-actions{display:flex;gap:8px;flex-wrap:wrap}
+.cf .cfo .cfo-card{margin:0}
+.cf .cfo .om-item-acts{display:flex;align-items:center;justify-content:flex-end;gap:6px;flex-wrap:wrap}
+.cf .cfo .om-btn.om-item-price{min-height:32px;height:32px;padding:0 12px;font-size:13px}
+.cf .cfo .cfo-pay{display:grid;gap:10px}
+.cf .cfo .cfo-pay .om-note{margin:0}
+.cf .cfo .cfo-pay .om-note.is-error{color:#c4001a;font-weight:600}
+.cf .cfo .cfo-pay-actions{display:grid;gap:8px}
+.cf .cfo .cfo-pay-actions .om-btn{width:100%;justify-content:center}
+@media (max-width:640px){
+ .cf .cfo.sv2-orders{padding-bottom:0}
+ .cf .cfo .cfo-bar{align-items:stretch}
+ .cf .cfo .cfo-bar .om-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+ .cf .cfo .cfo-actions{width:100%}
+ .cf .cfo .cfo-actions .sv2-btn{flex:1;justify-content:center}
+ /* no customer column here: number and date, then amount; sites and payment; publication and the open button */
+ .cf .cfo.sv2-orders .sv2-orow{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"ord num" "fav pay" "pub act";gap:6px 12px!important;align-items:center}
+ .cf .cfo.sv2-orders .sv2-orow>.sv2-ord{display:grid!important;grid-area:ord;gap:0}
+ .cf .cfo.sv2-orders .sv2-orow>.sv2-num{grid-area:num;justify-self:end}
+ .cf .cfo.sv2-orders .sv2-orow>.sv2-favs{display:flex!important;grid-area:fav;min-width:0}
+ .cf .cfo.sv2-orders .sv2-orow>.sv2-paycell{grid-area:pay;justify-self:end}
+ .cf .cfo.sv2-orders .sv2-orow>.sv2-pubcell{grid-area:pub;justify-self:start}
+ .cf .cfo.sv2-orders .sv2-orow>.sv2-rowact{grid-area:act;justify-self:end}
+}
+/* the filter chips in the approved v2 look (same as the other v2 lists) */
+.cf .cfo .cfo-bar .om-chips{display:flex;flex-wrap:wrap;gap:8px;padding:0}
+.cf .cfo .cfo-bar .om-chips>button{display:inline-flex;align-items:center;gap:8px;height:38px;min-height:0;padding:0 16px;border:0;border-radius:999px;background:#fff;color:#424245;font-size:14px;font-weight:600;box-shadow:0 0 0 1px rgba(0,0,0,.06);cursor:pointer;transition:box-shadow .15s,color .15s,transform .1s}
+.cf .cfo .cfo-bar .om-chips>button:hover{color:#0066cc;background:#fff;box-shadow:0 0 0 1px rgba(0,113,227,.35)}
+.cf .cfo .cfo-bar .om-chips>button:active{transform:scale(.97)}
+.cf .cfo .cfo-bar .om-chips>button[aria-pressed=true]{color:#0066cc;background:#fff;box-shadow:0 0 0 2px #0071e3,0 6px 16px rgba(0,113,227,.14)}
+.cf .cfo .cfo-bar .om-chips>button b{min-width:20px;padding:1px 7px;border-radius:999px;background:#f0f1f4;color:#424245;font-size:12px;font-weight:700;text-align:center}
+.cf .cfo .cfo-bar .om-chips>button[aria-pressed=true] b{background:#0071e3;color:#fff}
+.cf .cfo .cfo-actions .sv2-btn{height:40px}
+@media (prefers-reduced-motion:reduce){.cf .cfo .cfo-bar .om-chips>button{transition:none}.cf .cfo .cfo-bar .om-chips>button:active{transform:none}}
+/* phones: the item actions (price + cancel) get their own full-width line, so the site address keeps its room */
+@media (max-width:760px){.cf .cfo .om-item>.om-item-acts{grid-area:auto;grid-column:1/-1;grid-row:3;justify-self:end}}

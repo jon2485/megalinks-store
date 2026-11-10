@@ -1,6 +1,6 @@
 'use client';
 import {useAdminDraftGuard} from './admin-draft-guard';
-import CustomerOrderScreen from './customer-order-screen';
+import CustomerFileOrders from './customer-file-orders';
 import CustomerArticlesAdmin from './customer-articles-admin';
 import SiteReference from './site-reference';
 import {RefundForm} from './refund-dialog';
@@ -48,7 +48,7 @@ export default function CustomerAccountAdmin({ctx,id,initialTab='orders'}:{ctx:C
  </header>
  <dl className="cf-stats">{([['קרדיט בארנק',d.customer.credits||0,'green'],['יתרה לתשלום',d.account?.balance||0,'orange'],['מסגרת מאושרת',d.account?.credit_limit||0,''],['מסגרת פנויה',Math.max(0,(d.account?.credit_limit||0)-(d.account?.balance||0)),'']] as [string,number,string][]).map(([label,value,tone])=><div key={label} className={tone&&Number(value)>0?'is-'+tone:undefined}><dt>{label}</dt><dd><bdi>{money(Number(value))}</bdi></dd></div>)}</dl>
  <nav className="account-tabs cf-tabs" aria-label="מידע בתיק הלקוח">{([['orders','הזמנות ותשלומים',d.orders?.length||0],['articles','כתבות',d.articles?.length||0],['profile','פרטי לקוח',0],['history','היסטוריית פעולות',d.history?.length||0]] as [string,string,number][]).map(([key,label,count])=><button type="button" key={key} aria-pressed={tab===key} onClick={()=>{if(key!==tab)draft.confirm(()=>setTab(key));}}>{label}{count>0&&<b>{count}</b>}</button>)}</nav>
- {tab==='orders'&&<CustomerOrderScreen ctx={ctx} providedOrders={d.orders} providedArticles={d.articles}/>}
+ {tab==='orders'&&<CustomerFileOrders ctx={ctx} id={id} name={d.customer.name} price={price} newOrder={()=>openCustomerOrder(ctx,id,d.customer.name)}/>}
 
  {tab==='articles'&&<CustomerArticlesAdmin ctx={ctx} articles={d.articles} orders={d.orders} preview={preview}/>}
  {tab==='profile'&&<div className="space-y-5"><section className="panel" onChangeCapture={()=>draft.mark('profile',true)}><h2>פרטי החשבון</h2><ActionForm fields={[["name","שם","text"],["company","חברה / סוכנות","text"],["phone","טלפון","tel"]]} initial={d.customer} submit={b=>ctx.run(()=>api('admin/users/'+id,'PATCH',{...b,role:d.customer.role}),'פרטי הלקוח נשמרו').then(()=>draft.mark('profile',false))}/><p>{d.customer.email}</p></section><section className="panel" onChangeCapture={()=>draft.mark('monthly',true)}><h2>חשבון חודשי</h2><ActionForm fields={[["limit_ils","מסגרת מאושרת (₪)","number"]]} initial={{limit_ils:(d.account?.credit_limit||0)/100}} submit={b=>ctx.run(()=>api('admin/credit-accounts','PATCH',{...b,user_id:id,enabled:!!d.account?.enabled}),'המסגרת נשמרה').then(()=>draft.mark('monthly',false))}/><Button variant="outline" onClick={()=>ctx.run(()=>api('admin/credit-accounts','PATCH',{user_id:id,limit_ils:(d.account?.credit_limit||0)/100,enabled:!d.account?.enabled}),'הרשאת החשבון עודכנה').catch(()=>{})}>{d.account?.enabled?'ביטול הרשאת חשבון חודשי':'אישור חשבון חודשי'}</Button></section><PersonalPricebook ctx={ctx} id={id} embedded/></div>}

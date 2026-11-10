@@ -3,6 +3,7 @@ import {orderSummarySql,fullyCancelledOrderSql} from './order-summary';
 import {dateRangeClause} from './admin-date-range';
 import {israelDate,adminOrderFilterLabels,ORDER_ABANDONED_DAYS,type AdminOrderFilterBucket} from './admin-order-buckets';
 import {effectiveOrderAmounts} from './order-finance';
+import {monthlyOrderClosedSql} from './monthly-order';
 import {paymentMethodLabel} from './payment-state';
 import type {Row} from './shared';
 
@@ -10,15 +11,18 @@ export function adminOrderCte(){return `overview AS (SELECT o.*,${orderSummarySq
  classified AS (SELECT *,CASE WHEN COALESCE(json_extract(data,'$.demo'),0)=1 OR fully_cancelled THEN 'archive' WHEN paid=1 OR COALESCE(payment_settled,0)=1 THEN 'closed' WHEN payment='monthly' OR COALESCE(json_extract(data,'$.on_account'),0)=1 OR billing_month IS NOT NULL THEN 'monthly' ELSE 'process' END AS bucket,COALESCE(NULLIF(paid_date,''),NULLIF(json_extract(data,'$.paid_at'),''),CASE WHEN payment_settled=1 THEN (SELECT r.created FROM records r WHERE r.kind='monthly_payment' AND r.user_id=overview.user_id AND EXISTS(SELECT 1 FROM json_each(r.data,'$.order_ids') j WHERE j.value=overview.id) ORDER BY r.created DESC LIMIT 1) END) AS confirmed_date,CASE WHEN payment_settled=1 THEN (SELECT json_extract(r.data,'$.payment_method') FROM records r WHERE r.kind='monthly_payment' AND r.user_id=overview.user_id AND EXISTS(SELECT 1 FROM json_each(r.data,'$.order_ids') j WHERE j.value=overview.id) ORDER BY r.created DESC LIMIT 1) END AS settled_receipt_method FROM overview)`;}
 export function hydratedAdminOrder(raw:Row):Row{const o=parse(raw)!;delete o.report_json;let report;try{report=raw.report_json?JSON.parse(raw.report_json):null;}catch{report=null;}return {...o,paid_date:o.confirmed_date||o.paid_date,payment_report:report,amounts:effectiveOrderAmounts(o),payment_label:paymentMethodLabel({payment:o.confirmed_payment_method||o.settlement_payment_method||o.settled_receipt_method||o.payment})||'לא תועד'};}
 const reportSql=`(bucket NOT IN ('closed','archive') AND COALESCE(payment_report_status,'')='pending' AND COALESCE(payment,'') NOT IN ('card','credits_card'))`,awaitingSql=`(bucket='process' AND NOT ${reportSql})`,abandonedSql=`(${awaitingSql} AND julianday(created)<julianday('now')-${ORDER_ABANDONED_DAYS})`;
-const viewSql:Record<string,string>={attention:`(cancel_pending_count>0 OR ${reportSql})`,cancel:'cancel_pending_count>0',reports:reportSql,awaiting:awaitingSql,abandoned:abandonedSql,active:`NOT ${awaitingSql}`};
+// Customer file (10.11.2026): a monthly order still open for purchases, and everything closed but not paid yet.
+const openPurchasesSql=`(bucket='monthly' AND NOT ${monthlyOrderClosedSql('classified')})`,toPaySql=`(bucket='process' OR (bucket='monthly' AND ${monthlyOrderClosedSql('classified')}))`;
+const viewSql:Record<string,string>={open_purchases:openPurchasesSql,to_pay:toPaySql,attention:`(cancel_pending_count>0 OR ${reportSql})`,cancel:'cancel_pending_count>0',reports:reportSql,awaiting:awaitingSql,abandoned:abandonedSql,active:`NOT ${awaitingSql}`};
 export function orderFilter(query:URLSearchParams){
  const bucket=query.get('bucket')||'monthly';assert(Object.hasOwn(adminOrderFilterLabels,bucket),'סוג הזמנות לא תקין');
- const month=query.get('month')||'',q=(query.get('q')||'').trim().slice(0,120);assert(!month||month==='unknown'||/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'חודש לא תקין');
+ const month=query.get('month')||'',q=(query.get('q')||'').trim().slice(0,120),user=(query.get('user')||'').trim().slice(0,200);assert(!month||month==='unknown'||/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'חודש לא תקין');
  const field=bucket==='closed'?'confirmed_date':bucket==='cancel'?"CASE WHEN COALESCE(json_extract(data,'$.demo'),0)=0 AND (paid=1 OR payment_settled=1) THEN confirmed_date ELSE created END":'created',broad=bucket==='all'||((bucket==='active'||bucket==='attention')&&!!q),clauses=broad?[]:viewSql[bucket]?[viewSql[bucket]]:['bucket=?'],args:(string|number)[]=broad||viewSql[bucket]?[]:[bucket];
  if(month==='unknown')clauses.push(`(${field} IS NULL OR ${field}='')`);
  else if(month){const to=new Date(Date.UTC(Number(month.slice(0,4)),Number(month.slice(5)),0,12)).toISOString().slice(0,10);const range=dateRangeClause(field,month+'-01',to);clauses.push(range.sql);args.push(...range.args);}
+ if(user){clauses.push('user_id=?');args.push(user);}
  if(q){clauses.push("(number||' '||COALESCE(user_name,'')||' '||COALESCE(user_email,'')||' '||COALESCE(site_search,'')) LIKE ? ESCAPE '\\'");args.push('%'+q.replace(/[\\%_]/g,x=>'\\'+x)+'%');}
- return {bucket:bucket as AdminOrderFilterBucket,month,q,where:clauses.length?'WHERE '+clauses.join(' AND '):'',args,field};
+ return {bucket:bucket as AdminOrderFilterBucket,month,q,user,where:clauses.length?'WHERE '+clauses.join(' AND '):'',args,field};
 }
 export async function adminOrdersAttentionCount(){return Number((await one(`WITH ${adminOrderCte()} SELECT COUNT(*) AS n FROM classified WHERE ${viewSql.attention}`))?.n||0);}
 export async function adminOrders(query:URLSearchParams,exporting=false){
@@ -27,7 +31,8 @@ export async function adminOrders(query:URLSearchParams,exporting=false){
  const records=await all(`WITH ${cte} SELECT * FROM classified ${f.where} ORDER BY ${f.field} DESC,created DESC,id ${exporting?'':'LIMIT ? OFFSET ?'}`,...f.args,...(exporting?[]:[size,(page-1)*size]));
  const dates=exporting?[]:await all(`WITH ${cte} SELECT DISTINCT ${f.field} AS date FROM classified ${f.bucket==='all'?'':viewSql[f.bucket]?'WHERE '+viewSql[f.bucket]:'WHERE bucket=?'}`, ...(f.bucket==='all'||viewSql[f.bucket]?[]:[f.bucket]));
  const months=[...new Set(dates.map(d=>israelDate(d.date).slice(0,7)||'unknown'))].sort().reverse();
- const counts:Row=exporting?{}:Object.fromEntries((await all(`WITH ${cte} SELECT bucket,COUNT(*) AS n FROM classified GROUP BY bucket`)).map(r=>[r.bucket,Number(r.n)]));
- if(!exporting){const extra=await one(`WITH ${cte} SELECT COALESCE(SUM(cancel_pending_count>0),0) AS cancel,COALESCE(SUM(cancel_pending_count>0 OR ${reportSql}),0) AS needs_action,COUNT(*) AS total,COALESCE(SUM(${reportSql}),0) AS reports,COALESCE(SUM(${awaitingSql}),0) AS awaiting,COALESCE(SUM(${abandonedSql}),0) AS abandoned FROM classified`);counts.reports=Number(extra?.reports||0);counts.awaiting=Number(extra?.awaiting||0);counts.abandoned=Number(extra?.abandoned||0);counts.active=Number(extra?.total||0)-counts.awaiting;counts.attention=Number(extra?.needs_action||0);counts.cancel=Number(extra?.cancel||0);counts.needs_action=Number(extra?.needs_action||0);counts.all=Number(extra?.total||0);}
- return {orders:records.map(hydratedAdminOrder),total,page,page_size:size,months,counts,filters:{bucket:f.bucket,month:f.month,q:f.q},requested_page:requested,exporting};
+ const scope=f.user?' WHERE user_id=?':'',scopeArgs=f.user?[f.user]:[];
+ const counts:Row=exporting?{}:Object.fromEntries((await all(`WITH ${cte} SELECT bucket,COUNT(*) AS n FROM classified${scope} GROUP BY bucket`,...scopeArgs)).map(r=>[r.bucket,Number(r.n)]));
+ if(!exporting){const extra=await one(`WITH ${cte} SELECT COALESCE(SUM(cancel_pending_count>0),0) AS cancel,COALESCE(SUM(cancel_pending_count>0 OR ${reportSql}),0) AS needs_action,COUNT(*) AS total,COALESCE(SUM(${reportSql}),0) AS reports,COALESCE(SUM(${awaitingSql}),0) AS awaiting,COALESCE(SUM(${abandonedSql}),0) AS abandoned,COALESCE(SUM(${openPurchasesSql}),0) AS open_purchases,COALESCE(SUM(${toPaySql}),0) AS to_pay FROM classified${scope}`,...scopeArgs);counts.open_purchases=Number(extra?.open_purchases||0);counts.to_pay=Number(extra?.to_pay||0);counts.reports=Number(extra?.reports||0);counts.awaiting=Number(extra?.awaiting||0);counts.abandoned=Number(extra?.abandoned||0);counts.active=Number(extra?.total||0)-counts.awaiting;counts.attention=Number(extra?.needs_action||0);counts.cancel=Number(extra?.cancel||0);counts.needs_action=Number(extra?.needs_action||0);counts.all=Number(extra?.total||0);}
+ return {orders:records.map(hydratedAdminOrder),total,page,page_size:size,months,counts,filters:{bucket:f.bucket,month:f.month,q:f.q,user:f.user},requested_page:requested,exporting};
 }
