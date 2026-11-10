@@ -1,6 +1,6 @@
 'use client';
 import React,{useRef,useState} from 'react';
-import {Check,ChevronLeft,Download,FileText,Loader2,LockKeyhole,PencilLine,Plus,ReceiptText,X} from 'lucide-react';
+import {Check,ChevronLeft,Download,FileText,Loader2,LockKeyhole,Plus,ReceiptText,ShieldCheck,X} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import {orderCancellation} from '@/lib/order-finance';
@@ -15,6 +15,8 @@ import {CloseMonthlyOrder,ReceiveMonthlyPayment} from './monthly-order-actions';
 import {downloadMonthlySummary} from './month-close-actions';
 import {assignedPaymentMonth} from './payment-assignment';
 import {ReportReview} from './payment-reports';
+import {BankPaymentReview} from './payment-review';
+import {isAwaitingPayment,isBankPayment,isCardPayment} from '@/lib/payment-state';
 import {orderDate} from './customer-order-screen';
 import OrderStatementAction from './order-statement-action';
 import type {Ctx} from './workspace';
@@ -25,16 +27,15 @@ import './orders-modern.css';
 
 // 10.11.2026 The customer file's orders in the orders-screen look: the same rows and open panel,
 // with actions that belong to this customer (no "תיק לקוח", we are already in it).
+// The panel runs in its complete mode: everything the full order page did is here, so nothing links to that page.
 const views:[string,string][]=[['all','הכול'],['open_purchases','פתוחות'],['to_pay','לתשלום'],['closed','שולמו'],['archive','בוטלו והדגמות']];
 const plain=(e:React.MouseEvent)=>e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey;
 const siteName=(s:string)=>String(s||'').replace(/^https?:\/\//,'').replace(/^www\./,'');
 const monthlyOrder=(o:Row)=>!!(o.on_account||o.payment==='monthly'||o.billing_month);
 const statementPath=(o:Row)=>'admin/customer-account/'+encodeURIComponent(o.user_id)+'/order-statement/'+encodeURIComponent(o.id);
-/** Same rule as the customer file's price editor: only open items of an unpaid, unclosed order. */
 export const rowPay=(o:Row)=>{const pay=orderPaymentState(o);if(pay.tone!=='month')return pay;return o.purchase_closed_at||o.monthly_closed?{...pay,label:'נסגרה לתשלום'}:{...pay,label:'פתוחה לרכישות'};};
-export const canEditPrice=(a:Row,o:Row)=>!o.paid&&!o.settled&&!o.payment_settled&&!o.monthly_closed&&!a.publication_refunded&&!a.cancel_pending&&orderCancellation(o)!=='full';
 
-export default function CustomerFileOrders({ctx,id,name,price,newOrder}:{ctx:Ctx;id:string;name:string;price:(a:Row)=>void;newOrder:()=>void}){
+export default function CustomerFileOrders({ctx,id,name,newOrder}:{ctx:Ctx;id:string;name:string;newOrder:()=>void}){
  const [bucket,setBucket]=useState('all'),[page,setPage]=useState(1),[open,setOpen]=useState(''),[exporting,setExporting]=useState(false),[exported,setExported]=useState(false),[error,setError]=useState(''),lock=useRef(false);
  const params=new URLSearchParams({bucket,month:'',q:'',page:String(page),user:id});
  const state=useData('admin/orders?'+params,ctx.revision,true,15000),data=state.data;
@@ -42,7 +43,6 @@ export default function CustomerFileOrders({ctx,id,name,price,newOrder}:{ctx:Ctx
  const rows:Row[]=current?data.orders:[],counts:Row=data?.filters?.user===id?data.counts||{}:{},total=current?Number(data.total):0,size=Number(data?.page_size||20);
  const shownViews=views.filter(([key])=>key!=='archive'||Number(counts.archive)>0||bucket==='archive').map(([key,label])=>[key,label,Number(key==='all'?counts.all:counts[key])||0] as [string,string,number]);
  const exportOrders=async()=>{if(lock.current)return;lock.current=true;setExporting(true);setError('');try{await downloadAdminWorkbook('admin/orders?'+new URLSearchParams({bucket,month:'',q:'',user:id,export:'1'}),'orders-'+(name||'customer').replace(/[^\p{L}\p{N}]+/gu,'-')+'.xlsx');setExported(true);setTimeout(()=>setExported(false),2200);}catch(e){setError((e as Error).message);}finally{lock.current=false;setExporting(false);}};
- const manage=(o:Row)=>ctx.go('admin-order/'+o.id);
  const cols={gridTemplateColumns:'118px minmax(0,1.3fr) minmax(0,1fr) 130px 120px 44px',gap:12};
  return <section className="orders-match-screen sv2 sv2-orders cfo" dir="rtl" aria-labelledby="cfo-title">
   <h2 id="cfo-title" className="om-hidden">ההזמנות של הלקוח</h2>
@@ -70,8 +70,7 @@ export default function CustomerFileOrders({ctx,id,name,price,newOrder}:{ctx:Ctx
        <div className="sv2-rowact" onClick={e=>e.stopPropagation()}>{isOpen?<button type="button" className="sv2-dots is-close" aria-label={'סגירת פירוט הזמנה '+num} aria-expanded={true} aria-controls={'cfo-'+o.id} onClick={toggle}><X size={16}/></button>:<button type="button" className="sv2-chevbtn" aria-label={'פירוט הזמנה '+num} aria-expanded={false} aria-controls={'cfo-'+o.id} onClick={toggle}><ChevronLeft className="ofx-chev" size={17} aria-hidden="true"/></button>}</div>
       </div>
       {isOpen&&<RecordPanel id={'cfo-'+o.id} title={<>הזמנה <bdi>#{num}</bdi></>} badge={<span className={'sv2-pill '+orderPayPill(pay.tone)}><i/>{pay.label}</span>} onClose={()=>setOpen('')}>
-       <OrderPanel ctx={ctx} order={o} manage={()=>manage(o)} manageLabel="ניהול ההזמנה המלאה" profit hideCustomer
-        itemAction={(a,full)=>canEditPrice(a,full)?<button type="button" className="om-btn om-item-price" onClick={()=>price(a)}><PencilLine size={15} aria-hidden="true"/>עריכת מחיר</button>:null}
+       <OrderPanel ctx={ctx} order={o} manage={()=>{}} profit complete
         section={full=><PaymentSection ctx={ctx} o={{...o,...full,user_email:o.user_email,user_name:o.user_name}}/>}
         actions={full=>{const m={...o,...full};return monthlyOrder(m)&&!m.purchase_closed_at&&!paymentConfirmed(m)?null:<OrderStatementAction ctx={ctx} order={m}/>;}}/>
       </RecordPanel>}
@@ -90,11 +89,13 @@ function PaymentSection({ctx,o}:{ctx:Ctx;o:Row}){
  const review=async()=>{setBusy('review');setError('');try{const {report}=await api('orders/'+o.id+'/payment-report');if(!report)throw new Error('הדיווח כבר אינו ממתין לבדיקה. יש לרענן.');ctx.open({kind:'admin-finance',title:'דיווח תשלום לבדיקה',render:(close:()=>void)=><ReportReview ctx={ctx} report={report} close={close}/>});}catch(e){setError((e as Error).message);}finally{setBusy('');}};
  const download=async()=>{setBusy('pdf');setError('');try{if(o.monthly_closed&&!o.purchase_closed_at)await downloadMonthlySummary(o);else{const r=await api(statementPath(o));const {downloadStatementPdf}=await import('@/lib/statement-pdf');await downloadStatementPdf(r.summary);}}catch(e){setError((e as Error).message);}finally{setBusy('');}};
  const reportPending=o.payment_report?.status==='pending'||o.payment_report_status==='pending';
- if(!monthly&&!reportPending)return null;
+ const awaiting=!monthly&&isAwaitingPayment(o),bank=awaiting&&isBankPayment(o),card=awaiting&&isCardPayment(o);
+ if(!monthly&&!reportPending&&!bank&&!card)return null;
  return <section className="sk-card cfo-pay"><header className="sk-head"><h3>תשלום</h3></header>
-  <p className="om-note">{monthly?(closed?'ההזמנה נסגרה לרכישות והסיכום נשלח ללקוח. התשלום עוד לא אושר.':<>חודש שירות {historyMonthLabel(month)} · יחויב בסגירת החודש</>):'הלקוח דיווח על תשלום. צריך לבדוק ולאשר.'}</p>
+  <p className="om-note">{monthly?(closed?'ההזמנה נסגרה לרכישות והסיכום נשלח ללקוח. התשלום עוד לא אושר.':<>חודש שירות {historyMonthLabel(month)} · יחויב בסגירת החודש</>):reportPending?'הלקוח דיווח על תשלום. צריך לבדוק ולאשר.':bank?'ההזמנה ממתינה להעברה בנקאית. הכתבות ייפתחו לטיפול אחרי אימות קבלת התשלום.':'ההזמנה ממתינה לתשלום באשראי של הלקוח. הכתבות ייפתחו לטיפול אחרי שהתשלום יצליח.'}</p>
   <div className="cfo-pay-actions">
    {reportPending&&<button type="button" className="om-btn is-primary" disabled={!!busy} aria-busy={busy==='review'||undefined} onClick={review}>{busy==='review'?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:<FileText size={16} aria-hidden="true"/>}בדיקת דיווח התשלום</button>}
+   {bank&&<button type="button" className={'om-btn'+(reportPending?'':' is-primary')} onClick={()=>ctx.open({kind:'admin-finance',title:'אימות העברה בנקאית',render:(close:()=>void)=><BankPaymentReview ctx={ctx} order={o} close={close}/>})}><ShieldCheck size={16} aria-hidden="true"/>אימות קבלת התשלום</button>}
    {monthly&&(closed?<button type="button" className="om-btn" disabled={!!busy} aria-busy={busy==='pdf'||undefined} onClick={download}>{busy==='pdf'?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:<Download size={16} aria-hidden="true"/>}{busy==='pdf'?'מפיק PDF…':'הורדת סיכום ההזמנה (PDF)'}</button>
     :<button type="button" className={'om-btn'+(reportPending?'':' is-primary')} onClick={()=>ctx.open({kind:'admin-finance',title:'סגירת חודש ושליחה ללקוח',render:(close:()=>void)=><CloseMonthlyOrder ctx={ctx} order={o} close={close}/>})}><LockKeyhole size={16} aria-hidden="true"/>סגירת חודש ושליחה ללקוח</button>)}
    {monthly&&<button type="button" className="om-btn" onClick={()=>ctx.open({kind:'admin-finance',title:'דיווח על קבלת תשלום',render:(close:()=>void)=><ReceiveMonthlyPayment ctx={ctx} order={o} close={close}/>})}><ReceiptText size={16} aria-hidden="true"/>דיווח על קבלת תשלום</button>}

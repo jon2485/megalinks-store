@@ -108,3 +108,30 @@
 @media (prefers-reduced-motion:reduce){.cf .cfo .cfo-bar .om-chips>button{transition:none}.cf .cfo .cfo-bar .om-chips>button:active{transform:none}}
 /* phones: the item actions (price + cancel) get their own full-width line, so the site address keeps its room */
 @media (max-width:760px){.cf .cfo .om-item>.om-item-acts{grid-area:auto;grid-column:1/-1;grid-row:3;justify-self:end}}
+
+/* 10.11.2026 The order panel in its complete mode (customer file): search inside a large order,
+   price and refund history under an item, and the price editor opened inside the panel. */
+.cf .cfo .om-item-search{display:flex;align-items:center;gap:8px;min-height:40px;margin:0 16px 8px;padding:0 12px;border-radius:12px;background:#f5f5f7;color:#86868b;transition:box-shadow .15s,background-color .15s}
+.cf .cfo .om-item-search:focus-within{background:#fff;box-shadow:0 0 0 2px #0071e3}
+/* doubled classes: the admin's global input rule (5 classes, !important) gives every input its own white box */
+.cf.cf .cfo.cfo .om-item-search.om-item-search input[type=search]{flex:1;min-width:0;height:38px!important;min-height:0!important;margin:0;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important;outline:0!important;font:inherit;font-size:14.5px!important;color:#1d1d1f}
+.cf .cfo .om-item-search button{display:grid;place-items:center;width:28px;height:28px;border:0;border-radius:50%;background:none;color:#86868b;cursor:pointer}
+.cf .cfo .om-item-search button:hover{background:#e8e8ed;color:#1d1d1f}
+.cf .cfo .om-item-search button:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+.cf .cfo .om-item-found{margin:10px 16px;font-size:13px;color:#86868b}
+.cf .cfo .om-item-history{display:grid;gap:2px;margin-top:4px}
+.cf .cfo .om-item-history p{margin:0;font-size:12.5px;line-height:1.5;color:#86868b}
+.cf .cfo .om-refund.om-price-edit{margin:0 12px 12px;padding:0}
+.cf .cfo .om-price-edit .finance-price-editor{padding:16px;border:0;border-radius:16px;background:#f0f7ff;box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.22);color:#1d1d1f}
+.cf .cfo .om-price-edit .finance-price-editor h3{margin:0;font-size:15px;font-weight:700}
+.cf .cfo .om-price-edit .finance-price-editor input{height:42px;min-height:42px;padding:0 12px;border:0!important;border-radius:12px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.08)!important;font-size:15px}
+.cf .cfo .om-price-edit .finance-price-editor input:focus{outline:0;box-shadow:0 0 0 2px #0071e3!important}
+.cf .cfo .om-price-edit .finance-price-editor [data-slot=button]{min-height:40px;padding:0 18px;border-radius:999px;font-size:14px;font-weight:600}
+.cf .cfo .om-price-edit .finance-price-editor [data-variant=default]{background:#0071e3;border-color:#0071e3}
+.cf .cfo .om-price-edit .finance-price-editor [data-variant=default]:hover{background:#0077ed}
+.cf .cfo .om-price-edit .finance-price-editor [data-variant=outline]{border:0;box-shadow:0 0 0 1px rgba(0,0,0,.1);color:#1d1d1f}
+@media (max-width:760px){
+ .cf .cfo .om-item-search{margin:0 0 8px}
+ .cf .cfo .om-refund.om-price-edit{margin:0 0 12px}
+ .cf .cfo .om-price-edit .finance-price-editor [data-slot=button]{flex:1;padding:0 10px;font-size:13.5px;white-space:nowrap}
+}
