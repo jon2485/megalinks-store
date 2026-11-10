@@ -668,3 +668,11 @@
 ## 10.11.2026: Button feedback (Apple)
 - app/press-feedback.ts + .css; run() in workspace.tsx marks the pressed button: spinner while it runs, green ring on success, red ring and a light shake on error, a short vibration on touch phones.
 - Press, hover, focus and disabled across admin screens and dialogs, a shimmer instead of "Loading…" text, and reduced-motion support.
+
+## 10.11.2026: Orders screen feedback (Apple)
+- Files: app/admin-order-history.tsx, app/orders-v2.css (the "ofx" block at the end).
+- Row hover and press, arrow turns down when the row is open, the opened order fades in from its row, the menu grows from its button.
+- Loading shows rows in the shape of the list; the chosen card's number pulses; the search icon spins while searching.
+- An active month or status filter is tinted blue; the current page is light blue (not dark).
+- Export: spinner, then "file downloaded" with a check for 2 seconds. Page change scrolls back to the top of the list.
+- Reduced motion turns the animations off. Not checked on a real phone.
