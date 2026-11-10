@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הדמיה: מסך הזמנות, סבב 3</title>
+<style>
+*{box-sizing:border-box;margin:0}
+body{font:15px/1.45 system-ui,"Segoe UI",Arial,sans-serif;color:#1d1d1f;background:#e9ecf2;padding:28px}
+h1{font-size:20px;margin-bottom:4px}
+.note{color:#6e6e73;margin-bottom:20px;font-size:14px}
+.stage{display:flex;gap:28px;align-items:flex-start}
+.cap{font-size:13px;font-weight:700;color:#6e6e73;margin-bottom:8px}
+.desk{width:1120px;flex:none;background:#f5f6f9;border-radius:22px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.12)}
+.phone{width:390px;flex:none;background:#f5f6f9;border-radius:34px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.16);position:relative;height:844px}
+.top{display:flex;align-items:center;gap:12px;padding:12px 24px;background:#fff;border-bottom:1px solid #e6e8ee}
+.top b{font-size:15px}
+.chip{padding:5px 12px;border-radius:999px;background:#f0f1f4;font-size:13px;font-weight:600;color:#424245}
+.sp{flex:1}
+.ghost{padding:7px 14px;border-radius:999px;border:1px solid #dcdfe6;background:#fff;font:inherit;font-size:13px;font-weight:600}
+.wrap{padding:20px 24px 26px}
+.tabs{display:flex;gap:6px;padding:6px;background:#fff;border-radius:18px;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+.tabs span{flex:1 1 auto;display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:6px 12px;border-radius:13px;font-weight:600;font-size:14px;color:#424245;white-space:nowrap}
+.tabs .on{background:rgba(0,113,227,.09);color:#0066cc;box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.45)}
+.bd{min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#b25000;color:#fff;font-size:11.5px;font-weight:700;display:inline-grid;place-items:center}
+.on .bd{background:#0071e3}
+.head{display:flex;align-items:center;gap:14px;margin:18px 0 12px}
+.head h2{font-size:28px;letter-spacing:-.02em}
+.sum{display:flex;gap:8px;flex:1}
+.sum div{display:flex;align-items:baseline;gap:8px;padding:9px 16px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05);font-size:13.5px;color:#6e6e73;font-weight:600}
+.sum div b{font-size:19px;color:#1d1d1f}
+.sum .on{box-shadow:inset 0 0 0 2px #0071e3;color:#0066cc}
+.sum .hot b{color:#b25000}
+.card{background:#fff;border-radius:22px;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 6px 24px rgba(0,0,0,.04);overflow:hidden}
+.bar{display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid #eef0f4}
+.search{flex:1;padding:10px 16px;border-radius:12px;background:#f3f4f7;color:#86868b}
+.sel{padding:10px 16px;border-radius:12px;background:#f3f4f7;font-weight:600;white-space:nowrap}
+.row,.hd{display:grid;grid-template-columns:96px minmax(0,1.5fr) minmax(0,1fr) 150px 100px 120px 124px;gap:14px;align-items:center;padding:0 22px}
+.hd{height:38px;font-size:12px;color:#86868b;font-weight:600}
+.row{min-height:62px;border-top:1px solid #f0f1f4}
+.row.hov{background:#f5f9ff}
+.row .id b{display:block;font-size:15px}
+.row small{color:#86868b;font-size:12.5px}
+.cust{display:flex;gap:10px;align-items:center;min-width:0}
+.av{width:36px;height:36px;border-radius:11px;background:#0a84ff;color:#fff;font-weight:700;display:grid;place-items:center;flex:none}
+.av.m{background:#ff375f}
+.cust b{display:block;font-size:14.5px}
+.site{direction:ltr;text-align:right;font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.more{padding:2px 7px;border-radius:999px;background:#f0f1f4;font-size:12px;font-weight:700;margin-inline-start:6px}
+.st{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:700}
+.st::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor}
+.ok{background:#e6f6ea;color:#1d7a3a}.wait{background:#fff1e0;color:#b25000}.mon{background:#e8f1fe;color:#0066cc}.can{background:#f0f1f4;color:#6e6e73}
+.pub{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#424245}
+.pb{flex:1;height:5px;border-radius:3px;background:#eceef2;overflow:hidden;max-width:60px}
+.pb i{display:block;height:100%;background:#34c759}
+.amt{font-weight:700;font-size:15.5px;text-align:left;direction:ltr}
+.muted{color:#aeaeb2;font-weight:500}
+.act{display:flex;gap:6px;justify-content:flex-end;color:#aeaeb2;font-size:18px;align-items:center}
+.cta{padding:6px 12px;border-radius:999px;background:#0071e3;color:#fff;font-size:12.5px;font-weight:700;white-space:nowrap}
+.tag{position:absolute;inset-inline-start:-6px;top:-9px;width:20px;height:20px;border-radius:50%;background:#1d1d1f;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
+.rel{position:relative}
+/* phone */
+.ptop{display:flex;align-items:center;padding:12px 16px;background:#fff;border-bottom:1px solid #e6e8ee}
+.pw{padding:12px 12px 110px}
+.ptabs{display:flex;gap:6px;padding:5px;background:#fff;border-radius:16px;box-shadow:0 0 0 1px rgba(0,0,0,.05);overflow:hidden;-webkit-mask-image:linear-gradient(to left,#000 82%,transparent)}
+.ptabs span{flex:none;display:flex;align-items:center;gap:6px;min-height:40px;padding:6px 12px;border-radius:12px;font-weight:600;font-size:14px;white-space:nowrap;color:#424245}
+.ptabs .on{background:rgba(0,113,227,.09);color:#0066cc;box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.45)}
+.ph{display:flex;align-items:center;margin:12px 4px 8px}
+.ph h2{font-size:24px}
+.psum{display:flex;gap:6px;margin-bottom:10px}
+.psum div{flex:1;padding:7px 4px;border-radius:13px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05);text-align:center;font-size:11.5px;color:#6e6e73;font-weight:600}
+.psum b{display:block;font-size:17px;color:#1d1d1f}
+.psum .on{box-shadow:inset 0 0 0 2px #0071e3;color:#0066cc}.psum .hot b{color:#b25000}
+.pbar{display:flex;gap:8px;margin-bottom:10px}
+.pbar .search{background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+.fbtn{width:44px;height:44px;border-radius:12px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05);display:grid;place-items:center;font-size:17px;flex:none}
+.po{background:#fff;border-radius:18px;box-shadow:0 0 0 1px rgba(0,0,0,.05);padding:12px 14px;margin-bottom:8px}
+.po .l1{display:flex;align-items:center;gap:10px}
+.po .l1 b{font-size:15px}
+.po .l2{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12.5px;color:#6e6e73}
+.dock{position:absolute;bottom:14px;inset-inline:14px;height:64px;border-radius:32px;background:rgba(255,255,255,.88);box-shadow:0 8px 30px rgba(0,0,0,.16);display:flex;align-items:center;justify-content:space-around;font-size:11.5px;font-weight:600;color:#424245}
+.dock .on{color:#0066cc}
+.list{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 28px;margin-top:22px;font-size:14px;max-width:1540px}
+.list span{display:flex;gap:8px}.list i{font-style:normal;font-weight:700;width:22px;flex:none}
+</style>
+</head>
+<body>
+<h1>מסך הזמנות, סבב 3 (הדמיה בלבד)</h1>
+<p class="note">הנתונים בדויים. המספרים השחורים מסמנים את הסעיף מרשימת השיפורים.</p>
+<div class="stage">
+<div>
+<p class="cap">מחשב</p>
+<div class="desk">
+ <div class="top rel"><span class="tag" style="top:4px;inset-inline-start:4px">11</span><b>שלום, מנהל בדיקה</b><span class="sp"></span><span class="chip">יתרה ‎₪0</span><button class="ghost">יציאה</button></div>
+ <div class="wrap">
+  <div class="tabs"><span class="on">הזמנות <i class="bd">1</i></span><span>סגירת חודש</span><span>דיווחי תשלום</span><span>חשבוניות וקבלות <i class="bd">17</i></span><span>הטענות יתרה</span><span>חשבונות חודשיים <i class="bd">1</i></span></div>
+  <div class="head rel"><span class="tag">6</span><h2>הזמנות</h2>
+   <div class="sum"><div class="on">כל ההזמנות <b>31</b></div><div class="hot">לטיפול <b>1</b></div><div>ממתינות לתשלום <b>3</b></div><div>חודשיות <b>2</b></div></div>
+   <button class="ghost">ייצוא נתונים</button></div>
+  <div class="card">
+   <div class="bar"><div class="search">חיפוש לקוח, מספר הזמנה או אתר</div><div class="sel">כל החודשים ⌄</div><div class="sel">כל המצבים ⌄</div></div>
+   <div class="hd"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span style="text-align:left">סכום</span><span></span></div>
+   <div class="row hov"><div class="id"><b>#1030</b><small>09.11.2026</small></div><div class="cust rel"><span class="tag">9</span><span class="av">ל</span><div><b>לקוח בדיקה רגיל</b><small>הזמנה רגילה · אתר אחד</small></div></div><div class="site">jpost.com</div><div class="rel"><span class="tag">8</span><span class="st ok">שולם</span></div><div class="pub"><span class="pb"><i style="width:0"></i></span>0/1</div><div class="amt">₪3,068.00</div><div class="act rel"><span class="tag">7</span>⋯ ‹</div></div>
+   <div class="row"><div class="id"><b>#1029</b><small>09.11.2026</small></div><div class="cust"><span class="av">ל</span><div><b>לקוח בדיקה רגיל</b><small>הזמנה רגילה · אתר אחד</small></div></div><div class="site muted">jpost.com</div><div><span class="st can">בוטלה</span></div><div class="pub muted">—</div><div class="amt muted rel"><span class="tag">10</span>—</div><div class="act">⋯ ‹</div></div>
+   <div class="row"><div class="id"><b>#1025</b><small>09.11.2026</small></div><div class="cust"><span class="av">ל</span><div><b>לקוח בדיקה רגיל</b><small>הזמנה רגילה · אתר אחד</small></div></div><div class="site">jpost.com</div><div><span class="st wait">טרם דווח תשלום</span></div><div class="pub"><span class="pb"><i style="width:0"></i></span>0/1</div><div class="amt">₪3,068.00</div><div class="act">⋯ ‹</div></div>
+   <div class="row"><div class="id"><b>#1021</b><small>06.11.2026</small></div><div class="cust"><span class="av m">מ</span><div><b>מנהל בדיקה</b><small>הזמנה רגילה · 2 אתרים</small></div></div><div class="site">mynet.co.il<span class="more">+1</span></div><div><span class="st wait">טרם דווח תשלום</span></div><div class="pub"><span class="pb"><i style="width:50%"></i></span>1/2</div><div class="amt">₪1,062.00</div><div class="act">⋯ ‹</div></div>
+   <div class="row"><div class="id"><b>#1019</b><small>02.11.2026</small></div><div class="cust"><span class="av m">ל</span><div><b>לקוח בדיקה חודשי</b><small>הזמנה חודשית · 3 אתרים</small></div></div><div class="site">ynet.co.il<span class="more">+2</span></div><div><span class="st mon">חודשית פתוחה</span></div><div class="pub"><span class="pb"><i style="width:33%"></i></span>1/3</div><div class="amt">₪6,985.60</div><div class="act">⋯ ‹</div></div>
+   <div class="row"><div class="id"><b>#1017</b><small>01.11.2026</small></div><div class="cust"><span class="av m">ל</span><div><b>לקוח בדיקה חודשי</b><small>הזמנה חודשית · 47 אתרים</small></div></div><div class="site">ynet.co.il<span class="more">+46</span></div><div><span class="st ok">שולם</span></div><div class="pub"><span class="pb"><i style="width:2%"></i></span>1/47</div><div class="amt">₪225,380.00</div><div class="act"><span class="cta">טיפול בביטול</span></div></div>
+  </div>
+ </div>
+</div>
+</div>
+<div>
+<p class="cap">טלפון</p>
+<div class="phone">
+ <div class="ptop"><b>MegaLinks</b><span class="sp"></span><span class="chip">☰</span></div>
+ <div class="pw">
+  <div class="rel"><span class="tag">15</span><div class="ptabs"><span class="on">הזמנות <i class="bd">1</i></span><span>סגירת חודש</span><span>דיווחי תשלום</span><span>חשבוניות <i class="bd">17</i></span></div></div>
+  <div class="ph rel"><span class="tag">12</span><h2>הזמנות</h2><span class="sp"></span><button class="ghost">ייצוא</button></div>
+  <div class="psum"><div class="on"><b>31</b>הכול</div><div class="hot"><b>1</b>לטיפול</div><div><b>3</b>לתשלום</div><div><b>2</b>חודשיות</div></div>
+  <div class="pbar rel"><span class="tag">14</span><div class="search">חיפוש הזמנה</div><span class="fbtn">⚙︎</span></div>
+  <div class="po rel"><span class="tag">13</span><div class="l1"><span class="av">ל</span><div><b>לקוח בדיקה רגיל</b><br><small style="color:#86868b">#1030 · 09.11.2026 · jpost.com</small></div><span class="sp"></span><span class="amt">₪3,068.00</span></div><div class="l2"><span class="st ok">שולם</span><span class="sp"></span>פורסם 0/1 ‹</div></div>
+  <div class="po"><div class="l1"><span class="av">ל</span><div><b>לקוח בדיקה רגיל</b><br><small style="color:#86868b">#1029 · 09.11.2026 · jpost.com</small></div><span class="sp"></span><span class="amt muted">—</span></div><div class="l2"><span class="st can">בוטלה</span><span class="sp"></span>‹</div></div>
+  <div class="po"><div class="l1"><span class="av m">מ</span><div><b>מנהל בדיקה</b><br><small style="color:#86868b">#1021 · 06.11.2026 · 2 אתרים</small></div><span class="sp"></span><span class="amt">₪1,062.00</span></div><div class="l2"><span class="st wait">טרם דווח תשלום</span><span class="sp"></span>פורסם 1/2 ‹</div></div>
+  <div class="po"><div class="l1"><span class="av m">ל</span><div><b>לקוח בדיקה חודשי</b><br><small style="color:#86868b">#1019 · 02.11.2026 · 3 אתרים</small></div><span class="sp"></span><span class="amt">₪6,985.60</span></div><div class="l2"><span class="st mon">חודשית פתוחה</span><span class="sp"></span>פורסם 1/3 ‹</div></div>
+  <div class="po"><div class="l1"><span class="av m">ל</span><div><b>לקוח בדיקה חודשי</b><br><small style="color:#86868b">#1017 · 01.11.2026 · 47 אתרים</small></div><span class="sp"></span><span class="amt">₪225,380.00</span></div><div class="l2"><span class="st ok">שולם</span><span class="sp"></span><span class="cta">טיפול בביטול</span></div></div>
+ </div>
+ <div class="dock rel"><span class="tag" style="top:-8px">16</span><span>מרכז העבודה</span><span class="on">הזמנות</span><span>כתבות</span><span>לקוחות</span><span>פניות</span></div>
+</div>
+</div>
+</div>
+<div class="list">
+ <span><i>6</i>הכותרת, ארבעת הסיכומים והייצוא בשורה אחת. הרשימה מתחילה גבוה יותר.</span>
+ <span><i>12</i>בטלפון: סיכומים בשורה אחת קטנה, ההזמנה הראשונה נראית בלי גלילה.</span>
+ <span><i>7</i>בלי כפתור "פירוט" בכל שורה. כל השורה נלחצת, עם חץ קטן.</span>
+ <span><i>13</i>כרטיס הזמנה בשתי שורות במקום שש.</span>
+ <span><i>8</i>בלי "העברה בנקאית" בכל שורה. הפרסום מוצג כ-1/3 עם פס קטן.</span>
+ <span><i>14</i>חיפוש ברוחב מלא וכפתור סינון אחד, בלי טקסט חתוך.</span>
+ <span><i>9</i>שורת המשנה של הלקוח קצרה ולא נחתכת.</span>
+ <span><i>15</i>לשוניות האזור נגללות הצידה, עם דהייה בקצה שמרמזת שיש עוד.</span>
+ <span><i>10</i>הזמנה מבוטלת: קו במקום ‎₪0.00, והשורה מעומעמת.</span>
+ <span><i>16</i>רווח בתחתית הרשימה, כך שהסרגל התחתון לא מסתיר הזמנה.</span>
+ <span><i>11</i>היתרה כתגית נפרדת מהברכה. בלי תחתית האתר הציבורי במסכי ניהול.</span>
+</div>
+</body>
+</html>
