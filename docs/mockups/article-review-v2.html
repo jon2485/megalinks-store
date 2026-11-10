@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הדמיה: מסך בדיקת כתבה (ניהול), גרסה 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+:root{--ink:#1d1d1f;--copy:#424245;--mute:#86868b;--line:rgba(0,0,0,.08);--blue:#0071e3;--link:#0066cc;--green:#1a7f3c;--orange:#b25000;--card:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05)}
+html{background:#f3f6fa}
+body{font:15px/1.5 Heebo,"Segoe UI",Arial,sans-serif;color:var(--ink);background:linear-gradient(180deg,#eef4fb 0,#f3f6fa 420px);min-height:100vh}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+svg.i{width:1em;height:1em;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;font-size:16px}
+bdi{unicode-bidi:isolate}
+
+/* admin frame (exists today, not part of the change) */
+.app{display:grid;grid-template-columns:268px minmax(0,1fr);min-height:100vh}
+.nav{background:#fff;border-inline-end:1px solid #e3e8ef;padding:22px 16px;display:grid;align-content:start;gap:4px}
+.nav .logo{font-weight:800;font-size:22px;letter-spacing:-.02em;color:#0c2b4d;padding:0 8px 16px}
+.nav .logo span{color:#12a7c7}
+.nav .find{height:38px;border-radius:10px;box-shadow:inset 0 0 0 1px #e3e8ef;padding:0 12px;display:flex;align-items:center;color:var(--mute);font-size:13.5px;margin-bottom:14px}
+.nav h6{font-size:12px;color:var(--mute);font-weight:600;padding:10px 8px 4px}
+.nav a{display:flex;align-items:center;justify-content:space-between;height:38px;padding:0 10px;border-radius:9px;font-weight:600;font-size:14.5px;color:#22303f;text-decoration:none}
+.nav a.on{background:#e6f1fd;color:#0a58b0;box-shadow:inset 0 0 0 1px #9cc8f5}
+.nav a i{font-style:normal;min-width:22px;height:22px;border-radius:999px;background:#e02424;color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center;padding:0 6px}
+.topbar{height:64px;background:#fff;border-bottom:1px solid #e3e8ef;display:flex;align-items:center;gap:10px;padding:0 28px;font-weight:600;font-size:14.5px}
+.topbar .chip{padding:4px 12px;border-radius:999px;background:#f0f1f4;font-size:13px}
+.topbar .menu{display:none}
+.page{padding:22px 28px 60px;max-width:1172px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:6px;border-radius:16px;background:#fff;box-shadow:var(--card);margin-bottom:14px}
+.tabs span{height:40px;display:flex;align-items:center;justify-content:center;gap:8px;border-radius:11px;font-weight:700;font-size:14.5px;color:#22303f}
+.tabs span.on{background:#e6f1fd;color:#0a58b0;box-shadow:inset 0 0 0 1px #9cc8f5}
+.tabs em{font-style:normal;background:#0071e3;color:#fff;border-radius:999px;font-size:11.5px;padding:1px 8px}
+
+/* one card language for the whole page */
+.card{background:#fff;border-radius:20px;box-shadow:var(--card);padding:22px}
+.card+.card{margin-top:14px}
+.card>h2,.card-head h2{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.card-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.label{font-size:12.5px;font-weight:600;color:var(--mute);margin-bottom:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;padding:0 16px;border:0;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);font-size:14px;font-weight:600;white-space:nowrap;color:var(--ink);text-decoration:none}
+.btn.primary{background:var(--blue);color:#fff;box-shadow:none}
+.btn.tint{background:rgba(0,113,227,.08);color:var(--link);box-shadow:none}
+.btn.warn{background:rgba(255,149,0,.14);color:var(--orange);box-shadow:none}
+.btn.quiet{box-shadow:none;background:#f5f5f7;min-height:36px;padding:0 13px;font-size:13.5px}
+.btn.lg{width:100%;min-height:48px;font-size:15.5px}
+.btn.sm{min-height:34px;padding:0 12px;font-size:13px}
+
+/* header */
+.head{display:grid;gap:16px;margin-bottom:14px}
+.head-top{display:flex;align-items:center;justify-content:space-between}
+.back{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 10px 0 12px;margin-inline-start:-10px;border:0;border-radius:999px;background:transparent;font-size:14px;font-weight:600;color:var(--copy)}
+.saved{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:600;color:var(--green)}
+.title{display:flex;align-items:center;gap:14px}
+.logo-box{width:52px;height:52px;flex:none;border-radius:14px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);display:grid;place-items:center;font-weight:800;font-size:11px;color:#0c2b4d;letter-spacing:.02em}
+.title h1{font-size:27px;font-weight:800;letter-spacing:-.02em;line-height:1.2;flex:1;min-width:0}
+.pill{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 14px;border-radius:999px;background:rgba(0,113,227,.1);color:var(--link);font-size:13.5px;font-weight:700;white-space:nowrap}
+.pill::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--blue)}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.fact{display:grid;gap:1px;align-content:start;padding:13px 18px;border:0;background:transparent;text-align:start;min-width:0;position:relative}
+.fact+.fact{border-inline-start:1px solid var(--line)}
+.fact .k{font-size:12.5px;font-weight:600;color:var(--mute)}
+.fact .v{display:flex;align-items:center;gap:6px;font-size:17px;font-weight:700;letter-spacing:-.01em;min-width:0}
+.fact .v span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fact .v svg{font-size:15px}
+.fact .s{font-size:13px;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fact.go .v{color:var(--link)}
+.where{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;padding-top:16px;border-top:1px solid var(--line)}
+.where p{font-size:15px;color:var(--copy)}
+.where p b{color:var(--ink)}
+.track{display:flex;align-items:flex-start;list-style:none;padding:0}
+.track li{display:grid;grid-template-columns:auto auto;column-gap:9px;align-items:center;position:relative;padding-inline-end:54px}
+.track li:last-child{padding-inline-end:0}
+.track li:not(:last-child)::after{content:"";position:absolute;inset-inline-end:10px;top:13px;width:34px;height:2px;border-radius:2px;background:#e3e6ea}
+.track li[data-s=done]:not(:last-child)::after{background:#34c759}
+.dot{grid-row:1/3;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;background:#fff;box-shadow:inset 0 0 0 1.5px #d2d2d7;color:var(--mute)}
+.track b{font-size:14px;font-weight:700;line-height:1.25;color:var(--mute)}
+.track small{font-size:12px;color:var(--mute);line-height:1.25}
+.track li[data-s=done] .dot{background:#34c759;box-shadow:none;color:#fff}
+.track li[data-s=done] b{color:var(--ink)}
+.track li[data-s=now] .dot{background:var(--blue);box-shadow:0 0 0 4px rgba(0,113,227,.16);color:#fff}
+.track li[data-s=now] b{color:var(--link)}
+
+/* body */
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 372px;gap:14px;align-items:start}
+.side{position:sticky;top:14px}
+.tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-bottom:16px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.seg{display:inline-flex;padding:3px;border-radius:999px;background:#f0f1f4}
+.seg span{display:inline-flex;align-items:center;gap:6px;height:32px;padding:0 14px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--copy)}
+.seg span.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.count{font-size:13px;color:var(--mute)}
+.doc .count{font-size:13px;color:var(--mute);margin:-8px 0 14px;line-height:1.4}
+.sp{flex:1}
+.doc h2{font-size:24px;font-weight:800;letter-spacing:-.02em;line-height:1.25;margin-bottom:14px}
+.doc p{font-size:16px;line-height:1.75;color:#2b2b2f;margin-bottom:12px}
+.doc a{color:var(--link);text-decoration:underline;text-underline-offset:3px;font-weight:600}
+.doc .ph{height:190px;border-radius:14px;margin-bottom:16px;background:linear-gradient(135deg,#cfe3f7,#e8f1fb 55%,#d8ecdf)}
+.doc .more{font-size:13.5px;color:var(--mute);text-align:center;padding-top:6px;margin:0}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.field label{display:block;font-size:13.5px;font-weight:600;margin-bottom:6px}
+.box{border-radius:12px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.12);padding:10px 13px;font-size:14.5px;line-height:1.5;min-height:74px;color:#2b2b2f}
+.box.line{min-height:44px;display:flex;align-items:center;gap:8px}
+.hint{font-size:12.5px;color:var(--green);margin-top:5px;font-weight:600}
+.pics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pic{display:grid;grid-template-columns:96px minmax(0,1fr);gap:12px;align-items:center}
+.pic .th{height:72px;border-radius:12px;background:linear-gradient(135deg,#cfe3f7,#e8f1fb 55%,#d8ecdf)}
+.pic:nth-child(2) .th{background:linear-gradient(135deg,#f4e3cf,#fbf1e8 55%,#e6dcf4)}
+.pic b{display:block;font-size:14px}
+.pic small{display:block;font-size:12.5px;color:var(--mute);margin-bottom:6px}
+.pic .acts{display:flex;gap:6px}
+.fold{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fold h2{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:700}
+.fold h2 em{font-style:normal;font-size:12.5px;background:#f0f1f4;border-radius:999px;padding:1px 9px;color:var(--copy)}
+.fold>span{font-size:13px;color:var(--mute);display:flex;align-items:center;gap:6px}
+
+/* decision */
+.decide h2{margin-bottom:16px}
+.sect+.sect{margin-top:16px;padding-top:16px;border-top:1px solid var(--line)}
+.checks{list-style:none;padding:0;display:grid;gap:7px}
+.checks li{display:flex;align-items:center;gap:9px;font-size:14.5px;min-height:24px}
+.checks li svg{color:var(--green);font-size:17px}
+.checks li[data-s=warn]{color:var(--orange);font-weight:600}.checks li[data-s=warn]>svg{color:var(--orange)}
+.checks li[data-s=opt]{color:var(--mute)}.checks li[data-s=opt]>svg{color:var(--mute)}
+.checks li .btn{margin-inline-start:auto}.checks li .btn svg{color:inherit;font-size:15px}
+.reqs{padding:0 18px 0 0;display:grid;gap:5px;font-size:14.5px;color:#2b2b2f}
+.memo{margin-top:10px;padding:9px 12px;border-radius:10px;background:#f5f5f7;font-size:13.5px;color:var(--copy)}
+.after{font-size:13px;color:var(--mute);margin:7px 2px 14px;text-align:center}
+.self{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:13.5px;color:var(--mute)}
+.self b{display:block;color:var(--ink);font-size:14.5px}
+.bar{display:none}
+
+/* phone */
+@media (max-width:900px){
+ .app{display:block}.nav{display:none}
+ .topbar{height:56px;padding:0 14px}.topbar .menu{display:inline-flex}.topbar .menu+.menu{margin-inline-start:auto}.topbar .hide{display:none}
+ .page{padding:12px 12px 120px}
+ .tabs{display:none}
+ .card{padding:16px;border-radius:18px}
+ .title{align-items:flex-start;flex-wrap:wrap;gap:10px 12px}
+ .title h1{font-size:21px;flex:1 1 60%}
+ .logo-box{width:44px;height:44px}
+ .facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .fact{padding:11px 14px;min-height:74px}
+ .fact+.fact{border-inline-start:0}
+ .fact:nth-child(even){border-inline-start:1px solid var(--line)}
+ .fact:nth-child(n+3){border-top:1px solid var(--line)}
+ .fact .v{font-size:15.5px}
+ .where{grid-template-columns:1fr;gap:14px}
+ .track{justify-content:space-between}
+ .track li{grid-template-columns:auto;justify-items:center;text-align:center;padding:0;flex:1;row-gap:5px}
+ .track li:not(:last-child)::after{inset-inline-end:auto;inset-inline-start:calc(50% + 20px);width:calc(100% - 40px);top:13px}
+ .dot{grid-row:auto}
+ .track small{display:none}
+ .grid{grid-template-columns:1fr}
+ .side{position:static;order:-1}
+ .tools .sp{display:none}
+ .tools{gap:8px}
+ .tools .btn.quiet{min-height:44px;flex:1 1 30%;padding:0 8px}
+ .seg{width:100%}.seg span{flex:1;justify-content:center;height:40px}
+ .doc h2{font-size:20px}.doc .ph{height:150px}
+ .fields,.pics{grid-template-columns:1fr}
+ .btn{min-height:44px}.btn.sm{min-height:40px}
+ .decide .acts-main{display:none}
+ .bar{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;position:fixed;inset:auto 0 0 0;padding:10px 12px 14px;background:rgba(255,255,255,.88);backdrop-filter:blur(18px) saturate(180%);border-top:1px solid rgba(0,0,0,.08)}
+ .bar .btn{min-height:50px;font-size:15px;padding:0 10px}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+<symbol id="back" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></symbol>
+<symbol id="chev" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+<symbol id="down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="ext" viewBox="0 0 24 24"><path d="M15 3h6v6M10 14 21 3M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+<symbol id="dl" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+<symbol id="ul" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></symbol>
+<symbol id="file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8"/></symbol>
+<symbol id="pen" viewBox="0 0 24 24"><path d="M21.2 6.8a1 1 0 0 0-4-4L3.8 16.2a2 2 0 0 0-.5.8L2 21.4a.5.5 0 0 0 .6.6l4.4-1.3a2 2 0 0 0 .8-.5zM15 5l4 4"/></symbol>
+<symbol id="eye" viewBox="0 0 24 24"><path d="M2 12.3a1 1 0 0 1 0-.6 10.75 10.75 0 0 1 20 0 1 1 0 0 1 0 .6 10.75 10.75 0 0 1-20 0"/><circle cx="12" cy="12" r="3"/></symbol>
+<symbol id="ret" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.9 1 6.7 2.7L21 8M21 3v5h-5"/></symbol>
+<symbol id="shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.7 9a1 1 0 0 1-.6 0C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.2-2.7a1.2 1.2 0 0 1 1.6 0C14.5 3.8 17 5 19 5a1 1 0 0 1 1 1zM9 12l2 2 4-4"/></symbol>
+<symbol id="info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></symbol>
+<symbol id="hist" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.7 2.7L3 8M3 3v5h5M12 7v5l4 2"/></symbol>
+<symbol id="cal" viewBox="0 0 24 24"><path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/></symbol>
+<symbol id="img" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+<symbol id="menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+</defs></svg>
+
+<div class="app">
+ <aside class="nav">
+  <div class="logo">Mega<span>Links</span></div>
+  <div class="find">חיפוש בכל אזורי הניהול</div>
+  <h6>עבודה שוטפת</h6>
+  <a>מרכז העבודה <i>8</i></a><a>הזמנות <i>19</i></a><a class="on">תוכן ופרסום <i>7</i></a><a>פניות שירות <i>1</i></a>
+  <h6>מסחר וחשבונות</h6>
+  <a>משתמשים והרשאות</a><a>קטלוג ותמחור</a><a>ספקים</a><a>מבצעים וחבילות</a>
+  <h6>מערכת ובקרה</h6>
+  <a>מערכת ודוחות</a>
+ </aside>
+ <div class="work">
+  <div class="topbar"><span class="hide">שלום, מנהל בדיקה</span><span class="chip hide">יתרה 0 ₪</span><b class="menu" style="font-weight:800;color:#0c2b4d;font-size:18px">MegaLinks</b><span class="menu"><svg class="i" style="font-size:24px"><use href="#menu"/></svg></span></div>
+  <div class="page">
+   <nav class="tabs"><span class="on">כתבות <em>7</em></span><span>הנחיות כתיבה</span><span>ניהול בלוג</span></nav>
+
+   <header class="card head">
+    <div class="head-top"><button class="back"><svg class="i" style="font-size:18px"><use href="#back"/></svg>כל הכתבות</button><span class="saved"><svg class="i" style="font-size:14px"><use href="#check"/></svg>הכול נשמר</span></div>
+    <div class="title"><span class="logo-box">JPOST</span><h1>5 דברים שכדאי לבדוק לפני שלוקחים משכנתא</h1><span class="pill">ממתינה לאישור שלך</span></div>
+    <div class="facts">
+     <button class="fact go"><span class="k">לקוח</span><span class="v"><span>דנה לוי</span><svg class="i"><use href="#chev"/></svg></span><span class="s"><bdi>dana@example.test</bdi></span></button>
+     <button class="fact go"><span class="k">האתר</span><span class="v"><span>jpost</span><svg class="i"><use href="#ext"/></svg></span><span class="s"><bdi>jpost.com</bdi></span></button>
+     <button class="fact go"><span class="k">הזמנה</span><span class="v"><span>1005</span><svg class="i"><use href="#chev"/></svg></span><span class="s">פתיחת ההזמנה</span></button>
+     <div class="fact"><span class="k">שליחה לספק</span><span class="v"><span>מיד אחרי האישור</span></span><span class="s">הלקוח לא בחר תאריך</span></div>
+    </div>
+    <div class="where">
+     <p><b>הכתבה אצלך.</b> הלקוח שלח אותה לבדיקה לפני יומיים.</p>
+     <ol class="track" aria-label="אצל מי הכתבה">
+      <li data-s="done"><span class="dot"><svg class="i" style="font-size:15px"><use href="#check"/></svg></span><b>הלקוח</b><small>כותב ושולח</small></li>
+      <li data-s="now"><span class="dot">2</span><b>אתה כאן</b><small>בודק ומאשר</small></li>
+      <li><span class="dot">3</span><b>הספק</b><small>מפרסם באתר</small></li>
+      <li><span class="dot">4</span><b>פורסם</b><small>הקישור מגיע אליך</small></li>
+     </ol>
+    </div>
+   </header>
+
+   <div class="grid">
+    <main>
+     <section class="card">
+      <div class="tools">
+       <div class="seg"><span class="on"><svg class="i" style="font-size:15px"><use href="#eye"/></svg>תצוגה מקדימה</span><span><svg class="i" style="font-size:15px"><use href="#pen"/></svg>עריכה</span></div>
+       <span class="sp"></span>
+       <button class="btn quiet"><svg class="i"><use href="#dl"/></svg>הורדת Word</button>
+       <button class="btn quiet"><svg class="i"><use href="#ul"/></svg>ייבוא Word</button>
+       <button class="btn quiet"><svg class="i"><use href="#file"/></svg>מסמך המקור</button>
+      </div>
+      <div class="doc">
+       <h2>5 דברים שכדאי לבדוק לפני שלוקחים משכנתא</h2>
+       <p class="count">642 מילים · 3 דקות קריאה</p>
+       <div class="ph" role="img" aria-label="תמונה ראשית"></div>
+       <p>משכנתא היא ההתחייבות הכספית הגדולה ביותר שרוב המשפחות לוקחות. לפני שחותמים, כדאי לעצור ולבדוק כמה דברים פשוטים שיכולים לחסוך עשרות אלפי שקלים לאורך השנים.</p>
+       <p>הדבר הראשון הוא תמהיל המסלולים. שילוב נכון בין ריבית קבועה למשתנה משפיע על ההחזר החודשי יותר מכל פרט אחר. אפשר להיעזר ב<a>מחשבון משכנתא</a> כדי לראות איך כל שינוי קטן משפיע על הסכום הכולל.</p>
+       <p class="more">המשך הכתבה…</p>
+      </div>
+     </section>
+
+     <section class="card">
+      <div class="card-head"><h2>פרטי פרסום</h2></div>
+      <div class="fields">
+       <div class="field"><label>תיאור קצר / תיאור מטא</label><div class="box">חמישה דברים שחשוב לבדוק לפני שלוקחים משכנתא: תמהיל, ריבית, עמלות, ביטוחים והחזר חודשי.</div><p class="hint">96 / 160 תווים · אורך טוב</p></div>
+       <div class="field"><label>הערות לפרסום</label><div class="box">לפרסם בקטגוריית נדל״ן. לא לשנות את הכותרת.</div></div>
+       <div class="field" style="grid-column:1/-1"><label>תאריך פרסום</label><div class="box line"><svg class="i" style="color:#86868b"><use href="#cal"/></svg>מיד אחרי האישור<span class="sp"></span><span style="color:#0066cc;font-weight:600;font-size:13.5px">בחירת תאריך</span></div></div>
+      </div>
+     </section>
+
+     <section class="card">
+      <div class="card-head"><h2>תמונות הכתבה</h2><button class="btn tint sm"><svg class="i"><use href="#img"/></svg>ניהול</button></div>
+      <div class="pics">
+       <div class="pic"><div class="th"></div><div><b>תמונה ראשית</b><small>קרדיט: Unsplash</small><div class="acts"><button class="btn sm">הסרה</button><button class="btn sm">החלפה</button></div></div></div>
+       <div class="pic"><div class="th"></div><div><b>תמונה משנית</b><small>קרדיט: Pexels</small><div class="acts"><button class="btn sm">הסרה</button><button class="btn sm">החלפה</button></div></div></div>
+      </div>
+     </section>
+
+     <section class="card fold"><h2><svg class="i" style="font-size:18px"><use href="#hist"/></svg>היסטוריית שינויים <em>6</em></h2><span>פתיחה<svg class="i"><use href="#down"/></svg></span></section>
+    </main>
+
+    <aside class="side">
+     <section class="card decide">
+      <h2>ההחלטה שלך</h2>
+      <div class="sect">
+       <p class="label">המערכת בדקה</p>
+       <ul class="checks">
+        <li><svg class="i"><use href="#check"/></svg>כותרת</li>
+        <li><svg class="i"><use href="#check"/></svg>תוכן הכתבה</li>
+        <li><svg class="i"><use href="#check"/></svg>קישור בתוך המאמר</li>
+        <li data-s="warn"><svg class="i"><use href="#info"/></svg>עוד לא נבדקו קישורים<button class="btn tint sm"><svg class="i"><use href="#shield"/></svg>בדיקה</button></li>
+        <li data-s="opt"><svg class="i"><use href="#info"/></svg>תיאור לגוגל. לא חובה</li>
+       </ul>
+      </div>
+      <div class="sect">
+       <p class="label">לבדוק בעין, לפי jpost</p>
+       <ul class="reqs"><li>עד שני קישורים בכתבה</li><li>תמונה ראשית עם קרדיט</li><li>בלי ניסוח שיווקי בכותרת</li></ul>
+       <p class="memo"><b>הערה פנימית:</b> לקוח חדש, לבדוק את הקישור בעיון.</p>
+      </div>
+      <div class="sect acts-main">
+       <button class="btn primary lg"><svg class="i" style="font-size:18px"><use href="#check"/></svg>אישור ושליחה לספק</button>
+       <p class="after">הכתבה תישלח ל־jpost מיד.</p>
+       <button class="btn warn lg"><svg class="i" style="font-size:18px"><use href="#ret"/></svg>החזרה ללקוח לתיקון</button>
+       <p class="after" style="margin-bottom:0">הלקוח יקבל מייל עם מה שתכתוב, והכתבה תחזור אליו.</p>
+      </div>
+      <div class="sect self"><span><b>רוצה לתקן בעצמך?</b>הכתבה נשארת באותו שלב.</span><button class="btn sm"><svg class="i"><use href="#pen"/></svg>עריכת הכתבה</button></div>
+     </section>
+    </aside>
+   </div>
+  </div>
+ </div>
+</div>
+<div class="bar"><button class="btn primary"><svg class="i" style="font-size:18px"><use href="#check"/></svg>אישור ושליחה לספק</button><button class="btn warn"><svg class="i" style="font-size:17px"><use href="#ret"/></svg>החזרה לתיקון</button></div>
+</body>
+</html>

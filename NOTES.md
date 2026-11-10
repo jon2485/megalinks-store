@@ -893,6 +893,15 @@ Built from the approved mockup (owner asked why they were not built yet: they we
 - Nothing temporary was added for these builds; no "before upload" items.
 - Next: owner reviews the three screens on the local link.
 
+
+## 10.11.2026 · הדמיה למסך בדיקת הכתבה בניהול (ממתין לאישור, בלי שינוי קוד)
+
+- קבצים: `docs/mockups/article-review-v2.html`, `article-review-v2.png` (מחשב), `article-review-v2-phone.png` ו-`article-review-v2-phone-top.png` (נייד).
+- ההצעה: כרטיס עליון אחד עם שורת 4 פרטים אחידה (לקוח, אתר, הזמנה, שליחה לספק) שמחליפה את הכפתורים "תיק לקוח" ו"פתיחת ההזמנה"; סרגל כלים אחד מעל הכתבה; "ההחלטה שלך" בלי מספור כפול; כרטיס "פרטי האתר" הכפול יורד והדרישות של האתר עוברות ללוח ההחלטה.
+- חדש שדורש אישור: סרגל תחתון קבוע בנייד עם "אישור ושליחה לספק" ו"החזרה לתיקון".
+- לא נעשה: שום שינוי ב-`app/admin-article-decision.tsx`, `app/article-studio.tsx`, `app/admin-article-review.css`. לא בוצע commit.
+- השלב הבא: אחרי אישור הבעלים, לבנות לפי ההדמיה ולבדוק את כל עשרת השלבים של הכתבה.
+
 ## 10.11.2026: Customer file, no "ניהול ההזמנה המלאה" button (the open panel does it all)
 
 - **Owner asked:** why the button in the customer file opens the old full order page (`admin-order/<id>`), whether it is needed, and to remove it without losing anything important.
