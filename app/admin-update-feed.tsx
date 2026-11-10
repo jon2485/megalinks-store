@@ -162,6 +162,8 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  const quiet:{id:string;label:string;page:string;run:()=>void}[]=[
   ...(data&&!saved.q?taskDefs.filter(d=>!tasks[d.id]?.total).map(d=>({id:d.id,label:d.quiet,page:d.page,run:()=>open('quiet:'+d.id,d.page,d.preset)})):[]),
   ...follow.filter(f=>f.ready&&f.n===0).map(f=>({id:f.id,label:f.label,page:f.page,run:f.run})),
+  // The old desk always had a way to the connection settings; the warning above covers it only while e-mail is off.
+  ...(attention.data&&attention.data.email_ready!==false?[{id:'email',label:'חיבור הדוא״ל',page:'admin-connections',run:()=>open('quiet:email','admin-connections')}]:[]),
  ];
  const big:[React.ReactNode,React.ReactNode]=!isOpen?['טופלו',handledCount===1?'התראה אחת סומנה':handledCount+' התראות סומנו']
   :!data?['טוען','את המשימות…']
