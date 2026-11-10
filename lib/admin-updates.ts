@@ -63,6 +63,26 @@ async function adminUpdateLanes(query:URLSearchParams){
  const lanes=Object.fromEntries(Object.keys(laneLimits).map(lane=>[lane,{total:Number(totals.find(t=>t.lane===lane)?.n||0),rows:updates.filter(r=>r.lane===lane)}]));
  return {lanes,filters:{q},limits,abandoned:Number(abandoned?.n||0),counts:{handled:Number(handled?.n||0)}};
 }
+// Lobby (10.11.2026): the same open rows, grouped by the kind of work instead of one long list per lane.
+// Each task type carries its count, the money it holds and its oldest rows, so the lobby shows one line per type.
+const taskSql=`CASE WHEN id LIKE 'seller-invoice:%' THEN 'seller_invoice' WHEN kind='seller' THEN 'seller_request' ELSE kind END`;
+const taskIds=['cancellation','delivery','bank','topup','article','publication','writing','late','support','seller_request','seller_invoice','paid'] as const;
+async function adminUpdateTasks(query:URLSearchParams){
+ const open=`SELECT * FROM feed WHERE NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`;
+ const q=(query.get('q')||'').trim().slice(0,120),args=[q,'%'+q.replace(/[\\%_]/g,c=>'\\'+c)+'%'];
+ const cte=`${adminUpdatesCte()},selected AS (SELECT *,${laneSql} AS lane,${taskSql} AS task FROM (${open}) WHERE id NOT LIKE 'bank:%' AND (?='' OR (title||' '||user_name||' '||number||' '||website_name||' '||detail) LIKE ? ESCAPE '\\')),ranked AS (SELECT *,ROW_NUMBER() OVER (PARTITION BY task ORDER BY CASE WHEN lane='info' THEN -julianday(happened_at) ELSE julianday(happened_at) END,id) AS task_rank FROM selected)`;
+ // Whole numbers between 1 and 500, so they are safe to place in the statement.
+ const limits=Object.fromEntries(taskIds.map(id=>[id,Math.max(1,Math.min(500,Math.trunc(Number(query.get('limit_'+id)))||(id==='paid'?3:5)))])) as Record<typeof taskIds[number],number>;
+ const [rows,totals,handled,abandoned]=await Promise.all([
+  all(`WITH ${cte} SELECT * FROM ranked WHERE task_rank<=CASE task ${taskIds.map(id=>`WHEN '${id}' THEN ${limits[id]}`).join(' ')} ELSE 5 END ORDER BY task,task_rank`,...args),
+  all(`WITH ${cte} SELECT task,lane,COUNT(*) AS n,MIN(happened_at) AS oldest,SUM(amount) AS amount FROM selected GROUP BY task,lane`,...args),
+  one("SELECT COUNT(*) AS n FROM records WHERE kind='admin_update_handled'"),one(`WITH ${adminUpdatesCte()} SELECT COUNT(*) AS n FROM feed WHERE id LIKE 'bank:%' AND julianday(happened_at)<julianday('now')-${ORDER_ABANDONED_DAYS}`)
+ ]);
+ const updates=await Promise.all(rows.map(withVersion));
+ const tasks=Object.fromEntries(totals.map(t=>[t.task,{lane:t.lane,total:Number(t.n||0),oldest:t.oldest||null,amount:t.amount==null?null:Number(t.amount),rows:updates.filter(r=>r.task===t.task)}]));
+ const lanes=Object.fromEntries(Object.keys(laneLimits).map(lane=>[lane,totals.filter(t=>t.lane===lane).reduce((n,t)=>n+Number(t.n||0),0)]));
+ return {tasks,lanes,filters:{q},limits,abandoned:Number(abandoned?.n||0),counts:{handled:Number(handled?.n||0)}};
+}
 /** The number shown on the work-center badge: exactly the rows of the three action lanes. */
 export async function adminOpenActionCount(){
  const row=await one(`WITH ${adminUpdatesCte()} SELECT COUNT(*) AS n FROM feed WHERE needs_action=1 AND id NOT LIKE 'bank:%' AND NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`);
@@ -70,6 +90,7 @@ export async function adminOpenActionCount(){
 }
 export async function adminUpdates(query:URLSearchParams){
  if(query.get('view')==='lanes')return adminUpdateLanes(query);
+ if(query.get('view')==='tasks')return adminUpdateTasks(query);
  const source=adminUpdatesCte(),state=query.get('state')||'all';assert(['open','handled','all'].includes(state),'מצב התראות לא תקין');
  const archived=`history AS (SELECT ${snapshotFields.map(k=>"json_extract(h.data,'$.snapshot."+k+"') AS "+k).join(',')},h.id AS history_id,json_extract(h.data,'$.handled_at') AS handled_at,COALESCE(u.name,'מנהל') AS handled_by_name FROM records h LEFT JOIN users u ON u.id=h.user_id WHERE h.kind='admin_update_handled')`;
  const open=`SELECT * FROM feed WHERE NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`;

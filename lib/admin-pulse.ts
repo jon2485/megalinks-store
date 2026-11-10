@@ -1,6 +1,7 @@
 import {all,one} from './server';
 import {adminOrderCte,hydratedAdminOrder} from './admin-order-data';
 import {israelDate} from './admin-order-buckets';
+import {adminMonthReport} from './admin-month-server';
 
 // Summary numbers for the top of the work center. Each number uses the same rules as the screen it links to:
 // orders and money from the orders classification, articles from the article statuses.
@@ -25,12 +26,17 @@ export async function adminPulse(){
  let revenue=0,prevRevenue=0;
  for(const raw of paid){const o=hydratedAdminOrder(raw),d=israelDate(o.paid_date||''),cents=Number(o.amounts?.total||0);if(!d)continue;moneyBy[d]=(moneyBy[d]||0)+cents;
   if(d.slice(0,7)===month)revenue+=cents;else if(d.slice(0,7)===prevMonth&&d<=prevSameDay)prevRevenue+=cents;}
+ // Month profit: the month-close report itself, for the whole current month, so the lobby and that screen agree.
+ // net is null while a paid article still has no recorded cost. A failure here must not hide the other numbers.
+ let profit:{net:number|null;income_net:number;missing:number;from:string;to:string}|null=null;
+ try{const to=shift(shift(month+'-01',32).slice(0,7)+'-01',-1),report=await adminMonthReport(new URLSearchParams({from:month+'-01',to}));profit={net:report.summary.profit_net,income_net:report.summary.net,missing:report.summary.cost_missing,from:month+'-01',to};}catch{profit=null;}
  const oldest=awaiting?.oldest?Math.floor((Date.now()-+new Date(awaiting.oldest))/864e5):0;
  return {
   today,
   orders:{today:ordersBy[today]||0,yesterday:ordersBy[shift(today,-1)]||0,series:days.map(d=>ordersBy[d]||0)},
   revenue:{month:revenue,previous:prevRevenue,series:days.map(d=>moneyBy[d]||0)},
   awaiting:{count:Number(awaiting?.n||0),cents:Number(awaiting?.cents||0),oldest_days:Math.max(0,oldest)},
-  articles:{active:Number(articles?.active||0),review:Number(articles?.review||0)}
+  articles:{active:Number(articles?.active||0),review:Number(articles?.review||0)},
+  profit
  };
 }
