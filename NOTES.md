@@ -853,3 +853,4 @@ Built from the approved mockup (owner asked why they were not built yet: they we
 ### Still not in the new design
 - Blog editor and single ticket page (light pass only).
 - Outside the four areas: single order page, promotions, system and reports, work center.
+- 10.11.2026: mockup for the single ticket page (`admin-support/<id>`, opened from the work center feed and the admin search): `docs/proposals/inner-v2/index.html?s=ticket`, images `ticket-today.png`, `ticket-desktop.png`, `ticket-phone.png`. Customer message as a conversation, reply under it with quick replies (addition), subject and details folded, status as three buttons, save, links to customer file and order, "all tickets of this customer" (addition, needs a filtered list link). Waiting for approval.
