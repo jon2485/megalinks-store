@@ -1,0 +1,68 @@
+/* 10.11.2026 Customer file (admin) in the approved v2 look: head card, tiles, tabs with counts, calm cards.
+   Scoped to .cf; the customer's own screens are unchanged. */
+.cf.cf{display:grid;gap:16px;color:#1d1d1f}
+.cf .cf-loading{margin:0;padding:24px;border-radius:20px;background:#fff;color:#86868b}
+.cf .cf-head{display:grid;gap:14px;padding:22px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05)}
+.cf .cf-head-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.cf .cf-back{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 12px;border:0;border-radius:999px;background:transparent;color:#424245;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:background-color .15s,color .15s,transform .1s}
+.cf .cf-back:hover{background:#f5f5f7;color:#1d1d1f}
+.cf .cf-back:active{transform:scale(.97)}
+.cf .cf-back:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+.cf .cf-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;background:#f2f2f7;color:#424245;font-size:12.5px;font-weight:700;white-space:nowrap}
+.cf .cf-pill.is-blue{background:#e8f1fc;color:#0066cc}
+.cf .cf-head-main{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.cf .cf-avatar{width:60px;height:60px;flex:none;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0a84ff,#0055c8);color:#fff;font-size:21px;font-weight:800}
+.cf .cf-head-copy{flex:1;min-width:220px;display:grid;gap:8px}
+.cf .cf-head-copy h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;color:#1d1d1f}
+.cf .cf-chips{display:flex;flex-wrap:wrap;gap:8px;margin:0}
+.cf .cf-chips>bdi,.cf .cf-chips>span:not(.cf-pill){display:inline-flex;align-items:center;height:30px;padding:0 12px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.08);font-size:13px;color:#424245}
+.cf .cf-head-actions{display:flex;flex-wrap:wrap;gap:8px}
+.cf .cf-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0}
+.cf .cf-stats>div{display:grid;gap:2px;padding:14px 18px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05)}
+.cf .cf-stats dt{font-size:13px;font-weight:600;color:#86868b}
+.cf .cf-stats dd{margin:0;font-family:Arial,sans-serif;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;color:#1d1d1f}
+.cf .cf-stats .is-green dd{color:#1a7f3c}
+.cf .cf-stats .is-orange dd{color:#b25000}
+.cf .cf-tabs.cf-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 0;padding:0;background:none;border:0;box-shadow:none}
+.cf .cf-tabs.cf-tabs>button{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border:0;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.08);color:#424245;font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:box-shadow .15s,color .15s,transform .1s}
+.cf .cf-tabs.cf-tabs>button::after{display:none}
+.cf .cf-tabs.cf-tabs>button:hover{color:#0066cc}
+.cf .cf-tabs.cf-tabs>button:active{transform:scale(.97)}
+.cf .cf-tabs.cf-tabs>button[aria-pressed=true]{color:#0066cc;background:#fff;box-shadow:0 0 0 2px #0071e3}
+.cf .cf-tabs b{min-width:22px;height:20px;padding:0 6px;border-radius:999px;background:#f2f2f7;color:#424245;font-size:11.5px;display:inline-grid;place-items:center}
+.cf .cf-tabs [aria-pressed=true] b{background:#0071e3;color:#fff}
+
+/* tab content: white cards, pill buttons, no full-width blue bars */
+.cf .panel,.cf .simple-customer-orders,.cf .admin-mega-card{border:0!important;border-radius:20px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05)!important}
+.cf .panel{padding:22px!important}
+.cf .panel h2{font-size:18px;font-weight:800;color:#1d1d1f}
+.cf .panel .field label,.cf .panel label{font-size:13px;font-weight:600;color:#424245}
+.cf .panel input,.cf .panel textarea{height:44px;border:0!important;border-radius:12px!important;background:#f5f5f7!important;box-shadow:none!important;font-size:15px}
+.cf .panel input:focus-visible,.cf .panel textarea:focus-visible{background:#fff!important;box-shadow:0 0 0 2px #0071e3!important;outline:0}
+.cf .panel button[type=submit]{width:auto!important;min-width:140px;justify-self:start}
+.cf .simple-order-card{border:0!important;border-radius:16px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.06)!important;transition:box-shadow .2s}
+.cf .simple-order-card:hover{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 4px 14px rgba(11,39,77,.08)!important}
+.cf .simple-order-status{border-radius:999px!important;font-size:12.5px!important;font-weight:700!important}
+.cf .simple-order-status.is-open{background:#e8f1fc!important;color:#0066cc!important}
+.cf .simple-order-status.is-closed{background:#e9f7ee!important;color:#1a7f3c!important}
+.cf .customer-article-card{border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05)!important}
+.cf .customer-article-groups>*{border-radius:18px!important}
+.cf .customer-article-search input{height:44px;border-radius:14px!important}
+.cf .cf-history .account-history{display:grid;gap:2px;padding:12px 0;border-bottom:1px solid #e8e8ed}
+.cf .cf-history .account-history:last-child{border-bottom:0}
+.cf .cf-history .account-history b{font-size:14.5px}
+.cf .cf-history .account-history span{font-size:12.5px;color:#86868b}
+
+@media(max-width:760px){
+ .cf .cf-head{padding:16px}
+ .cf .cf-head-copy h1{font-size:24px}
+ .cf .cf-avatar{width:48px;height:48px;font-size:17px}
+ .cf .cf-head-actions{width:100%;flex-direction:column}
+ .cf .cf-head-actions>*{width:100%}
+ .cf .cf-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .cf .cf-stats dd{font-size:17px;white-space:nowrap}
+ .cf .cf-tabs.cf-tabs{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px;grid-template-columns:none!important}
+ .cf .cf-tabs.cf-tabs::-webkit-scrollbar{display:none}
+ .cf .cf-tabs.cf-tabs>button{flex:none}
+}
+@media(prefers-reduced-motion:reduce){.cf .cf-back,.cf .cf-tabs>button{transition:none}}
