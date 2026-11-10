@@ -790,3 +790,10 @@ Done in this step (list pages):
 - Checked locally, desktop 1440 and phone 390: back to list, open order, area strip, back to articles, all tickets, back to updates, back to users, back to price lists all reach the right page. tsc and build pass.
 - Not done (needs a mockup first, they are big editors): a real redesign of the article workspace, customer file tabs, personal price list, the site editor and the Sheets tab. The blog editor does not show the frame padding (its own layout). The price list has hidden tooltips positioned past the phone edge (existed before, not visible).
 - Screenshots: `docs/mockups/areas-v2-*.png`. Nothing pushed.
+
+## 10.11.2026: Mockup for the inner screens (waiting for approval)
+
+- `docs/proposals/inner-v2/index.html` (gitignored, Heebo embedded) with images `*-desktop.png` and `*-phone.png`: article, customer file, personal price list, site editor, Sheets tab. Light only. `?s=article|customer|pricebook|site|sheets` shows one screen.
+- Each screen keeps today's buttons and fields. Main ideas: one head card per page (back link, title, meta chips, main action); the area strip instead of the old big title; article checklist marks the next step and the bottom bar jumps to what is missing; customer file stats with balance due in orange and credit in green, tabs with counts, orders as v2 rows; price list rows show list price, tier price, personal price and the saving in green, help text folded; site editor with prices in a side column, profit in green once cost is set, save in a sticky bar; Sheets as three ordered steps with a reason under each disabled button.
+- Also answered the owner: ticket chips and open-in-place are already in code; catalog summary cards were already clickable, now they look clickable; phone tab strip keeps the current tab in view (screenshots `docs/mockups/areas-v2-support-open.png`, `areas-v2-strip-phone-before.png`, `areas-v2-strip-phone.png`).
+- Next: build only after the owner approves, one screen at a time.
