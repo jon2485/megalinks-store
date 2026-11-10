@@ -689,3 +689,17 @@ Files: lib/admin-control-center.ts, lib/admin-order-data.ts, app/admin-order-his
 
 Not finished: items 6-16 of the review are a mockup only (docs/mockups/orders-v3.html), waiting for approval.
 Checked locally by screenshots (desktop and phone). Not pushed.
+
+## 10.11.2026: Orders screen round 3 built (review items 6-16, per docs/mockups/orders-v3.html)
+
+Decided and why:
+- Owner approved the mockup as sent: no "details" button per row, only the quiet menu (dots) and an arrow. The blue button stays only where there is something to handle (cancel request, payment report).
+- Head is one line: title, the 4 filter chips (label + number) and export. The explanation line was removed; each chip keeps its hint as a tooltip.
+- Row is calmer: status pill only (payment method moved to the pill tooltip; a note shows only when it adds something), publication as "done/all" with a small bar, a fully cancelled order is muted and shows a dash instead of amount and publication.
+- Phone: 4 chips in one row with short labels, full-width search and one filter button that opens month/status, order card in two lines, tab strip fades at the edge, bottom space for the dock.
+- On this screen only (CSS :has(.sv2-orders)): the balance is a chip and the public-site footer is hidden. Can be extended to all admin screens if approved.
+
+Files: app/admin-order-history.tsx, app/orders-v2.css (block "round 3" at the end). Screenshots: docs/mockups/orders-v3-built-desktop.png, orders-v3-built-phone.png.
+
+Checked locally by screenshots (desktop 1440, phone 390), row opens in place, tsc and build pass. Not checked: a real phone, tablet width (641-1100), the shared OrderPublication is no longer used by this screen (still used elsewhere).
+Next: owner review on the local link. Not pushed.

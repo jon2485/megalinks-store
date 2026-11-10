@@ -140,3 +140,76 @@
 .sv2 nav.sv2-areas>a,.sv2 nav.sv2-areas>span{flex:1 1 auto}
 .sv2 nav.sv2-areas .admin-v172-attention{flex:none}
 @media(max-width:900px){.sv2 nav.sv2-areas>a,.sv2 nav.sv2-areas>span{flex:0 0 auto}}
+
+/* ---- 10.11.2026 round 3 (docs/mockups/orders-v3.html): one-line head, quiet rows, two-line phone card ---- */
+.sv2-orders .sv2-ph{align-items:center;flex-wrap:nowrap;gap:14px}
+.sv2-orders .sv2-ph p:empty{display:none}
+.sv2-orders .sv2-sumline{display:flex!important;flex:1;gap:8px;min-width:0}
+.sv2-orders .sv2-sumline .sv2-sumbtn{display:flex!important;align-items:baseline;gap:8px;padding:9px 16px!important;border-radius:14px!important;white-space:nowrap}
+.sv2-orders .sv2-sumline .lbl{font-size:13.5px}
+.sv2-orders .sv2-sumline .big{font-size:19px!important}
+.sv2-orders .sv2-sumline .hint{display:none}
+.sv2-orders .sv2-sumline .sv2-sumbtn.on .lbl{color:#0066cc}
+.sv2-orders .sv2-mob,.sv2-orders .sv2-fbtn{display:none}
+.sv2-orders .sv2-orow{min-height:62px;padding-top:9px;padding-bottom:9px}
+.sv2-orders .sv2-who{gap:10px}
+.sv2-orders .sv2-who .sv2-av.sm{width:36px;height:36px;border-radius:11px;font-size:15px}
+.sv2-orders .sv2-pub{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#424245}
+.sv2-orders .sv2-pub>i{flex:1;max-width:56px;height:5px;border-radius:3px;background:#eceef2;overflow:hidden}
+.sv2-orders .sv2-pub>i>b{display:block;height:100%;border-radius:3px;background:#34c759}
+.sv2-orders .sv2-muted{color:#aeaeb2;font-weight:500}
+.sv2-orders .sv2-chevbtn{width:32px;height:32px;padding:0;border:0;border-radius:50%;background:none;color:#aeaeb2;display:grid;place-items:center;cursor:pointer;transition:color .15s,background-color .15s}
+.sv2-orders .sv2-orow:hover .sv2-chevbtn{color:#0071e3}
+.sv2-orders .sv2-dots:not(.is-close){background:none;color:#8e8e93}
+.sv2-orders .sv2-dots:not(.is-close):hover{background:#ebebf0;color:#1d1d1f}
+.sv2-orders .sv2-order.is-cancelled .sv2-orow :is(.sv2-site1,.sv2-who b,.sv2-ord b){color:#8e8e93}
+.sv2-orders .sv2-order.is-cancelled .sv2-av{opacity:.5}
+/* this screen only: balance as its own chip, no public-site footer */
+.workspace-page-shell:has(.sv2-orders) .workspace-greeting-text{display:inline-flex;align-items:center;gap:10px;max-width:none;overflow:visible}
+.workspace-page-shell:has(.sv2-orders) .workspace-greeting-balance{padding:4px 11px;border-radius:999px;background:#f0f1f4;color:#424245;font-size:12.5px;font-weight:600}
+.workspace-page-content:has(.sv2-orders)>.megalinks-footer{display:none}
+@media(max-width:1100px){
+ .sv2-orders .sv2-ph{flex-wrap:wrap}
+ .sv2-orders .sv2-ph>div:first-child{flex:1}
+ .sv2-orders .sv2-sumline{order:3;flex:1 0 100%}
+}
+@media(max-width:900px){
+ .sv2-orders nav.sv2-areas{-webkit-mask-image:linear-gradient(to right,transparent 0,#000 44px);mask-image:linear-gradient(to right,transparent 0,#000 44px)}
+}
+@media(max-width:640px){
+ .sv2-orders{padding-bottom:96px}
+ .sv2-orders .sv2-dsk,.sv2-orders .sv2-wide{display:none}
+ .sv2-orders .sv2-mob{display:inline}
+ .sv2-orders .sv2-ph{gap:10px}
+ .sv2-orders .sv2-sumline{gap:6px}
+ .sv2-orders .sv2-sumline .sv2-sumbtn{flex:1;display:grid!important;justify-items:center;gap:0;padding:7px 4px!important;border-radius:13px!important;text-align:center}
+ .sv2-orders .sv2-sumline .big{order:-1;font-size:17px!important}
+ .sv2-orders .sv2-sumline .lbl{font-size:11.5px}
+ /* the list sits on the page: search bar and order cards are separate pieces */
+ .sv2-orders .ofx-card{background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important;overflow:visible}
+ .sv2-orders .sv2-tools{flex-wrap:wrap;gap:8px;padding:0 0 10px;border:0}
+ .sv2-orders .sv2-search{min-width:0;height:44px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+ .sv2-orders .sv2-fbtn{display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border:0;border-radius:12px;background:#fff;color:#424245;box-shadow:0 0 0 1px rgba(0,0,0,.05);cursor:pointer}
+ .sv2-orders .sv2-fbtn.is-on{background:rgba(0,113,227,.09);color:#0066cc;box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.45)}
+ .sv2-orders .sv2-tools:not(.is-filters) .sv2-select{display:none}
+ .sv2-orders .sv2-select{flex:1 1 100%;height:44px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+ .sv2-orders .sv2-olist .om-order{margin:0 0 8px!important;border:0!important;border-radius:18px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.05)!important;overflow:hidden!important}
+ .sv2-orders .sv2-orow{grid-template-columns:minmax(0,1fr) auto auto!important;gap:8px;padding:12px 14px!important;min-height:0;align-items:center;border-radius:18px}
+ .sv2-orders .sv2-orow>.sv2-ord,.sv2-orders .sv2-orow .sv2-ml,.sv2-orders .sv2-pub>i{display:none}
+ .sv2-orders .sv2-orow>.sv2-who{order:1;grid-column:1/3}
+ .sv2-orders .sv2-who>span:last-child{min-width:0}
+ .sv2-orders .sv2-orow>.sv2-who{gap:8px}
+ .sv2-orders .sv2-who small.sv2-mob{font-size:11.5px;letter-spacing:-.01em}
+ .sv2-orders .sv2-order.is-cancelled .sv2-pubcell{visibility:hidden}
+ .sv2-orders .sv2-who small.sv2-mob{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .sv2-orders .sv2-orow>.sv2-num{order:2;grid-column:3;justify-self:end;font-size:15.5px}
+ .sv2-orders .sv2-orow>.sv2-paycell{order:3;grid-column:1;min-width:0}
+ .sv2-orders .sv2-orow>.sv2-pubcell{order:4;grid-column:2;color:#6e6e73}
+ .sv2-orders .sv2-order.has-cta .sv2-pubcell{display:none}
+ .sv2-orders .sv2-order.has-cta .sv2-rowact{grid-column:2/4;justify-self:end}
+ .sv2-orders .sv2-orow>.sv2-rowact{order:5;grid-column:3;display:flex;gap:2px;justify-content:flex-end}
+ .sv2-orders .sv2-orow>.sv2-rowact .sv2-btn{height:36px;width:auto;font-size:13.5px}
+ .sv2-orders .sv2-pub{gap:5px;font-weight:500;color:#6e6e73}
+ .sv2-orders .sv2-foot{padding:10px 4px}
+ .ofx-skel-row{margin:0 0 8px;background:#fff}
+}
