@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><title>סיכום כספי להזמנה</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:36px;background:#f2f4f8;font:15px/1.45 "Segoe UI",Arial,sans-serif;color:#1d1d1f}
+.wrap{display:flex;gap:36px;align-items:flex-start}
+.col{display:grid;gap:10px}
+.cap{font-size:13px;font-weight:600;color:#6e6e73;margin:0 2px}
+.card{background:#fff;border-radius:20px;box-shadow:0 0 0 1px rgba(0,0,0,.05),0 8px 24px rgba(11,39,77,.06);overflow:hidden}
+.desk{width:760px;display:grid;grid-template-columns:1fr 1.15fr}
+.phone{width:350px}
+.part{padding:20px 22px}
+.desk .part+.part{border-inline-start:1px solid #eceef2}
+.phone .part+.part{border-top:1px solid #eceef2}
+h3{margin:0 0 12px;font-size:13px;font-weight:700;color:#6e6e73;letter-spacing:.01em}
+.num{font-family:Arial,sans-serif;font-variant-numeric:tabular-nums;white-space:nowrap}
+/* what the customer paid */
+.line{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:14.5px;color:#424245}
+.line b{font-weight:600;color:#1d1d1f}
+.total{display:flex;justify-content:space-between;align-items:baseline;margin-top:8px;padding-top:12px;border-top:1px solid #eceef2}
+.total span{font-size:15px;font-weight:700}
+.total b{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.paid{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:3px 10px;border-radius:999px;background:#e9f7ee;color:#1a7f3c;font-size:12.5px;font-weight:700}
+.paid i{width:6px;height:6px;border-radius:50%;background:#34c759}
+/* what is left for us */
+.profit{background:linear-gradient(180deg,#f3fbf5,#fff 70%)}
+.hero{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.hero b{font-size:34px;font-weight:800;letter-spacing:-.03em;color:#1a7f3c;line-height:1.1}
+.pct{padding:3px 10px;border-radius:999px;background:#e9f7ee;color:#1a7f3c;font-size:13px;font-weight:700}
+.sub{margin:2px 0 14px;font-size:13px;color:#6e6e73}
+.eq{display:flex;align-items:stretch;gap:8px}
+.eq div{flex:1;padding:9px 12px;border-radius:12px;background:#f5f6f8}
+.eq small{display:block;font-size:12px;color:#6e6e73}
+.eq b{font-size:16px;font-weight:700}
+.eq em{align-self:center;font-style:normal;font-size:18px;font-weight:600;color:#aeaeb2}
+/* cost not complete */
+.warn{background:linear-gradient(180deg,#fff8ea,#fff 70%)}
+.warn .hero b{color:#b25000;font-size:26px}
+.warn .eq .miss{background:#fff3dc}
+.warn .eq .miss b{color:#b25000}
+.link{display:inline-block;margin-top:12px;font-size:13.5px;font-weight:600;color:#0066cc}
+</style></head><body>
+<div class="wrap">
+ <div class="col">
+  <p class="cap">מחשב</p>
+  <div class="card desk">
+   <div class="part">
+    <h3>מה הלקוח שילם</h3>
+    <div class="line"><span>לפני מע״מ</span><b class="num">2,600.00 ₪</b></div>
+    <div class="line"><span>מע״מ 18%</span><b class="num">468.00 ₪</b></div>
+    <div class="total"><span>סה״כ שולם</span><b class="num">3,068.00 ₪</b></div>
+    <span class="paid"><i></i>שולם בכרטיס אשראי</span>
+   </div>
+   <div class="part profit">
+    <h3>מה נשאר לנו</h3>
+    <div class="hero"><b class="num">2,480.00 ₪</b><span class="pct num">95% מההכנסה</span></div>
+    <p class="sub">רווח לפני מס, בלי מע״מ</p>
+    <div class="eq"><div><small>הכנסה</small><b class="num">2,600.00 ₪</b></div><em>−</em><div><small>עלות לספק</small><b class="num">120.00 ₪</b></div></div>
+   </div>
+  </div>
+  <p class="cap" style="margin-top:14px">כשחסרה עלות של ספק</p>
+  <div class="card desk">
+   <div class="part">
+    <h3>מה הלקוח שילם</h3>
+    <div class="line"><span>לפני מע״מ</span><b class="num">2,600.00 ₪</b></div>
+    <div class="line"><span>מע״מ 18%</span><b class="num">468.00 ₪</b></div>
+    <div class="total"><span>סה״כ שולם</span><b class="num">3,068.00 ₪</b></div>
+    <span class="paid"><i></i>שולם בכרטיס אשראי</span>
+   </div>
+   <div class="part warn">
+    <h3>מה נשאר לנו</h3>
+    <div class="hero"><b>הרווח עוד לא ידוע</b></div>
+    <p class="sub">חסרה עלות של אתר אחד מתוך שניים</p>
+    <div class="eq"><div><small>הכנסה</small><b class="num">2,600.00 ₪</b></div><em>−</em><div class="miss"><small>עלות ידועה עד כה</small><b class="num">120.00 ₪</b></div></div>
+    <span class="link">השלמת העלות ‹</span>
+   </div>
+  </div>
+ </div>
+ <div class="col">
+  <p class="cap">טלפון</p>
+  <div class="card phone">
+   <div class="part profit">
+    <h3>מה נשאר לנו</h3>
+    <div class="hero"><b class="num">2,480.00 ₪</b><span class="pct num">95%</span></div>
+    <p class="sub">רווח לפני מס, בלי מע״מ</p>
+    <div class="eq"><div><small>הכנסה</small><b class="num">2,600.00 ₪</b></div><em>−</em><div><small>עלות לספק</small><b class="num">120.00 ₪</b></div></div>
+   </div>
+   <div class="part">
+    <h3>מה הלקוח שילם</h3>
+    <div class="line"><span>לפני מע״מ</span><b class="num">2,600.00 ₪</b></div>
+    <div class="line"><span>מע״מ 18%</span><b class="num">468.00 ₪</b></div>
+    <div class="total"><span>סה״כ שולם</span><b class="num">3,068.00 ₪</b></div>
+    <span class="paid"><i></i>שולם בכרטיס אשראי</span>
+   </div>
+  </div>
+ </div>
+</div>
+</body></html>

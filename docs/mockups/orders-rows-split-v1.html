@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><title>הפרדה בין הזמנות</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;padding:32px;background:#eef1f6;font:15px/1.45 "Segoe UI",Arial,sans-serif;color:#1d1d1f}
+.list{width:1060px;margin:0 auto}
+.row,.th{display:grid;grid-template-columns:96px minmax(0,1.5fr) minmax(0,1fr) 150px 100px 120px 110px;gap:12px;align-items:center;padding:0 20px}
+.th{height:34px;font-size:12px;font-weight:600;color:#8e8e93}
+.row{position:relative;height:62px;margin-bottom:6px;background:#fff;border-radius:16px;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05);overflow:hidden}
+.row::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:4px;background:var(--c)}
+.ok{--c:#34c759}.wait{--c:#ff9500}.month{--c:#0a84ff}.ask{--c:#ff3b30}.off{--c:#c7c7cc}
+.ord b{display:block;font-size:14.5px}.ord time{font-size:12px;color:#8e8e93}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.av{flex:none;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;font-weight:700;background:#0a84ff}
+.av.r{background:#ff375f}
+.who b{display:block;font-size:14.5px}.who small{font-size:12.5px;color:#8e8e93}
+.site{font-size:13.5px;font-weight:600;direction:ltr;text-align:right}
+.more{margin-inline-end:6px;padding:2px 7px;border-radius:999px;background:#f0f1f4;font-size:12px;font-weight:700}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:999px;font-size:12.5px;font-weight:700}
+.pill i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-ok{background:#e9f7ee;color:#1a7f3c}.p-wait{background:#fff1dc;color:#b25000}.p-month{background:#e6f0ff;color:#0066cc}.p-off{background:#f0f1f4;color:#424245}
+.pub{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#424245}
+.pub i{flex:1;max-width:56px;height:5px;border-radius:3px;background:#eceef2;overflow:hidden}.pub i b{display:block;height:100%;background:#34c759}
+.num{font-family:Arial,sans-serif;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.act{display:flex;justify-content:flex-end;align-items:center;gap:10px;color:#aeaeb2;font-size:18px}
+.cta{padding:6px 14px;border-radius:999px;background:#0071e3;color:#fff;font-size:13px;font-weight:700}
+.off .who b,.off .ord b,.off .site{color:#8e8e93}.off .av{opacity:.5}.mut{color:#aeaeb2}
+.legend{display:flex;gap:18px;margin:18px 4px 0;font-size:13px;color:#6e6e73}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{width:4px;height:16px;border-radius:2px;background:var(--c)}
+</style></head><body>
+<div class="list">
+ <div class="th"><span>הזמנה</span><span>לקוח</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span></span></div>
+
+ <div class="row ok"><div class="ord"><b>#1030</b><time>09.11.2026</time></div><div class="who"><span class="av">ל</span><span><b>לקוח בדיקה רגיל</b><small>רגילה · אתר אחד</small></span></div><div class="site">jpost.com</div><div><span class="pill p-ok"><i></i>שולם</span></div><div class="pub"><i><b style="width:0"></b></i>0/1</div><div class="num">3,068.00 ₪</div><div class="act">⋯ <span>‹</span></div></div>
+
+ <div class="row off"><div class="ord"><b>#1029</b><time>09.11.2026</time></div><div class="who"><span class="av">ל</span><span><b>לקוח בדיקה רגיל</b><small>רגילה · אתר אחד</small></span></div><div class="site">jpost.com</div><div><span class="pill p-off"><i></i>בוטלה</span></div><div class="mut">—</div><div class="mut">—</div><div class="act">⋯ <span>‹</span></div></div>
+
+ <div class="row wait"><div class="ord"><b>#1025</b><time>09.11.2026</time></div><div class="who"><span class="av">ל</span><span><b>לקוח בדיקה רגיל</b><small>רגילה · אתר אחד</small></span></div><div class="site">jpost.com</div><div><span class="pill p-wait"><i></i>טרם דווח תשלום</span></div><div class="pub"><i><b style="width:0"></b></i>0/1</div><div class="num">3,068.00 ₪</div><div class="act">⋯ <span>‹</span></div></div>
+
+ <div class="row month"><div class="ord"><b>#1019</b><time>02.11.2026</time></div><div class="who"><span class="av r">ל</span><span><b>לקוח בדיקה חודשי</b><small>חודשית · 3 אתרים</small></span></div><div class="site"><span class="more">+2</span>ynet.co.il</div><div><span class="pill p-month"><i></i>חודשית פתוחה</span></div><div class="pub"><i><b style="width:0"></b></i>0/3</div><div class="num">6,985.60 ₪</div><div class="act">⋯ <span>‹</span></div></div>
+
+ <div class="row ask"><div class="ord"><b>#1017</b><time>01.11.2026</time></div><div class="who"><span class="av r">ל</span><span><b>לקוח בדיקה חודשי</b><small>חודשית · 49 אתרים</small></span></div><div class="site"><span class="more">+48</span>ynet.co.il</div><div><span class="pill p-ok"><i></i>שולם</span></div><div class="pub"><i><b style="width:2%"></b></i>1/46</div><div class="num">225,380.00 ₪</div><div class="act"><span class="cta">טיפול בביטול</span></div></div>
+
+ <div class="row ok"><div class="ord"><b>#1</b><time>01.11.2026</time></div><div class="who"><span class="av r">ל</span><span><b>לקוח בדיקה חודשי</b><small>חודשית · 8 אתרים</small></span></div><div class="site"><span class="more">+7</span>hashmelai.co.il</div><div><span class="pill p-ok"><i></i>שולם</span></div><div class="pub"><i><b style="width:100%"></b></i>8/8</div><div class="num">230,690.00 ₪</div><div class="act">⋯ <span>‹</span></div></div>
+
+ <div class="legend"><span class="ok"><i></i>שולם</span><span class="wait"><i></i>ממתין לתשלום</span><span class="month"><i></i>חודשית פתוחה</span><span class="ask"><i></i>דורש טיפול</span><span class="off"><i></i>בוטלה</span></div>
+</div>
+</body></html>

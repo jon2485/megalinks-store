@@ -110,7 +110,7 @@ export default function AdminOrderHistory({ctx,openOrder,initialUnpaid=false}:{c
         {!primary&&!open&&<button type="button" className="sv2-chevbtn" aria-label={'פירוט הזמנה '+o.number} aria-expanded={false} aria-controls={'order-inline-'+o.id} onClick={toggle}>{busy?<Loader2 className="om-spin" size={16} aria-hidden="true"/>:<ChevronLeft className="ofx-chev" size={17} aria-hidden="true"/>}</button>}
        </div>
       </div>
-      {open&&<RecordPanel id={'order-inline-'+o.id} title={<>הזמנה <bdi>#{String(o.number).replace(/^#/,'')}</bdi></>} badge={<span className={'sv2-pill '+payPill(pay.tone)}><i/>{pay.label}</span>} onClose={()=>setExpanded('')}><OrderPanel ctx={ctx} order={o} manage={()=>detail(o)}/></RecordPanel>}
+      {open&&<RecordPanel id={'order-inline-'+o.id} title={<>הזמנה <bdi>#{String(o.number).replace(/^#/,'')}</bdi></>} badge={<span className={'sv2-pill '+payPill(pay.tone)}><i/>{pay.label}</span>} onClose={()=>setExpanded('')}><OrderPanel ctx={ctx} order={o} manage={()=>detail(o)} profit/></RecordPanel>}
      </article></React.Fragment>;})}
     </div>
    </>}

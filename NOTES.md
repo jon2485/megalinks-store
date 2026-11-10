@@ -703,3 +703,16 @@ Files: app/admin-order-history.tsx, app/orders-v2.css (block "round 3" at the en
 
 Checked locally by screenshots (desktop 1440, phone 390), row opens in place, tsc and build pass. Not checked: a real phone, tablet width (641-1100), the shared OrderPublication is no longer used by this screen (still used elsewhere).
 Next: owner review on the local link. Not pushed.
+
+## 10.11.2026: Orders screen round 4 built (row cards + money rows)
+
+Approved by the owner from mockups `docs/mockups/orders-rows-split-v1.png` and `docs/mockups/order-money-rows.png`.
+
+- Decided: every order is its own white card with a 4px status stripe on the side: green paid, orange awaiting payment, blue monthly open, red needs handling (payment report or cancel request), grey cancelled. Same stripe on phone cards.
+- Decided: inside the open order the totals are compact rows: before VAT, VAT, total incl. VAT, expenses (supplier cost, before VAT), final profit in green with percent. Profit = net income minus recorded purchase cost (`purchaseCosts` from `lib/admin-month-report.ts`, same formula as month close). Unpaid order shows "expected profit", loss is red, missing cost shows an amber "profit not known yet" row with the known cost so far. Cancelled order shows no cost or profit rows.
+- Scope: `OrderPanel` got an optional `profit` prop, passed only from the orders screen. Finance, month close, monthly and payment reports screens keep the old totals block.
+- Files: `app/admin-order-panel.tsx`, `app/admin-order-history.tsx`, `app/orders-v2.css` (block "round 4").
+- Checked locally by screenshots, desktop 1440 and phone 390 (`docs/mockups/orders-v4-built-*.png`). tsc and build pass.
+- Not checked: real phone, tablet width 641-1100, loss and missing-cost states with real data (no such fictional order locally).
+- Note for screenshots: headless Chrome stalls the list fetch after a chip click unless frames are forced (take a throwaway shot between waits). Not a product bug.
+- Next: owner review on http://127.0.0.1:5180/admin-orders. Nothing pushed.

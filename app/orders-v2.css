@@ -213,3 +213,35 @@
  .sv2-orders .sv2-foot{padding:10px 4px}
  .ofx-skel-row{margin:0 0 8px;background:#fff}
 }
+
+/* 10.11.2026 round 4: separate order cards with a status stripe, compact money rows in the open order */
+.sv2-orders .sv2-olist .sv2-order{position:relative;--oc:#ff9500}
+.sv2-orders .sv2-olist .sv2-order::before{display:block!important;content:"";position:absolute;inset-block:0;inset-inline-start:0;width:4px;background:var(--oc);z-index:1;pointer-events:none}
+.sv2-orders .sv2-olist .sv2-order.is-tone-ok{--oc:#34c759}
+.sv2-orders .sv2-olist .sv2-order.is-tone-month{--oc:#0a84ff}
+.sv2-orders .sv2-olist .sv2-order.is-tone-cancelled{--oc:#c7c7cc}
+.sv2-orders .sv2-olist .sv2-order.is-tone-report,.sv2-orders .sv2-olist .sv2-order.has-cta{--oc:#ff3b30}
+.sv2-orders .sv2-olist .sv2-order .sv2-orow{box-shadow:none!important}
+@media(min-width:641px){
+ .sv2-orders .ofx-card{background:none!important;box-shadow:none!important;border:0!important;border-radius:0!important;overflow:visible}
+ .sv2-orders .sv2-th{height:34px}
+ .sv2-orders .sv2-olist .sv2-order{margin:0 0 6px!important;border:0!important;border-radius:16px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05)!important;overflow:hidden!important;transition:box-shadow .2s}
+ .sv2-orders .sv2-olist .sv2-order:hover{box-shadow:0 0 0 1px rgba(0,0,0,.05),0 4px 14px rgba(11,39,77,.08)!important}
+ .sv2-orders .sv2-olist .sv2-order.is-open{box-shadow:0 0 0 1px rgba(0,113,227,.18),0 8px 24px rgba(11,39,77,.10)!important}
+ .sv2-orders .ofx-card>.sv2-empty,.sv2-orders .ofx-card>.ofx-skel{border-radius:16px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04)}
+}
+.sv2-orders .omk{margin-top:12px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.06);overflow:hidden}
+.sv2-orders .omk-r{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:7px 16px;font-size:14px;color:#424245}
+.sv2-orders .omk-r b{font-weight:600;color:#1d1d1f;white-space:nowrap;font-variant-numeric:tabular-nums}
+.sv2-orders .omk-r.is-sum{border-top:1px solid #eceef2;font-weight:700;color:#1d1d1f}
+.sv2-orders .omk-r.is-sum b{font-size:15.5px;font-weight:800}
+.sv2-orders .omk-r.is-cost{border-top:1px solid #eceef2}
+.sv2-orders .omk-r.is-cost b{color:#6e6e73}
+.sv2-orders .omk-r.is-profit{padding:10px 16px;background:#e9f7ee;color:#1a7f3c;font-size:15px;font-weight:700}
+.sv2-orders .omk-r.is-profit b{color:#1a7f3c;font-size:18px;font-weight:800;letter-spacing:-.01em}
+.sv2-orders .omk-r.is-profit small{margin-inline-start:8px;padding:2px 8px;border-radius:999px;background:#fff;font-size:12px;font-weight:700}
+.sv2-orders .omk-r.is-profit.is-loss{background:#ffebee;color:#c4001a}
+.sv2-orders .omk-r.is-profit.is-loss b{color:#c4001a}
+.sv2-orders .omk-r.is-profit.is-unknown{background:#fff4e0;color:#b25000}
+.sv2-orders .omk-r.is-profit.is-unknown b{color:#b25000;font-size:14px;font-weight:700}
+.sv2-orders .omk-r i{font-style:normal}
