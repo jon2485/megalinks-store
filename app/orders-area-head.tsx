@@ -3,6 +3,8 @@ import React from 'react';
 import {adminArea} from '@/lib/admin-navigation';
 import {AdminAttentionBadge,useAdminAttention} from './admin-attention';
 import type {Ctx} from './workspace';
+import './supplier-v2.css';
+import './orders-v2.css';
 import {Building2,CalendarCheck,CalendarRange,CreditCard,FileText,LayoutDashboard,Receipt,ShoppingCart,Wallet} from 'lucide-react';
 export const areaIcons:Record<string,React.ElementType>={'admin-orders':ShoppingCart,'admin-month-close':CalendarCheck,'admin-payment-reports':CreditCard,'admin-invoices':Receipt,'admin-topups':Wallet,'admin-monthly':CalendarRange,'admin-supplier-overview':LayoutDashboard,'admin-suppliers':Building2,'admin-seller-requests':FileText,'admin-supplier-finance':CreditCard};
 

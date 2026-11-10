@@ -716,3 +716,17 @@ Approved by the owner from mockups `docs/mockups/orders-rows-split-v1.png` and `
 - Not checked: real phone, tablet width 641-1100, loss and missing-cost states with real data (no such fictional order locally).
 - Note for screenshots: headless Chrome stalls the list fetch after a chip click unless frames are forced (take a throwaway shot between waits). Not a product bug.
 - Next: owner review on http://127.0.0.1:5180/admin-orders. Nothing pushed.
+
+## 10.11.2026: Inner pages of the orders area in the approved orders look
+
+Owner asked: bring month close, payment reports, invoices and receipts, balance top-ups and monthly accounts to the new design, keep every button working, fix overlapping or misplaced elements.
+
+- Decided: low-risk change. Markup and handlers of the lists are untouched. Each page got the shared head (`OrdersAreaHead`: area tabs, title, subtitle, action buttons), wrapper classes `sv2 sv2-orders sv2-fin`, a status tone per record (side stripe) and one CSS block.
+- Look: summary numbers as white cards, pill chips with a blue ring when selected, each record a white card with a 4px status stripe (same colours as the orders screen), tinted action pills, solid blue only for the main action.
+- Fixed: export button sat on top of the area tabs (now in the head line); payment-report action button overflowed onto the amount (wider column); truncated site name with +N.
+- Phone: summary in two columns, record card in rows with a full-width action button and a visible open arrow, month select on month close visible again.
+- Side effect: the old heading's light/dark toggle is gone on these pages (same as the orders screen, light-only decision of 09.11).
+- Files: `app/admin-month-close.tsx`, `app/payment-reports.tsx`, `app/admin-finance.tsx`, `app/monthly-admin.tsx`, `app/order-list-parts.tsx` (optional `tone`), `app/orders-area-head.tsx`, `app/admin-shell.tsx`, `app/workspace.tsx`, `app/orders-v2.css` (block "inner pages" at the end).
+- Checked locally on the real build, desktop 1440 and phone 390, all five pages: export, bank details dialog, chips, search, period buttons, date range, row open and close, row action (manage order link, attach document, month close dialog, details), phone filter sheet. No console errors, no horizontal overflow, tsc and build pass. Screenshots: `docs/mockups/orders-inner-*.png`.
+- Not checked: real phone, tablet width 761-1100, pager (not enough local rows on most pages), submitting the dialogs (only opened).
+- Next: owner review on http://127.0.0.1:5180/admin-month-close and the other tabs. Nothing pushed.
