@@ -20,6 +20,10 @@ assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:0,cost_record
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:1000}]).summary.profit_net,null,'missing paid writing cost is flagged');
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:1000,writing_cost_cents:500}]).summary.profit_net,5500);
 assert.equal(buildMonthReport([{...order,paid:0}],[{order_id:'cost',cost_cents:4000}]).summary.net,0);
+assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:12000,cost_recorded:true,status:'cancelled'}]).summary.cost_net,0,'a cancelled article adds no cost');
+assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:12000,cost_recorded:true,publication_refunded:true}]).summary.cost_net,0,'a refunded publication adds no cost');
+assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:1000,writing_cost_cents:500,publication_refunded:true}]).summary.cost_net,500,'kept writing still counts after a publication refund');
+assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,cost_recorded:true},{order_id:'cost',cost_cents:12000,cost_recorded:true,status:'cancelled'}]).summary.cost_net,4000,'only the live article counts');
 const f=await createAdminFixture();
 const request=async(path,method='GET',body,expected=200)=>{const r=await f.request('/api/'+path,{method,body:body===undefined?undefined:JSON.stringify(body),headers:{'Content-Type':'application/json'}});const j=await r.json();assert.equal(r.status,expected,JSON.stringify(j));return j;};
 const stamp='2026-10-10T09:00:00.000Z';

@@ -2,12 +2,17 @@ import type {Row} from './shared';
 import {effectiveOrderAmounts,remainingArticleNet} from './order-finance';
 import {paymentConfirmed} from './admin-order-buckets';
 /** Costs are immutable purchase snapshots, not current catalog prices or supplier cash payments. */
+/** What we paid for an order's articles. A cancelled article costs nothing: it goes back to the state before
+ *  the order, so it adds no cost, no profit and no loss (owner decision, 10.11.2026). Writing that the customer
+ *  kept after a publication refund still counts. */
 export function purchaseCosts(articles:Row[]){
  let known=0,missing=0;
  for(const a of articles){
+  const writing=Number(a.editorial_price)>0,publicationOff=a.status==='cancelled'||!!a.publication_refunded,writingOff=a.status==='cancelled'||!!a.writing_refunded;
+  if(publicationOff&&(!writing||writingOff))continue;
   const cost=a.cost_cents;
-  if(a.cost_recorded!==false&&Number.isSafeInteger(cost)&&cost>=0&&(cost>0||a.cost_recorded===true))known+=cost;else missing++;
-  if(Number(a.editorial_price)>0){const writing=a.writing_cost_cents;if(Number.isSafeInteger(writing)&&writing>=0)known+=writing;else missing++;}
+  if(!publicationOff){if(a.cost_recorded!==false&&Number.isSafeInteger(cost)&&cost>=0&&(cost>0||a.cost_recorded===true))known+=cost;else missing++;}
+  if(writing&&!writingOff){const writingCost=a.writing_cost_cents;if(Number.isSafeInteger(writingCost)&&writingCost>=0)known+=writingCost;else missing++;}
  }
  if(!articles.length)missing++;
  return {known,missing,cost:missing?null:known};

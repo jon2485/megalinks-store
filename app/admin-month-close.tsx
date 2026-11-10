@@ -41,7 +41,7 @@ export default function AdminMonthClose({ctx}:{ctx:Ctx}){
       <div className="om-who"><b>{o.user_name||o.name}</b><span>{o.on_account||o.payment==='monthly'||o.billing_month?<span className="is-monthly">הזמנה חודשית</span>:'הזמנה רגילה'}</span></div>
       <OrderSites order={o}/>
       <div className="om-pay"><span className={'om-pill is-'+pay.tone}>{pay.label}</span>{pay.note&&<small>{pay.note}</small>}</div>
-      <div className="om-pub om-profit-cell">{o.cost_net===null?<span className="om-pill is-report">חסרה עלות</span>:<><small>עלות <bdi>{orderMoney(o.cost_net)}</bdi></small><b className={Number(o.profit_net)<0?'is-loss':undefined}>רווח <bdi>{o.profit_net===null?'—':orderMoney(o.profit_net)}</bdi></b></>}</div>
+      <div className="om-pub om-profit-cell">{pay.tone==='cancelled'?<span className="om-muted" style={{whiteSpace:'nowrap'}}>אין רווח או הפסד</span>:o.cost_net===null?<span className="om-pill is-report">חסרה עלות</span>:<><small>עלות <bdi>{orderMoney(o.cost_net)}</bdi></small><b className={Number(o.profit_net)<0?'is-loss':undefined}>רווח <bdi>{o.profit_net===null?'—':orderMoney(o.profit_net)}</bdi></b></>}</div>
       <div className="om-amount"><bdi>{orderMoney(o.income_net)}</bdi></div>
       <OrderAction label="ניהול הזמנה" href={'/admin-order/'+o.id} onClick={()=>ctx.go('admin-order/'+o.id)}/>
      </OrderRecord>;})}</div>
