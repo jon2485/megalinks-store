@@ -738,3 +738,10 @@ Owner asked to align the inner pages with the orders screen. The open order on m
 - Files: `app/admin-month-close.tsx`, `app/payment-reports.tsx`, `app/admin-finance.tsx`, `app/monthly-admin.tsx` (one prop each).
 - Checked locally on the real build, desktop 1440 and phone 390, on the four pages. tsc and build pass. Screenshot: `docs/mockups/orders-inner-money-rows.png`.
 - Not checked: a loss state (no such fictional order locally). Nothing pushed.
+
+## 10.11.2026: Month close, no duplicate cost and profit
+
+Owner saw cost and profit twice on month close: in the list row ("cost and profit" column) and again inside the open order. Decided: keep them in the row, drop them from the open order on month close only. The open order there shows before VAT, VAT and total.
+- Other inner pages (payment reports, invoices, monthly) have no cost/profit in the row, so they keep the expenses and profit rows inside the open order.
+- Files: `app/admin-order-panel.tsx` (optional `paymentOnly` prop), `app/admin-month-close.tsx`.
+- Checked locally, desktop 1440 and phone 390. tsc and build pass. Screenshot: `docs/mockups/orders-inner-month-close-no-dup.png`. Nothing pushed.
