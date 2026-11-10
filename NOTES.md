@@ -813,3 +813,28 @@ Owner: the article mockup showed the customer's editor; the admin needs to see, 
 - Known: `tests/integration.mjs` stops at an older check that expects approval not to dispatch (line 71, customer edit after approval hits a `sent` article). It failed the same way before this change. Needs updating.
 - Mockup round 3 (`docs/proposals/inner-v2/article-*.png`): owner found round 2 unclear. New layout: one sentence saying who has the article and what happens next, a track of who holds it (customer, you, supplier, published), the article in the center as it will be published with links marked, and one decision panel in three steps (what the system checked, what to check by eye from the site requirements, two buttons with a line saying what happens after the click). Other details are folded rows. Proposed clearer labels: "אישור ושליחה לספק" and "החזרה ללקוח לתיקון" (same actions). Waiting for approval before building.
 - `docs/article-flow.md`: all article cases in simple Hebrew with examples, and what to fix. Open recommendation: an admin edit of an `approved` article (e.g. after a failed delivery) still sends it back to the customer; suggest keeping it approved.
+
+## 10.11.2026: Scheduled articles at 07:00, admin article page, approved fixes
+
+Owner decisions: a scheduled article shows in the approval list right away and may be approved early; on the chosen day the system sends it to the supplier at 07:00. Approved all proposed fixes.
+
+- **Scheduled flow** (`lib/scheduled-approval.ts`, new `lib/scheduled-dispatch.ts`, `app/api/[...path]/route.ts`, `lib/publication.ts`, `lib/writing-actions.ts`):
+  - Submit with a future day goes to `admin_review` (no more `scheduled` hold). Old `scheduled` rows are released to approval on the next run.
+  - Approve before the day: status `approved`, `data.dispatch_at` = 07:00 Israel time that day (`dispatchAtFor`), no dispatch yet. `dispatchScheduledArticles` sends it once (marks `dispatch_attempted_at`); a failed or blocked delivery stays in "delivery failed" for a manual retry.
+  - Approve after 07:00 on the day: sent right away. Manual dispatch and supplier link before the time return 409.
+  - Runs from `POST /api/maintenance/scheduled-articles` (every minute in `scripts/railway-staging-start.mjs`) and on every admin GET.
+  - Lists: new stage `dispatch_scheduled` ("אושרה, תישלח בתאריך") instead of a failed delivery; the "ready to send" queue ignores articles waiting for their day (`lib/admin-content.ts`, `lib/content-presentation.ts`, `lib/admin-control-center.ts`, `app/admin-content-workspace.tsx`). `dispatch_at` is exposed in article data (`lib/customer-privacy.ts`).
+  - Customer copy explains the 07:00 send (`app/publication-date-picker.tsx`, send label in `app/article-studio.tsx`). Side effect: a customer can no longer pull a future-dated article back from approval to edit it (it is with the admin like any submitted article).
+- **Admin edits keep the status** in `admin_review` and in `approved` (changing the day of an approved article recomputes `dispatch_at`).
+- **Admin article page** (`app/admin-article-decision.tsx`, `app/admin-article-review.css`, `app/article-studio.tsx`): header with who holds the article and a four-step track; decision panel per stage (review, writer, customer, waiting day, delivery failed, supplier with publication report and reminder, cancel request, published). The customer's checklist and save/send bar are hidden for the admin. Checked locally: approve sent a fictional article to the supplier, return with reason moved one to the customer, navigation buttons, edit mode, phone order (header, panel, article).
+- **Tests:** `tests/publication-scheduling.mjs` rewritten for the new flow (passes, 103 checks). `tests/integration.mjs` updated (approval dispatches; required fields for monthly settle and supplier payment); it now runs to line 407 and stops at an older stock-count check ("unlimited site has continuous independent count"), unrelated, still open.
+- Local data note: an earlier API check escaped the content of fictional article 53e10d60; restored by hand.
+
+### Before upload
+- Production must run the minute job (`POSTFLOW_AUTOMATION_KEY` + call to `/api/maintenance/scheduled-articles`), or the 07:00 send happens only when an admin next opens the admin area. Staging already has it.
+- Open test: integration stock-count check at line 407.
+
+### Inner pages still not in the new design
+- From the approved mockup, not built yet: customer file, personal price list, site editor, Sheets tab (now frame and buttons only).
+- Light pass only: blog editor, single ticket page.
+- Outside the four areas: single order page (`admin-order/<id>`), promotions, system and reports (connections, reports, mailing, logs), work center.
