@@ -10,6 +10,7 @@ import {OrderPager,OrderRecord,OrderSearch,OrderViews} from './order-list-parts'
 import {OrdersAreaHead} from './orders-area-head';
 import {TicketThread} from './ticket-conversation';
 import {takeSupportSearch} from './support-search-handoff';
+import {takeAdminViewState} from '@/lib/admin-view-state';
 
 // Side stripe and status pill per ticket state: waiting for our reply needs handling.
 const tones:Record<SupportStatus,[string,string]>={awaiting_reply:['red','unreported'],answered:['month','month'],resolved:['ok','ok']};
@@ -19,7 +20,7 @@ const plainClick=(e:React.MouseEvent)=>!(e.metaKey||e.ctrlKey||e.shiftKey||e.alt
 // conversation on its own page; the panel shows the latest messages and can close the ticket.
 // Opening a new ticket and deleting keep the same dialogs as before (edit/remove come from SupportView).
 export function AdminSupportList({ctx,state,edit,remove}:{ctx:Ctx;state:{data:any;loading:boolean;error:string};edit:(row?:Row)=>void;remove:(row:Row)=>void}){
- const [search,setSearch]=useState(()=>takeSupportSearch()),[status,setStatus]=useState('all'),[open,setOpen]=useState(''),[page,setPage]=useState(1);
+ const [search,setSearch]=useState(()=>takeSupportSearch()),[status,setStatus]=useState(()=>{const preset=takeAdminViewState<string>('support-status');return preset&&preset in supportStatusLabels?preset:'all';}),[open,setOpen]=useState(''),[page,setPage]=useState(1);
  const all:Row[]=state.data?.records||[],query=search.trim().toLocaleLowerCase('he');
  const count=(s:SupportStatus)=>all.filter(r=>supportStatus(r)===s).length;
  const rows=all.filter(r=>(status==='all'||supportStatus(r)===status)&&[r.name,r.message,r.reply,r.order_number,r.id,r.user_name].some(v=>String(v||'').toLocaleLowerCase('he').includes(query)));

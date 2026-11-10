@@ -18,7 +18,7 @@
 .lb1 :is(h1,h2,h3){font-weight:700;color:var(--ink)}
 .lb1 a{color:inherit;text-decoration:none}
 .lb1 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0;margin:0;box-shadow:none;border-radius:0}
-.admin-workspace-body .lb1 button:not(.lb-btn):not(.lb-link):not(.lb-more):not(.lb-calm-head){min-height:0}
+.admin-workspace-body .lb1 button:not(.lb-btn):not(.lb-link):not(.lb-more):not(.lb-calm-head):not(.lb-cash){min-height:0}
 .lb1 button:disabled{cursor:default}
 .lb1 svg{flex:none}
 .lb1 bdi{font-variant-numeric:tabular-nums}
@@ -57,7 +57,7 @@
 .lb1 .lb-say p>b{display:block;font-size:46px;line-height:1.08;font-weight:700;letter-spacing:-.025em;color:var(--ink)}
 .lb1 .lb-say p>span{display:block;font-size:46px;line-height:1.15;font-weight:400;color:var(--ink2);letter-spacing:-.02em}
 .lb1 .lb-say em{font-style:normal;color:var(--red-ink)}
-.lb1 .lb-cash{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin-top:14px;padding:0 16px;background:#fff;border-radius:999px;box-shadow:var(--ring);font-size:14px;color:var(--ink2);transition:transform .12s,box-shadow .12s}
+.lb1 .lb-cash{display:inline-flex;align-items:center;gap:8px;min-height:44px!important;margin-top:14px;padding:0 16px;background:#fff;border-radius:999px;box-shadow:var(--ring);font-size:14px;color:var(--ink2);transition:transform .12s,box-shadow .12s}
 .lb1 .lb-cash:hover{box-shadow:0 0 0 1px rgba(0,113,227,.4),0 6px 24px rgba(0,0,0,.06)}
 .lb1 .lb-cash b{font-size:16px;font-weight:700;color:var(--ink)}
 .lb1 .lb-cash svg{color:var(--blue)}
@@ -216,7 +216,7 @@
 .lb1 .lb-none{padding:10px 0 2px;font-size:13.5px;color:var(--mut)}
 
 /* search results and the "handled" view */
-.lb1 .lb-found{margin-bottom:22px}
+.lb1 .lb-found{margin-top:26px}
 .lb1 .lb-found .lb-it,.lb1 .lb-hist .lb-it{padding-inline-start:0}
 .lb1 .lb-found .lb-it{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"text open"}
 .lb1 .lb-box{background:#fff;border-radius:18px;box-shadow:var(--ring);padding:4px 16px}
