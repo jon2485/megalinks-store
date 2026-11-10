@@ -1,4 +1,6 @@
 'use client';
+import {trackPresses,pressBusy} from './press-feedback';
+import './press-feedback.css';
 import SupplierInvoiceView from './supplier-invoice-view';
 import AdminSuppliersWorkspace from './admin-suppliers-workspace';
 import AdminContentWorkspace from './admin-content-workspace';
@@ -135,18 +137,21 @@ export default function Workspace({ initialCatalog, initialView = 'catalog' }: {
         return;
     } navigate(v); };
     useEffect(() => { const dirtyListener = (e: Event) => {dirtyNavigation.current=!!(e as CustomEvent).detail;setDirty(dirtyNavigation.current);}; window.addEventListener('postflow:dirty', dirtyListener); return () => window.removeEventListener('postflow:dirty', dirtyListener); }, []);
+    useEffect(() => trackPresses(), []);
     useEffect(() => { const listener = () => { const next=clientContentView(window.location.pathname.slice(1) || 'catalog'); setView(next); if(next!==(window.location.pathname.slice(1)||'catalog'))window.history.replaceState({},'', '/'+next); }; window.addEventListener('popstate', listener); return () => window.removeEventListener('popstate', listener); }, []);
     const run = async (fn: () => Promise<any>, success = 'נשמר בהצלחה') => { if (busyLock.current) {
         toast.info('פעולה קודמת עדיין בטיפול');
         throw new Error('פעולה קודמת עדיין בטיפול');
-    } busyLock.current = true; try {
+    } busyLock.current = true; const settle = pressBusy(); try {
         const result = await fn();
+        settle(true);
         if (success)
             toast.success(success);
         refresh();
         return result;
     }
     catch (e) {
+        settle(false);
         toast.error((e as Error).message);
         throw e;
     }

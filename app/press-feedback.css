@@ -1,0 +1,33 @@
+/* Button feedback across the admin (10.11.2026): press, hover, focus, busy, done, failed, disabled, loading. */
+:is(.admin-workspace-body,[role=dialog]) :is(button,[role=button],a.sv2-btn,a.om-btn,a.sv2-act){transition:transform .1s ease-out,background-color .15s,box-shadow .2s,filter .15s,opacity .15s}
+:is(.admin-workspace-body,[role=dialog]) :is(button,[role=button],a.sv2-btn,a.om-btn):not(:disabled):not([aria-disabled=true]):active{transform:scale(.97)}
+:is(.admin-workspace-body,[role=dialog]) :is(.sv2-btn.primary,.om-btn.is-primary,.sv2-act,button[data-slot=button]:not([data-variant])):not(:disabled):hover{filter:brightness(1.06)}
+:is(.admin-workspace-body,[role=dialog]) :is(.sv2-btn.quiet,.om-btn:not(.is-primary)):not(:disabled):hover{box-shadow:0 0 0 1px rgba(0,113,227,.35)}
+:is(.admin-workspace-body,[role=dialog]) :is(button,[role=button],a,select,input,textarea,[role=menuitem],summary):focus-visible{outline:3px solid rgba(0,113,227,.4)!important;outline-offset:2px}
+:is(.admin-workspace-body,[role=dialog]) :is(button,[role=button]):disabled,:is(.admin-workspace-body,[role=dialog]) [aria-disabled=true]{opacity:.5;cursor:not-allowed;filter:none}
+:is(.admin-workspace-body,[role=dialog]) :is(.sv2-lk,.sv2-title a,.sv2-crumb a):active{opacity:.55}
+[role=menuitem]{transition:background-color .12s,transform .1s}
+[role=menuitem]:active{transform:scale(.98)}
+
+/* busy: the pressed control keeps its size and shows a spinner */
+.fx-busy{position:relative!important;color:transparent!important;pointer-events:none;cursor:progress}
+.fx-busy>*{visibility:hidden}
+.fx-busy::after{content:'';position:absolute;inset:0;margin:auto;width:16px;height:16px;border-radius:50%;border:2px solid currentColor;border-color:rgba(0,113,227,.25);border-top-color:#0071e3;animation:fx-spin .7s linear infinite}
+:is(.sv2-btn.primary,.om-btn.is-primary,.sv2-act,.sv2-btn.danger).fx-busy::after,button[data-slot=button].fx-busy::after{border-color:rgba(255,255,255,.35);border-top-color:#fff}
+/* done / failed: a short ring on the same control */
+.fx-done{box-shadow:0 0 0 3px rgba(52,199,89,.5)!important}
+.fx-fail{box-shadow:0 0 0 3px rgba(215,0,21,.45)!important;animation:fx-shake .35s ease-in-out}
+@keyframes fx-spin{to{transform:rotate(360deg)}}
+@keyframes fx-shake{20%,60%{transform:translateX(-3px)}40%,80%{transform:translateX(3px)}}
+
+/* loading: a quiet shimmer instead of plain text */
+:is(.sv2-loading,.orders-reference-loading,.om-panel-load:not([role=alert])){position:relative;min-height:120px;margin:12px 16px!important;padding:0!important;border-radius:16px;color:transparent!important;background:linear-gradient(90deg,#f2f3f6 0,#fafbfc 40%,#f2f3f6 80%) 0 0/200% 100%,#f2f3f6;animation:fx-shimmer 1.4s ease-in-out infinite;overflow:hidden}
+:is(.sv2-loading,.orders-reference-loading,.om-panel-load:not([role=alert]))>*{visibility:hidden}
+@keyframes fx-shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+
+@media(prefers-reduced-motion:reduce){
+ :is(.admin-workspace-body,[role=dialog]) *,[role=menuitem]{transition:none!important}
+ :is(.admin-workspace-body,[role=dialog]) :is(button,[role=button],a):active,[role=menuitem]:active{transform:none!important}
+ .fx-fail,.fx-busy::after,:is(.sv2-loading,.orders-reference-loading,.om-panel-load){animation:none!important}
+ .fx-busy::after{border-top-color:#0071e3;opacity:.6}
+}

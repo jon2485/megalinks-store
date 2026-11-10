@@ -664,3 +664,7 @@
 - "All orders" = bucket all (it was active and hid unpaid orders).
 - Item rows are tighter (date beside the article), "show the whole order" expands in place.
 - Wide area tabs with icons (orders and suppliers), light selected state, light close button, press/hover/focus feedback on every control.
+
+## 10.11.2026: Button feedback (Apple)
+- app/press-feedback.ts + .css; run() in workspace.tsx marks the pressed button: spinner while it runs, green ring on success, red ring and a light shake on error, a short vibration on touch phones.
+- Press, hover, focus and disabled across admin screens and dialogs, a shimmer instead of "Loading…" text, and reduced-motion support.
