@@ -752,3 +752,10 @@ Owner clarified: every orders-area screen shows the full money rows (before VAT,
 - The note is hidden wherever the money rows show (all five screens pass `profit`). The column header "before VAT" above the item prices stays.
 - Files: `app/admin-order-panel.tsx`, `app/admin-month-close.tsx`. Screenshot `docs/mockups/orders-inner-money-rows.png` updated, `orders-inner-month-close-no-dup.png` removed.
 - Checked locally on the orders screen, month close, payment reports, invoices and monthly accounts (desktop 1440). tsc and build pass. Nothing pushed.
+
+## 10.11.2026: Month close, old profitability box removed
+
+Owner: the "order profitability" box (income before VAT, cost before VAT, profit before tax) under the open order on month close repeats what the new money rows show. Removed it: the `OrderProfit` section and its helper `amountOrMissing` in `app/admin-month-close.tsx`.
+- Kept: the boxes on invoices (attach document) and payment reports (approve or reject report). They are actions, not duplicates.
+- Note: the old box showed "missing N cost items" on month close. The new money rows show the same as "profit not known yet, N costs missing".
+- Checked locally, desktop 1440 and phone 390. tsc and build pass. Nothing pushed.
