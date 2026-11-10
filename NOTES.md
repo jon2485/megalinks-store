@@ -759,3 +759,17 @@ Owner: the "order profitability" box (income before VAT, cost before VAT, profit
 - Kept: the boxes on invoices (attach document) and payment reports (approve or reject report). They are actions, not duplicates.
 - Note: the old box showed "missing N cost items" on month close. The new money rows show the same as "profit not known yet, N costs missing".
 - Checked locally, desktop 1440 and phone 390. tsc and build pass. Nothing pushed.
+
+## 10.11.2026: Content, users and catalog list pages in the approved orders look
+
+Owner asked to bring content and publishing, service tickets, users and permissions, catalog and pricing to the new design, keep every button, check them, and fit phones.
+
+Done in this step (list pages):
+- Content: articles (all four views), writing instructions, blog list. Users and permissions list. Catalog: sites, tiers, personal price lists, Sheets tab.
+- Same approach as the orders inner pages: the shared head (`OrdersAreaHead`: area tabs, title, subtitle, actions), wrapper classes `sv2 sv2-orders sv2-fin`, a status tone per row (side stripe) and one CSS block per page type. List logic and handlers untouched.
+- Catalog: its four tabs became the area strip (same click handler, alert count kept). The phone select for tabs is hidden on phones because the strip scrolls sideways.
+- Stripe colours: content by article stage; users red when a payment report waits, orange when a monthly account has debt, grey otherwise; catalog green active, grey hidden, red when the list price is below cost.
+- Additions: the area strip on phones scrolls the current tab into view (also fixes the orders area); the summary cards in the catalog are clickable cards with hover and press; long names end with … instead of breaking; each row type has its own phone card.
+- Files: `app/orders-area-head.tsx`, `app/admin-content-workspace.tsx`, `app/knowledge-admin.tsx`, `app/users-admin.tsx`, `app/catalog-pricing-workspace.tsx`, `app/admin-shell.tsx`, `app/workspace.tsx`, `app/orders-v2.css` (block "content, users and catalog pages").
+- Checked locally on the real build, desktop 1440 and phone 390: export, chips, search, filters, row open and close, area tabs, catalog tabs and summary cards, add site and edit site (open the editor), new and edit instruction dialogs, edit tier dialog, blog edit link, customer file and personal price list links. No console errors, no horizontal overflow. tsc and build pass.
+- Not yet: service tickets, and the inner screens (article, customer file, price list, blog editor, site editor, ticket). Nothing pushed.

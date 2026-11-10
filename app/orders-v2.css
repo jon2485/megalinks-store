@@ -366,3 +366,158 @@
  .sv2-orders.sv2-fin.sv2-fin .om-row>.om-action{grid-area:act!important;justify-self:stretch!important;height:40px!important;font-size:14px!important;margin-top:4px}
  .sv2-orders.sv2-fin.sv2-fin .orders-reference-pagination{justify-content:center}
 }
+
+/* 10.11.2026 content, users and catalog pages in the approved orders look.
+   Builds on the inner-pages block above; only what differs per page lives here. */
+
+/* area strip: a current tab may stay a link (catalog tabs keep their own click handler) */
+.sv2-orders.sv2-fin.sv2-fin .sv2-areas>a[aria-current=page]{background:rgba(0,113,227,.09)!important;color:#0066cc!important;box-shadow:inset 0 0 0 1.5px rgba(0,113,227,.55)!important}
+.sv2-orders.sv2-fin.sv2-fin .sv2-areas>a[aria-current=page] svg{color:#0071e3!important}
+.sv2-orders.sv2-fin.sv2-fin .sv2-areas svg{width:18px;height:18px}
+.sv2-orders.sv2-fin.sv2-fin .sv2-areas .om-tab-count{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#ff3b30;color:#fff;font-size:11px;font-weight:700;display:inline-grid;place-items:center;position:static}
+
+/* extra status tones for the side stripe */
+.sv2-orders.sv2-fin.sv2-fin .om-list .om-order.is-tone-work{--oc:#0a84ff}
+.sv2-orders.sv2-fin.sv2-fin .om-list .om-order.is-tone-neutral{--oc:#d2d2d7}
+
+/* quiet note line under the head */
+.sv2-orders.sv2-fin.sv2-fin .orders-reference-panel>.om-note{margin:0!important;font-size:13px!important;color:var(--fm)!important}
+
+/* shared: long text in a cell ends with … instead of wrapping */
+.sv2-orders.sv2-fin.sv2-fin .om-row>*{min-width:0}
+.sv2-orders.sv2-fin.sv2-fin .om-who b,.sv2-orders.sv2-fin.sv2-fin .om-who span,.sv2-orders.sv2-fin.sv2-fin .om-who bdi{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---------- content: articles, approvals, publication, writing ---------- */
+.sv2-orders.sv2-fin.sv2-fin .om-row .om-content-side{font-family:inherit!important;font-size:13px!important;font-weight:500!important;color:#424245!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv2-orders.sv2-fin.sv2-fin .om-row .om-id small,.sv2-orders.sv2-fin.sv2-fin .om-row .om-id a{display:block;font-size:12px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv2-orders.sv2-fin.sv2-fin .om-row .om-sites-text>*{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv2-orders.sv2-fin.sv2-fin .om-row .om-sites-text b,.sv2-orders.sv2-fin.sv2-fin .om-row .om-sites-text .om-article{font-size:14px;font-weight:600;color:var(--fi)}
+.sv2-orders.sv2-fin.sv2-fin .om-row .om-sites-text .om-article-site{font-size:12.5px;color:#0066cc}
+.sv2-orders.sv2-fin.sv2-fin .om-row .om-wait{font-size:13px!important;font-weight:600;color:#424245;white-space:nowrap}
+.sv2-orders.sv2-fin.sv2-fin .om-row .om-wait.is-late{color:#c4001a}
+.sv2-orders.sv2-fin.sv2-fin .om-content-views{margin:0}
+.sv2-orders.sv2-fin.sv2-fin .om-filter-chip-row{display:flex;gap:8px}
+.sv2-orders.sv2-fin.sv2-fin .om-filter-chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 6px 0 12px;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.08);font-size:13px}
+.sv2-orders.sv2-fin.sv2-fin .om-filter-chip button{display:grid;place-items:center;width:24px;height:24px;border:0;border-radius:50%;background:#f2f2f7;color:#424245;cursor:pointer;transition:background-color .15s,transform .1s}
+.sv2-orders.sv2-fin.sv2-fin .om-filter-chip button:hover{background:#e8e8ed}
+.sv2-orders.sv2-fin.sv2-fin .om-filter-chip button:active{transform:scale(.92)}
+
+/* writing instructions and blog rows */
+.sv2-orders.sv2-fin.sv2-fin .om-order.om-instruction,.sv2-orders.sv2-fin.sv2-fin .om-order.om-post{padding:0!important}
+.sv2-orders.sv2-fin.sv2-fin .om-instruction>div,.sv2-orders.sv2-fin.sv2-fin .om-post-row{padding:12px 22px!important;align-items:center}
+.sv2-orders.sv2-fin.sv2-fin .om-post-cover{border-radius:12px!important;overflow:hidden}
+.sv2-orders.sv2-fin.sv2-fin .om-post-title b{font-size:15px;font-weight:700;color:var(--fi)}
+.sv2-orders.sv2-fin.sv2-fin .om-post-title small,.sv2-orders.sv2-fin.sv2-fin .om-post-row time{font-size:12.5px;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin .om-post-view{color:#0066cc!important;font-weight:600;text-decoration:none}
+.sv2-orders.sv2-fin.sv2-fin .om-post-row>.om-btn{display:inline-flex;align-items:center;justify-content:center;height:36px!important;padding:0 16px!important;border:0!important;border-radius:999px!important;background:rgba(0,113,227,.08)!important;color:#0066cc!important;box-shadow:none!important;font-size:13.5px!important;font-weight:600!important;cursor:pointer;transition:background-color .15s,transform .1s}
+.sv2-orders.sv2-fin.sv2-fin .om-post-row>.om-btn:hover{background:rgba(0,113,227,.14)!important}
+.sv2-orders.sv2-fin.sv2-fin .om-post-row>.om-btn:active{transform:scale(.97)}
+.sv2-orders.sv2-fin.sv2-fin .om-post-row>.om-btn:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+.sv2-orders.sv2-fin.sv2-fin .om-post-view:hover{text-decoration:underline}
+
+/* ---------- users ---------- */
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-role .om-pill.is-unreported{background:#f2f2f7!important;color:#424245!important}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-role .om-pill.is-cancelled{background:#f2f2f7!important;color:#6e6e73!important}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-role small{display:block;margin-top:3px;font-size:12px;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-monthly small{display:block;margin-top:3px;font-size:12.5px;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-credit bdi{font-family:Arial,sans-serif;font-size:15px;font-weight:700;color:var(--fi);font-variant-numeric:tabular-nums}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-orders b{font-size:15px;font-weight:700;color:var(--fi)}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-orders small{display:block;font-size:12px;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-user-orders .om-report-warn{color:#c4001a;font-weight:600}
+.sv2-orders.sv2-fin.sv2-fin.om-users .om-muted{color:#aeaeb2}
+
+/* ---------- catalog ---------- */
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button{all:unset;box-sizing:border-box;display:block;padding:14px 18px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05);cursor:pointer;text-align:start;transition:box-shadow .2s,transform .1s}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button:hover{box-shadow:0 0 0 1px rgba(0,113,227,.25),0 4px 14px rgba(11,39,77,.08)}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button:active{transform:scale(.985)}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button dt{font-size:13px;font-weight:600;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button dd{margin:2px 0 0;font-size:24px;font-weight:800;color:var(--fi)}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button small{font-size:12.5px;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button.is-report dd{color:#b25000}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>button.is-ok dd{color:#1a7f3c}
+.sv2-orders.sv2-fin.sv2-fin .om-summary>div small{font-size:12.5px;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin .om-catalog-actions{display:flex;flex-wrap:wrap;gap:8px}
+.sv2-orders.sv2-fin.sv2-fin .om-catalog-actions .om-btn{height:38px;padding:0 16px;border-radius:999px;border:0;background:#fff;color:#1d1d1f;box-shadow:0 0 0 1px rgba(0,0,0,.08);font-size:14px;font-weight:600;transition:box-shadow .15s,color .15s,transform .1s}
+.sv2-orders.sv2-fin.sv2-fin .om-catalog-actions .om-btn:hover{color:#0066cc;box-shadow:0 0 0 1px rgba(0,113,227,.35)}
+.sv2-orders.sv2-fin.sv2-fin .om-catalog-actions .om-btn:active{transform:scale(.97)}
+.sv2-orders.sv2-fin.sv2-fin .om-catalog-actions .om-btn.is-primary{background:#0071e3!important;background-image:none!important;color:#fff!important;box-shadow:none!important}
+.sv2-orders.sv2-fin.sv2-fin .om-catalog-actions .om-btn.is-primary:hover{background:#0077ed!important;color:#fff!important}
+.sv2-orders.sv2-fin.sv2-fin .om-catalog-actions .om-btn.is-on{color:#0066cc;box-shadow:0 0 0 2px #0071e3}
+.sv2-orders.sv2-fin.sv2-fin .om-site-id{display:flex!important;align-items:center;gap:10px}
+.sv2-orders.sv2-fin.sv2-fin .om-site-id img{flex:none;border-radius:8px}
+.sv2-orders.sv2-fin.sv2-fin .om-site-id>div,.sv2-orders.sv2-fin.sv2-fin .om-site-id>span{min-width:0}
+.sv2-orders.sv2-fin.sv2-fin .om-site-supplier{font-size:13px;color:#424245;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv2-orders.sv2-fin.sv2-fin .om-site-cost,.sv2-orders.sv2-fin.sv2-fin .om-site-price{font-family:Arial,sans-serif;font-variant-numeric:tabular-nums}
+.sv2-orders.sv2-fin.sv2-fin .om-site-cost>bdi{font-size:14.5px;font-weight:600;color:#424245}
+.sv2-orders.sv2-fin.sv2-fin .om-site-price>bdi{display:block;font-size:15.5px;font-weight:700;color:var(--fi)}
+.sv2-orders.sv2-fin.sv2-fin .om-site-price>small:not(.om-phone-label){display:block;margin-top:2px;font-size:12px;font-weight:600;color:#1a7f3c}
+.sv2-orders.sv2-fin.sv2-fin .om-site-price>small.om-report-warn{color:#c4001a}
+.sv2-orders.sv2-fin.sv2-fin .om-tier-row,.sv2-orders.sv2-fin.sv2-fin .om-pricebook-row{padding:10px 22px!important}
+.sv2-orders.sv2-fin.sv2-fin .om-tier-percent{font-size:18px;font-weight:800;color:var(--fi)}
+.sv2-orders.sv2-fin.sv2-fin .om-tier-members{font-size:13px;color:var(--fm)}
+.sv2-orders.sv2-fin.sv2-fin .om-tier-rule{display:flex;align-items:center;gap:8px;padding:10px 14px!important;border-radius:14px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.05);font-size:13px!important;color:#424245!important}
+/* row buttons on tiers, price lists, writing instructions */
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions){display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) :is(.om-btn,.om-danger){display:inline-flex!important;align-items:center;gap:6px;height:36px!important;min-height:0!important;padding:0 14px!important;border:0!important;border-radius:999px!important;background:rgba(0,113,227,.08)!important;background-image:none!important;color:#0066cc!important;box-shadow:none!important;font-size:13.5px!important;font-weight:600!important;cursor:pointer;transition:background-color .15s,transform .1s}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) .om-btn:hover{background:rgba(0,113,227,.14)!important}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) .om-btn.is-primary{background:#0071e3!important;color:#fff!important}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) .om-btn.is-primary:hover{background:#0077ed!important}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) .om-danger{background:rgba(255,59,48,.08)!important;color:#c4001a!important}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) .om-danger:hover{background:rgba(255,59,48,.14)!important}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) :is(.om-btn,.om-danger):active{transform:scale(.97)}
+.sv2-orders.sv2-fin.sv2-fin :is(.om-tier-actions,.om-pricebook-actions,.om-instruction-actions) :is(.om-btn,.om-danger):focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+.sv2-orders.sv2-fin.sv2-fin .om-pricebook-row select.om-pricebook-tier{height:38px!important;padding:0 12px!important;border:0!important;border-bottom:0!important;border-radius:12px!important;background-color:#f5f5f7!important;box-shadow:none!important;font:inherit;font-size:14px!important;color:var(--fi)!important;cursor:pointer}
+.sv2-orders.sv2-fin.sv2-fin .om-pricebook-row select.om-pricebook-tier:hover{background-color:#ececf0!important}
+.sv2-orders.sv2-fin.sv2-fin .om-pricebook-row select.om-pricebook-tier:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+
+@media(min-width:761px){
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-head,.sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row{grid-template-columns:118px minmax(0,1fr) minmax(0,1.25fr) 160px 112px minmax(0,.8fr) 150px 32px!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-head,.sv2-orders.sv2-fin.sv2-fin.om-users .om-row{grid-template-columns:minmax(0,1.6fr) 120px minmax(0,1fr) 130px minmax(0,1fr) 130px 32px!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-site-head,.sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row{grid-template-columns:minmax(0,1.5fr) minmax(0,1.1fr) 110px 130px 110px 110px 32px!important}
+ .sv2-orders.sv2-fin.sv2-fin .om-tier-head,.sv2-orders.sv2-fin.sv2-fin .om-tier-row{grid-template-columns:minmax(0,1.6fr) 170px 170px 230px!important}
+ .sv2-orders.sv2-fin.sv2-fin .om-pricebook-head,.sv2-orders.sv2-fin.sv2-fin .om-pricebook-row{grid-template-columns:minmax(0,1fr) 220px 300px!important}
+ .sv2-orders.sv2-fin.sv2-fin .om-tier-head,.sv2-orders.sv2-fin.sv2-fin .om-pricebook-head{padding:0 22px!important}
+ .sv2-orders.sv2-fin.sv2-fin .om-row .om-phone-label{display:none!important}
+}
+@media(max-width:760px){
+ .sv2-orders.sv2-fin.sv2-fin .om-catalog-phone-tabs{display:none!important}
+ /* room after the last tab so it can scroll out of the edge fade */
+ .sv2-orders nav.sv2-areas::after{content:"";flex:0 0 36px}
+ /* phone cards: every row type gets its own areas (the orders areas do not fit) */
+ .sv2-orders.sv2-fin.sv2-fin .om-row>*{grid-area:auto}
+ .sv2-orders.sv2-fin.sv2-fin .om-row .om-expand{justify-self:end;align-self:center}
+ .sv2-orders.sv2-fin.sv2-fin .om-row .om-action{justify-self:stretch;justify-content:center;width:100%!important;max-width:none!important;height:40px;margin-top:4px}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-user-name{display:block!important}
+ .sv2-orders.sv2-fin.sv2-fin .om-site-id img{width:40px!important;height:28px!important;object-fit:contain}
+ .sv2-orders.sv2-fin.sv2-fin .om-chips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px}
+ .sv2-orders.sv2-fin.sv2-fin .om-chips::-webkit-scrollbar{display:none}
+ .sv2-orders.sv2-fin.sv2-fin .om-chips>button{flex:none}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"id wait" "who who" "art art" "pay side" "act exp"!important;gap:6px 10px!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-id{grid-area:id!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-wait{grid-area:wait!important;align-self:start;font-size:12.5px!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-who{grid-area:who!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-sites{grid-area:art!important;display:block!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-pay{grid-area:pay!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-content-side{grid-area:side!important;align-self:center;max-width:150px}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-action{grid-area:act!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog) .om-row>.om-expand{grid-area:exp!important;display:grid!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"who role" "monthly credit" "orders orders" "act exp"!important;gap:8px 10px!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-user-name{grid-area:who!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-user-role{grid-area:role!important;justify-self:end}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-user-monthly{grid-area:monthly!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-user-credit{grid-area:credit!important;justify-self:end;text-align:end}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-user-orders{grid-area:orders!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-action{grid-area:act!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-expand{grid-area:exp!important;display:grid!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"site state" "sup sup" "cost price" "act exp"!important;gap:8px 10px!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>.om-site-id{grid-area:site!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>.om-site-state{grid-area:state!important;justify-self:end}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>.om-site-supplier{grid-area:sup!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>.om-site-cost{grid-area:cost!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>.om-site-price{grid-area:price!important;justify-self:end;text-align:end}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>.om-action{grid-area:act!important}
+ .sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>.om-expand{grid-area:exp!important;display:grid!important}
+ .sv2-orders.sv2-fin.sv2-fin .om-row .om-phone-label{display:block!important;font-size:11.5px!important;color:var(--fm)!important;font-weight:600}
+ .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>*,.sv2-orders.sv2-fin.sv2-fin.om-catalog .om-row>*{position:static!important;inset:auto!important;transform:none!important}
+}

@@ -8,7 +8,7 @@ import {Field,Pick,type Ctx} from './workspace';
 import {ActionForm} from './screens';
 import {orderDateLabel} from './order-presentation';
 import {openCustomerOrder} from './customer-account-admin';
-import SkyThemeButton from './sky-theme-button';
+import {OrdersAreaHead} from './orders-area-head';
 import {OrderExport,OrderFilter,OrderPager,OrderRecord,OrderSearch,OrderViews,plainClick} from './order-list-parts';
 
 const roleNames:Row={customer:'לקוח',agency:'סוכנות',supplier:'ספק',admin:'מנהל'};
@@ -47,15 +47,14 @@ export default function UsersAdmin({ctx}:{ctx:Ctx}){
  const rows=scoped.filter(u=>(role==='all'||u.role===role)&&(funds==='all'||funds==='monthly'&&u.monthly_enabled||funds==='debt'&&Number(u.monthly_balance)>0||funds==='credit'&&Number(u.credits)>0||funds==='reports'&&Number(u.pending_payment_reports)>0)),shown=Math.min(page,Math.max(1,Math.ceil(rows.length/30)));
  const count=(r:string)=>scoped.filter(u=>u.role===r).length,reset=()=>{setPage(1);setOpen('');};
  const exportRows=()=>exportSpreadsheet('accounts.xlsx',[['שם','מייל','טלפון','חברה','סוג חשבון','רמת מחיר','קרדיט בארנק','חשבון חודשי','חוב חודשי','מסגרת מאושרת','הזמנות'],...rows.map(u=>[u.name,u.email,u.phone||'',u.company||'',roleNames[u.role]||u.role,u.tier_name||'',Number(u.credits||0)/100,u.monthly_enabled?'מאושר':'לא',Number(u.monthly_balance||0)/100,Number(u.credit_limit||0)/100,Number(u.order_count||0)])],'חשבונות');
- return <section className="orders-match-screen om-finance om-content om-users" dir="rtl">
-  <header className="orders-unified-heading"><h1>לקוחות והרשאות</h1><SkyThemeButton/><p>כל החשבונות, היתרות וההרשאות במקום אחד.</p></header>
-  <div className="om-top-actions"><OrderExport run={exportRows} disabled={!rows.length}/></div>
+ return <section className="orders-match-screen om-finance om-content om-users sv2 sv2-orders sv2-fin" dir="rtl">
+  <OrdersAreaHead ctx={ctx} current="admin-users" title="לקוחות והרשאות" sub="כל החשבונות, היתרות וההרשאות במקום אחד." action={<div className="om-top-actions"><OrderExport run={exportRows} disabled={!rows.length}/></div>}/>
   <div className="orders-reference-panel">
    <div className="orders-reference-toolbar om-toolbar is-one"><OrderSearch label="חיפוש לפי שם, מייל, חברה או טלפון" value={search} onChange={v=>{setSearch(v);reset();}}/><OrderFilter label="סינון לפי כספים" icon={<SlidersHorizontal size={20}/>} value={funds} onChange={v=>{setFunds(v);reset();}} options={{all:'כל החשבונות',monthly:'עם חשבון חודשי',debt:'עם חוב חודשי פתוח',credit:'עם קרדיט בארנק',reports:'עם דיווח תשלום ממתין'}}/></div>
    <OrderViews label="סוג החשבון" value={role} onChange={v=>{setRole(v);reset();}} views={[['all','הכול',scoped.length],['customer','לקוחות',count('customer')],['agency','סוכנויות',count('agency')],['supplier','ספקים',count('supplier')],['admin','מנהלים',count('admin')]]}/>
    {!state.data&&!state.error?<div className="orders-reference-loading" role="status">טוען חשבונות…</div>:state.error&&!rows.length?<div className="orders-reference-error" role="alert"><p>{state.error}</p><button type="button" onClick={ctx.refresh}>ניסיון נוסף</button></div>:!rows.length?<div className="orders-reference-empty"><h3>לא נמצאו חשבונות</h3><p>אפשר לנסות שם, מייל או טלפון אחר, או לשנות את הסינון.</p></div>:<>
     <div className="om-head om-user-head" aria-hidden="true"><span>חשבון</span><span>סוג</span><span>חשבון חודשי</span><span>קרדיט בארנק</span><span>הזמנות</span><span/><span/></div>
-    <div className="om-list" aria-label="רשימת החשבונות">{rows.slice((shown-1)*30,shown*30).map(u=>{const isOpen=open===u.id,account='admin-customer-account/'+u.id;return <OrderRecord key={u.id} id={u.id} label={u.name} open={isOpen} onToggle={()=>setOpen(isOpen?'':u.id)} panel={<UserPanel ctx={ctx} user={u}/>}>
+    <div className="om-list" aria-label="רשימת החשבונות">{rows.slice((shown-1)*30,shown*30).map(u=>{const isOpen=open===u.id,account='admin-customer-account/'+u.id;return <OrderRecord key={u.id} id={u.id} tone={Number(u.pending_payment_reports)>0?'red':u.monthly_enabled&&Number(u.monthly_balance)>0?'unreported':'neutral'} label={u.name} open={isOpen} onToggle={()=>setOpen(isOpen?'':u.id)} panel={<UserPanel ctx={ctx} user={u}/>}>
       <div className="om-who om-user-name"><b>{u.name}</b><span><bdi>{u.email}</bdi></span>{u.company&&<span>{u.company}</span>}</div>
       <div className="om-user-role"><span className={'om-pill is-'+(roleTones[u.role]||'unreported')}>{roleNames[u.role]||u.role}</span>{u.tier_id&&u.tier_id!=='regular'&&<small>{u.tier_name}</small>}</div>
       <div className="om-user-monthly">{u.monthly_enabled?<><span className="om-pill is-month">מאושר</span><small>{Number(u.monthly_balance)>0?<>חוב <bdi>{money(u.monthly_balance)}</bdi></>:<>פנוי <bdi>{money(available(u))}</bdi></>}</small></>:<span className="om-muted">ללא</span>}</div>
