@@ -7,6 +7,8 @@ import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignAr
 import {publicationPeriod} from '@/lib/publication-period';
 import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
 import {releaseScheduledApprovals,dispatchAtFor,dispatchDue} from '@/lib/scheduled-approval';
+import {ticketFollowUps,ticketClosed} from '@/lib/ticket-thread-view';
+import {ticketMail} from '@/lib/ticket-mail';
 import {dispatchScheduledArticles} from '@/lib/scheduled-dispatch';
 import {normalizeRequestedPublication} from '@/lib/publication-date';
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
@@ -769,8 +771,11 @@ if (p[0] === 'cart') {
             return response({articles:articles.map(a=>customerArticle(a,u))});
         }
         if (method === 'GET' && p[2] && kind==='ticket') {
-            const record=owns(u,await one("SELECT r.*,u.name AS user_name FROM records r LEFT JOIN users u ON u.id=r.user_id WHERE r.id=? AND r.kind='ticket'",p[2]));
-            return response({record:parse(record)});
+            const record=owns(u,await one("SELECT r.*,u.name AS user_name,u.email AS owner_email,u.role AS owner_role FROM records r LEFT JOIN users u ON u.id=r.user_id WHERE r.id=? AND r.kind='ticket'",p[2]));
+            const team=u.role==='admin',{owner_email,owner_role,...row}=record,number=String(JSON.parse(row.data||'{}').order_number||'').replace(/^#/,'').trim();
+            const order=number?await one('SELECT id,number FROM orders WHERE number IN (?,?) AND user_id=? LIMIT 1',number,'#'+number,row.user_id):null;
+            const customer=team?{email:owner_email||'',role:owner_role||'',tickets:Number((await one("SELECT COUNT(*) AS n FROM records WHERE kind='ticket' AND user_id=? AND NOT (COALESCE(json_extract(data,'$.payment_method'),'')='bank_transfer' AND COALESCE(json_extract(data,'$.amount_cents'),0)>0)",row.user_id))?.n||0)}:undefined;
+            return response({record:{...parse(row),order_id:order?.id||null},customer});
         }
         if (method === 'GET') {
             const global = adminKinds.includes(kind);
@@ -779,7 +784,7 @@ if (p[0] === 'cart') {
             const scope = u.role === 'admin' && query.get('scope') === 'all';
             return response({ records: (await all(`SELECT r.*,u.name AS user_name FROM records r LEFT JOIN users u ON u.id=r.user_id WHERE kind=? ${kind==='ticket'?"AND NOT (COALESCE(json_extract(r.data,'$.payment_method'),'')='bank_transfer' AND COALESCE(json_extract(r.data,'$.amount_cents'),0)>0)":''} ${global || scope ? '' : 'AND user_id=?'} ORDER BY updated DESC LIMIT 1000`, ...(!global && !scope ? [kind, u.id] : [kind]))).map(row=>global&&u.role!=='admin'?customerSharedRecord(row,kind):parse(row)) });
         }
-        if (method === 'POST') {
+        if (method === 'POST' && !p[2]) { // creating a record; actions on one record (p[2]) come below
             let b = await json(r);
             assert(b.name || b.title || b.subject, 'יש להזין שם או כותרת');
             if(kind==='supplier'){
@@ -800,6 +805,35 @@ if (p[0] === 'cart') {
         }
         const item = owns(u, await one('SELECT * FROM records WHERE id=? AND kind=?', p[2], kind));
         if(isTopUp(parse(item)!))assert(method==='GET','יש לטפל בבקשת ההטענה במסך בקשות הטענת יתרה',409);
+        // Ticket conversation (10.11.2026): a team reply marks it answered and emails the customer;
+        // a customer message marks it awaiting a reply and emails the team; closing marks it resolved,
+        // and from then on the customer opens a new ticket instead of writing in this one.
+        if(kind==='ticket'&&p[3]==='messages'&&method==='POST'&&!isTopUp(parse(item)!)){
+            const b=await json(r),text=String(b.text||'').trim();
+            assert(text&&text.length<=5000,'יש לכתוב הודעה (עד 5,000 תווים)');
+            const data=JSON.parse(item.data),team=u.role==='admin',stamp=now();
+            assert(team||!ticketClosed(data),'הפנייה נסגרה. אפשר לפתוח פנייה חדשה.',409);
+            const message={id:uid(),from:team?'team':'customer',text,at:stamp,author:team?'צוות מגה לינקס':String(u.name||'')};
+            const next={...data,messages:[...ticketFollowUps(data,item.updated),message],status:team?'answered':'awaiting_reply',...(team?{reply:text,replied_at:stamp}:{})};
+            const changed=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify(next),stamp,item.id,item.updated).run();
+            assert(changed.meta.changes,'הפנייה עודכנה במקביל. טענו אותה מחדש.',409);
+            await audit(u,item.id,team?'נשלחה תשובה לפנייה':'הלקוח הוסיף הודעה לפנייה',{});
+            let mail_status:string|null=null;try{mail_status=(await ticketMail({...item,data:JSON.stringify(next)},team?'reply':'customer',new URL(r.url).origin,text))?.status||'requested';}catch{mail_status='failed';}
+            // The team sees on each reply whether the customer's email went out.
+            if(team&&mail_status)await stmt('UPDATE records SET data=? WHERE id=? AND updated=?',JSON.stringify({...next,messages:next.messages.map((m:any)=>m.id===message.id?{...m,mail:mail_status}:m)}),item.id,stamp).run();
+            return response({ok:true,status:next.status,message:{...message,mail:team?mail_status:undefined},mail_status});
+        }
+        if(kind==='ticket'&&p[3]==='close'&&method==='POST'&&!isTopUp(parse(item)!)){
+            admin(u);const data=JSON.parse(item.data),stamp=now();
+            if(ticketClosed(data))return response({ok:true,status:'resolved',already:true});
+            const next={...data,status:'resolved',closed_at:stamp};
+            const changed=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify(next),stamp,item.id,item.updated).run();
+            assert(changed.meta.changes,'הפנייה עודכנה במקביל. טענו אותה מחדש.',409);
+            await audit(u,item.id,'הפנייה נסגרה',{});
+            let mail_status:string|null=null;try{mail_status=(await ticketMail({...item,data:JSON.stringify(next)},'closed',new URL(r.url).origin))?.status||'requested';}catch{mail_status='failed';}
+            if(mail_status)await stmt('UPDATE records SET data=? WHERE id=? AND updated=?',JSON.stringify({...next,closed_mail:mail_status}),item.id,stamp).run();
+            return response({ok:true,status:'resolved',mail_status});
+        }
         if (method === 'PATCH') {
             let b = await json(r);
             if (kind === 'bundle') b = await normalizeBundle(b, JSON.parse(item.data));
@@ -811,7 +845,9 @@ if (p[0] === 'cart') {
                 if (b.status !== undefined) assert(['awaiting_reply', 'answered', 'resolved', 'open', 'closed'].includes(b.status), 'סטטוס פנייה לא תקין');
                 const nextStatus = b.status ?? JSON.parse(item.data).status;
                 const nextReply = b.reply ?? JSON.parse(item.data).reply;
-                if (nextStatus === 'answered') assert(String(nextReply || '').trim(), 'יש לכתוב תשובה לפני סימון תשובה התקבלה');
+                if (nextStatus === 'answered') assert(String(nextReply || '').trim(), 'יש לכתוב תשובה לפני סימון נענתה');
+                const current=JSON.parse(item.data),replyText=String(b.reply??'').trim();
+                if(b.reply!==undefined&&replyText&&replyText!==String(current.reply||'').trim())b={...b,reply:replyText,replied_at:now(),messages:[...ticketFollowUps(current,item.updated),{id:uid(),from:'team',text:replyText,at:now(),author:'צוות מגה לינקס'}]};
             }
             if(kind==='ticket')for(const key of ['payment_method','amount','amount_cents','reference','proof_file_id','decision','handled_by','handled_at','ledger_id'])delete b[key];
             if(kind==='supplier'){if(b.billing!==undefined){assert(['monthly','stock'].includes(b.billing),'סוג תשלום לא תקין');if(b.billing==='monthly')assert(!(await one("SELECT COUNT(*) AS n FROM websites WHERE json_extract(data,'$.supplier_id')=? AND json_extract(data,'$.stock_total') IS NOT NULL",item.id))?.n,'לספק יש אתרים עם חבילות מלאי, ולכן הוא נשאר בסוג מלאי',409);}const expected=b.expected_updated_at;delete b.expected_updated_at;if(expected!==undefined){const write=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify({...JSON.parse(item.data),...b}),now(),item.id,expected).run();assert(write.meta.changes,'פרטי הספק השתנו במקביל. טענו מחדש לפני שמירה.',409);await audit(u,item.id,'עודכנה רשומת supplier');return response({ok:true});}}

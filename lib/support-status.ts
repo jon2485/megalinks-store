@@ -1,6 +1,6 @@
 export const supportStatusLabels = {
     awaiting_reply: 'ממתין לתשובה',
-    answered: 'תשובה התקבלה',
+    answered: 'נענתה',
     resolved: 'הפנייה טופלה',
 } as const;
 export type SupportStatus = keyof typeof supportStatusLabels;

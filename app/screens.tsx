@@ -11,6 +11,7 @@ import {orderCancellation,orderCancellationLabel,effectiveOrderTotal} from '@/li
 import BrandLogo from './brand-logo';
 import { supportStatus, supportStatusLabels, type SupportStatus } from '@/lib/support-status';
 import { AdminSupportList } from './admin-support-list';
+import {TicketConversationDialog} from './ticket-conversation';
 import BillingWorkspace, {InvoiceAttachment} from './billing-workspace';
 import {BankSettings} from './admin-finance';
 import React, { useEffect, useMemo, useState, useRef } from 'react';
@@ -170,12 +171,14 @@ function SupportView({ ctx, admin }: { ctx: Ctx; admin: boolean }) {
     const query = search.trim().toLocaleLowerCase('he');
     const rows = all.filter(r => [r.name, r.message, r.reply, r.order_number, r.id, r.user_name].some(v => String(v || '').toLocaleLowerCase('he').includes(query)));
     const edit = (row?: Row) => ctx.open({ kind: 'support-ticket', title: row ? 'פרטי הפנייה' : 'פתיחת פנייה', description: row ? 'פרטי הבקשה ותשובת הצוות.' : 'כתבו את נושא הפנייה ואת הפרטים שיעזרו לנו לטפל בה.', render: (close: () => void) => <SupportTicketForm ctx={ctx} row={row} admin={admin} close={close}/> });
+    // 10.11.2026 An existing ticket opens as a conversation with the team.
+    const view = (row: Row) => ctx.open({ kind: 'support-ticket', title: row.name || 'פרטי הפנייה', description: 'השיחה עם הצוות על הפנייה.', render: (close: () => void) => <TicketConversationDialog ctx={ctx} id={row.id} onNew={() => { close(); edit(); }} details={(r: Row, done: () => void) => <SupportTicketForm ctx={ctx} row={r} admin={false} detailsOnly close={done}/>}/> });
     const remove = (row: Row) => ctx.open({ title: 'מחיקת פנייה', description: row.name, render: (close: () => void) => <Button variant="destructive" onClick={() => ctx.run(() => api('records/ticket/' + row.id, 'DELETE'), 'הפנייה נמחקה').then(close).catch(() => {})}>אישור מחיקה</Button> });
     if (admin) return <AdminSupportList ctx={ctx} state={state} edit={edit} remove={remove}/>;
     return <section className="support-page azure-page-theme" dir="rtl">
         <header className="support-hero" data-design="support-blue-wave-v77" style={{background:'radial-gradient(ellipse at 105% 85%, #049cb5 0%, #08789e 24%, transparent 63%), linear-gradient(110deg, #071d4d 0%, #073575 62%, #075884 100%)'}}><div className="support-hero-inner"><h1>איך אפשר לעזור?</h1><p>{admin ? 'פניות הלקוחות והטיפול בכל בקשה, במקום אחד.' : 'שלחו פנייה לצוות ונרכז כאן את כל ההתכתבות.'}</p><div className="support-hero-actions"><Button className="support-primary" onClick={() => edit()}><Plus size={19}/>פתיחת פנייה</Button></div></div><svg className="support-wave" viewBox="0 0 1440 70" preserveAspectRatio="none" aria-hidden="true"><path d="M0 12 Q720 110 1440 12 V70 H0Z" fill="#f5f7fb"/></svg></header>
         <div className="support-content"><div className="support-list-panel"><div className="support-list-heading"><h2><span className="support-heading-icon"><Headset size={25}/></span>{admin ? 'פניות הלקוחות' : 'הפניות שלי'}</h2>{!state.loading && !state.error && <span>{all.length} פניות</span>}</div><div className="support-search"><Search size={21} aria-hidden="true"/><Input aria-label="חיפוש פניות" placeholder="חיפוש לפי נושא או מספר פנייה" value={search} onChange={e => setSearch(e.target.value)}/>{search && <Button variant="ghost" size="icon-sm" aria-label="ניקוי חיפוש" onClick={() => setSearch('')}><X size={17}/></Button>}</div>
-        <Loading state={state}>{rows.length ? <div className="support-ticket-list">{rows.map(r => <article className="support-ticket-row" key={r.id}><div className="support-row-icon"><Headset size={23}/></div><div className="support-ticket-copy"><div className="support-ticket-title"><h3>{r.name}</h3><SupportStatusBadge ticket={r}/></div><p>{r.message || 'ללא פירוט נוסף'}</p><div className="support-ticket-meta"><span><Clock size={14}/>{when(r.updated)}</span>{r.order_number && <span>הזמנה <bdi>{r.order_number}</bdi></span>}{admin && r.user_name && <span>{r.user_name}</span>}{r.reply && <span className="support-replied"><CheckCircle2 size={14}/>התקבלה תשובה</span>}</div></div><div className="support-row-actions"><Button variant="outline" onClick={() => edit(r)}><Eye size={17}/>{admin ? 'צפייה וטיפול' : 'פרטים ותשובה'}</Button><Button variant="ghost" size="icon-sm" aria-label={'מחיקת פנייה ' + r.name} onClick={() => remove(r)}><Trash2 size={17}/></Button></div></article>)}</div> : <div className="support-empty"><div className="support-empty-icon"><FileText size={54} strokeWidth={1.6}/><Headset size={34} className="support-empty-headset" strokeWidth={2}/></div><h3>{query ? 'לא נמצאו פניות' : 'עדיין אין פניות'}</h3><p>{query ? 'נסו לחפש לפי נושא אחר או מספר הזמנה.' : 'צריכים עזרה בהזמנה או בפרסום? פתחו פנייה ונמשיך משם.'}</p><Button className="support-primary" onClick={() => query ? setSearch('') : edit()}>{query ? <X size={18}/> : <Plus size={18}/>} {query ? 'ניקוי החיפוש' : 'פתיחת הפנייה הראשונה'}</Button></div>}</Loading></div></div>
+        <Loading state={state}>{rows.length ? <div className="support-ticket-list">{rows.map(r => <article className="support-ticket-row" key={r.id}><div className="support-row-icon"><Headset size={23}/></div><div className="support-ticket-copy"><div className="support-ticket-title"><h3>{r.name}</h3><SupportStatusBadge ticket={r}/></div><p>{r.message || 'ללא פירוט נוסף'}</p><div className="support-ticket-meta"><span><Clock size={14}/>{when(r.updated)}</span>{r.order_number && <span>הזמנה <bdi>{r.order_number}</bdi></span>}{admin && r.user_name && <span>{r.user_name}</span>}{supportStatus(r) === 'answered' && <span className="support-replied"><CheckCircle2 size={14}/>התקבלה תשובה</span>}</div></div><div className="support-row-actions"><Button variant="outline" onClick={() => view(r)}><Eye size={17}/>{admin ? 'צפייה וטיפול' : 'צפייה בשיחה'}</Button><Button variant="ghost" size="icon-sm" aria-label={'מחיקת פנייה ' + r.name} onClick={() => remove(r)}><Trash2 size={17}/></Button></div></article>)}</div> : <div className="support-empty"><div className="support-empty-icon"><FileText size={54} strokeWidth={1.6}/><Headset size={34} className="support-empty-headset" strokeWidth={2}/></div><h3>{query ? 'לא נמצאו פניות' : 'עדיין אין פניות'}</h3><p>{query ? 'נסו לחפש לפי נושא אחר או מספר הזמנה.' : 'צריכים עזרה בהזמנה או בפרסום? פתחו פנייה ונמשיך משם.'}</p><Button className="support-primary" onClick={() => query ? setSearch('') : edit()}>{query ? <X size={18}/> : <Plus size={18}/>} {query ? 'ניקוי החיפוש' : 'פתיחת הפנייה הראשונה'}</Button></div>}</Loading></div></div>
     </section>;
 }
 function SupportStatusBadge({ ticket }: { ticket: Row }) {
@@ -183,30 +186,32 @@ function SupportStatusBadge({ ticket }: { ticket: Row }) {
     const Icon = status === 'resolved' ? CheckCircle2 : status === 'answered' ? MessageCircle : Clock;
     return <span className={'support-status support-status-' + status}><Icon size={15}/>{supportStatusLabels[status]}</span>;
 }
-export function SupportTicketForm({ ctx, row, admin, close,onDirtyChange }: { ctx: Ctx; row?: Row; admin: boolean; close: () => void;onDirtyChange?:(value:boolean)=>void }) {
+// detailsOnly: inside the ticket conversation, replies are written in the conversation itself,
+// so this form keeps the subject, details and order number (and, for the team, a manual status).
+export function SupportTicketForm({ ctx, row, admin, close,onDirtyChange,detailsOnly=false }: { ctx: Ctx; row?: Row; admin: boolean; close: () => void;onDirtyChange?:(value:boolean)=>void;detailsOnly?:boolean }) {
     const [name, setName] = useState(row?.name || ''), [message, setMessage] = useState(row?.message || ''), [orderNumber, setOrderNumber] = useState(row?.order_number || ''), [reply, setReply] = useState(row?.reply || '');
-    const [status, setStatus] = useState<SupportStatus>(supportStatus(row || {}));
+    const [status, setStatus] = useState<SupportStatus>(supportStatus(row || {})), firstStatus = useRef<SupportStatus>(supportStatus(row || {}));
     const [busy, setBusy] = useState(false), [error, setError] = useState('');
     const lock = useRef(false);
     const save = async (event: React.FormEvent) => {
         event.preventDefault(); if (lock.current) return;
         setError('');
         if (!name.trim() || !message.trim()) { setError('יש למלא את נושא הפנייה ואת פרטיה.'); return; }
-        if (admin && row && status === 'answered' && !reply.trim()) { setError('יש לכתוב תשובה לפני סימון ״תשובה התקבלה״.'); return; }
+        if (admin && row && status === 'answered' && !reply.trim()) { setError('יש לכתוב תשובה לפני סימון ״נענתה״.'); return; }
         lock.current = true; setBusy(true);
         try {
-            await ctx.run(() => api('records/ticket' + (row ? '/' + row.id : ''), row ? 'PATCH' : 'POST', { name: name.trim(), message: message.trim(), order_number: orderNumber.trim(), ...(admin && row ? { reply: reply.trim(), status } : {}) }), row ? 'הפנייה עודכנה' : 'הפנייה נשלחה לצוות');
+            await ctx.run(() => api('records/ticket' + (row ? '/' + row.id : ''), row ? 'PATCH' : 'POST', { name: name.trim(), message: message.trim(), order_number: orderNumber.trim(), ...(admin && row ? (detailsOnly ? (status !== firstStatus.current ? { status } : {}) : { reply: reply.trim(), status }) : {}) }), row ? (detailsOnly ? 'פרטי הפנייה נשמרו' : 'הפנייה עודכנה') : 'הפנייה נשלחה לצוות');
             onDirtyChange?.(false);
             close();
         } catch (e) { setError((e as Error).message); } finally { lock.current = false; setBusy(false); }
     };
     return <form noValidate className="support-ticket-form" onSubmit={save} onChangeCapture={()=>onDirtyChange?.(true)}>
-        {row && <SupportStatusBadge ticket={row}/>}
+        {row && !detailsOnly && <SupportStatusBadge ticket={row}/>}
         <Field label="נושא הפנייה"><Input required maxLength={200} placeholder="הכניסו נושא לפנייה" value={name} onChange={e => setName(e.target.value)}/></Field>
         <Field label="פרטי הפנייה"><Textarea required maxLength={10000} placeholder="פרטו את הפנייה שלכם כאן…" value={message} onChange={e => setMessage(e.target.value)}/></Field>
         <Field label="מספר הזמנה (לא חובה)"><Input maxLength={100} placeholder="#1001" value={orderNumber} onChange={e => setOrderNumber(e.target.value)}/></Field>
-        {admin && row ? <><Field label="תשובת הצוות"><Textarea maxLength={10000} value={reply} onChange={e => setReply(e.target.value)} placeholder="כתבו את התשובה שתוצג ללקוח"/></Field><Field label="סטטוס הפנייה"><Pick value={status} onChange={v => {setStatus(v as SupportStatus);onDirtyChange?.(true);}} options={supportStatusLabels}/></Field></> : row?.reply && <div className="support-team-reply"><h3><MessageCircle size={19}/>תשובת הצוות</h3><p>{row.reply}</p></div>}
-        <ErrorBox error={error}/><div className="support-form-actions"><Button type="submit" disabled={busy}>{busy ? <LoaderCircle size={18} className="animate-spin"/> : <Send size={18}/>} {row ? 'שמירת הפנייה' : 'שליחת פנייה'}</Button><Button type="button" variant="outline" disabled={busy} onClick={close}>ביטול</Button></div>
+        {admin && row && detailsOnly ? <Field label="מצב הפנייה (שינוי ידני)"><Pick value={status} onChange={v => {setStatus(v as SupportStatus);onDirtyChange?.(true);}} options={supportStatusLabels}/></Field> : admin && row ? <><Field label="תשובת הצוות"><Textarea maxLength={10000} value={reply} onChange={e => setReply(e.target.value)} placeholder="כתבו את התשובה שתוצג ללקוח"/></Field><Field label="סטטוס הפנייה"><Pick value={status} onChange={v => {setStatus(v as SupportStatus);onDirtyChange?.(true);}} options={supportStatusLabels}/></Field></> : !detailsOnly && row?.reply && <div className="support-team-reply"><h3><MessageCircle size={19}/>תשובת הצוות</h3><p>{row.reply}</p></div>}
+        <ErrorBox error={error}/><div className="support-form-actions"><Button type="submit" disabled={busy}>{busy ? <LoaderCircle size={18} className="animate-spin"/> : <Send size={18}/>} {row ? (detailsOnly ? 'שמירת הפרטים' : 'שמירת הפנייה') : 'שליחת פנייה'}</Button><Button type="button" variant="outline" disabled={busy} onClick={close}>ביטול</Button></div>
     </form>;
 }
 function GenericRecordView({ ctx, view }: {
