@@ -782,3 +782,11 @@ Done in this step (list pages):
 - Also fixed for all v2 list pages: the list panel can no longer grow wider than the phone screen when a chip row is long (it pushed the users page sideways).
 - Files: `app/admin-support-list.tsx` (new), `app/screens.tsx` (one line + import), `app/admin-shell.tsx`, `app/workspace.tsx`, `app/orders-v2.css` (block "service tickets").
 - Checked locally on the real build, desktop 1440 and phone 390: open ticket, view and handle, delete (dialog opens, not confirmed), chips, search, row open and close. No horizontal overflow on any of the 14 v2 list pages. tsc and build pass. Nothing pushed.
+
+## 10.11.2026: Inner screens of content, users, catalog and tickets (light pass)
+
+- Article page and blog editor: the old big title with tiles and the dark-mode toggle is replaced by the v2 area strip (articles, writing instructions, blog), same as the list pages. `OrdersAreaHead` got a `stripOnly` prop for this.
+- Article, blog editor, customer file, personal price list and ticket pages get the v2 frame (`sv2-body sv2-inner` on the workspace body), the site footer is hidden like in the orders area, and all standard buttons (`data-slot=button`) get the same look with hover, press and focus feedback. Page layout, fields and controls are unchanged.
+- Checked locally, desktop 1440 and phone 390: back to list, open order, area strip, back to articles, all tickets, back to updates, back to users, back to price lists all reach the right page. tsc and build pass.
+- Not done (needs a mockup first, they are big editors): a real redesign of the article workspace, customer file tabs, personal price list, the site editor and the Sheets tab. The blog editor does not show the frame padding (its own layout). The price list has hidden tooltips positioned past the phone edge (existed before, not visible).
+- Screenshots: `docs/mockups/areas-v2-*.png`. Nothing pushed.

@@ -563,3 +563,17 @@
  .sv2-orders.sv2-fin.sv2-fin.om-support .om-row>.om-ticket{display:block!important}
  .sv2-orders.sv2-fin.sv2-fin .om-who>*{min-width:0;flex-shrink:1}
 }
+
+/* 10.11.2026 inner screens of content, users, catalog and tickets (article, blog editor, customer file,
+   price list, ticket): v2 frame, the area strip on content pages, buttons in the same look with feedback.
+   Page layout and controls are unchanged. */
+.sv2-inner-strip{margin:0 0 16px}
+.workspace-page-content:has(.sv2-inner)>.megalinks-footer{display:none}
+.admin-workspace-body.sv2-body.sv2-inner [data-slot=button]{border-radius:999px!important;transition:background-color .15s,box-shadow .15s,color .15s,transform .1s!important}
+.admin-workspace-body.sv2-body.sv2-inner [data-slot=button]:active:not(:disabled){transform:scale(.97)}
+.admin-workspace-body.sv2-body.sv2-inner [data-slot=button]:focus-visible{outline:2px solid #0071e3!important;outline-offset:2px}
+.admin-workspace-body.sv2-body.sv2-inner [data-slot=button][data-variant=outline]{background:#fff!important;background-image:none!important;border:0!important;box-shadow:0 0 0 1px rgba(0,0,0,.1)!important;color:#1d1d1f!important}
+.admin-workspace-body.sv2-body.sv2-inner [data-slot=button][data-variant=outline]:hover:not(:disabled){color:#0066cc!important;box-shadow:0 0 0 1px rgba(0,113,227,.45)!important}
+.admin-workspace-body.sv2-body.sv2-inner [data-slot=button][data-variant=default]{background:#0071e3!important;background-image:none!important;border:0!important;box-shadow:none!important;color:#fff!important}
+.admin-workspace-body.sv2-body.sv2-inner [data-slot=button][data-variant=default]:hover:not(:disabled){background:#0077ed!important}
+@media(prefers-reduced-motion:reduce){.admin-workspace-body.sv2-body.sv2-inner [data-slot=button]{transition:none!important}.admin-workspace-body.sv2-body.sv2-inner [data-slot=button]:active{transform:none}}
