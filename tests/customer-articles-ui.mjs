@@ -34,9 +34,10 @@ globalThis.articleStates=[['open',()=>{}],['nonsense',()=>{}]];assert(renderToSt
 const css=readFileSync('app/globals.css','utf8'),account=readFileSync('app/customer-account-admin.tsx','utf8'),billing=readFileSync('app/billing-workspace.tsx','utf8');
 // B1: this helper is tested independently; the active account has a single orders
 // tab and normalizes legacy payment/monthly/article aliases. Do not activate it.
-assert(account.includes("['payments','monthly','articles'].includes(initialTab)?'orders':initialTab"));
-assert(account.includes("<nav className=\"account-tabs\"><button aria-pressed={tab==='orders'}"));
-assert(account.includes("{tab==='orders'&&<CustomerOrderScreen"));
+// 10.11.2026 approved customer file: articles is its own tab again, the orders tab uses the orders look.
+assert(account.includes("['payments','monthly'].includes(initialTab)?'orders':initialTab"));
+assert(account.includes('<nav className="account-tabs cf-tabs"')&&account.includes("aria-pressed={tab===key}"));
+assert(account.includes("{tab==='orders'&&<CustomerFileOrders"));
 assert(billing.includes('className="billing-balance-actions"'));assert(css.includes('.billing-page .billing-balance-actions>button{width:100%;height:56px;min-height:56px'));
 assert(css.includes('grid-template-columns:repeat(3,minmax(0,1fr))'));assert(css.includes('.customer-article-grid{grid-template-columns:minmax(0,1fr)}'));
 console.log('CUSTOMER ARTICLES UI PASSED: existing account alias normalization retained; isolated article helper status groups, refund exclusion, search, preview/editor/approval/publication links, responsive RTL and stacked wallet controls. No dormant helper activated.');

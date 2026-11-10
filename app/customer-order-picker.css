@@ -71,8 +71,8 @@ body:has(.admin-design-v172) [data-slot=dialog-content].modal-wide:has(.cop2){wi
 .cop2-sum div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:14px;color:#424245}
 .cop2-sum dd{margin:0;font-variant-numeric:tabular-nums}
 .cop2-sum .is-total{padding-top:8px;border-top:1px solid #e8e8ed;color:#1d1d1f;font-weight:800;font-size:16px}
-.cop2-sum .is-total dt{display:flex;align-items:center;gap:8px}
-.cop2-checking{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:#86868b}
+.cop2-checking{display:flex;align-items:center;gap:5px;min-height:18px;margin:-6px 4px 0;font-size:12.5px;font-weight:600;color:#86868b}
+.cop2-checking.is-ok{color:#1a7f3c}
 .cop2-spin{animation:cop2-spin 1s linear infinite}
 @keyframes cop2-spin{to{transform:rotate(360deg)}}
 .cop2-warn{margin:0;padding:10px 12px;border-radius:12px;background:#fff1dc;color:#7a3a00;font-size:13.5px;font-weight:600}

@@ -69,7 +69,8 @@ export function CreateCustomerOrder({ctx,id,data,close}:{ctx:Ctx;id:string;data:
       <span className="cop2-qty" role="group" aria-label="כמות כתבות באתר"><button type="button" aria-label="פחות" disabled={x.quantity<=1} onClick={()=>change(x.website_id,'quantity',Math.max(1,x.quantity-1))}><Minus size={14}/></button><bdi>{x.quantity}</bdi><button type="button" aria-label="עוד" disabled={x.quantity>=20} onClick={()=>change(x.website_id,'quantity',Math.min(20,x.quantity+1))}><Plus size={14}/></button></span>
      </div>
     </div>;})}</div>}
-    <dl className="cop2-sum" aria-live="polite"><div><dt>לפני מע״מ</dt><dd><bdi>{money(subtotal)}</bdi></dd></div><div><dt>מע״מ {vatPercent}%</dt><dd><bdi>{money(vat)}</bdi></dd></div><div className="is-total"><dt>סה״כ להזמנה{quoting&&items.length?<small className="cop2-checking"><Loader2 size={12} className="cop2-spin" aria-hidden="true"/>נבדק מול השרת</small>:null}</dt><dd><bdi>{money(total)}</bdi></dd></div></dl>
+    <dl className="cop2-sum" aria-live="polite"><div><dt>לפני מע״מ</dt><dd><bdi>{money(subtotal)}</bdi></dd></div><div><dt>מע״מ {vatPercent}%</dt><dd><bdi>{money(vat)}</bdi></dd></div><div className="is-total"><dt>סה״כ להזמנה</dt><dd><bdi>{money(total)}</bdi></dd></div></dl>
+    {items.length>0&&<p className={'cop2-checking'+(current&&!quoting?' is-ok':'')} role="status">{quoting||!current?<><Loader2 size={13} className="cop2-spin" aria-hidden="true"/>הסכום נבדק מול השרת…</>:<><Check size={13} aria-hidden="true"/>הסכום אומת מול השרת</>}</p>}
     {over&&<p className="cop2-warn" role="status">הסכום גבוה מהמסגרת הפנויה של הלקוח (<bdi>{money(free)}</bdi>).</p>}
     <label className="cop2-field"><span>טלפון ליצירת קשר</span><input type="tel" value={phone} onChange={e=>setPhone(e.target.value)}/></label>
     <ErrorBox error={error}/>
