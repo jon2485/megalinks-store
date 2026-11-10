@@ -17,7 +17,7 @@ export const adminQueueSections=[
  {label:'תשלומים וחשבונות',queues:['payment_reports','topups','cancellations','monthly']},
  {label:'שירות ותקינות',queues:['support','catalog','issues']},
 ] as const;
-export function adminAreaLabel(id:string,fallback:string){return id==='admin'?'מרכז העבודה':id==='admin-users'?'משתמשים והרשאות':fallback;}
+export function adminAreaLabel(id:string,fallback:string){return id==='admin'?'לובי':id==='admin-users'?'משתמשים והרשאות':fallback;}
 
 // Presentation-only ownership: one existing GET/poll for both sidebar and lobby.
 // Unauthenticated/customer/supplier surfaces do not mount this provider.

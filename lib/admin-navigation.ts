@@ -1,5 +1,5 @@
 export const adminAreas = [
- {id:'admin',label:'מרכז העבודה',description:'כל מה שממתין לטיפול, במקום אחד.',pages:[['admin','עדכונים ומשימות']]},
+ {id:'admin',label:'לובי',description:'כל מה שממתין לטיפול, במקום אחד.',pages:[['admin','עדכונים ומשימות']]},
  {id:'admin-orders',label:'הזמנות וכספים',description:'הזמנות, דיווחי תשלום, יתרות וחשבונות חודשיים.',pages:[['admin-orders','הזמנות'],['admin-month-close','סגירת חודש'],['admin-payment-reports','דיווחי תשלום'],['admin-invoices','חשבוניות וקבלות'],['admin-topups','הטענות יתרה'],['admin-monthly','חשבונות חודשיים']]},
  {id:'admin-approvals',label:'תוכן ופרסום',description:'בדיקה, כתיבה, אישור ומעקב עד לפרסום.',pages:[['admin-articles','כתבות'],['admin-instructions','הנחיות כתיבה'],['admin-knowledge','ניהול בלוג']]},
  {id:'admin-users',label:'לקוחות והרשאות',description:'תיקי לקוח, הרשאות ומסגרות אשראי.',pages:[['admin-users','לקוחות והרשאות']]},
