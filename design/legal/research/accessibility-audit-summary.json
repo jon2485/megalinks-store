@@ -1,0 +1,1076 @@
+{
+ "date": "2026-11-11",
+ "environment": "local build http://127.0.0.1:5180 (QA gateway) and http://127.0.0.1:8787 (same worker, no identity = truly signed out); fictional data only",
+ "tools": {
+  "axe-core": "4.14.0 (tags wcag2a+wcag2aa = legal baseline; wcag21a+wcag21aa+best-practice informational)",
+  "playwright": "1.63.0",
+  "chromium": "153.0.8010.12 (headless)",
+  "node": "22.23.4",
+  "pngjs": "7.0.0 (pixel contrast sampling on gradients)"
+ },
+ "method": [
+  "axe pass 1 as loaded",
+  "axe pass 2 with prefers-reduced-motion + full scroll so all lazy-revealed cards are included (numbers below are pass 2)",
+  "manual keyboard journey catalog->cart->checkout->order->personal area->open order->cancel dialog (Playwright key events)",
+  "dialog/menu keyboard tests (focus in, trap, Escape, focus return) + axe inside dialogs",
+  "pixel sampling of text on gradients/images (axe incomplete)",
+  "reflow 320x640, zoom-equivalent 720x450@2x, root font-size 200%",
+  "DOM checks: lang/dir, titles, landmarks, headings, labels, autocomplete, alt, live regions, bidi, duplicate ids, target sizes, animations"
+ ],
+ "screens": [
+  {
+   "path": "/ (signed out)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 48,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 48)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 56
+  },
+  {
+   "path": "/ (signed out)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 48,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 48)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 51
+  },
+  {
+   "path": "/",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 49,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 49)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 59
+  },
+  {
+   "path": "/",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 48,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 48)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 51
+  },
+  {
+   "path": "/offers",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 28
+  },
+  {
+   "path": "/offers",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 21
+  },
+  {
+   "path": "/offers (signed out)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "page-has-heading-one:moderate:1",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 17
+  },
+  {
+   "path": "/offers (signed out)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "page-has-heading-one:moderate:1",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 13
+  },
+  {
+   "path": "/knowledge (signed out)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 3,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 3)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 31
+  },
+  {
+   "path": "/knowledge (signed out)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 3,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 3)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 30
+  },
+  {
+   "path": "/knowledge/<guide> (signed out, fictional guide)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 2,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 2)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 39
+  },
+  {
+   "path": "/knowledge/<guide> (signed out, fictional guide)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 37
+  },
+  {
+   "path": "/terms (signed out)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 17
+  },
+  {
+   "path": "/terms (signed out)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 13
+  },
+  {
+   "path": "/cart (1 item)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 45
+  },
+  {
+   "path": "/cart (1 item)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 38
+  },
+  {
+   "path": "/checkout (1 item)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 2,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 2)"
+   ],
+   "info_wcag21_bp": [
+    "heading-order:moderate:1",
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 56
+  },
+  {
+   "path": "/checkout (1 item)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 36
+  },
+  {
+   "path": "/purchased",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 56
+  },
+  {
+   "path": "/purchased",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 51
+  },
+  {
+   "path": "/purchased/articles",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 153
+  },
+  {
+   "path": "/purchased/articles",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 147
+  },
+  {
+   "path": "/purchased/orders",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 398,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 398)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:141",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 196
+  },
+  {
+   "path": "/purchased/orders",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 258,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 258)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:139",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 172
+  },
+  {
+   "path": "/purchased/payments",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 134
+  },
+  {
+   "path": "/purchased/payments",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 128
+  },
+  {
+   "path": "/purchased/customers",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 40
+  },
+  {
+   "path": "/purchased/customers",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 34
+  },
+  {
+   "path": "/purchased/profile",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 48
+  },
+  {
+   "path": "/purchased/profile",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 42
+  },
+  {
+   "path": "/purchased/support",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "empty-heading:minor:2",
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 52
+  },
+  {
+   "path": "/purchased/support",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "empty-heading:minor:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 46
+  },
+  {
+   "path": "/purchased/selling",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 5,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 5)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 48
+  },
+  {
+   "path": "/purchased/selling",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 1,
+    "serious": 4,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "button-name (critical, 1)",
+    "color-contrast (serious, 4)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 41
+  },
+  {
+   "path": "/order-confirmed/<paid order>",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:2",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 31
+  },
+  {
+   "path": "/order-confirmed/<paid order>",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 24
+  },
+  {
+   "path": "/order-confirmed/<unpaid bank-transfer order>",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 2,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 2)"
+   ],
+   "info_wcag21_bp": [],
+   "contrast_needs_review": 28
+  },
+  {
+   "path": "/order-confirmed/<unpaid bank-transfer order>",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 2,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 2)"
+   ],
+   "info_wcag21_bp": [],
+   "contrast_needs_review": 21
+  },
+  {
+   "path": "/article/<id>",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "label-content-name-mismatch:serious:3",
+    "landmark-main-is-top-level:moderate:1",
+    "landmark-no-duplicate-main:moderate:1",
+    "landmark-unique:moderate:1",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 89
+  },
+  {
+   "path": "/article/<id>",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "aria-prohibited-attr (serious, 1)"
+   ],
+   "info_wcag21_bp": [
+    "landmark-main-is-top-level:moderate:1",
+    "landmark-no-duplicate-main:moderate:1",
+    "landmark-unique:moderate:1",
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 48
+  },
+  {
+   "path": "/article/<id>/ai (AI dialog)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 1,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 1)"
+   ],
+   "info_wcag21_bp": [],
+   "contrast_needs_review": 92
+  },
+  {
+   "path": "/article/<id>/ai (AI dialog)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 0,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [],
+   "info_wcag21_bp": [],
+   "contrast_needs_review": 51
+  },
+  {
+   "path": "/supplier/<token> (signed out)",
+   "viewport": "1440x900",
+   "violations": {
+    "critical": 0,
+    "serious": 3,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 3)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 2
+  },
+  {
+   "path": "/supplier/<token> (signed out)",
+   "viewport": "390x844",
+   "violations": {
+    "critical": 0,
+    "serious": 3,
+    "moderate": 0,
+    "minor": 0
+   },
+   "rules": [
+    "color-contrast (serious, 3)"
+   ],
+   "info_wcag21_bp": [
+    "region:moderate:1"
+   ],
+   "contrast_needs_review": 2
+  }
+ ],
+ "dialogStates": [
+  {
+   "state": "header-account-menu",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": true
+  },
+  {
+   "state": "payment-report",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "wallet-topup",
+   "viewport": "1440x900",
+   "axe": [
+    "aria-valid-attr-value (critical, 1)"
+   ],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": null,
+   "focusReturned": null
+  },
+  {
+   "state": "support-new-ticket",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "confirm-upload-proof",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "ai-dialog",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "phone-menu",
+   "viewport": "390x844",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": true
+  },
+  {
+   "state": "catalog-filter",
+   "viewport": "1440x900",
+   "axe": [
+    "color-contrast (serious, 1)"
+   ],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "catalog-categories",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": true
+  },
+  {
+   "state": "catalog-notes-popover",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": true
+  },
+  {
+   "state": "catalog-bulk-paste",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "catalog-filter",
+   "viewport": "390x844",
+   "axe": [
+    "color-contrast (serious, 1)"
+   ],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "cancel-request (keyboard journey)",
+   "viewport": "1440x900",
+   "axe": [],
+   "focusInside": true,
+   "trap": true,
+   "escapeCloses": true,
+   "focusReturned": false
+  },
+  {
+   "state": "open order in \"ההזמנות שלי\"",
+   "viewport": "1440x900",
+   "axe": [
+    "color-contrast (serious, 24)"
+   ],
+   "focusInside": null,
+   "trap": null,
+   "escapeCloses": null,
+   "focusReturned": null
+  }
+ ],
+ "totals": {
+  "pageScans": 44,
+  "axeBaselineFailingElements": {
+   "critical": 1,
+   "serious": 896,
+   "moderate": 0,
+   "minor": 0
+  },
+  "axeBaselineDistinctProblems": {
+   "pageSignatures": 21,
+   "dialogStateSignatures": 3,
+   "note": "signature = rule + colours/ratio/size; they reduce to ~13 root causes"
+  },
+  "contrastNodesNeedingManualReview": 2414,
+  "distinctIssuesForStatement": 17,
+  "wcag20AAclearFailures": 9,
+  "bestPracticeOrLaterWcag": 5,
+  "dialogsLosingFocusOnClose": 9,
+  "partialOrDebatable": 3
+ },
+ "topIssues": [
+  {
+   "id": "K1",
+   "wcag": "1.4.3",
+   "severity": "high",
+   "what": "white text on orange/teal/green/blue gradient buttons 2.0-4.5:1 (header cart, add to cart, purchase, primary buttons); checkout submit grey 2.53:1 before terms accepted",
+   "files": [
+    "app/apple-feedback.css",
+    "app/catalog-card-apple.css",
+    "app/header-apple.css",
+    "app/personal-apple.css",
+    "app/cart-checkout-refresh.css",
+    "app/purchase-flow.tsx"
+   ]
+  },
+  {
+   "id": "K2",
+   "wcag": "1.4.3",
+   "severity": "high",
+   "what": "small grey/blue secondary text and pills 2.65-4.41:1 (price notes, dates, VAT note, category chips, status pills, notification badge 3.07:1)",
+   "files": [
+    "app/catalog-card-apple.css",
+    "app/customer-orders-sky.css",
+    "app/header-apple.css",
+    "app/knowledge-apple.css",
+    "app/order-confirmation.css",
+    "app/supplier-report-page.css",
+    "app/seller-v8.css",
+    "app/catalog-filter-apple.css"
+   ]
+  },
+  {
+   "id": "F1",
+   "wcag": "2.4.3",
+   "severity": "high",
+   "what": "focus lost to page start after closing 9 dialogs (global dialog has no Radix Trigger)",
+   "files": [
+    "app/workspace.tsx",
+    "app/catalog-view.tsx"
+   ]
+  },
+  {
+   "id": "S1",
+   "wcag": "1.3.1/4.1.2",
+   "severity": "high",
+   "what": "orders list rows are role=button named only \"פירוט הזמנה #N\"; status, amount, sites hidden from screen readers",
+   "files": [
+    "app/customer-orders-sky.tsx"
+   ]
+  },
+  {
+   "id": "S2",
+   "wcag": "4.1.2",
+   "severity": "high",
+   "what": "seller hub tabs on phone named \"0\",\"0\",\"\" ",
+   "files": [
+    "app/seller-workspace.tsx",
+    "app/seller-v8.css"
+   ]
+  },
+  {
+   "id": "T1",
+   "wcag": "2.4.2",
+   "severity": "medium",
+   "what": "personal area, cart, checkout, offers, confirmation, editor and supplier link page all titled \"המרחב האישי | MegaLinks\"",
+   "files": [
+    "lib/seo.ts"
+   ]
+  },
+  {
+   "id": "N1",
+   "wcag": "2.4.1",
+   "severity": "medium",
+   "what": "no skip link; 7 header stops (15 in personal area) before content; landmarks exist",
+   "files": [
+    "app/workspace.tsx"
+   ]
+  },
+  {
+   "id": "S3",
+   "wcag": "4.1.2/1.3.1",
+   "severity": "medium",
+   "what": "\"מחיקת פנייה undefined\" and empty h3 for tickets without subject",
+   "files": [
+    "app/screens.tsx"
+   ]
+  },
+  {
+   "id": "S4",
+   "wcag": "4.1.2",
+   "severity": "medium",
+   "what": "wallet top-up tabs aria-controls to missing id (axe critical); editor step indicator aria-label on div (phone)",
+   "files": [
+    "app/billing-workspace.tsx",
+    "app/article-studio.tsx"
+   ]
+  },
+  {
+   "id": "S5",
+   "wcag": "2.4.6",
+   "severity": "low",
+   "what": "four identical \"העתקה\" buttons on order confirmation",
+   "files": [
+    "app/order-confirmation.tsx"
+   ]
+  }
+ ],
+ "okFindings": [
+  "lang=he dir=rtl on every page",
+  "keyboard-only main journey completed end to end",
+  "visible focus change on every tested tab stop",
+  "no keyboard trap; dialogs trap focus and close with Escape",
+  "no horizontal scroll at 320px or 200% zoom on all 22 screens",
+  "no auto-playing motion after load; reduced motion respected",
+  "all images have alt; decorative images empty alt; icon buttons named",
+  "checkout fields labelled with autocomplete; errors in role=alert",
+  "LTR fragments isolated (bdi/dir=ltr)",
+  "no duplicate ids on sampled pages"
+ ],
+ "notTested": [
+  "screen readers (NVDA, JAWS, VoiceOver, TalkBack) and users with disabilities",
+  "real phones/tablets, Safari, Firefox, Edge, Windows high contrast/forced colors, dark mode",
+  "sign-in page and external card payment pages (provider off locally)",
+  "emails (order, supplier, notifications)",
+  "downloaded documents: order/invoice PDF, Excel exports, Word briefs",
+  "admin area (internal, out of scope); supplier-account portal; most seller hub inner screens",
+  "Staging/Production content and data (local build only)",
+  "text spacing (1.4.12), orientation (1.3.4), voice control, speech input",
+  "monthly-account checkout and card/wallet payment variants",
+  "the accessibility statement page itself (not wired yet; template read from code only)",
+  "WCAG 2.1/2.2 only partly (informational)"
+ ],
+ "issueIds": {
+  "L1": "1.4.3 gradient buttons (white text) 2.0-4.5:1",
+  "L2": "1.4.3 small grey/blue text, pills, notification badge",
+  "L3": "1.4.3 checkout submit looks disabled (2.53:1) but is active",
+  "L4": "2.4.3 focus not returned after closing 9 dialogs",
+  "L5": "2.4.1 no skip link (landmarks exist) - partial",
+  "L6": "2.4.2 identical page titles",
+  "L7": "best practice: no focus move/announcement on in-app navigation",
+  "L8": "1.3.1/4.1.2 orders list rows expose only order number",
+  "L9": "4.1.2 seller hub tabs unnamed on phone",
+  "L10": "4.1.2/1.3.1 \"undefined\" in ticket delete button, empty h3",
+  "L11": "4.1.2 invalid aria-controls (wallet top-up), aria-label on div (editor phone), nested main",
+  "L12": "2.4.6 four identical \"העתקה\" buttons - debatable",
+  "L13": "best practice: two h1 (support), no h1 (signed-out offers), level skips",
+  "L14": "2.4.7 risk / 2.4.11 (2.2): focus partly under sticky header - partial",
+  "L15": "1.4.13 (2.1): DR/UR popups not closed by Escape",
+  "L16": "best practice: unnamed account dialog, phone menu named by logo, English toaster label",
+  "L17": "3.3.1/3.3.2/1.3.5(2.1): browser-language validation messages, unexplained *, no autocomplete in profile"
+ }
+}
