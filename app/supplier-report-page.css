@@ -1,23 +1,45 @@
-.srp{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:32px 16px;background:radial-gradient(1200px 500px at 50% -10%,#cdeefc 0,transparent 70%),linear-gradient(180deg,#edf8ff,#f7fbff);color:#071f4b;font-family:inherit}
-.srp-card{width:100%;max-width:560px;background:#fff;border:1px solid #bde7f6;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px -30px #071f4b59}
-.srp-head{display:flex;justify-content:center;padding:26px 24px;background:linear-gradient(135deg,#071f4b,#0b3a78)}
-.srp-logo img,.srp-logo svg{max-height:52px;width:auto}.srp-logo{display:inline-flex;max-width:260px}
-.srp-body{padding:30px 28px 28px}
-.srp h1{margin:0 0 16px;font-size:24px;line-height:1.3;text-align:center;font-weight:800}
-.srp-article{display:grid;gap:2px;margin:0 0 20px;padding:14px 16px;background:#f5fbff;border:1px solid #d6ecf8;border-radius:14px;text-align:right}
-.srp-article span{font-size:13px;color:#4a6283}.srp-article strong{font-size:17px;line-height:1.45}
-.srp-field{display:grid;gap:8px;font-weight:700;font-size:15px}
-.srp-input{display:flex;align-items:center;gap:10px;padding:0 14px;border:1.5px solid #bcd6ea;border-radius:14px;background:#fff;color:#4a6283;transition:border-color .15s,box-shadow .15s}
-.srp-input:focus-within{border-color:#0571da;box-shadow:0 0 0 4px #0571da22}
-.srp-input input{flex:1;min-width:0;height:52px;border:0;outline:0;background:transparent;font:inherit;font-size:16px;font-weight:500;color:#071f4b;text-align:left}
-.srp-button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;margin-top:18px;border:0;border-radius:14px;background:linear-gradient(180deg,#1f86f0,#0571da);color:#fff;font:inherit;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 10px 24px -12px #0571dab3}
-.srp-button:hover:not(:disabled){filter:brightness(1.06)}.srp-button:disabled{opacity:.6;cursor:not-allowed}
-.srp-alert{margin:14px 0 0;padding:12px 14px;border:1px solid #f3c1c8;border-radius:12px;background:#fff1f3;color:#a3213f;font-size:14px;line-height:1.6}
-.srp-hint{margin:16px 0 0;font-size:13px;line-height:1.7;color:#4a6283;text-align:center}
-.srp-status{display:flex;align-items:center;justify-content:center;gap:8px;color:#4a6283}
-.srp-message{display:grid;justify-items:center;gap:8px;text-align:center}.srp-message p{margin:0 0 8px;line-height:1.7;color:#30496c}
-.srp-message.is-done>svg{color:#14a05b}.srp-message.is-error>svg{color:#c4302b}.srp-message .srp-article{width:100%}
-.srp-published{max-width:100%;overflow-wrap:anywhere;color:#0571da;font-size:14px}
-.srp-foot{margin:0;font-size:12px;color:#6a7f9c}
+.srp{--srp-ink:#0b1b2f;--srp-muted:#4f5d6e;--srp-faint:#7b8796;--srp-line:rgba(11,40,80,.09);--srp-blue:#1673e6;--srp-green:#1d7d45;--srp-ease:cubic-bezier(.32,.72,0,1);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px 16px;background:radial-gradient(900px 420px at 50% -8%,#d8eeff 0,transparent 70%),#f5f7fa;color:var(--srp-ink);font-family:Heebo,Arial,sans-serif}
+.srp *{box-sizing:border-box}
+.srp-card{width:100%;max-width:520px;background:#fff;border-radius:28px;overflow:hidden;box-shadow:0 0 0 1px var(--srp-line),0 1px 2px #0b28500a,0 24px 48px -30px #0b285066}
+.srp-head{display:flex;justify-content:center;padding:26px 24px 6px}
+.srp-logo{display:inline-flex;max-width:190px}.srp-logo img,.srp-logo svg:not(.brand-logo-filter){max-height:42px;width:auto}
+.srp-body{padding:10px 30px 30px;display:grid;gap:16px}
+.srp-hero{display:grid;justify-items:center;text-align:center;gap:8px;padding:8px 0 2px}
+.srp-hero h1{margin:0;font-size:clamp(23px,4vw,28px);font-weight:850;letter-spacing:-.02em;line-height:1.2;text-wrap:balance;color:var(--srp-ink)}
+.srp-hero p{margin:0;max-width:400px;font-size:16px;line-height:1.6;color:var(--srp-muted)}
+.srp-pill{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;font-size:13px;font-weight:800}
+.srp-pill.is-ok{background:#e5f5eb;color:var(--srp-green)}.srp-pill.is-check{background:#eef5ff;color:var(--srp-blue)}
+.srp-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.srp-mark{width:84px;height:84px;margin-bottom:4px}.srp-mark svg{width:84px;height:84px;display:block}
+.srp-ring{fill:none;stroke:#2fc06b;stroke-width:6;stroke-linecap:round;stroke-dasharray:240;stroke-dashoffset:240;transform:rotate(-90deg);transform-origin:center;animation:srp-ring .7s var(--srp-ease) forwards}
+.srp-disc{fill:#2fc06b;transform-origin:center;transform:scale(.6);opacity:0;animation:srp-disc .55s var(--srp-ease) .45s forwards}
+.srp-tick{fill:none;stroke:#fff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60;animation:srp-tick .35s ease-out .75s forwards}
+@keyframes srp-ring{to{stroke-dashoffset:0}}@keyframes srp-disc{60%{transform:scale(1.08);opacity:1}to{transform:scale(1);opacity:1}}@keyframes srp-tick{to{stroke-dashoffset:0}}
+.srp-alert-mark{display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:#fff1f3;color:#c4302b}
+.srp-article{display:grid;gap:2px;padding:14px 16px;background:#f5f8fc;border-radius:16px;text-align:right;box-shadow:inset 0 0 0 1px var(--srp-line)}
+.srp-article span{font-size:13px;color:var(--srp-faint);font-weight:600}.srp-article strong{font-size:17px;line-height:1.45;font-weight:800}
+.srp-form{display:grid;gap:16px}
+.srp-field{display:grid;gap:8px;font-weight:800;font-size:15px}
+.srp-input{display:flex;align-items:center;gap:10px;padding:0 16px;border-radius:15px;background:#fff;color:var(--srp-faint);box-shadow:inset 0 0 0 1.5px #c9d6e4;transition:box-shadow .2s}
+.srp-input:focus-within{box-shadow:inset 0 0 0 2px var(--srp-blue),0 0 0 4px #1673e61f;color:var(--srp-blue)}
+.srp-input input{flex:1;min-width:0;height:54px;border:0;outline:0;background:transparent;font:inherit;font-size:16px;font-weight:500;color:var(--srp-ink);text-align:left}
+.srp-button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;height:54px;border:0;border-radius:15px;font:inherit;font-size:17px;font-weight:800;color:#fff;background:linear-gradient(180deg,#2f8cff,#1673e6);box-shadow:inset 0 1px 0 #ffffff59,0 10px 22px -10px #1673e6cc;cursor:pointer;transition:transform .12s ease-out,filter .2s}
+.srp-button:hover:not(:disabled){filter:brightness(1.05)}.srp-button:active:not(:disabled){transform:scale(.97)}.srp-button:disabled{opacity:.65;cursor:not-allowed}
+.srp-alert{margin:0;padding:12px 14px;border-radius:14px;background:#fff1f3;color:#a3213f;font-size:14px;line-height:1.6;box-shadow:inset 0 0 0 1px #f3c1c8}
+.srp-checks{display:grid;gap:6px;margin:0;padding:0;list-style:none;font-size:14px;color:var(--srp-muted)}
+.srp-checks li{display:flex;align-items:center;gap:10px}
+.srp-check-dot{width:18px;height:18px;border-radius:50%;box-shadow:inset 0 0 0 2px #c9d6e4;flex:none}
+.srp-checks.is-busy .srp-check-dot{box-shadow:inset 0 0 0 2px var(--srp-blue);border-top-color:transparent;animation:srp-pulse 1.2s ease-in-out infinite}
+.srp-checks.is-busy li:nth-child(2) .srp-check-dot{animation-delay:.2s}.srp-checks.is-busy li:nth-child(3) .srp-check-dot{animation-delay:.4s}
+@keyframes srp-pulse{50%{opacity:.3}}
+.srp-hint{margin:0;font-size:13px;color:var(--srp-faint);text-align:center}
+.srp-steps{display:grid;gap:10px;margin:0;padding:16px;list-style:none;border-radius:16px;box-shadow:inset 0 0 0 1px var(--srp-line)}
+.srp-steps li{display:flex;align-items:center;gap:12px;font-size:15px}
+.srp-node{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e5f5eb;color:var(--srp-green);flex:none}
+.srp-published{justify-self:center;max-width:100%;overflow-wrap:anywhere;color:var(--srp-blue);font-size:14px;font-weight:600}
+.srp-closed{display:flex;align-items:center;justify-content:center;gap:6px;margin:0;font-size:13px;font-weight:700;color:var(--srp-faint)}
+.srp-loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:30px;color:var(--srp-muted);font-weight:700}
+.srp-foot{margin:0;font-size:12px;color:var(--srp-faint)}
 .srp-spin{animation:srp-spin 1s linear infinite}@keyframes srp-spin{to{transform:rotate(360deg)}}
-@media(max-width:520px){.srp{justify-content:flex-start;padding-top:20px}.srp-body{padding:24px 18px}.srp h1{font-size:21px}}
+@media(max-width:520px){.srp{justify-content:flex-start;padding-top:18px}.srp-body{padding:8px 18px 24px}}
+@media(prefers-reduced-motion:reduce){.srp *{animation-duration:.01ms!important;animation-iteration-count:1!important}.srp-ring{stroke-dashoffset:0}.srp-disc{transform:none;opacity:1}.srp-tick{stroke-dashoffset:0}}
