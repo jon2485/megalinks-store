@@ -1,45 +1,76 @@
-.ccr{display:grid;gap:14px;color:#0c1d33}
-.ccr-label{font-weight:800;font-size:14px}
-.ccr-choice{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.ccr-opt,.ccr-site{display:flex;align-items:flex-start;gap:10px;width:100%;padding:13px 14px;border:0;border-radius:15px;background:#fff;box-shadow:inset 0 0 0 1.5px #d6e2ee;text-align:right;font:inherit;color:inherit;cursor:pointer;transition:box-shadow .15s,background .15s}
-.ccr-opt b,.ccr-site b{display:block;font-size:15px}.ccr-opt small,.ccr-site small{display:block;font-size:13px;color:#6a7d94;margin-top:2px}
-.ccr-opt.is-on,.ccr-site.is-on{box-shadow:inset 0 0 0 2px #1673e6;background:#f5f9ff}
-.ccr-radio{width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 2px #b8c8da;flex:none;margin-top:2px;display:grid;place-items:center}
-.is-on>.ccr-radio{box-shadow:inset 0 0 0 2px #1673e6}.is-on>.ccr-radio::after{content:"";width:10px;height:10px;border-radius:50%;background:#1673e6}
-.ccr-sites{display:grid;gap:8px}.ccr-site{align-items:center}.ccr-site .ccr-radio{margin-top:0}
-.ccr-site.is-off{opacity:.55;cursor:default}
-.ccr-grow{flex:1;min-width:0}.ccr-price{font-weight:800;font-size:14px;white-space:nowrap}
-.ccr-field{display:grid;gap:8px}
-.ccr-field textarea{width:100%;border:0;border-radius:14px;box-shadow:inset 0 0 0 1.5px #d6e2ee;padding:12px;font:inherit;font-size:15px;resize:vertical;color:#0c1d33;background:#fff}
-.ccr-field textarea:focus{outline:0;box-shadow:inset 0 0 0 2px #1673e6}
-.ccr-note{margin:0;padding:12px 14px;border-radius:14px;background:#f2f7fd;color:#3a4e66;font-size:13px;line-height:1.6}
-.ccr-error{margin:0;padding:10px 14px;border-radius:12px;background:#ffe9ee;color:#a3213f;font-size:14px}
-.ccr-foot{display:flex;gap:10px}.ccr-foot button{flex:1;min-height:48px;border:0;border-radius:14px;font:inherit;font-weight:800;font-size:15px;cursor:pointer}
-.ccr-send{background:linear-gradient(180deg,#e9506b,#c23552);color:#fff;box-shadow:0 8px 18px -10px #c23552cc}.ccr-send:disabled{opacity:.6}
-.ccr-back{background:#fff;color:#0c1d33;box-shadow:inset 0 0 0 1px #d6e2ee}
+/* Customer cancel request window: the same look as the AI writing window (white header with a gradient badge,
+   numbered steps on a line, soft grey fields, a footer bar with what is still missing). The site-wide dialog rule
+   forces every p/small/button in a dialog to 16px bold, so everything here is scoped to this window and marked !important. */
+html body [data-slot=dialog-content]:has(>.ccr){padding:0!important;border:0!important;border-radius:26px!important;overflow:hidden;width:min(600px,calc(100vw - 24px))!important;max-width:600px!important;max-height:min(92dvh,860px);display:flex!important;flex-direction:column;gap:0!important;background:#fff!important;font-family:Heebo,Arial,sans-serif;color:#0b1b2f}
+html body [data-slot=dialog-content]:has(>.ccr) [data-slot=dialog-header]{display:flex!important;flex-direction:row!important;align-items:center;gap:14px;margin:0!important;padding:22px 24px 16px 66px!important;text-align:right!important;background:#fff;border-bottom:1px solid #e3e9f1}
+html body [data-slot=dialog-content]:has(>.ccr) .admin-dialog-badge{flex:none;width:48px;height:48px;border-radius:15px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#f0506e,#c2335a);box-shadow:0 8px 18px -8px #c2335aaa}
+html body [data-slot=dialog-content]:has(>.ccr) .admin-dialog-badge svg{width:22px;height:22px}
+html body [data-slot=dialog-content]:has(>.ccr) .admin-dialog-head-text{display:grid;gap:2px;min-width:0}
+html body [data-slot=dialog-content]:has(>.ccr) [data-slot=dialog-title]{margin:0;font:800 22px/1.25 Heebo,Arial,sans-serif!important;letter-spacing:-.01em;color:#0b1b2f!important;text-align:right}
+html body [data-slot=dialog-content]:has(>.ccr) [data-slot=dialog-description]{margin:0;font:500 14px/1.5 Heebo,Arial,sans-serif!important;color:#5b6b82!important;text-align:right}
+html body [data-slot=dialog-content]:has(>.ccr)>[data-slot=dialog-close]{top:22px!important;left:18px!important;right:auto!important;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;padding:0!important;display:grid;place-items:center;border-radius:12px;background:#f1f5fa;color:#5b6b82;opacity:1}
+html body [data-slot=dialog-content]:has(>.ccr)>[data-slot=dialog-close]:hover{background:#e6edf5;color:#0b1b2f}
+
+.ccr{display:flex;flex-direction:column;flex:1;min-height:0;color:#0b1b2f}
+.ccr-body{display:grid;gap:0;padding:20px 24px 8px;overflow-y:auto}
+.ccr-step{position:relative;display:grid;gap:12px;padding:0 46px 22px 0}
+.ccr-step:not(.ccr-last)::before{content:"";position:absolute;right:13.5px;top:32px;bottom:2px;width:3px;border-radius:3px;background:#e3eaf2}
+.ccr-step[data-state=done]:not(.ccr-last)::before{background:#1673e6}
+html body .ccr .ccr-step h3{display:flex;align-items:center;gap:10px;min-height:30px;margin:0;font:800 16.5px/1.3 Heebo,Arial,sans-serif!important;color:#0b1b2f!important}
+html body .ccr .ccr-step h3 label{font:inherit!important;color:inherit!important;cursor:pointer}
+html body .ccr .ccr-step h3 small{font:700 13px/1.3 Heebo,Arial,sans-serif!important;color:#1673e6!important}
+.ccr-node{position:absolute;right:0;top:0;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#fff;color:#8a99ad;box-shadow:inset 0 0 0 2px #dbe3ec;font:800 13px Heebo,Arial,sans-serif}
+.ccr-step[data-state=current] .ccr-node{color:#1673e6;box-shadow:inset 0 0 0 2.5px #1673e6,0 0 0 5px #1673e61f}
+.ccr-step[data-state=done] .ccr-node{background:#1673e6;color:#fff;box-shadow:none}
+
+.ccr-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:#f1f5fa}
+html body .ccr .ccr-seg button{min-height:42px!important;padding:0 12px;border:0;border-radius:11px;background:none;box-shadow:none;color:#5b6b82;font:700 15px Heebo,Arial,sans-serif!important;cursor:pointer;transition:background-color .2s,color .2s,box-shadow .2s}
+html body .ccr .ccr-seg button[aria-checked=true]{background:#fff;color:#1673e6;box-shadow:0 1px 3px #0b28501f,0 0 0 1px #1673e633}
+
+.ccr-sites{display:grid;gap:8px}
+html body .ccr .ccr-site{display:flex;align-items:center;gap:12px;width:100%;min-height:62px!important;padding:12px 14px;border:0;border-radius:14px;background:#f6f8fb;box-shadow:inset 0 0 0 1px #dfe6ef;text-align:right;font:inherit!important;color:inherit;cursor:pointer;transition:background-color .15s,box-shadow .15s}
+html body .ccr button.ccr-site:hover{background:#fff}
+html body .ccr .ccr-site[aria-checked=true]{background:#fff;box-shadow:0 0 0 2px #1673e6,0 0 0 5px #1673e61f}
+html body .ccr .ccr-site.is-off{opacity:.55;cursor:default}
+html body .ccr .ccr-site.is-static{cursor:default}
+.ccr-radio{flex:none;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:inset 0 0 0 2px #b8c8da;display:grid;place-items:center}
+[aria-checked=true]>.ccr-radio{box-shadow:inset 0 0 0 2px #1673e6}
+[aria-checked=true]>.ccr-radio::after{content:"";width:10px;height:10px;border-radius:50%;background:#1673e6}
+.ccr-grow{flex:1;min-width:0;display:grid;gap:2px}
+html body .ccr .ccr-site b{display:block;font:800 15px/1.4 Heebo,Arial,sans-serif!important;color:#0b1b2f!important;overflow-wrap:anywhere;text-align:right}
+html body .ccr .ccr-site small{display:block;font:500 13px/1.5 Heebo,Arial,sans-serif!important;color:#6a7d94!important}
+html body .ccr .ccr-price{flex:none;font:800 14px Heebo,Arial,sans-serif!important;color:#0b1b2f!important;white-space:nowrap}
+
+html body .ccr textarea{display:block;width:100%;min-height:96px;padding:12px 14px;border:0;border-radius:14px;background:#f6f8fb;box-shadow:inset 0 0 0 1px #dfe6ef;font:600 15px/1.6 Heebo,Arial,sans-serif!important;color:#0b1b2f;resize:vertical}
+html body .ccr textarea::placeholder{color:#97a3b3;font-weight:500}
+html body .ccr textarea:focus{outline:0;background:#fff;box-shadow:0 0 0 2px #1673e6,0 0 0 5px #1673e622}
+
+html body .ccr p.ccr-note{margin:0 46px 12px 0;font:500 13px/1.6 Heebo,Arial,sans-serif!important;color:#7b8796!important}
+html body .ccr p.ccr-error{margin:0 46px 12px 0;padding:10px 14px;border-radius:12px;background:#ffe9ee;font:600 14px/1.5 Heebo,Arial,sans-serif!important;color:#a3213f!important}
+
+.ccr-foot{display:flex;align-items:center;gap:10px;padding:14px 24px calc(16px + env(safe-area-inset-bottom));border-top:1px solid #e3e9f1;background:#fff}
+html body .ccr p.ccr-ready{order:1;margin:0 0 0 auto;font:600 13.5px/1.4 Heebo,Arial,sans-serif!important;color:#5b6b82!important}
+.ccr-ready b{color:#1673e6}
+html body .ccr .ccr-foot button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px!important;padding:0 20px;border:0;border-radius:14px;font:700 15px Heebo,Arial,sans-serif!important;cursor:pointer;transition:transform .12s ease-out,filter .2s}
+html body .ccr .ccr-foot button:active:not(:disabled){transform:scale(.97)}
+html body .ccr .ccr-send{order:2;flex:0 0 230px;background:linear-gradient(135deg,#f0506e,#c2335a);color:#fff;box-shadow:0 10px 22px -10px #c2335acc}
+html body .ccr .ccr-send:disabled{background:#e3e9f1;color:#8a99ad;box-shadow:none;cursor:not-allowed}
+html body .ccr .ccr-back{order:3;background:#f1f5fa;color:#0b1b2f}
+html body .ccr .ccr-back:disabled{opacity:.5}
+@media(max-width:560px){
+ html body [data-slot=dialog-content]:has(>.ccr) [data-slot=dialog-header]{padding:18px 16px 14px 62px!important}
+ .ccr-body{padding:16px 16px 6px}
+ .ccr-step{padding-right:40px}
+ html body .ccr p:is(.ccr-note,.ccr-error){margin-right:40px}
+ .ccr-foot{flex-wrap:wrap;padding:12px 16px calc(14px + env(safe-area-inset-bottom))}
+ html body .ccr p.ccr-ready{flex-basis:100%;margin:0}
+ html body .ccr .ccr-send{flex:1 1 auto}
+}
+@media(prefers-reduced-motion:reduce){.ccr *{transition:none!important}}
+
+/* Request status and the "בקשת ביטול" button in the open order (outside the window). */
 .ccr-status{display:flex;gap:10px;align-items:flex-start;padding:12px 16px;border-radius:14px;font-size:14px;line-height:1.6}
 .ccr-status p{margin:2px 0 0}.ccr-status svg{flex:none;margin-top:3px}
 .ccr-status.is-wait{background:#fff3df;color:#7a4300}.ccr-status.is-no{background:#f2f6fb;color:#3a4e66}
 .ccr-open{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border:0;border-radius:12px;background:#fff;color:#c23552;box-shadow:inset 0 0 0 1px #f3c1cb;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
 .ccr-open:hover{background:#fff6f8}
-@media(max-width:560px){.ccr-choice{grid-template-columns:1fr}}
-/* The site-wide dialog rule forces every p/small/button in a dialog to 16px bold; keep this form's own scale. */
-[data-slot=dialog-content] .ccr .ccr-label{font-size:14px!important;font-weight:800!important;color:#0c1d33!important}
-[data-slot=dialog-content] .ccr :is(.ccr-opt,.ccr-site){min-height:0;font-size:15px!important;font-weight:400!important}
-[data-slot=dialog-content] .ccr :is(.ccr-opt,.ccr-site) b{font-size:15px!important;font-weight:800!important;color:#0c1d33!important;line-height:1.4!important}
-[data-slot=dialog-content] .ccr :is(.ccr-opt,.ccr-site) small{font-size:13px!important;font-weight:500!important;color:#6a7d94!important;line-height:1.5!important}
-[data-slot=dialog-content] .ccr .ccr-price{font-size:14px!important;font-weight:800!important;color:#0c1d33!important}
-[data-slot=dialog-content] .ccr p.ccr-note,[data-slot=dialog-content] .ccr div.ccr-note{font-size:13.5px!important;font-weight:500!important;line-height:1.65!important;color:#3a4e66!important}
-[data-slot=dialog-content] .ccr .ccr-note b{font-weight:800}
-[data-slot=dialog-content] .ccr p.ccr-error{font-size:14px!important;font-weight:600!important;color:#a3213f!important}
-[data-slot=dialog-content] .ccr .ccr-foot button{font-size:15px!important;font-weight:800!important}
-[data-slot=dialog-content] .ccr textarea{font-size:15px!important;font-weight:500!important}
-/* Window header (customer side): the shared header has no customer style, so the title sat on the left and its icon ran into the close button. */
-[data-slot=dialog-content]:has(>.ccr) [data-slot=dialog-header]{display:flex!important;flex-direction:row!important;align-items:center;gap:12px;text-align:right!important;padding-inline-end:44px}
-[data-slot=dialog-content]:has(>.ccr) .admin-dialog-badge{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;background:#fdecef;color:#c23552}
-[data-slot=dialog-content]:has(>.ccr) .admin-dialog-badge svg{width:22px;height:22px}
-[data-slot=dialog-content]:has(>.ccr) .admin-dialog-head-text{display:grid;gap:2px;min-width:0}
-[data-slot=dialog-content]:has(>.ccr) [data-slot=dialog-title]{font-size:21px!important;line-height:1.3!important;font-weight:800!important;color:#0c1d33!important;text-align:right}
-[data-slot=dialog-content]:has(>.ccr) [data-slot=dialog-description]{font-size:14px!important;line-height:1.5!important;font-weight:600!important;color:#6a7d94!important;text-align:right}
-[data-slot=dialog-content]:has(>.ccr)>[data-slot=dialog-close]{top:18px;right:auto;left:16px;width:36px!important;height:36px!important;min-width:36px!important;min-height:36px!important;padding:0!important;display:grid;place-items:center;border-radius:50%;background:#f1f5fa;color:#475569;opacity:1}
-[data-slot=dialog-content]:has(>.ccr)>[data-slot=dialog-close]:hover{background:#e6edf5;color:#0c1d33}
