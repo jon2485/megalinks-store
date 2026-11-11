@@ -217,7 +217,14 @@ async function handle(r: Request,access:ResponseAccess) {
     if (p[0] === 'supplier' && p[1]) {
         const token = await one('SELECT * FROM tokens WHERE hash=? AND kind=?', await hash(p[1]), 'supplier');
         if (token?.used && (await one("SELECT status FROM articles WHERE id=?", token.resource))?.status === 'cancelled') assert(false, 'הכתבה בוטלה, ואין צורך לפרסם אותה', 410);
-        assert(token && !token.used && Date.parse(token.expires) > Date.now(), 'קישור הספק אינו תקף', 403);
+        // A used link shows a calm "closed" page once the article is published (owner decision, 11.11.2026).
+        if (token?.used) {
+            const done = await one("SELECT a.title,a.status,a.published_url,w.name AS website_name FROM articles a JOIN websites w ON w.id=a.website_id WHERE a.id=?", token.resource);
+            if (method === 'GET' && done && ['published','demo_completed'].includes(done.status)) return response({ closed: true, article: { title: done.title, website_name: done.website_name, published_url: done.published_url || '' } });
+            assert(false, 'הקישור הזה כבר אינו פעיל. אם צריך, פנו אלינו.', 410);
+        }
+        assert(token, 'הקישור אינו תקין. בדקו שהעתקתם אותו במלואו מהמייל.', 403);
+        assert(Date.parse(token.expires) > Date.now(), 'פג תוקף הקישור. פנו אלינו ונשלח קישור חדש.', 403);
         const a = await one('SELECT a.*,w.name AS website_name FROM articles a JOIN websites w ON w.id=a.website_id WHERE a.id=?', token.resource);
         assert(a, 'כתבה לא נמצאה', 404);
         if(method==='GET'&&query.get('asset')==='word'){return new Response(await articleDocx(a) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename=article.docx'}});}

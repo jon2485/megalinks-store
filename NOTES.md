@@ -996,3 +996,14 @@ The owner answered the five questions. What was decided and built:
 - **Tests:** a new runtime script (outside the repo) passes 36/36: request, duplicate, other customer, reject/re-ask/approve, work center, orders filter, dispatch block, edit lock, the four link cases (404, missing link, wrong topic, other domain) and the good page, text-ready item and email, no leak to another customer. `tsc` clean. All 140 repo tests: no test fails that did not already fail on the previous commit. Screens checked in the browser (customer order, customer feed, admin dialog).
 - **לפני העלאה:** nothing temporary in the code. For local link checks only, the container has a hosts entry `qab-pub.example.net` and a small fake site on port 80 (outside the repo).
 - **Next:** owner reviews in the local preview; commit is local only; push and Staging deploy only after approval.
+
+## 11.11.2026 (3): Supplier gets everything by email; the link page only takes the published address
+
+Owner decision: the supplier (without an account) gets all article details and files in the email, and the link opens a page with only a field for the published link, in the brand colours. After a valid link the system marks the article published and the link is closed.
+
+- **Email** (`lib/supplier-mail-content.ts` `supplierArticleEmailHtml`, sent from `lib/mail.ts`): branded HTML (navy header with the logo, article title and site, publication date, meta description, publishing notes, admin instructions, image credits, list of attachments, button "שליחת הקישור לכתבה שפורסמה", note that the link is personal, 30 days, closes after a valid link). Attachments as before (Word with images and credits, main and second image) plus the customer's original document when there is one (up to 8MB). Plain-text version also has the link.
+- **Page** (`app/supplier-report-page.tsx` + `.css`, routed from `app/workspace.tsx` for `/supplier/<token>`): no site header or article content; logo, article title and site, one URL field, "שליחת הקישור לבדיקה" (shows "בודקים את הקישור…"), the check's error in a red box, success screen "הכתבה סומנה כפורסמה" and the link is closed. Reopening a used link shows the same closed screen. Invalid / expired / cancelled links get a clear message. The old `SupplierView` in `app/screens.tsx` is no longer routed.
+- **API** (`app/api/[...path]/route.ts`, `supplier/<token>`): a used token whose article is published returns `{closed:true}` on GET instead of an error; other used tokens 410; clearer Hebrew messages for an invalid or expired link. POST unchanged (same check as before).
+- **Not changed:** the "פורטל ספקים" screen for supplier accounts (old style, the owner says suppliers have no accounts).
+- **Tests:** flow script 36/36, page checked in the browser (form, error, success, reopened, phone), email rendered to an image (real sending is off locally). No new failures in the repo tests.
+- **לפני העלאה:** nothing temporary in the code.
