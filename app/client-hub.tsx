@@ -27,7 +27,7 @@ export default function ClientHub({ctx,view}:{ctx:Ctx;view:string}){
  const previousPart=useRef(part),tabsRef=useAccountUnderline(view),[showTop,setShowTop]=useState(false);
  useEffect(()=>{const onScroll=()=>setShowTop(window.scrollY>700);onScroll();window.addEventListener('scroll',onScroll,{passive:true});return()=>window.removeEventListener('scroll',onScroll);},[]);
  useEffect(()=>{if(previousPart.current===part)return;previousPart.current=part;const frame=requestAnimationFrame(()=>scrollAccountTo('client-hub-page-content'));return()=>cancelAnimationFrame(frame);},[part]);
- const selectCategory=(path:string)=>{if((path.split('/')[1]||'lobby')===part)scrollAccountTo('client-hub-page-content');else ctx.go(path);};
+ const selectCategory=(path:string)=>{if(path.split('/')[0]==='purchased'&&(path.split('/')[1]||'lobby')===part)scrollAccountTo('client-hub-page-content');else ctx.go(path);};
  const approved=true;
  const title=part==='selling'?'האתרים שלי':part==='articles'?'הכתבות שלי':part==='orders'||part==='monthly'?'ההזמנות שלי':part==='payments'?'יתרה וזיכויים':part==='customers'?'הלקוחות שלי':part==='profile'?'פרטי החשבון':'האזור האישי שלי';
  const subtitle=part==='articles'?'ניהול התוכן והפרסומים שלך':part==='orders'||part==='monthly'?'כל ההזמנות שלך, במקום אחד':part==='payments'?'היתרה והתנועות שלך, במקום אחד':part==='lobby'?'פרסומים, תשלומים ועדכונים שמחכים לך':part==='customers'?'הלקוחות, הכתבות והפרסומים שלהם':part==='profile'?'הפרטים שיופיעו בהזמנות שלך':'כל הפעילות שלך, במקום אחד';

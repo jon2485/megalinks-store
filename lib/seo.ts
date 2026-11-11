@@ -24,6 +24,8 @@ export function isWorkspacePath(parts:string[]) {
         if(['article','admin-article'].includes(parts[0]))return parts[2]==='ai';
         if(parts[0]==='admin-customer-account')return ['orders','payments','monthly','articles','profile','history'].includes(parts[2]);
     }
+    // The order opened from a personal update: /purchased/articles/order/<id>, so a reload or a shared link works too.
+    if(parts.length===4)return parts[0]==='purchased'&&parts[1]==='articles'&&parts[2]==='order'&&!!parts[3]&&parts[3].length<=200;
     if(parts.length!==2||!parts[1]||parts[1].length>200)return false;
     return parts[0]==='purchased'?hubTabs.has(parts[1]):nestedRoots.has(parts[0]);
 }
