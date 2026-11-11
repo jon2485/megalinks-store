@@ -952,3 +952,29 @@ Owner approved `docs/mockups/lobby-v1.html` and three decisions: the folding "ת
 - `tsc --noEmit` clean in the real checkout. `admin-lobby-panels` passes; `admin-full-design-preservation` and `admin-shell-ui` fail as before (see above).
 - Left running by the lobby session: a private server on port 5190 (private copy of the tree and database). Not part of the repository; can be stopped any time.
 - Nothing pushed. No "לפני העלאה" items.
+
+## 11.11.2026: Full flow audit (orders, payments, articles, cancellations, leaks, every screen) and fixes
+
+- **Branch:** `claude/order-flow-qa-20261111`, from `5c33940` (what Staging runs). Pushed as a backup only, with the owner's approval. Railway Staging follows `design/orders-sky-20261108`, so nothing was deployed and Staging was not touched.
+- **How it was checked:** a local server in a cloud container (Linux), fictional users and data only (admin, two customers, monthly, supplier, seller). Five separate audits ran at runtime: orders and payments, articles (supplier, writer, revisions, scheduled send, publication), cancellations and refunds, privacy and prices between customers, and a click-through of every screen on desktop and phone with a comparison against older branches. Every fix was re-checked on the rebuilt server.
+- **No leak found:** customers never get cost, supplier details, admin notes or another customer's price; every admin route refuses non-admins. No screen crashes; nothing was removed by accident (every removal matches an approved decision).
+- **Fixed (server):**
+  - Whole-order cancel is refused while a payment report is pending (customer and admin), so reported money never disappears from the queue. It also releases supplier slots and the blocked send, and refreshes the order statement (`app/api/[...path]/route.ts`).
+  - Refunds refresh the order statement for paid orders and the closed month summary; the "what to do with the reported payment" choice is required on the server (`lib/account-management.ts`).
+  - Customer can no longer pull an article back from the supplier; a manager pull-back stops the supplier link and frees the slot, so re-approval really resends; manager publish closes the supplier side; supplier reports save the publication date, which customers now receive; a writer's text cannot be sent to the customer as "revisions" (`route.ts`, `lib/customer-privacy.ts`).
+  - Lobby/queues: scheduled-future and failed sends no longer show as "ready to send"; late items age from the send date; cancelled articles leave the delivery-problems queue; fully cancelled orders leave the payments count (`lib/admin-updates.ts`, `lib/admin-control-center.ts`, `route.ts`).
+  - Month statement becomes "paid" after the last report approval (`lib/payment-reports.ts`); duplicate bank reference warning for top-ups and whole-month settle, and month payments are found later (`lib/finance.ts`, `lib/workflow-routes.ts`, `lib/payment-reference.ts`, `app/admin-finance.tsx` asks to confirm).
+  - Admin revenue report excludes refunds, cancelled articles and demos.
+  - Security: a customer can't write team replies into a ticket; `admin_order` from a customer is ignored (`lib/order-create.ts`).
+- **Fixed (screens):** customers see the payment method the manager confirmed (`lib/client-updates.ts`, `app/customer-orders.tsx`, `app/customer-order-dialog.tsx`); supplier inbox shows Hebrew for cancelled/failed/waiting (`app/purchase-flow.tsx`); "צפייה בהזמנה" from an update works on reload (`lib/seo.ts`); supplier portal button on the phone lobby (`app/client-hub.tsx`).
+- **Tests:** `tsc --noEmit` clean. The tests Staging's build runs pass, plus payment-reports, monthly-order-lifecycle, admin-glass, admin-lobby-panels, admin-lobby-actions, writing-workflow, security-audit, supplier-privacy, client-updates, payment-audit. `customer-order-screen` and `order-cancellation-ui` fail on CSS imports and `refund-supplier-ui` fails on `5c33940` too (old, not new).
+- **Open questions for the owner (not changed):**
+  - There is no "customer asks to cancel → admin approves/rejects" flow; customers cancel a whole order directly (only before sending and without a pending report). Should one be added?
+  - A cancellation waiting for the supplier ("בקשת ביטול") can't be withdrawn (for example if the supplier already published). Add a "withdraw cancellation" action?
+  - A supplier report publishes at once after an automatic link check; there is no admin check step and no lobby event. Is that intended?
+  - There is no writer role; the admin pastes the writer's text. The customer feed has no "text ready for your review" item (only an email).
+  - A customer edit of a submitted/approved article sends it back to draft (by design in the code); the editor is locked in the UI, but the API allows it.
+  - Paid writing orders waiting for the customer's brief are hidden from the admin list.
+  - Lower: old `/lobby-*` addresses still open; `/supplier-finance` gives suppliers an error; some tabs don't keep their place on reload; a rejected seller request still creates a seller record; checkout offers card while the provider is off (fails cleanly).
+- **לפני העלאה:** nothing temporary in the code. The local QA runner lives outside the repository.
+- **Next:** owner reviews the summary and the local preview; deploy to Staging only after approval.
