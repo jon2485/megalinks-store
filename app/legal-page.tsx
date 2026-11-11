@@ -54,7 +54,7 @@ export default function LegalPage({id,go}:{id:LegalDocId;go:(view:string)=>void}
      :block.type==='ul'?<ul key={i}>{block.items.map((item,n)=><li key={n}><Inline parts={item} go={go}/></li>)}</ul>
      :block.type==='ol'?<ol key={i}>{block.items.map((item,n)=><li key={n}><Inline parts={item} go={go}/></li>)}</ol>
      :block.type==='note'?<p key={i} className="legal-note"><Inline parts={block.inline} go={go}/></p>
-     :<div key={i} className="legal-table" role="region" aria-label="טבלה" tabIndex={0}><table><thead><tr>{block.head.map((cell,n)=><th key={n} scope="col"><Inline parts={cell} go={go}/></th>)}</tr></thead><tbody>{block.rows.map((row,r)=><tr key={r}>{row.map((cell,n)=><td key={n}><Inline parts={cell} go={go}/></td>)}</tr>)}</tbody></table></div>)}
+     :<div key={i} className="legal-table" role="region" aria-label="טבלה" tabIndex={0}><table><thead><tr>{block.head.map((cell,n)=><th key={n} scope="col"><Inline parts={cell} go={go}/></th>)}</tr></thead><tbody>{block.rows.map((row,r)=><tr key={r}>{row.map((cell,n)=><td key={n} data-label={(block.head[n]||[]).map(part=>part.text).join('')}><Inline parts={cell} go={go}/></td>)}</tr>)}</tbody></table></div>)}
     <footer className="legal-contact">
      <div><strong>יש שאלה על המסמך הזה?</strong><span>אפשר להתקשר אלינו, וגם בלי להתחבר לחשבון. לקוחות מחוברים יכולים לפתוח פנייה לתמיכה.</span></div>
      <div className="legal-contact-actions">

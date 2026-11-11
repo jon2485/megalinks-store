@@ -64,6 +64,17 @@
  .legal-card>h2{font-size:21px;scroll-margin-top:96px}
  .legal-summary{font-size:16.5px}
  .legal-card p,.legal-card :is(ul,ol){font-size:16px}
+ /* On a phone every table row becomes a small card: the column name sits above its value, nothing scrolls sideways. */
+ .legal-table{overflow:visible}
+ .legal-table table,.legal-table tbody,.legal-table tr,.legal-table td{display:block}
+ .legal-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+ .legal-table tr{padding:12px 14px;border-top:1px solid var(--lg-line)}
+ .legal-table tbody tr:first-child{border-top:0}
+ .legal-table td{min-width:0;padding:3px 0;border:0;font-size:15px}
+ .legal-table td::before{content:attr(data-label);display:block;margin-top:6px;font-size:12.5px;font-weight:800;color:var(--lg-muted)}
+ .legal-table td:first-child{font-weight:700;color:var(--lg-ink);font-size:16px}
+ .legal-table td:first-child::before{margin-top:0}
+ .legal-table td:empty{display:none}
  .legal-contact-actions{width:100%}
  .legal-card :is(.legal-contact-button,.legal-contact-phone){flex:1 1 150px}
 }
