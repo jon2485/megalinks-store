@@ -32,7 +32,7 @@ export function buildClientUpdates(articles:Row[],orders:Row[],transactions:Row[
  for(const o of orders){
   if(o.demo||!(o.paid||o.settled||o.payment_settled))continue;
   const date=o.paid_at||o.payment_date||o.paid_date||'';
-  result.push({id:'payment:'+o.id,kind:'payment',title:'תשלום להזמנה '+o.number,status:'התשלום אושר',orderId:o.id,orderNumber:o.number,date:date||o.created||'',dateLabel:date?'תאריך התשלום':'תאריך ההזמנה',amount:Number(o.total)||0,method:paymentMethodLabel({...o,payment:o.settlement_payment_method||o.payment_method||o.payment})||'לא תועד'});
+  result.push({id:'payment:'+o.id,kind:'payment',title:'תשלום להזמנה '+o.number,status:'התשלום אושר',orderId:o.id,orderNumber:o.number,date:date||o.created||'',dateLabel:date?'תאריך התשלום':'תאריך ההזמנה',amount:Number(o.total)||0,method:paymentMethodLabel({...o,payment:o.payment==='credits_card'?o.payment:o.confirmed_payment_method||o.settlement_payment_method||o.payment_method||o.payment})||String(o.confirmed_payment_method||'')||'לא תועד'});
  }
  for(const t of transactions){
   if(!Number.isFinite(Number(t.amount))||Number(t.amount)<=0)continue;

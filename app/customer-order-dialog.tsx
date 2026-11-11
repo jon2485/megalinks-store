@@ -21,7 +21,7 @@ export default function CustomerOrderDialog({ctx,order,articles}:{ctx:Ctx;order:
  const [query,setQuery]=useState('');const search=useRef<HTMLInputElement>(null);
  const amounts=effectiveOrderAmounts(order),cancelled=orderCancellation(order)==='full';
  const paid=!!(order.paid||order.settled||order.payment_settled),refunded=Number(order.paid_refund_total||0);
- const method=order.settlement_payment_method==='bank_transfer'?'העברה בנקאית':order.settlement_payment_method==='card'?'כרטיס אשראי':paymentMethodLabel(order);
+ const confirmed=order.payment==='credits_card'?'':order.confirmed_payment_method||order.settlement_payment_method||'';const method=confirmed?paymentMethodLabel({payment:confirmed})||String(confirmed):paymentMethodLabel(order);
  const q=query.trim().toLocaleLowerCase();
  const visible=articles.filter(a=>!q||[a.title,a.topic,a.website_name,a.website_url,ctx.catalog?.find(w=>w.id===a.website_id)?.name].some(v=>String(v||'').toLocaleLowerCase().includes(q)));
  const exportOrder=()=>exportSpreadsheet('order-'+order.number+'.xlsx',[

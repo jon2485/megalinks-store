@@ -44,7 +44,7 @@ import {canWorkOrder,isBankPayment,isCardPayment} from '@/lib/payment-state';
 import {walletAvailable,cardAmount,completeOrderPayment} from '@/lib/split-payment';
 import {walletUsageHistory} from '@/lib/wallet-usage';
 import {ledgerView} from '@/lib/ledger-view';
-import {orderSummarySql} from '@/lib/order-summary';
+import {orderSummarySql,fullyCancelledOrderSql} from '@/lib/order-summary';
 import {articleGuard,financialGuard,orderGuard} from '@/lib/monthly-order';
 import {createOrder} from '@/lib/order-create';
 import {accountManagementRoutes} from '@/lib/account-management';
@@ -280,10 +280,10 @@ async function handle(r: Request,access:ResponseAccess) {
             if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':u.role==='admin'?'מנהל דיווח על פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
     }
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
-    if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
+    if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND NOT "+fullyCancelledOrderSql()+" AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
     if (p[0] === 'me') {
         if (method === 'GET') {
-            const payments=u.role==='admin'?(await one("SELECT COUNT(*) AS n FROM orders o WHERE paid=0 AND status<>'cancelled' AND ((status IN ('pending','awaiting_approval') AND payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(data,'$.demo'),0)=0) OR EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending'))"))!.n:0;
+            const payments=u.role==='admin'?(await one("SELECT COUNT(*) AS n FROM orders o WHERE paid=0 AND status<>'cancelled' AND NOT "+fullyCancelledOrderSql()+" AND ((status IN ('pending','awaiting_approval') AND payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(data,'$.demo'),0)=0) OR EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending'))"))!.n:0;
             return response({ user: {...u,credits_available:await walletAvailable(u),monthly_account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id)}, counts: {...await one('SELECT (SELECT COUNT(*) FROM orders WHERE user_id=?) AS orders,(SELECT COUNT(*) FROM articles WHERE (?=1 OR user_id=?) AND status=?) AS approvals,(SELECT COUNT(*) FROM cart WHERE user_id=?) AS cart', u.id, u.role==='admin'?1:0, u.id, 'admin_review', u.id),payments} });
         }
         if (method === 'PATCH') {
