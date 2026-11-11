@@ -1,5 +1,5 @@
 import Workspace from '../workspace';
-import {publicMetadata} from '@/lib/seo';
-export const metadata=publicMetadata('/terms');
+import {legalMetadata} from '@/lib/seo';
+export const metadata=legalMetadata('terms');
 
 export default function Terms(){return <Workspace initialCatalog={[]} initialView="terms"/>}
