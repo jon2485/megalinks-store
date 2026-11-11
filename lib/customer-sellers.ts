@@ -1,4 +1,4 @@
-import {monthlySupplierArticle} from './supplier-inventory';
+import {monthlySupplierArticle,supplierPayableArticle} from './supplier-inventory';
 import {catalogPricingMeta,warnPricing} from './pricing';
 import {minimumWarning} from './pricing-rules';
 import {publicationPeriod} from './publication-period';
@@ -18,7 +18,7 @@ export async function sellerProfile(user:Row){
 async function ownedFile(id:string,user:Row,types:string[]){const f=await one('SELECT * FROM files WHERE id=? AND user_id=?',id,user.id);assert(f&&types.includes(f.type),'קובץ חסר או שאינו שייך לך',403);return f;}
 function siteInput(b:Row){let url='',example_url='';try{url=normalizeSiteUrl(text(b.url,1000));example_url=normalizeSiteUrl(text(b.example_url,1500));}catch{assert(false,'יש להזין כתובת אתר תקינה, למשל example.co.il.');}assert(url&&example_url,'יש להזין אתר וכתבה לדוגמה');for(const address of [url,example_url]){const publicAddress=new URL(address);publicAddress.protocol='https:';externalUrl(publicAddress.href);}const domain=new URL(url).hostname.toLowerCase().replace(/^www\./,'');assert(domain.includes('.'),'דומיין לא תקין');const unit_fee=Math.round(Number(b.price_ils)*100);assert(b.price_ils!==''&&Number.isSafeInteger(unit_fee)&&unit_fee>=0&&unit_fee<=100000000,'מחיר לא תקין');const name=text(b.name,160),email=text(b.delivery_email,254).toLowerCase();assert(name&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),'שם האתר ומייל תקין נדרשים');return {name,url,domain,example_url,unit_fee,delivery_email:email,logo_id:text(b.logo_id,100),instructions:text(b.instructions,3000)};}
 async function publications(userId:string,month:string){const profile=await one('SELECT * FROM seller_profiles WHERE user_id=?',userId);if(!profile)return [];
- const rows=(await all(`SELECT a.* FROM articles a JOIN orders o ON o.id=a.order_id WHERE ${monthlySupplierArticle} AND a.status='published' AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND COALESCE(json_extract(a.data,'$.publication_refunded'),0)=0 AND json_extract(a.data,'$.supplier_id')=? AND COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))=? ORDER BY a.updated,a.id`,profile.supplier_id,month)).map(a=>parse(a)!);
+ const rows=(await all(`SELECT a.* FROM articles a JOIN orders o ON o.id=a.order_id WHERE ${monthlySupplierArticle} AND ${supplierPayableArticle} AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND json_extract(a.data,'$.supplier_id')=? AND COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))=? ORDER BY a.updated,a.id`,profile.supplier_id,month)).map(a=>parse(a)!);
  return rows.map(a=>({id:a.id,title:a.title,site_name:a.website_name||'',url:a.published_url,date:a.updated,unit_fee:typeof a.cost_cents==='number'&&Number.isSafeInteger(a.cost_cents)&&a.cost_cents>=0?a.cost_cents:null}));
 }
 const parseStatement=(r:Row)=>({...r,...JSON.parse(r.data),data:undefined});

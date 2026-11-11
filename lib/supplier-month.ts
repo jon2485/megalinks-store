@@ -1,5 +1,5 @@
 import {env} from 'cloudflare:workers';
-import {monthlySupplierArticle} from './supplier-inventory';
+import {monthlySupplierArticle,supplierPayableArticle} from './supplier-inventory';
 import {publicationPeriod} from './publication-period';
 import {all,one,stmt,db,parse,now,uid,assert,audit,hash} from './server';
 import {queueMail,sendQueuedMail} from './mail';
@@ -11,7 +11,7 @@ import {type Row,money} from './shared';
 const prevMonth=(month:string)=>{const [y,m]=month.split('-').map(Number);return m===1?`${y-1}-12`:`${y}-${String(m-1).padStart(2,'0')}`;};
 
 async function monthArticles(supplierId:string,month:string){
- return (await all(`SELECT a.id,a.title,a.published_url,a.data,w.name AS site_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id WHERE ${monthlySupplierArticle} AND a.status='published' AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND COALESCE(json_extract(a.data,'$.publication_refunded'),0)=0 AND json_extract(a.data,'$.supplier_id')=? AND COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))=? ORDER BY a.updated,a.id`,supplierId,month)).map(a=>{const d=JSON.parse(a.data||'{}');return {id:a.id,title:a.title||d.topic||'',url:a.published_url||'',site_name:a.site_name,date:String(d.published_at||'').slice(0,10),cost_cents:Number.isSafeInteger(d.cost_cents)?d.cost_cents:null};});
+ return (await all(`SELECT a.id,a.title,a.published_url,a.data,w.name AS site_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id WHERE ${monthlySupplierArticle} AND ${supplierPayableArticle} AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND json_extract(a.data,'$.supplier_id')=? AND COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))=? ORDER BY a.updated,a.id`,supplierId,month)).map(a=>{const d=JSON.parse(a.data||'{}');return {id:a.id,title:a.title||d.topic||'',url:a.published_url||'',site_name:a.site_name,date:String(d.published_at||'').slice(0,10),cost_cents:Number.isSafeInteger(d.cost_cents)?d.cost_cents:null};});
 }
 
 // Creates (or re-sends) the invoice request for one manual supplier and month.
@@ -40,7 +40,7 @@ export async function sendSupplierMonth(origin:string,supplierId:string,month:st
 // run does not email suppliers about their whole history.
 export async function closeManualSupplierMonths(origin:string,at=new Date()){
  const month=prevMonth(publicationPeriod(at).month);let sent=0;
- const suppliers=await all(`SELECT DISTINCT json_extract(a.data,'$.supplier_id') AS id FROM articles a JOIN records r ON r.id=json_extract(a.data,'$.supplier_id') AND r.kind='supplier' WHERE COALESCE(json_extract(r.data,'$.account_user_id'),'')='' AND a.status='published' AND ${monthlySupplierArticle} AND COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))=?`,month);
+ const suppliers=await all(`SELECT DISTINCT json_extract(a.data,'$.supplier_id') AS id FROM articles a JOIN records r ON r.id=json_extract(a.data,'$.supplier_id') AND r.kind='supplier' WHERE COALESCE(json_extract(r.data,'$.account_user_id'),'')='' AND ${supplierPayableArticle} AND ${monthlySupplierArticle} AND COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))=?`,month);
  for(const s of suppliers){try{const r=await sendSupplierMonth(origin,s.id,month);if(r.sent)sent++;}catch{}}
  for(const j of await all("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:supplier-month:%' AND status IN ('requested','blocked','failed') ORDER BY created LIMIT 10"))await sendQueuedMail(j.id);
  return {month,sent};

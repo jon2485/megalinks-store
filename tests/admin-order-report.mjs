@@ -17,13 +17,18 @@ assert(validReportDay('2024-02-29'));for(const v of ['2026-02-29','2026-02-31','
 const order={id:'cost',number:'#COST',user_id:'u',paid:1,payment:'card',subtotal:10000,discount:0,total:11800,vat:1800};
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:0}]).summary.profit_net,null,'legacy zero is missing, never silently free');
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:0,cost_recorded:true}]).summary.profit_net,10000);
-assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:1000}]).summary.profit_net,null,'missing paid writing cost is flagged');
+// Writing costs 10 agorot a word (owner, 11.11.2026): from the words bought, or from the writing price (15 agorot a word) when the words were not kept.
+assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:1000}]).summary.profit_net,5330,'writing without a saved cost is costed from its price: 67 words');
+assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:7500,editorial_words:500}]).summary.cost_net,9000,'500 words of writing cost 50.00');
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:1000,writing_cost_cents:500}]).summary.profit_net,5500);
 assert.equal(buildMonthReport([{...order,paid:0}],[{order_id:'cost',cost_cents:4000}]).summary.net,0);
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:12000,cost_recorded:true,status:'cancelled'}]).summary.cost_net,0,'a cancelled article adds no cost');
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:12000,cost_recorded:true,publication_refunded:true}]).summary.cost_net,0,'a refunded publication adds no cost');
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,editorial_price:1000,writing_cost_cents:500,publication_refunded:true}]).summary.cost_net,500,'kept writing still counts after a publication refund');
 assert.equal(buildMonthReport([order],[{order_id:'cost',cost_cents:4000,cost_recorded:true},{order_id:'cost',cost_cents:12000,cost_recorded:true,status:'cancelled'}]).summary.cost_net,4000,'only the live article counts');
+assert.equal(buildMonthReport([order],[{order_id:'cost',status:'cancelled',cost_cents:4000,editorial_price:1000,writing_cost_cents:500,publication_refunded:true}]).summary.cost_net,500,'a refund marks the article cancelled; the kept writing still costs');
+assert.equal(buildMonthReport([order],[{order_id:'cost',status:'cancelled',cost_cents:4000,cost_recorded:true,publication_refunded:true,supplier_cost_kept:true}]).summary.cost_net,4000,'refunded after publication with the supplier payment kept: the cost stays');
+assert.equal(buildMonthReport([order],[{order_id:'cost',status:'cancelled',cost_cents:4000,cost_recorded:true,publication_refunded:true,supplier_cost_kept:false}]).summary.cost_net,0,'refunded after publication without supplier payment: no cost');
 const f=await createAdminFixture();
 const request=async(path,method='GET',body,expected=200)=>{const r=await f.request('/api/'+path,{method,body:body===undefined?undefined:JSON.stringify(body),headers:{'Content-Type':'application/json'}});const j=await r.json();assert.equal(r.status,expected,JSON.stringify(j));return j;};
 const stamp='2026-10-10T09:00:00.000Z';

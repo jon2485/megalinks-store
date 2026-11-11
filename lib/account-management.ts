@@ -1,4 +1,6 @@
 import {releaseSlotStatements} from './supplier-stock';
+import {completeOrderPayment} from './split-payment';
+import {dispatchStockWaiting} from './scheduled-dispatch';
 import {closeOrderForStatement,orderStatementId,prepareOrderStatement,refreshOrderStatement,renderOrderStatementPdf} from './order-statement';
 import {paymentEvidenceRows,orderPaymentEvidence} from './payment-evidence';
 import {orderSummarySql} from './order-summary';
@@ -58,12 +60,18 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
   assert(destination!=='external'||refundNote.length>=3,'יש לפרט כיצד ומתי הוחזר הכסף מחוץ למערכת');
   // The customer already reported paying, so the manager decides what happens to the difference. Nothing is credited unless chosen.
   const reportId='payment-report:'+order.id,reported=open&&!order.demo?await one("SELECT id FROM records WHERE id=? AND json_extract(data,'$.status')='pending'",reportId):null,overpaid=reported?String(b.overpaid_action||''):'',overpaidNote=overpaid==='manual'?String(b.overpaid_note||'').trim().slice(0,1500):'';
-  assert(!reported||['credit','manual','none'].includes(overpaid),'יש לבחור מה לעשות בהפרש');assert(overpaid!=='manual'||overpaidNote.length>=3,'יש לפרט מה נעשה בהפרש');
-  const refundEntry={at:stamp,amount:open?0:amount.gross,removed_amount:open?amount.gross:0,destination,note:refundNote,reason,actor_id:actor.id,mode:b.mode,previous_status:a.status,...(overpaid?{overpaid_action:overpaid,overpaid_note:overpaidNote}:{})};
+  // Owner decision 11.11.2026: no wallet credit before the bank was checked. Approve the report first, then cancel and credit.
+  assert(overpaid!=='credit','אי אפשר לזכות קרדיט לפני שהתשלום אושר. אשרו קודם את דיווח התשלום, ואז בטלו את הפריט וזכו את הלקוח.',409);assert(!reported||['manual','none'].includes(overpaid),'יש לבחור מה לעשות בהפרש');assert(overpaid!=='manual'||overpaidNote.length>=3,'יש לפרט מה נעשה בהפרש');
+  // The article is already live: the admin decides at this point whether the supplier is still paid for it
+  // (owner decision 11.11.2026). Usually a supplier who agreed to take it down is not paid.
+  const live=a.status==='published'&&amount.publication,keepSupplier=live&&b.supplier_payment==='keep';
+  assert(!live||['keep','remove'].includes(b.supplier_payment),'הכתבה כבר עלתה. יש לבחור אם להשאיר את התשלום לספק',400);
+  const refundEntry={at:stamp,amount:open?0:amount.gross,removed_amount:open?amount.gross:0,destination,note:refundNote,reason,actor_id:actor.id,mode:b.mode,previous_status:a.status,...(live?{supplier_payment:keepSupplier?'keep':'remove'}:{}),...(overpaid?{overpaid_action:overpaid,overpaid_note:overpaidNote}:{})};
 
-  const d={...a.data,publication_refunded:!!a.publication_refunded||amount.publication,writing_refunded:!!a.writing_refunded||amount.writing,refund_total:Number(a.refund_total||0)+amount.gross,refund_net:Number(a.refund_net||0)+amount.net,refund_reason:reason,refunded_at:stamp,refund_destination:destination,refund_note:refundNote,refund_history:[...(a.refund_history||[]),refundEntry],cancel_pending:false};
-  // Cancelled before publication: the slot goes back to the site's stock and the supplier link stops working.
-  if(amount.publication&&a.status!=='published')ops.push(...releaseSlotStatements(a.id,actor.id,reason));
+  const d={...a.data,publication_refunded:!!a.publication_refunded||amount.publication,writing_refunded:!!a.writing_refunded||amount.writing,refund_total:Number(a.refund_total||0)+amount.gross,refund_net:Number(a.refund_net||0)+amount.net,refund_reason:reason,refunded_at:stamp,refund_destination:destination,refund_note:refundNote,refund_history:[...(a.refund_history||[]),refundEntry],cancel_pending:false,...(live?{supplier_cost_kept:keepSupplier}:{})};
+  // Cancelled before publication, or after it when the supplier is not paid: the slot goes back to the site's
+  // stock and the supplier link stops working. A live article whose supplier payment is kept keeps its slot.
+  if(amount.publication&&!keepSupplier)ops.push(...releaseSlotStatements(a.id,actor.id,reason));
   ops.push(stmt("UPDATE articles SET status='cancelled',data=?,updated=? WHERE id=?",JSON.stringify(d),stamp,a.id));
   const net=amount.net,gross=amount.gross;
   // An unpaid item leaves the order with its share of the coupon too: the price before the discount comes off the
@@ -71,6 +79,10 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
   const paidNet=Number(a.paid_net_amount||0),unit=Number(a.unit_price||0),listNet=paidNet>0&&unit>paidNet?Math.round(unit*net/paidNet):net;
   if(open){if(charge){const col=charge.demo?'demo_balance':'balance';ops.push(stmt(`UPDATE credit_accounts SET ${col}=${col}-? WHERE user_id=?`,gross,target.id),stmt('UPDATE monthly_charges SET amount=CASE WHEN settled=0 THEN amount-? ELSE NULL END WHERE order_id=?',gross,order.id));}ops.push(stmt("UPDATE orders SET subtotal=subtotal-?,discount=MAX(0,discount-?),vat=vat-?,total=total-?,data=json_set(data,'$.refund_total',COALESCE(json_extract(data,'$.refund_total'),0)+?,'$.original_total',COALESCE(json_extract(data,'$.original_total'),total)),updated=? WHERE id=?",listNet,listNet-net,gross-net,gross,gross,stamp,order.id));}
   else{ops.push(stmt("UPDATE orders SET data=json_set(data,'$.refund_total',COALESCE(json_extract(data,'$.refund_total'),0)+?,'$.paid_refund_total',COALESCE(json_extract(data,'$.paid_refund_total'),0)+?),updated=? WHERE id=?",gross,gross,stamp,order.id));if(!order.demo&&destination==='wallet')ops.push(stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),target.id,gross,'זיכוי '+order.number+' · '+reason,'article-refund:'+a.id+':'+(amount.publication?'publication':'writing')+':'+b.mode,stamp),stmt('UPDATE users SET credits=credits+? WHERE id=?',gross,target.id));}
+  // Wallet + card order that is still unpaid: the card part shrinks first, then the reserved wallet part,
+  // so the payment link and the callback check ask for exactly what is left (owner, 11.11.2026).
+  const split=open&&order.payment==='credits_card',leftTotal=Number(order.total)-gross,cardNext=split?Math.max(0,Number(order.card_amount||0)-gross):0,walletNext=split?Math.max(0,leftTotal-cardNext):0;
+  if(split)ops.push(stmt("UPDATE orders SET data=json_set(data,'$.card_amount',?,'$.wallet_amount',?) WHERE id=?",cardNext,walletNext,order.id));
   if(open&&charge)ops.push(stmt("UPDATE records SET data=json_set(data,'$.amount',(SELECT COALESCE(SUM(amount),0) FROM monthly_charges WHERE user_id=? AND month=? AND demo=?)) WHERE id=?",target.id,charge!.month,charge!.demo,'monthly:'+charge!.month+':'+target.id+':'+charge!.demo));
   // A cancelled item only lowers what is due: the rest of the order and its pending report stay valid.
   // The report is closed only when nothing is left to pay, or for a split payment whose card part is fixed.
@@ -78,11 +90,15 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
   if(open)ops.push(nextDue>0&&order.payment!=='credits_card'
    ?stmt("UPDATE records SET data=json_set(data,'$.reported_amount_cents',COALESCE(json_extract(data,'$.reported_amount_cents'),json_extract(data,'$.amount_cents')),'$.amount_cents',?,'$.amount_updated_at',?),updated=? WHERE id=? AND json_extract(data,'$.status')='pending'",nextDue,stamp,stamp,'payment-report:'+order.id)
    :stmt("UPDATE records SET data=json_set(data,'$.status','rejected','$.decision_note',?,'$.handled_at',?),updated=? WHERE id=? AND json_extract(data,'$.status')='pending'",nextDue>0?'פריט בוטל וסכום ההזמנה עודכן; יש לדווח מחדש':'כל פריטי ההזמנה בוטלו',stamp,stamp,'payment-report:'+order.id));
-  if(overpaid==='credit')ops.push(stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),target.id,gross,'זיכוי הפרש '+order.number+' · '+reason,'overpaid-refund:'+a.id+':'+event,stamp),stmt('UPDATE users SET credits=credits+? WHERE id=?',gross,target.id));
-  if(overpaid==='credit'||overpaid==='manual')ops.push(stmt("UPDATE records SET data=json_set(data,'$.overpaid_credit',COALESCE(json_extract(data,'$.overpaid_credit'),0)+?,'$.overpaid_note',?),updated=? WHERE id=?",overpaid==='credit'?gross:0,overpaidNote,stamp,reportId));
+  if(overpaid==='manual')ops.push(stmt("UPDATE records SET data=json_set(data,'$.overpaid_note',?),updated=? WHERE id=?",overpaidNote,stamp,reportId));
   // Two independent claims: publication first, writing later can be refunded once each.
   for(const component of [amount.publication?'publication':'',amount.writing?'writing':''].filter(Boolean))ops.push(stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)','refund:'+a.id+':'+component,'article_refund',target.id,JSON.stringify({order_id:order.id,...refundEntry,component}),stamp,stamp));
-  ops.push(stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',event,actor.id,a.id,'כתבה בוטלה וזוכתה',JSON.stringify({customer_id:target.id,reason,mode:b.mode,amount:gross,destination,demo:!!order.demo,overpaid_action:overpaid||undefined,overpaid_note:overpaidNote||undefined}),stamp));await db().batch(ops);await refreshOrderStatement(order.id);if(charge)await refreshClosedMonth(target.id,charge.month,!!charge.demo);await approveOrderCancel(order,actor,reason,new URL(r.url).origin,a.id);return res({ok:true,amount:gross,destination:open?(charge?'monthly':'unpaid'):destination,...(overpaid?{overpaid_action:overpaid}:{}),...(!order.demo&&(!open&&destination==='wallet'||overpaid==='credit')?{wallet_balance:(await one('SELECT credits FROM users WHERE id=?',target.id))?.credits}:{})});
+  ops.push(stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',event,actor.id,a.id,'כתבה בוטלה וזוכתה',JSON.stringify({customer_id:target.id,reason,mode:b.mode,amount:gross,destination,demo:!!order.demo,overpaid_action:overpaid||undefined,overpaid_note:overpaidNote||undefined}),stamp));await db().batch(ops);await refreshOrderStatement(order.id);
+  // Nothing is left for the card: the reserved wallet part alone settles the order.
+  if(split&&cardNext===0&&leftTotal>0){const fresh=await one('SELECT * FROM orders WHERE id=?',order.id);if(fresh&&!fresh.paid)await completeOrderPayment(fresh,'payment:wallet-only:'+order.id,{amount_cents:0,payment_method:'credits',reference:'יתרה שמורה',payment_date:stamp}).catch(()=>undefined);}
+  // The freed stock slot goes at once to the oldest approved article that was waiting for stock on this site.
+  if(amount.publication&&!keepSupplier)await dispatchStockWaiting(new URL(r.url).origin,a.website_id).catch(()=>undefined);
+  if(charge)await refreshClosedMonth(target.id,charge.month,!!charge.demo);await approveOrderCancel(order,actor,reason,new URL(r.url).origin,a.id);return res({ok:true,amount:gross,destination:open?(charge?'monthly':'unpaid'):destination,...(overpaid?{overpaid_action:overpaid}:{}),...(!order.demo&&(!open&&destination==='wallet'||overpaid==='credit')?{wallet_balance:(await one('SELECT credits FROM users WHERE id=?',target.id))?.credits}:{})});
  }
  if(action==='price'){
   if(b.order_id)assert(b.order_id===order.id,'הפריט אינו שייך להזמנה הזו',409);

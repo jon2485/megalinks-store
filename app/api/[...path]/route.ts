@@ -205,11 +205,15 @@ async function handle(r: Request,access:ResponseAccess) {
         assert(b.status === 'paid' && b.currency === 'ILS' && b.event_id, 'אירוע התשלום אינו תקין');
         const order = await one('SELECT * FROM orders WHERE id=?', b.order_id);
         assert(order && (isCardPayment(order)||((['invoice','bank_transfer','monthly'].includes(order.payment))&&!!await one("SELECT id FROM jobs WHERE id=? AND kind='payment_link' AND status='succeeded'",'payment-link:'+order.id))) && order.status!=='cancelled' && (order.paid||order.status==='pending'||order.payment==='monthly'), 'הזמנה אינה זמינה לתשלום', 409);
-        assert(Number(b.amount_cents) === cardAmount(order), 'סכום התשלום אינו תואם', 409);
+        // The customer may pay through a link made before an item was removed. That money was really charged, so the
+        // order is settled and the difference goes to the wallet. Any other amount is refused.
+        const dueNow=cardAmount(order),got=Number(b.amount_cents),linkJob=await one("SELECT data FROM jobs WHERE id=?",'payment-link:'+order.id),sent:number[]=linkJob?(JSON.parse(linkJob.data||'{}').amounts||[]):[];
+        const surplus=got>dueNow&&Number.isSafeInteger(got)&&sent.includes(got)?got-dueNow:0;
+        assert(got===dueNow||surplus>0, 'סכום התשלום אינו תואם', 409);
         const event = 'payment:' + maxText(b.event_id, 100);
         if (await one('SELECT id FROM records WHERE id=?', event))
             return response({ ok: true, duplicate: true });
-        await completeOrderPayment(order,event,{amount_cents:b.amount_cents,payment_method:'card',reference:maxText(b.event_id,100)});
+        await completeOrderPayment(order,event,{amount_cents:b.amount_cents,payment_method:'card',reference:maxText(b.event_id,100),...(surplus?{surplus_credit:surplus}:{})},surplus?[stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),order.user_id,surplus,'זיכוי הפרש תשלום '+order.number,'payment-surplus:'+order.id,now()),stmt('UPDATE users SET credits=credits+? WHERE id=?',surplus,order.user_id)]:[]);
         await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
         return response({ ok: true });
     }
@@ -396,15 +400,20 @@ if (p[0] === 'cart') {
             if(order.payment==='monthly'){const owner=await one('SELECT * FROM users WHERE id=?',order.user_id);assert(owner,'לקוח לא נמצא',404);const closing=await prepareOrderStatement(order.user_id,order.id,order.total,u.id,new URL(r.url).origin);if(closing.operations.length)await db().batch([financialGuard(owner),...closing.operations]);}
             const job = 'payment-link:' + order.id;
             const prior = await one('SELECT * FROM jobs WHERE id=?', job);
-            if (prior?.status === 'succeeded')
-                return response(JSON.parse(prior.data));
-            if(prior){assert(prior.status==='failed','בקשת הסליקה כבר בטיפול. נסו שוב בעוד רגע',409);const retry=await stmt("UPDATE jobs SET status='writing',updated=? WHERE id=? AND status='failed'",now(),job).run();assert(retry.meta.changes,'בקשת הסליקה כבר בטיפול',409);}else await stmt('INSERT INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)', job, u.id, 'payment_link', 'writing', JSON.stringify({ order_id: order.id }), now(), now()).run();
+            // A link is good only for the amount it was made for. After an item was removed from the unpaid order,
+            // a new link is made for what is left; the amounts already sent out are remembered for the callback.
+            const due=cardAmount(order),priorData=prior?JSON.parse(prior.data||'{}'):{},issued:number[]=Array.isArray(priorData.amounts)?priorData.amounts:[];
+            const stale=prior?.status==='succeeded'&&(priorData.amount_cents===undefined?Number(JSON.parse(order.data).refund_total||0)>0:Number(priorData.amount_cents)!==due);
+            if (prior?.status === 'succeeded' && !stale)
+                return response({payment_url:priorData.payment_url,order_id:order.id});
+            if(stale){const again=await stmt("UPDATE jobs SET status='writing',updated=? WHERE id=? AND status='succeeded'",now(),job).run();assert(again.meta.changes,'בקשת הסליקה כבר בטיפול',409);}
+            else if(prior){assert(prior.status==='failed','בקשת הסליקה כבר בטיפול. נסו שוב בעוד רגע',409);const retry=await stmt("UPDATE jobs SET status='writing',updated=? WHERE id=? AND status='failed'",now(),job).run();assert(retry.meta.changes,'בקשת הסליקה כבר בטיפול',409);}else await stmt('INSERT INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)', job, u.id, 'payment_link', 'writing', JSON.stringify({ order_id: order.id }), now(), now()).run();
             try {
-                const res = await externalFetch(c.url, { method: 'POST', headers: { Authorization: 'Bearer ' + c.secret, 'Content-Type': 'application/json', 'Idempotency-Key': job }, body: JSON.stringify({ event: 'create_payment', order_id: order.id, order_number: order.number, amount_cents: cardAmount(order), currency: 'ILS', customer: JSON.parse(order.data), return_url:new URL('/order-confirmed/'+order.id,r.url).href,cancel_url:new URL('/wallet',r.url).href,callback_url: new URL('/api/payment-callback', r.url).href }) });
+                const res = await externalFetch(c.url, { method: 'POST', headers: { Authorization: 'Bearer ' + c.secret, 'Content-Type': 'application/json', 'Idempotency-Key': job+':'+due }, body: JSON.stringify({ event: 'create_payment', order_id: order.id, order_number: order.number, amount_cents: due, currency: 'ILS', customer: JSON.parse(order.data), return_url:new URL('/order-confirmed/'+order.id,r.url).href,cancel_url:new URL('/wallet',r.url).href,callback_url: new URL('/api/payment-callback', r.url).href }) });
                 assert(res.ok, 'ספק הסליקה דחה את הבקשה', 502);
                 const payload: any = await res.json();
                 const payment_url = externalUrl(payload.payment_url).href;
-                await stmt("UPDATE jobs SET status='succeeded',data=?,updated=? WHERE id=?", JSON.stringify({ payment_url, order_id: order.id }), now(), job).run();
+                await stmt("UPDATE jobs SET status='succeeded',data=?,updated=? WHERE id=?", JSON.stringify({ payment_url, order_id: order.id, amount_cents: due, amounts: [...new Set([...issued,...(priorData.amount_cents!==undefined?[Number(priorData.amount_cents)]:[]),due])] }), now(), job).run();
                 return response({ payment_url });
             }
             catch (e) {

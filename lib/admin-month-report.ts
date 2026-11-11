@@ -5,14 +5,25 @@ import {paymentConfirmed} from './admin-order-buckets';
 /** What we paid for an order's articles. A cancelled article costs nothing: it goes back to the state before
  *  the order, so it adds no cost, no profit and no loss (owner decision, 10.11.2026). Writing that the customer
  *  kept after a publication refund still counts. */
+/** Writing costs ₪0.10 a word (owner, 11.11.2026). Saved on the article at purchase; older articles are worked out
+ *  from the words bought, or from the writing price when the word count was not kept (₪0.15 a word to the customer). */
+export const WRITING_COST_PER_WORD=10;
+export function writingCost(a:Row){
+ if(Number.isSafeInteger(a.writing_cost_cents)&&a.writing_cost_cents>=0)return Number(a.writing_cost_cents);
+ const words=Number(a.editorial_words)>0?Number(a.editorial_words):Math.round(Number(a.editorial_price||0)/15);
+ return Math.max(0,Math.round(words*WRITING_COST_PER_WORD));
+}
 export function purchaseCosts(articles:Row[]){
  let known=0,missing=0;
  for(const a of articles){
-  const writing=Number(a.editorial_price)>0,publicationOff=a.status==='cancelled'||!!a.publication_refunded,writingOff=a.status==='cancelled'||!!a.writing_refunded;
+  // A refund marks the article cancelled, so the parts are read from the refund flags: writing the customer kept
+  // after a publication-only refund still costs, and so does a live article whose supplier payment was kept.
+  const writing=Number(a.editorial_price)>0,refunded=!!a.publication_refunded||!!a.writing_refunded,gone=a.status==='cancelled'&&!refunded;
+  const publicationOff=(gone||!!a.publication_refunded)&&!a.supplier_cost_kept,writingOff=gone||!!a.writing_refunded;
   if(publicationOff&&(!writing||writingOff))continue;
   const cost=a.cost_cents;
   if(!publicationOff){if(a.cost_recorded!==false&&Number.isSafeInteger(cost)&&cost>=0&&(cost>0||a.cost_recorded===true))known+=cost;else missing++;}
-  if(writing&&!writingOff){const writingCost=a.writing_cost_cents;if(Number.isSafeInteger(writingCost)&&writingCost>=0)known+=writingCost;else missing++;}
+  if(writing&&!writingOff)known+=writingCost(a);
  }
  if(!articles.length)missing++;
  return {known,missing,cost:missing?null:known};
