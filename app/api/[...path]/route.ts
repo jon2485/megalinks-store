@@ -1,7 +1,7 @@
 import {supplierDirectory,supplierDetail,supplierSettlements,supplierRequestContext, supplierOverview } from '@/lib/admin-suppliers';
 import {supplierArticles} from '@/lib/admin-content';
 import {adminContent} from '@/lib/admin-content';
-import {prepareOrderStatement} from '@/lib/order-statement';
+import {prepareOrderStatement,refreshOrderStatement} from '@/lib/order-statement';
 import {completeWalletCard} from '@/lib/wallet-card';
 import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
 import {publicationPeriod} from '@/lib/publication-period';
@@ -59,7 +59,7 @@ import { articleDocx } from '@/lib/delivery-docx';
 import { closeMonth } from '@/lib/monthly';
 import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-content';
 import { dispatchArticle } from '@/lib/publication';
-import { siteStock, addStockPackage, linkOrphanSites } from '@/lib/supplier-stock';
+import { siteStock, addStockPackage, linkOrphanSites, releaseSlotStatements } from '@/lib/supplier-stock';
 import { supplierBilling, supplierOrder, supplierPackage, sendOrderSummary, sendPackageStatus, updatePackagePayment } from '@/lib/supplier-orders';
 import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManualSupplierMonths } from '@/lib/supplier-month';
 import { DEFAULT_SUPPLIER_EMAIL } from '@/lib/supplier-presentation';
@@ -229,7 +229,7 @@ async function handle(r: Request,access:ResponseAccess) {
             const url = httpUrl(b.url);
             assert(url, 'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const checked=await checkLink(url,w.url);assert(checked.ok,checked.message,422);assert(a.status==='sent','הכתבה כבר טופלה',409);
             const publication=publicationPeriod();
-            const reportResult=await db().batch([articleGuard(a),stmt('UPDATE tokens SET used=1 WHERE id=? AND used=0', token.id), stmt("UPDATE articles SET status='published',published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?) WHERE id=? AND status='sent'", url, publication.stamp,publication.month,a.id), stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)', uid(), token.user_id, a.id, 'הספק דיווח על פרסום', JSON.stringify({ url }), now())]);
+            const reportResult=await db().batch([articleGuard(a),stmt('UPDATE tokens SET used=1 WHERE id=? AND used=0', token.id), stmt("UPDATE articles SET status='published',published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?,'$.published_at',?) WHERE id=? AND status='sent'", url, publication.stamp,publication.month,publication.stamp,a.id), stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)', uid(), token.user_id, a.id, 'הספק דיווח על פרסום', JSON.stringify({ url }), now())]);
             assert(reportResult[1].meta.changes===1,'קישור הספק כבר נוצל',403);await stmt("UPDATE jobs SET status='completed',updated=? WHERE id=?",now(),'publication:'+a.id).run();await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",a.id).run();await articleMail({...a,published_url:url},'published',new URL(r.url).origin);await syncOrder(a.order_id);
             return response({ ok: true });
         }
@@ -276,7 +276,7 @@ async function handle(r: Request,access:ResponseAccess) {
         if (method==='GET' && query.get('image')==='1') { const f=await one('SELECT * FROM files WHERE id=?',(query.get('secondary')==='1'?article.secondary_image_id:article.image_id)||''); assert(f,'תמונה לא נמצאה',404); const blob=await env.BUCKET?.get(f.key); assert(blob,'תמונה לא נמצאה',404); return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}}); }
         if (method==='GET') return response({delivery:u.role==='admin'?job:supplierDelivery(job),article:{id:article.id,title:article.title,content:await supplierContent(article.content,'/api/supplier-inbox/'+encodeURIComponent(job.id)+'?inline='),image_id:article.image_id,image_credit:article.image_credit,image_credit_url:article.image_credit_url,secondary_image_id:article.secondary_image_id,secondary_image_credit:article.secondary_image_credit,meta_description:article.meta_description,client_notes:article.client_notes,scheduled:article.scheduled||'',status:article.status,cancel_pending:!!article.cancel_pending}});
         if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); const url=job.demo?'':httpUrl(b.url||''); assert(job.demo || url,'יש להזין קישור לפרסום'); if(!job.demo){const w=await website(article.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);}
-            const publication=publicationPeriod();await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?) WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,publication.stamp,publication.month,article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
+            const publication=publicationPeriod();await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?,'$.published_at',?) WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,publication.stamp,publication.month,publication.stamp,article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
             if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':u.role==='admin'?'מנהל דיווח על פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
     }
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
@@ -431,11 +431,17 @@ if (p[0] === 'cart') {
             assert(!['cancelled', 'completed'].includes(order.status), 'ההזמנה כבר נסגרה');
             assert(articles.every(a => !['sent', 'published'].includes(a.status)), 'לא ניתן לבטל כתבה שכבר נשלחה לפרסום');
             assert(!order.paid || order.payment === 'credits' || u.role === 'admin', 'תשלום חיצוני דורש טיפול מנהל');
+            // A reported payment is money the customer says they already sent. Cancelling would hide it from every queue,
+            // so the report must be approved or rejected first (approved: the cancel then records the refund).
+            const pendingReport = await one("SELECT id FROM records WHERE id=? AND json_extract(data,'$.status')='pending'", 'payment-report:' + order.id);
+            assert(!pendingReport, u.role === 'admin' ? 'קיים דיווח תשלום ממתין להזמנה. יש לאשר או לדחות אותו בדיווחי התשלום לפני ביטול ההזמנה.' : 'דיווחתם על תשלום להזמנה הזו. כדי לבטל אותה יש לפנות אלינו, ונטפל גם בכסף ששולם.', 409);
             const b = await json(r);
             if (order.paid && order.payment !== 'credits')
                 assert(b.reference, 'נדרשת אסמכתת החזר חיצוני');
             const refundUser=await one('SELECT * FROM users WHERE id=?',order.user_id);assert(refundUser,'הלקוח לא נמצא',404);
-            const ops = [financialGuard(refundUser),orderGuard(order),stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)', 'cancel:' + order.id, 'cancellation', u.id, '{}', now(), now()), stmt("UPDATE orders SET status='cancelled',updated=? WHERE id=? AND status<>'cancelled'", now(), order.id), stmt("UPDATE articles SET status='cancelled',version=version+1,updated=? WHERE order_id=?", now(), order.id)];
+            const ops = [financialGuard(refundUser),orderGuard(order),stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)', 'cancel:' + order.id, 'cancellation', u.id, '{}', now(), now()), stmt("UPDATE orders SET status='cancelled',updated=? WHERE id=? AND status<>'cancelled'", now(), order.id), stmt("UPDATE articles SET status='cancelled',version=version+1,updated=? WHERE order_id=?", now(), order.id),
+                // Same release as an item refund: a blocked or failed supplier send leaves the delivery-problems queue, and any reserved stock slot returns.
+                ...articles.flatMap(a => releaseSlotStatements(a.id, u.id, 'ההזמנה בוטלה'))];
             if (order.paid && order.payment === 'credits') {
                 const remaining=Math.max(0,order.total-Number(JSON.parse(order.data).paid_refund_total||0));
                 if(remaining)ops.push(stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),order.user_id,remaining,'החזר הזמנה '+order.number,'refund:'+order.id,now()),stmt('UPDATE users SET credits=credits+? WHERE id=?',remaining,order.user_id));
@@ -446,6 +452,7 @@ if (p[0] === 'cart') {
             if (data.coupon && !data.demo)
                 ops.push(stmt('UPDATE coupons SET uses=MAX(0,uses-1) WHERE code=?', data.coupon));
             await db().batch(ops);
+            await refreshOrderStatement(order.id);
             await audit(u, order.id, 'הזמנה בוטלה', { reason: b.reason || '', reference: b.reference || '' });
             return response({ ok: true });
         }
@@ -535,8 +542,12 @@ if (p[0] === 'cart') {
             if(u.role!=='admin'&&JSON.parse(a.data).editorial){assert(next==='admin_review'&&['draft','review','revisions'].includes(a.status)&&writingCustomerEditor(a),'הטקסט עדיין אינו זמין לשליחה; תיקונים שולחים דרך בקשת תיקונים',409);}
             assert(next !== 'cancelled', 'ביטול כתבה נעשה דרך ביטול ההזמנה כדי לשמור על תיעוד התשלום');
             assert((articleTransitions[a.status] || []).includes(next), 'מעבר הסטטוס אינו אפשרי');
+            // A writer's text that needs changes stays with the writer; "revisions" would hand it to the customer as a manager note.
+            assert(!(JSON.parse(a.data).editorial && a.status === 'writing' && next === 'revisions'), 'טקסט של הכותב מוחזר לכותב דרך בקשת התיקונים, לא ללקוח', 409);
+            // A customer sends text for review, or asks for changes on text waiting for them. Pulling back an article that is
+            // already with the supplier (or approved for sending) is the manager's call, because the supplier must be stopped.
             if (u.role !== 'admin')
-                assert(['admin_review', 'revisions'].includes(next), 'המעבר זמין למנהל בלבד', 403);
+                assert(next === 'admin_review' || next === 'revisions' && a.status === 'review', 'המעבר זמין למנהל בלבד', 403);
             const order = await one('SELECT * FROM orders WHERE id=?', a.order_id);
             assert(order&&canWorkOrder(parse(order)!), 'נדרש תשלום מאומת לפני התקדמות');
             assert(plainText(a.content).trim() || ['writing', 'cancelled'].includes(next), 'יש להוסיף תוכן לכתבה');
@@ -549,6 +560,11 @@ if (p[0] === 'cart') {
             const publication=publicationPeriod();if(next==='published')statusData.published_month=publication.month;
             const result = await stmt('UPDATE articles SET status=?,published_url=?,data=?,version=version+1,updated=? WHERE id=? AND version=?', next, url, JSON.stringify(statusData), publication.stamp, a.id, a.version).run();
             assert(result.meta.changes, 'הכתבה עודכנה במקביל', 409);
+            // Pulled back from the supplier: stop the supplier link, free the stock slot and keep the old mail for the log,
+            // so approving again sends a fresh delivery instead of reusing the finished one.
+            if(a.status==='sent'&&next==='revisions'){const recalled=now();await db().batch([...releaseSlotStatements(a.id,u.id,'הכתבה הוחזרה לתיקון'),stmt("UPDATE jobs SET status='requested',updated=? WHERE id=?",recalled,'publication:'+a.id),stmt("UPDATE jobs SET id=id||':recalled:'||?,updated=? WHERE id=?",recalled,recalled,'email:supplier:'+a.id)]);}
+            // Published by the manager: close the supplier side the same way a supplier report does.
+            if(next==='published')await db().batch([stmt("UPDATE jobs SET status='completed',updated=? WHERE id=? AND status IN ('requested','blocked','failed','succeeded')",now(),'publication:'+a.id),stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",a.id)]);
             if(next==='admin_review'||next==='revisions'||next==='published')await articleMail({...a,version:a.version+1,published_url:url},next==='admin_review'?'submitted':next==='revisions'?'revisions':'published',new URL(r.url).origin,maxText(b.note,3000));
             await audit(u, a.id, 'סטטוס: ' + next, { note: maxText(b.note, 3000), url });
             await notify(u, 'article_status', { article_id: a.id, status: next, recipient_email: (await one('SELECT email FROM users WHERE id=?', a.user_id))?.email, recipient_phone: (await one('SELECT phone FROM users WHERE id=?', a.user_id))?.phone });
@@ -799,7 +815,7 @@ if (p[0] === 'cart') {
             if(kind==='ticket')assert(b.payment_method!=='bank_transfer'&&!b.amount_cents,'בקשות הטענה נשלחות דרך הארנק');
             if (kind === 'bundle') b = await normalizeBundle(b);
             const id = uid();
-            const write=stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)', id, kind, u.id, JSON.stringify({ ...b, ...(kind === 'ticket' ? { status: 'open', reply: '' } : {}) }), now(), now());if(bundleVersion!==null)await db().batch([pricingGuard(bundleVersion),write]);else await write.run();
+            const write=stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)', id, kind, u.id, JSON.stringify({ ...b, ...(kind === 'ticket' ? { status: 'open', reply: '', messages: undefined, replied_at: undefined, closed_at: undefined, closed_mail: undefined, closed_by: undefined } : {}) }), now(), now());if(bundleVersion!==null)await db().batch([pricingGuard(bundleVersion),write]);else await write.run();
             await audit(u, id, 'נוצרה רשומת ' + kind,kind==='bundle'?{pricing_warning_acknowledged:b.acknowledge===true}:{});
             return response({ id }, 201);
         }
@@ -838,8 +854,8 @@ if (p[0] === 'cart') {
             let b = await json(r);
             if (kind === 'bundle') b = await normalizeBundle(b, JSON.parse(item.data));
             if (kind === 'ticket' && u.role !== 'admin') {
-                delete b.reply;
-                delete b.status;
+                // The conversation and its team replies are written only by the messages/close routes and the admin.
+                for (const key of ['reply', 'status', 'messages', 'replied_at', 'closed_at', 'closed_mail', 'closed_by']) delete b[key];
             }
             if (kind === 'ticket' && u.role === 'admin') {
                 if (b.status !== undefined) assert(['awaiting_reply', 'answered', 'resolved', 'open', 'closed'].includes(b.status), 'סטטוס פנייה לא תקין');
@@ -1079,9 +1095,9 @@ if (p[0] === 'cart') {
             }
         }
         if (p[1] === 'reports' && method === 'GET') {
-            const totals = await one("SELECT COUNT(*) AS count,COALESCE(SUM(CASE WHEN paid=1 AND status<>'cancelled' THEN total ELSE 0 END),0) AS revenue,SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending FROM orders");
+            const totals = await one("SELECT COUNT(*) AS count,COALESCE(SUM(CASE WHEN paid=1 AND status<>'cancelled' AND COALESCE(json_extract(data,'$.demo'),0)=0 THEN MAX(0,total-COALESCE(json_extract(data,'$.paid_refund_total'),0)) ELSE 0 END),0) AS revenue,SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending FROM orders");
             const statuses = await all('SELECT status,COUNT(*) AS count FROM articles GROUP BY status');
-            const bySite = await all("SELECT w.name,COUNT(*) AS count,SUM(CAST(json_extract(a.data,'$.paid_amount') AS INTEGER)) AS total FROM articles a JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE o.paid=1 GROUP BY w.id ORDER BY count DESC LIMIT 15");
+            const bySite = await all("SELECT w.name,COUNT(*) AS count,SUM(MAX(0,CAST(json_extract(a.data,'$.paid_amount') AS INTEGER)-COALESCE(json_extract(a.data,'$.refund_total'),0))) AS total FROM articles a JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE o.paid=1 AND a.status<>'cancelled' AND COALESCE(json_extract(o.data,'$.demo'),0)=0 GROUP BY w.id ORDER BY count DESC LIMIT 15");
             const confirmedRows=await all(`WITH ${adminOrderCte()} SELECT confirmed_date,total,data FROM classified WHERE paid=1 AND fully_cancelled=0 AND confirmed_date IS NOT NULL AND COALESCE(json_extract(data,'$.demo'),0)=0`),groups=new Map<string,Row>();for(const row of confirmedRows){const month=israelDate(row.confirmed_date).slice(0,7);if(!month)continue;const group=groups.get(month)||{month,count:0,total:0};group.count++;group.total+=Math.max(0,row.total-Number(JSON.parse(row.data).paid_refund_total||0));groups.set(month,group);}const byMonth=[...groups.values()].sort((a,b)=>a.month.localeCompare(b.month));
             return response({ totals, statuses, bySite, byMonth, customers: await one('SELECT COUNT(*) AS n FROM users'), websites: await one('SELECT COUNT(*) AS n FROM websites') });
         }
