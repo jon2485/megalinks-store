@@ -18,7 +18,7 @@ export function siteLabel(site:Row){const raw=String(site?.url||'').trim();if(ra
 export function OrderSites({order}:{order:Row}){const sites=orderSites(order);return <div className="om-sites">{sites[0]?<span className="om-site" dir="ltr" title={sites.map((x:Row)=>siteLabel(x)).join(', ')}>{siteLabel(sites[0])}</span>:<span className="om-muted">אין פריטים</span>}{sites.length>1&&<span className="om-plus"><bdi dir="ltr">+{sites.length-1}</bdi></span>}</div>;}
 export function OrderPublication({o}:{o:Row}){
  const all=Math.max(0,Number(o.article_count||0)-Number(o.fully_refunded_count||0)),done=Math.min(all,Number(o.published_count||0));
- const pending=Number(o.cancel_pending_count)||0,cancel=(pending>0||o.cancel_request_status==='pending')&&<small className="om-cancel-note"><XCircle size={13} aria-hidden="true"/>{o.cancel_request_status==='pending'?'הלקוח ביקש לבטל את ההזמנה':pending===1?'בקשת ביטול לפריט אחד':'בקשות ביטול ל־'+pending+' פריטים'}</small>;
+ const pending=Number(o.cancel_pending_count)||0,cancel=(pending>0||o.cancel_request_status==='pending')&&<small className="om-cancel-note"><XCircle size={13} aria-hidden="true"/>{o.cancel_request_status==='pending'?(o.cancel_request_scope==='article'?'הלקוח ביקש לבטל אתר בהזמנה':'הלקוח ביקש לבטל את ההזמנה'):pending===1?'בקשת ביטול לפריט אחד':'בקשות ביטול ל־'+pending+' פריטים'}</small>;
  if(!all)return cancel||<span className="om-muted">לא רלוונטי</span>;
  return <div className="om-progress">{all<=8&&<span className="om-pips" aria-hidden="true">{Array.from({length:all},(_,i)=><i key={i} className={i<done?'is-on':''}/>)}</span>}<small>{done===all?'הכול פורסם':done+' מתוך '+all+' פורסמו'}</small>{cancel}</div>;
 }

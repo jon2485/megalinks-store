@@ -3,7 +3,7 @@ import {plainText,type Row} from './shared';
 import {writingSubmitted,writingCustomerEditor,writingData} from './writing-workflow';
 import {articleChecks} from './checks';
 import {dispatchArticle} from './publication';
-import {pendingCancelRequest} from './cancel-request';
+import {assertNoCancelRequest} from './cancel-request';
 import {writingReadyMail,writingRevisionMail} from './writing-mail';
 import {dispatchAtFor} from './scheduled-approval';
 export async function writingAction(a:Row,u:Row,b:Row,origin:string,action:string){
@@ -15,7 +15,7 @@ export async function writingAction(a:Row,u:Row,b:Row,origin:string,action:strin
   assert(plainText(a.content).trim(),'יש להוסיף את הטקסט המוכן בעורך');
   assert(['return','publish'].includes(b.action),'בחרו החזרה ללקוח או שליחה לפרסום');
   assert(b.action==='publish'?!!d.publish_without_review:!d.publish_without_review,'הפעולה אינה תואמת לבחירת הלקוח',409);
-  if(b.action==='publish')assert(!await pendingCancelRequest(a.order_id),'הלקוח ביקש לבטל את ההזמנה. יש לאשר או לדחות את הבקשה לפני אישור הכתבה.',409);
+  if(b.action==='publish')await assertNoCancelRequest(a.order_id,a.id);
   if(b.action==='publish'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);}
   next=b.action==='publish'?'approved':'review';d.writing_completed_at=stamp;if(next==='review')d.writing_returned_at=stamp;
   if(next==='approved'){const at=dispatchAtFor(d);if(at&&Date.parse(at)>Date.parse(stamp))d.dispatch_at=at;else delete d.dispatch_at;}

@@ -45,7 +45,7 @@ import {walletAvailable,cardAmount,completeOrderPayment} from '@/lib/split-payme
 import {walletUsageHistory} from '@/lib/wallet-usage';
 import {ledgerView} from '@/lib/ledger-view';
 import {orderSummarySql,fullyCancelledOrderSql} from '@/lib/order-summary';
-import {requestOrderCancel,rejectOrderCancel,approveOrderCancel,pendingCancelRequest} from '@/lib/cancel-request';
+import {requestOrderCancel,rejectOrderCancel,approveOrderCancel,assertNoCancelRequest} from '@/lib/cancel-request';
 import {articleGuard,financialGuard,orderGuard} from '@/lib/monthly-order';
 import {createOrder} from '@/lib/order-create';
 import {accountManagementRoutes} from '@/lib/account-management';
@@ -556,7 +556,7 @@ if (p[0] === 'cart') {
             if(u.role!=='admin'&&JSON.parse(a.data).editorial){assert(next==='admin_review'&&['draft','review','revisions'].includes(a.status)&&writingCustomerEditor(a),'הטקסט עדיין אינו זמין לשליחה; תיקונים שולחים דרך בקשת תיקונים',409);}
             assert(next !== 'cancelled', 'ביטול כתבה נעשה דרך ביטול ההזמנה כדי לשמור על תיעוד התשלום');
             assert((articleTransitions[a.status] || []).includes(next), 'מעבר הסטטוס אינו אפשרי');
-            if (next === 'approved' || next === 'sent') assert(!await pendingCancelRequest(a.order_id), 'הלקוח ביקש לבטל את ההזמנה. יש לאשר או לדחות את הבקשה לפני אישור הכתבה.', 409);
+            if (next === 'approved' || next === 'sent') await assertNoCancelRequest(a.order_id, a.id);
             // A writer's text that needs changes stays with the writer; "revisions" would hand it to the customer as a manager note.
             assert(!(JSON.parse(a.data).editorial && a.status === 'writing' && next === 'revisions'), 'טקסט של הכותב מוחזר לכותב דרך בקשת התיקונים, לא ללקוח', 409);
             // A customer sends text for review, or asks for changes on text waiting for them. Pulling back an article that is

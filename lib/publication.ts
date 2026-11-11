@@ -1,5 +1,5 @@
 import {canWorkOrder} from './payment-state';
-import {pendingCancelRequest} from './cancel-request';
+import {assertNoCancelRequest} from './cancel-request';
 import {articleGuard} from './monthly-order';
 import {sendQueuedMail} from './mail';
 import {one,stmt,parse,db,now,assert,audit,uid,hash} from './server';
@@ -13,7 +13,7 @@ export function supplierSequenceLabel(sequence:number,total:number|null){return 
 export async function dispatchArticle(article:Row,actor:Row,origin:string){
  assert(dispatchDue(article),'הכתבה תישלח לספק ביום שנבחר, ב־7:00 בבוקר',409);
  assert(!article.cancel_pending&&!article.publication_refunded&&article.status!=='cancelled','הכתבה בביטול ואינה זמינה לפרסום',409);
- assert(!await pendingCancelRequest(article.order_id),'הלקוח ביקש לבטל את ההזמנה. יש לאשר או לדחות את הבקשה לפני שליחה לספק.',409);
+ await assertNoCancelRequest(article.order_id,article.id);
  const id='publication:'+article.id;
  let job=await one('SELECT * FROM jobs WHERE id=?',id);
  if(job&&['succeeded','demo','writing','completed','demo_completed'].includes(job.status))return parse(job);

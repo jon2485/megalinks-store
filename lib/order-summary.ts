@@ -17,5 +17,8 @@ export function orderSummarySql(alias='o'){
  (SELECT json_extract(cr.data,'$.reason') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_reason,
  (SELECT json_extract(cr.data,'$.requested_at') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_requested_at,
  (SELECT json_extract(cr.data,'$.decision_note') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_note,
- (SELECT json_extract(cr.data,'$.handled_at') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_handled_at`;
+ (SELECT json_extract(cr.data,'$.handled_at') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_handled_at,
+ (SELECT COALESCE(json_extract(cr.data,'$.scope'),'order') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_scope,
+ (SELECT json_extract(cr.data,'$.article_id') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_article_id,
+ (SELECT json_extract(cr.data,'$.target') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_target`;
 }

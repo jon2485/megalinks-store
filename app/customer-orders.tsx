@@ -2,7 +2,8 @@
 import {OrderItemCancelAction} from './refund-dialog';
 import PaymentAssignment from './payment-assignment';
 import React,{useState} from 'react';
-import CustomerOrderScreen,{CustomerOrderDetail} from './customer-order-screen';
+import {CustomerOrderDetail} from './customer-order-screen';
+import CustomerOrdersSky from './customer-orders-sky';
 import {Download,Search,ChevronDown} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
@@ -52,6 +53,6 @@ export function AdminFinancialHistory({ctx,providedOrders,providedArticles,month
  </section>;
 }
 
-export function CustomerOrdersView(props:{ctx:Ctx;providedOrders?:Row[];providedArticles?:Row[];monthlyOnly?:boolean;customerId?:string}){return props.ctx.user?.role==='admin'||props.ctx.adminMode?<AdminFinancialHistory {...props}/>:<CustomerOrderScreen ctx={props.ctx} providedOrders={props.providedOrders} providedArticles={props.providedArticles}/>;}
+export function CustomerOrdersView(props:{ctx:Ctx;providedOrders?:Row[];providedArticles?:Row[];monthlyOnly?:boolean;customerId?:string}){return props.ctx.user?.role==='admin'||props.ctx.adminMode?<AdminFinancialHistory {...props}/>:<CustomerOrdersSky ctx={props.ctx} providedOrders={props.providedOrders}/>;}
 
 export function FinancialOrderDetails(props:{ctx:Ctx;order:Row;providedArticles?:Row[];monthlyRow?:Row}){return props.ctx.user?.role==='admin'||props.ctx.adminMode?<AdminOrderDetails {...props}/>:<CustomerOrderDetail ctx={props.ctx} order={props.order} providedArticles={props.providedArticles}/>;}

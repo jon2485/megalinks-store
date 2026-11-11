@@ -1070,10 +1070,10 @@ html,body{max-width:100%;overflow-x:clip;}
 @media(min-width:1024px){
  .workspace-page-shell .workspace-site-header{width:auto;margin:16px 20px 0;border-radius:22px;}
  .workspace-site-header-main>.workspace-top-navigation{min-width:0;}
- .workspace-page-shell .workspace-top-navigation-list{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px!important;}
+ .workspace-page-shell .workspace-top-navigation-list{display:grid!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);width:100%;gap:8px!important;}
  .workspace-page-shell .workspace-top-navigation-group{width:100%;}
- .workspace-page-shell .workspace-top-navigation-trigger{width:100%!important;min-width:0;justify-content:space-between;white-space:normal;text-align:center;}
- .workspace-page-shell .workspace-top-navigation-trigger>span:nth-child(2){flex:1;min-width:0;}
+ .workspace-page-shell .workspace-top-navigation-trigger{width:100%!important;min-width:0;justify-content:center;white-space:normal;text-align:center;}
+ .workspace-page-shell .workspace-top-navigation-trigger>span:nth-child(2){flex:0 1 auto;min-width:0;}
 }
 @media(min-width:1024px) and (max-width:1199px){.workspace-page-shell .workspace-top-navigation-trigger{padding-inline:7px!important;font-size:13px!important;}}
 /* Approved azure checkout and writing workspace, with all existing controls. */
