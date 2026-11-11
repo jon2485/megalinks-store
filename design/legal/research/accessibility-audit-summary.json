@@ -916,11 +916,11 @@
    "note": "signature = rule + colours/ratio/size; they reduce to ~13 root causes"
   },
   "contrastNodesNeedingManualReview": 2414,
-  "distinctIssuesForStatement": 17,
+  "distinctIssuesForStatement": 18,
   "wcag20AAclearFailures": 9,
   "bestPracticeOrLaterWcag": 5,
   "dialogsLosingFocusOnClose": 9,
-  "partialOrDebatable": 3
+  "partialOrDebatable": 4
  },
  "topIssues": [
   {
@@ -1052,7 +1052,8 @@
   "text spacing (1.4.12), orientation (1.3.4), voice control, speech input",
   "monthly-account checkout and card/wallet payment variants",
   "the accessibility statement page itself (not wired yet; template read from code only)",
-  "WCAG 2.1/2.2 only partly (informational)"
+  "WCAG 2.1/2.2 only partly (informational)",
+  "image upload in the article editor (L18 found in code only)"
  ],
  "issueIds": {
   "L1": "1.4.3 gradient buttons (white text) 2.0-4.5:1",
@@ -1071,6 +1072,53 @@
   "L14": "2.4.7 risk / 2.4.11 (2.2): focus partly under sticky header - partial",
   "L15": "1.4.13 (2.1): DR/UR popups not closed by Escape",
   "L16": "best practice: unnamed account dialog, phone menu named by logo, English toaster label",
-  "L17": "3.3.1/3.3.2/1.3.5(2.1): browser-language validation messages, unexplained *, no autocomplete in profile"
+  "L17": "3.3.1/3.3.2/1.3.5(2.1): browser-language validation messages, unexplained *, no autocomplete in profile",
+  "L18": "reg. 35B infrastructure / 1.1.1: no image description field in the customer article editor, every image alt=\"תמונה במאמר\" (code only, not run in browser) - debatable"
+ },
+ "legalVerification": {
+  "source": "full texts read on he.wikisource.org on 2026-11-11 (not the official Reshumot; regulations amended up to 5782/2022 on that page, law up to 5784/2024 with amount updates to 5786; compare with Nevo before relying)",
+  "levelA": [
+   "reg 35 definitions (internet service; IS 5568 \"as amended from time to time\", all parts)",
+   "reg 35A(a) AA duty",
+   "reg 35A(c) documents from 26.10.2017; forms",
+   "reg 35A(d) notice + 60 days, alternative adjustments",
+   "reg 35B third-party content + accessible infrastructure (image description field)",
+   "reg 35C apps, 35D video (public body or turnover > 5M)",
+   "reg 35E statement content",
+   "reg 35F exemptions (a)-(j) incl. 100,000 / exempt dealer, 1,000,000 old sites, technological, social network, registered-only <=500, personal-area documents until 31.12.2021",
+   "reg 34 publication duty incl. website",
+   "reg 91 coordinator (25+ employees) and publication of details",
+   "reg 105(b) new service accessible from start",
+   "reg 109(a) standard version in force at time of adjustment",
+   "law 19י public service definition + 2nd schedule (commerce)",
+   "law 19יב(ג) 1.11.2017",
+   "law 19יג undue burden",
+   "law 19מב coordinator",
+   "law 19מג accessibility order; 19מד query to commissioner (60 days)",
+   "law 19מח offence for breaching an order",
+   "law 19נא damages up to 50,000 NIS without proof, CPI-linked from Feb 2005, defences",
+   "law 19נג standing",
+   "law 26ז + 8th schedule administrative fines (2026 amounts)",
+   "class actions law 2nd schedule item 9(1); s.26 limitation tolling",
+   "2019 undue-burden regs reg 3(1),4,5"
+  ],
+  "stillCorD": [
+   "IS 5568 edition (Sept 2023) and its WCAG 2.0 basis / national deviations (C1/C2)",
+   "B2B as \"public service\" (interpretation)",
+   "emails in scope (interpretation)",
+   "current CPI-updated damages amount",
+   "limitation period (D)",
+   "case law on prior notice (C2)"
+  ],
+  "corrected": [
+   "exempt obligor duties are reg 35F(c), not 35E(c)",
+   "personal-area document exemption is reg 35F(f), not \"(ה1)\"; documents from 1.1.2022 must be accessible",
+   "sections 19נד-19סד of the law are repealed: the \"19נח class-action cap\" from a secondary source is wrong",
+   "19מד is a query to the commissioner, not part of the accessibility order (19מג)",
+   "a 300,000 NIS threshold existed (35F(h)) but expired on 26.10.2020",
+   "no \"500,000 NIS temporary exemption\" exists in the texts read",
+   "statement must list coordinator details only if a coordinator is mandatory; \"last updated\" and \"known limitations\" are practice, not in reg 35E",
+   "new: 35F(e) exemption for registered-only services with up to 500 participants (open question for the personal area)"
+  ]
  }
 }
