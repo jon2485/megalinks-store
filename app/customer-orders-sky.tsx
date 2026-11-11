@@ -2,6 +2,7 @@
 import React,{useMemo,useState} from 'react';
 import {ArrowLeft,CalendarDays,ChevronDown,ChevronUp,Download,ExternalLink,FileText,Search,X} from 'lucide-react';
 import {useData} from '@/lib/client';
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
 import {money,type Row} from '@/lib/shared';
 import {effectiveOrderAmounts,orderCancellation,remainingArticleNet} from '@/lib/order-finance';
 import {paymentMethodLabel} from '@/lib/payment-state';
@@ -112,7 +113,7 @@ export default function CustomerOrdersSky({ctx,providedOrders}:{ctx:Ctx;provided
  const chip=(id:Filter,label:string,warn=false)=><button type="button" className={'cos-chip'+(filter===id?' is-on':'')+(warn&&counts[id]?' is-warn':'')} aria-pressed={filter===id} onClick={()=>setFilter(id)}>{label}<b>{counts[id]}</b></button>;
  return <section className="cos" dir="rtl" aria-label="ההזמנות שלי">
   <div className="cos-top"><div className="cos-chips">{chip('all','כל ההזמנות')}{chip('pay','ממתינות לתשלום',true)}{chip('active','בטיפול')}{chip('done','הושלמו')}</div><h2>ההזמנות שלי</h2></div>
-  <div className="cos-tools"><label className="cos-search"><Search size={17} aria-hidden="true"/><input type="search" placeholder="חיפוש מספר הזמנה או אתר" aria-label="חיפוש מספר הזמנה או אתר" value={q} onChange={e=>setQ(e.target.value)}/>{q&&<button type="button" aria-label="ניקוי החיפוש" onClick={()=>setQ('')}><X size={15}/></button>}</label><label className="cos-select"><CalendarDays size={16} aria-hidden="true"/><select value={month} onChange={e=>setMonth(e.target.value)} aria-label="סינון לפי חודש"><option value="">כל החודשים</option>{months.map(m=><option key={m} value={m}>{monthName(m)}</option>)}</select></label></div>
+  <div className="cos-tools"><label className="cos-search"><Search size={17} aria-hidden="true"/><input type="search" placeholder="חיפוש מספר הזמנה או אתר" aria-label="חיפוש מספר הזמנה או אתר" value={q} onChange={e=>setQ(e.target.value)}/>{q&&<button type="button" aria-label="ניקוי החיפוש" onClick={()=>setQ('')}><X size={15}/></button>}</label><Select dir="rtl" value={month||'all'} onValueChange={v=>setMonth(v==='all'?'':v)}><SelectTrigger className="cos-select" aria-label="סינון לפי חודש"><CalendarDays size={16} aria-hidden="true"/><SelectValue/></SelectTrigger><SelectContent position="popper" align="start" sideOffset={6} className="cos-select-menu"><SelectItem value="all">כל החודשים</SelectItem>{months.map(m=><SelectItem key={m} value={m}>{monthName(m)}</SelectItem>)}</SelectContent></Select></div>
   <ErrorBox error={state.error}/>
   {state.loading&&!providedOrders&&!state.data?<p className="cos-muted" role="status">טוען הזמנות…</p>:!orders.length?<p className="cos-empty">ההזמנות שלך יופיעו כאן לאחר הרכישה.</p>:<>
    <div className="cos-cols" aria-hidden="true"><span>הזמנה</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span/></div>

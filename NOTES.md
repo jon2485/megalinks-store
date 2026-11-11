@@ -1020,4 +1020,5 @@ Owner decision: the supplier (without an account) gets all article details and f
 - **Header** - `app/globals.css`: menus share one row whatever their number (admins have four), and the chevron sits next to the label.
 - **Tests:** flow scripts 36/36 and 20/20, browser click-through 24/24 (every new button for customer and admin, Excel download, article link, refund form, reject dialog, header, phone without horizontal scroll), supplier page script OK, no page errors.
 - **לפני העלאה:** nothing temporary in the code.
+- **Follow-ups (same day, local + backup branch, not on Staging yet):** the month filter on "ההזמנות שלי" uses the site's styled select instead of the browser list; the cancel form protects its own text sizes from the site-wide dialog rule (it forced every small text in dialogs to 16px bold); with only one cancellable site the form no longer asks "one site or whole order". Mockups sent and waiting for approval: a cleaner payment-report box in the open order, and "האתרים שלי" as a secondary button under "רכישת פרסום" on desktop.
 

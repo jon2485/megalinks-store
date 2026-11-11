@@ -18,12 +18,13 @@ export function cancelOptions(order:Row,articles:Row[]){
  return {closed,sites:closed?[]:sites,whole,can:!closed&&(whole||sites.length>0)};
 }
 export function CancelRequestDialog({ctx,order,articles,close,done}:{ctx:Ctx;order:Row;articles:Row[];close:()=>void;done?:()=>void}){
- const opts=cancelOptions(order,articles),many=opts.sites.length>1||!opts.whole;
- const [scope,setScope]=useState<'article'|'order'>(opts.whole&&!many?'order':opts.sites.length?'article':'order'),[site,setSite]=useState(opts.sites.length===1?opts.sites[0].id:''),[reason,setReason]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),lock=useRef(false);
+ const opts=cancelOptions(order,articles),choose=opts.whole&&opts.sites.length>1;
+ // One cancellable site with the whole order still open: cancelling that site is the whole order, so no choice is shown.
+ const [scope,setScope]=useState<'article'|'order'>(choose||!opts.whole?'article':'order'),[site,setSite]=useState(opts.sites.length===1?opts.sites[0].id:''),[reason,setReason]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),lock=useRef(false);
  const send=async()=>{if(lock.current)return;if(scope==='article'&&!site){setError('יש לבחור את האתר שתרצו לבטל');return;}if(reason.trim().length<2){setError('יש לכתוב את סיבת הביטול');return;}lock.current=true;setBusy(true);setError('');try{await api('orders/'+encodeURIComponent(order.id)+'/cancel','POST',{scope,article_id:scope==='article'?site:undefined,reason:reason.trim()});done?.();ctx.refresh();close();}catch(e){setError((e as Error).message);}finally{lock.current=false;setBusy(false);}};
  const locked=articles.filter(a=>!opts.sites.includes(a)&&a.status!=='cancelled'&&!a.publication_refunded);
  return <div className="ccr" dir="rtl">
-  {opts.whole&&opts.sites.length>0&&<><div className="ccr-label">מה תרצו לבטל?</div><div className="ccr-choice" role="radiogroup">
+  {choose&&<><div className="ccr-label">מה תרצו לבטל?</div><div className="ccr-choice" role="radiogroup">
    <button type="button" role="radio" aria-checked={scope==='article'} className={'ccr-opt'+(scope==='article'?' is-on':'')} onClick={()=>setScope('article')}><span className="ccr-radio" aria-hidden="true"/><span><b>אתר אחד מההזמנה</b><small>בוחרים את האתר מהרשימה</small></span></button>
    <button type="button" role="radio" aria-checked={scope==='order'} className={'ccr-opt'+(scope==='order'?' is-on':'')} onClick={()=>setScope('order')}><span className="ccr-radio" aria-hidden="true"/><span><b>את כל ההזמנה</b><small>כל האתרים בהזמנה</small></span></button>
   </div></>}

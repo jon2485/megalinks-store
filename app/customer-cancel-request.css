@@ -23,3 +23,14 @@
 .ccr-open{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border:0;border-radius:12px;background:#fff;color:#c23552;box-shadow:inset 0 0 0 1px #f3c1cb;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
 .ccr-open:hover{background:#fff6f8}
 @media(max-width:560px){.ccr-choice{grid-template-columns:1fr}}
+/* The site-wide dialog rule forces every p/small/button in a dialog to 16px bold; keep this form's own scale. */
+[data-slot=dialog-content] .ccr .ccr-label{font-size:14px!important;font-weight:800!important;color:#0c1d33!important}
+[data-slot=dialog-content] .ccr :is(.ccr-opt,.ccr-site){min-height:0;font-size:15px!important;font-weight:400!important}
+[data-slot=dialog-content] .ccr :is(.ccr-opt,.ccr-site) b{font-size:15px!important;font-weight:800!important;color:#0c1d33!important;line-height:1.4!important}
+[data-slot=dialog-content] .ccr :is(.ccr-opt,.ccr-site) small{font-size:13px!important;font-weight:500!important;color:#6a7d94!important;line-height:1.5!important}
+[data-slot=dialog-content] .ccr .ccr-price{font-size:14px!important;font-weight:800!important;color:#0c1d33!important}
+[data-slot=dialog-content] .ccr p.ccr-note,[data-slot=dialog-content] .ccr div.ccr-note{font-size:13.5px!important;font-weight:500!important;line-height:1.65!important;color:#3a4e66!important}
+[data-slot=dialog-content] .ccr .ccr-note b{font-weight:800}
+[data-slot=dialog-content] .ccr p.ccr-error{font-size:14px!important;font-weight:600!important;color:#a3213f!important}
+[data-slot=dialog-content] .ccr .ccr-foot button{font-size:15px!important;font-weight:800!important}
+[data-slot=dialog-content] .ccr textarea{font-size:15px!important;font-weight:500!important}
