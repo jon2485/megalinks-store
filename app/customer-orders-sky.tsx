@@ -83,7 +83,7 @@ function OrderPanel({ctx,order}:{ctx:Ctx;order:Row}){
    <aside className="cos-side">
     <section className="cos-card"><h3>פרטי ההזמנה והתשלום</h3><dl className="cos-facts"><div><dt>סוג ההזמנה</dt><dd>{monthly(o)?'חודשית':'רגילה'}</dd></div><div><dt>{paid(o)?'אמצעי תשלום':'אמצעי התשלום שנבחר'}</dt><dd>{method||'לא תועד'}</dd></div><div><dt>{paid(o)?'תאריך התשלום':'תאריך ההזמנה'}</dt><dd><bdi>{day(paid(o)?(o.paid_date||o.payment_date||o.paid_at):o.created)||'לא תועד'}</bdi></dd></div><div><dt>מצב</dt><dd><PillView p={payPill(o)}/></dd></div></dl>
      {monthly(o)&&o.purchase_closed_at&&!paid(o)&&<p className="cos-muted">ההזמנה נסגרה לרכישות נוספות. התשלום טרם אושר.</p>}
-     {!paid(o)&&!o.demo&&!cancelled&&<div className="cos-pay"><CustomerPaymentReport ctx={ctx} order={o} compact/></div>}
+     {!paid(o)&&!o.demo&&!cancelled&&<div className="cos-pay"><CustomerPaymentReport ctx={ctx} order={o} look="sky"/></div>}
      <div className="cos-doc"><span className="cos-doc-icon"><FileText size={19} aria-hidden="true"/></span><div><b>חשבונית / קבלה</b><small>{o.invoice_file_id?'מצורפת להזמנה · PDF':'טרם צורף מסמך להזמנה'}</small></div>{o.invoice_file_id&&<a className="cos-btn" href={'/api/orders/'+encodeURIComponent(o.id)+'/invoice'} download><Download size={16} aria-hidden="true"/>הורדה</a>}</div>
     </section>
     {updates.length>0&&<section className="cos-card"><h3>עדכונים להזמנה זו</h3><ol className="cos-updates">{updates.slice(0,8).map((u,i)=><li key={i}><i aria-hidden="true"/><div>{u.text}<small><bdi>{day(u.at)}</bdi></small></div></li>)}</ol></section>}

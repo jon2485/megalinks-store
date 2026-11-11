@@ -98,3 +98,22 @@
  .cos-item-site{grid-area:site}.cos-item>div:nth-child(2){grid-area:pill}.cos-price{grid-area:price}
 }
 @media(prefers-reduced-motion:reduce){.cos *{transition:none!important}}
+/* Payment box in the open order (approved mockup 11.11.2026) */
+.pay-sky{display:grid;gap:12px;padding:16px;border-radius:16px;background:#f5f9ff;box-shadow:inset 0 0 0 1px #d8e6f7;color:#0c1d33}
+.pay-sky.is-wait{background:#fffaf0;box-shadow:inset 0 0 0 1px #f3dfb4}
+.pay-sky-top{display:flex;gap:12px;align-items:center}
+.pay-sky-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px #d8e6f7;color:#1673e6;font:800 18px Heebo,Arial,sans-serif}
+.pay-sky.is-wait .pay-sky-ic{color:#a85d00;box-shadow:inset 0 0 0 1px #f3dfb4}
+.pay-sky-top b{display:block;font:800 15px/1.4 Heebo,Arial,sans-serif;color:#0c1d33}
+.pay-sky-top small{display:block;margin-top:2px;font:500 13px/1.5 Heebo,Arial,sans-serif;color:#6a7d94}
+.pay-sky-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border:0;border-radius:13px;background:linear-gradient(180deg,#2f8cff,#1673e6);color:#fff;font:800 15px Heebo,Arial,sans-serif;box-shadow:0 8px 18px -10px #1673e6cc;cursor:pointer;transition:transform .12s ease-out,filter .2s}
+.pay-sky-btn:hover{filter:brightness(1.05)}.pay-sky-btn:active{transform:scale(.98)}
+.pay-sky-btn:focus-visible,.pay-sky-link:focus-visible{outline:3px solid #1673e655;outline-offset:2px}
+.pay-sky-link{justify-self:center;min-height:32px;padding:0 8px;border:0;background:none;color:#0a66c2;font:700 13px Heebo,Arial,sans-serif;cursor:pointer}
+.pay-sky-link:hover{text-decoration:underline}
+.pay-sky-bank{display:grid;gap:0;margin:0;padding:4px 14px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px #d8e6f7}
+.pay-sky-bank>div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #eef3f9;font:500 13.5px/1.5 Heebo,Arial,sans-serif}
+.pay-sky-bank>div:last-child{border-bottom:0}.pay-sky-bank dt{color:#6a7d94}.pay-sky-bank dd{margin:0;font-weight:700;color:#0c1d33;text-align:left}
+.pay-sky-alert{margin:0;padding:10px 12px;border-radius:12px;background:#ffe9ee;color:#a3213f;font:600 13.5px/1.5 Heebo,Arial,sans-serif}
+@media(prefers-reduced-motion:reduce){.pay-sky-btn{transition:none}}
+html body .pay-sky button.pay-sky-link{background:transparent!important;box-shadow:none!important;border:0!important}

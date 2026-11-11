@@ -2,7 +2,7 @@
 import {DialogItems,DialogSlip,OrderAction,OrderExport,OrderFilter,OrderFilters,OrderPager,OrderRecord,OrderSearch,OrderSites,OrderSummary,OrderViews,recentMonths} from './order-list-parts';
 import {OrderPanel} from './admin-order-panel';
 import React,{useState,useRef,useEffect} from 'react';
-import {CalendarDays,CheckCircle2,ChevronDown,Landmark,Send,ShieldCheck,Paperclip,ArrowLeft,XCircle} from 'lucide-react';
+import {CalendarDays,CheckCircle2,ChevronDown,Clock3,Landmark,Send,ShieldCheck,Paperclip,ArrowLeft,XCircle} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
@@ -17,10 +17,22 @@ import {orderDateLabel,orderMoney,orderNumber,orderTimestamp} from './order-pres
 import {paymentReportPresentation,paymentReportPendingMessage} from '@/lib/payment-report-presentation';
 import {paymentMethodLabel} from '@/lib/payment-state';
 function MonthlyCardAction({ctx,order}:{ctx:Ctx;order:Row}){const state=useData('wallet-topups/config',ctx.revision),[busy,setBusy]=useState(false),[error,setError]=useState('');return state.data?.card_enabled?<div><Button disabled={busy} onClick={async()=>{if(busy)return;setBusy(true);setError('');try{const result=await api('orders/'+order.id+'/payment-link','POST',{});window.location.assign(result.payment_url);}catch(e){setError((e as Error).message);setBusy(false);}}}>{busy?'פותח סליקה…':'תשלום החשבון באשראי'}</Button><ErrorBox error={error}/></div>:null;}
-export function CustomerPaymentReport({ctx,order,compact=false}:{ctx:Ctx;order:Row;compact?:boolean}){
+export function CustomerPaymentReport({ctx,order,compact=false,look}:{ctx:Ctx;order:Row;compact?:boolean;look?:'sky'}){
  const state=useData('orders/'+order.id+'/payment-report',ctx.revision,true,15000),report=state.data?.report;
+ const bank=useData('bank-details',ctx.revision,look==='sky').data?.bank,[bankOpen,setBankOpen]=useState(false);
  if(['card','credits_card'].includes(order.payment)||ctx.adminMode||ctx.user?.id!==order.user_id||order.paid||order.settled||order.payment_settled||order.demo||orderCancellation(order)==='full'||effectiveOrderTotal(order)<=0)return null;
  const amount=order.payment==='credits_card'?Number(order.card_amount):effectiveOrderTotal(order);
+ const openReport=()=>ctx.open({kind:'payment-report',title:'דיווח תשלום להזמנה '+order.number,description:'הדיווח יועבר לאישור מנהל',render:(close:()=>void)=><PaymentReportForm ctx={ctx} order={order} amount={amount} close={close}/>});
+ // "ההזמנות שלי" (approved mockup 11.11.2026): one calm box with what is left to pay, one clear action and the bank details on request.
+ if(look==='sky'){
+  if(report?.status==='pending')return <section className="pay-sky is-wait" role="status"><div className="pay-sky-top"><span className="pay-sky-ic" aria-hidden="true"><Clock3 size={19}/></span><div><b>הדיווח התקבל ונבדק</b><small>{paymentMethodLabel({payment:report.payment_method})} · <bdi>{money(report.amount_cents)}</bdi>{report.reference&&<> · אסמכתא <bdi>{report.reference}</bdi></>}. נעדכן אותך כאן ובמייל ברגע שהתשלום יאושר.</small></div></div></section>;
+  const bankTransfer=order.payment!=='monthly';
+  return <section className="pay-sky">{order.payment==='monthly'&&<MonthlyCardAction ctx={ctx} order={order}/>}{report?.status==='rejected'&&<p className="pay-sky-alert" role="alert">הדיווח הקודם נדחה: {report.decision_note}</p>}
+   <div className="pay-sky-top"><span className="pay-sky-ic" aria-hidden="true">₪</span><div><b>{bankTransfer?'נשאר להעביר':'נשאר לשלם'} <bdi>{money(amount)}</bdi></b><small>{bankTransfer?<>העברה בנקאית · כתבו בהערה את מספר ההזמנה <bdi>{order.number}</bdi></>:'חשבון חודשי · אפשר לדווח כאן על תשלום שבוצע'}</small></div></div>
+   <button type="button" className="pay-sky-btn" onClick={openReport}><Send size={17} aria-hidden="true"/>{bankTransfer?'כבר העברתי, לדיווח התשלום':'כבר שילמתי, לדיווח התשלום'}</button>
+   {bank&&<><button type="button" className="pay-sky-link" aria-expanded={bankOpen} onClick={()=>setBankOpen(v=>!v)}>{bankOpen?'הסתרת פרטי חשבון הבנק':'לפרטי חשבון הבנק'}</button>{bankOpen&&<dl className="pay-sky-bank"><div><dt>שם המוטב</dt><dd>{bank.holder}</dd></div><div><dt>בנק</dt><dd>{bank.bank_name} (<bdi>{bank.bank_number}</bdi>)</dd></div><div><dt>סניף</dt><dd><bdi>{bank.branch}</bdi></dd></div><div><dt>מספר חשבון</dt><dd><bdi>{bank.account}</bdi></dd></div></dl>}</>}
+  </section>;
+ }
  if(compact)return <section className="customer-payment-report compact-report">{order.payment==='monthly'&&<MonthlyCardAction ctx={ctx} order={order}/>}{report?.status==='pending'?<div role="status"><p>{paymentReportPendingMessage(report)}</p>{!order.on_account&&order.payment!=='monthly'&&<p>לאחר אישור התשלום, ההזמנה תושלם ותוכלו להתחיל לערוך את התוכן באזור האישי.</p>}</div>:<>{report?.status==='rejected'&&<p role="alert">הדיווח הקודם נדחה: {report.decision_note}</p>}<Button className="simple-report-button" onClick={()=>ctx.open({kind:'payment-report',title:'דיווח תשלום להזמנה '+order.number,description:'הדיווח יועבר לאישור מנהל',render:(close:()=>void)=><PaymentReportForm ctx={ctx} order={order} amount={amount} close={close}/>})}>דיווח תשלום הזמנה זו</Button></>}</section>;
  return <section className="customer-payment-report">{order.payment==='monthly'&&<MonthlyCardAction ctx={ctx} order={order}/>}<strong>ההזמנה עדיין לא שולמה</strong>{report?.status==='pending'?<div role="status"><h3>{paymentReportPendingMessage(report)}</h3><p>{report.payment_method==='card'?'אשראי':'העברה בנקאית'} · {money(report.amount_cents)} · אסמכתא: <bdi>{report.reference}</bdi></p><p>ההזמנה תסומן כשולמה רק אחרי בדיקת התשלום.</p></div>:<>{report?.status==='rejected'&&<p role="alert">הדיווח הקודם נדחה: {report.decision_note}</p>}<p>{order.payment==='credits_card'?'דווחו על תשלום ההשלמה החיצונית. הקרדיט השמור יחויב בעת אישור התשלום.':'כבר שילמתם? שלחו את פרטי התשלום לבדיקה ולאישור.'}</p><Button onClick={()=>ctx.open({kind:'payment-report',title:'דיווח תשלום להזמנה '+order.number,description:'הדיווח יועבר למנהל לאימות קבלת התשלום',render:(close:()=>void)=><PaymentReportForm ctx={ctx} order={order} amount={amount} close={close}/>})}><Send size={18}/>דיווח על תשלום שבוצע</Button></>}</section>;
 }

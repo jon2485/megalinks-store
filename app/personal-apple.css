@@ -386,3 +386,12 @@
 .client-hub.approved-account.personal-apple .ml-update-note{font-size:14px;color:#3d5978;padding:8px 12px;border-radius:12px;background:#fdf3f2}
 /* Desktop: the back-to-top bar sat in the page flow and pushed content down; the phone keeps its floating button */
 @media(min-width:768px){.client-hub .account-return-bar{display:none!important}}
+
+/* "האתרים שלי" sits under "רכישת פרסום" in the hero, desktop and phone (owner approved 11.11.2026).
+   Same width as the purchase button, keeps its teal look; it left the row under the tabs and the phone menu card. */
+.client-hub.approved-account.personal-apple .client-hub-welcome{display:flex!important;flex-direction:column;align-items:stretch;gap:12px}
+.client-hub.approved-account.personal-apple .client-hub-welcome button{justify-content:center}
+.client-hub.approved-account.personal-apple .client-hub-welcome button.personal-hero-sites{margin:0!important;border:0!important;color:#fff!important;background:linear-gradient(180deg,#14a3a8,#0b7f86)!important;box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #003c4140,0 10px 22px -12px #0b7f86b3!important}
+.client-hub.approved-account.personal-apple .client-hub-welcome button.personal-hero-sites:hover{box-shadow:inset 0 1px 0 #ffffff73,0 2px 4px #003c4133,0 16px 32px -12px #0b7f86cc!important}
+.client-hub.approved-account.personal-apple .client-hub-welcome button.personal-hero-sites:hover svg{transform:none}
+.client-hub.approved-account.personal-apple .client-hub-welcome button.personal-hero-sites:focus-visible{outline:3px solid #14a3a866;outline-offset:3px}
