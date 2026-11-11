@@ -4,7 +4,7 @@ import { Check, PenLine, Upload, CreditCard, ChevronDown, MessageCircle } from '
 import { api, useData } from '@/lib/client';
 import { type Row } from '@/lib/shared';
 import { isBankPayment, isCardPayment } from '@/lib/payment-state';
-import { effectiveOrderTotal, orderCancellation } from '@/lib/order-finance';
+import { effectiveOrderAmounts, effectiveOrderTotal, orderCancellation } from '@/lib/order-finance';
 import { PaymentReportForm } from './payment-reports';
 import { ErrorBox, type Ctx } from './workspace';
 import './order-confirmation.css';
@@ -49,8 +49,11 @@ export default function OrderConfirmation({ ctx, id }: { ctx: Ctx; id: string })
     const [busy, setBusy] = useState(false), [error, setError] = useState('');
     if (!order) return <section className="order-confirm" dir="rtl"><div className="oc-wrap"><ErrorBox error={state.error}/>{!state.error && <p role="status" className="oc-loading">טוען את פרטי ההזמנה…</p>}</div></section>;
     const view = confirmationState(order, report?.status), number = String(order.number || '').replace(/^#/, '');
-    const sites = articles.length || Number(order.article_count) || 0, siteWord = sites === 1 ? 'אתר אחד' : sites + ' אתרים';
-    const net = Number(order.subtotal || 0) - Number(order.discount || 0), due = effectiveOrderTotal(order);
+    // After a refund on a paid order the page shows what is left in it, the same numbers as "ההזמנות שלי".
+    const refunded = Number(order.paid_refund_total) > 0 && orderCancellation(order) !== 'full', left = refunded ? effectiveOrderAmounts(order) : null;
+    const live = refunded ? articles.filter((a: Row) => a.status !== 'cancelled' && !a.publication_refunded).length : 0;
+    const sites = live || articles.length || Number(order.article_count) || 0, siteWord = sites === 1 ? 'אתר אחד' : sites + ' אתרים';
+    const net = left ? left.net : Number(order.subtotal || 0) - Number(order.discount || 0), due = effectiveOrderTotal(order);
     const payByCard = async () => { if (busy) return; setBusy(true); setError(''); try { const result = await api('orders/' + order.id + '/payment-link', 'POST', {}); window.location.assign(result.payment_url); } catch (e) { setError((e as Error).message); setBusy(false); } };
     const reportPayment = () => ctx.open({ kind: 'payment-report', title: 'דיווח תשלום להזמנה ' + number, description: 'הדיווח יועבר לאישור מנהל', render: (close: () => void) => <PaymentReportForm ctx={ctx} order={order} amount={due} close={close}/> });
     const toContent = <button type="button" className="oc-btn1" onClick={() => ctx.go('purchased/articles')}><PenLine size={18}/>להכנת התוכן לכתבות</button>;
@@ -119,10 +122,10 @@ export default function OrderConfirmation({ ctx, id }: { ctx: Ctx; id: string })
                     <ul>{rows.map(row => <li key={row.id}><span className="oc-logo">{row.logo ? <img src={row.logo} alt="" loading="lazy"/> : initial(row.name)}</span><span className="oc-name"><b>{row.name}</b><small dir="ltr">{row.url}</small></span><strong className="oc-price">{money(row.price)}</strong></li>)}</ul>
                     <p className="oc-items-note">מחירים לפני מע״מ{Number(order.discount) > 0 ? '. ההנחה מחושבת על כל ההזמנה.' : '.'}</p>
                 </details>}
-                {Number(order.discount) > 0 && <><div className="oc-line"><span>מחיר רגיל</span><strong>{money(order.subtotal)}</strong></div><div className="oc-line is-save"><span>חיסכון</span><strong>−{money(order.discount)}</strong></div></>}
+                {Number(order.discount) > 0 && !left && <><div className="oc-line"><span>מחיר רגיל</span><strong>{money(order.subtotal)}</strong></div><div className="oc-line is-save"><span>חיסכון</span><strong>−{money(order.discount)}</strong></div></>}
                 <div className="oc-line"><span>לפני מע״מ</span><strong>{money(net)}</strong></div>
-                <div className="oc-line"><span>מע״מ {Number(order.vat_percent ?? 18)}%</span><strong>{money(order.vat)}</strong></div>
-                <div className="oc-line is-total"><span>סה״כ</span><strong>{money(order.total)}</strong></div>
+                <div className="oc-line"><span>מע״מ {Number(order.vat_percent ?? 18)}%</span><strong>{money(left ? left.vat : order.vat)}</strong></div>
+                <div className="oc-line is-total"><span>{left ? 'סה״כ אחרי זיכוי' : 'סה״כ'}</span><strong>{money(left ? left.total : order.total)}</strong></div>
             </div>
             <p className="oc-help">שאלה על ההזמנה? <a href={WHATSAPP} target="_blank" rel="noreferrer"><MessageCircle size={15} aria-hidden="true"/>דברו איתנו בוואטסאפ</a> · <bdi>050-750-8850</bdi></p>
             </aside>

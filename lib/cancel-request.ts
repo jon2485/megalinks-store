@@ -64,7 +64,12 @@ export async function rejectOrderCancel(order:Row,u:Row,b:Row,origin:string){
 export async function approveOrderCancel(order:Row,u:Row,note:string,origin:string,articleId?:string){
  const current=await pendingCancelRequest(order.id);if(!current)return;
  if(articleId&&current.scope==='article'&&current.article_id!==articleId)return;
- if(!articleId&&current.scope==='article'){/* a whole-order cancel also settles a one-site request */}
+ // A whole-order request is settled only when nothing is left in the order: cancelling one site of it keeps the
+ // request waiting (and the other sites on hold) until the rest is cancelled too, or the request is rejected.
+ if(articleId&&current.scope!=='article'){
+  const left=await one("SELECT COUNT(*) AS n FROM articles WHERE order_id=? AND status<>'cancelled' AND COALESCE(json_extract(data,'$.publication_refunded'),0)=0",order.id);
+  if(Number(left?.n||0)>0)return;
+ }
  const stamp=now(),result=await stmt("UPDATE records SET data=json_set(data,'$.status','approved','$.decision_note',?,'$.handled_at',?,'$.handled_by',?),updated=? WHERE id=? AND kind='order_cancel_request' AND json_extract(data,'$.status')='pending'",note,stamp,u.id,stamp,cancelRequestId(order.id)).run();
  if(!result.meta.changes)return;
  const customer=await one('SELECT email FROM users WHERE id=?',order.user_id);

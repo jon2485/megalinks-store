@@ -8,6 +8,9 @@ export async function createOrder(user:Row,actor:Row,q:Row,b:Row){
  const adminOrder=!!b.admin_order&&actor.id!==user.id&&actor.role==='admin';
  const prior=await one("SELECT data FROM records WHERE id=?",'purchase:'+user.id+':'+b.idempotency);if(prior)return JSON.parse(prior.data);
  const demo=String(b.payment).startsWith('demo_'),monthly=['monthly','demo_monthly'].includes(b.payment),stamp=now();
+ // A free order (for example a 100% coupon) has nothing to pay. It is settled at once like a wallet purchase,
+ // instead of waiting forever for a bank report of ₪0 that the system cannot accept.
+ if(q.total===0&&!demo&&!monthly&&['invoice','card'].includes(b.payment))b={...b,payment:'credits'};
  const existing=monthly?await openMonthlyOrder(user.id,demo):null;
  if(b.monthly_order_id)assert(existing?.id===b.monthly_order_id,'ההזמנה החודשית השתנתה או נסגרה. רעננו את הסיכום',409);
  if(monthly){const account=await one('SELECT * FROM credit_accounts WHERE user_id=?',user.id);assert(account?.enabled,'החשבון אינו מאושר לחשבון חודשי',403);assert(Number(account[demo?'demo_balance':'balance'])+q.total<=account.credit_limit,'ההזמנה חורגת ממסגרת החשבון החודשי',409);assert(!await one('SELECT id FROM records WHERE id=?','monthly:'+businessMonth()+':'+user.id+':'+(demo?1:0)),'החשבון החודשי כבר נסגר',409);}

@@ -1,18 +1,26 @@
 import {env} from 'cloudflare:workers';
 import {orderCloseEmail} from './order-close-email';
-import {one,all,parse,assert,stmt,db,now,uid} from './server';
+import {one,all,parse,assert,stmt,db,now,uid,setting} from './server';
+import type {Row} from './shared';
 import {financialGuard,orderGuard} from './monthly-order';
 import {orderSummarySql} from './order-summary';
 import {effectiveOrderAmounts,remainingArticleNet,orderCancellation} from './order-finance';
 export const orderStatementId=(orderId:string)=>'order-statement:'+orderId;
 const statementItems=(articles:any[],order:any)=>articles.map(a=>({id:a.id,name:a.website_name||a.data?.website_name||'אתר שנרכש',url:a.data?.website_url||a.website_url||'',date:a.purchased_at||order.created,order_number:order.number,title:a.title||a.topic||'',net:remainingArticleNet(a,order),cancelled:!!(a.publication_refunded||a.writing_refunded||orderCancellation(order)==='full'),reason:a.refund_reason||''}));
+// The PDF prints the bank details the admin saved in settings (the same ones the screens show).
+// The fixed details stay only as a fallback for a system where none were saved yet.
+async function statementBank(){
+ const saved=await setting('bank_details',null) as Row|null;
+ if(saved?.account&&saved?.holder)return {name:[saved.bank_name,saved.bank_number&&'('+saved.bank_number+')'].filter(Boolean).join(' '),branch:String(saved.branch||''),account:String(saved.account),beneficiary:String(saved.holder)};
+ return {name:'בנק פאג״י - פועלי אגודת ישראל',branch:'174',account:'064314',beneficiary:'גרינטק - מגלינקס'};
+}
 export async function prepareOrderStatement(userId:string,orderId:string,expected:number,actorId:string,origin:string){
  const raw=await one(`SELECT o.*,${orderSummarySql()},(SELECT settled FROM monthly_charges c WHERE c.order_id=o.id) AS settled FROM orders o WHERE o.id=? AND o.user_id=?`,orderId,userId);assert(raw,'ההזמנה לא נמצאה אצל לקוח זה',404);
  const saved=parse(await one('SELECT * FROM records WHERE id=?',orderStatementId(orderId)));if(saved?.summary)return {already_closed:true,summary:saved.summary,target:await one('SELECT * FROM users WHERE id=?',userId),operations:[]};
  const order=parse(raw)!,amounts=effectiveOrderAmounts(order);assert(Number.isSafeInteger(expected)&&expected===amounts.total,'סכום ההזמנה השתנה. יש לרענן לפני הפקת PDF',409);
  const target=await one('SELECT * FROM users WHERE id=?',userId);assert(target,'הלקוח לא נמצא',404);
  const articles=(await all('SELECT a.*,w.name AS website_name,w.url AS website_url FROM articles a LEFT JOIN websites w ON w.id=a.website_id WHERE a.order_id=? ORDER BY a.updated,a.id',orderId)).map(a=>parse(a)!);assert(articles.length,'אין פריטים בהזמנה',409);
- const stamp=now(),summary={document_type:'order',order_id:order.id,order_number:order.number,order_date:order.created,order_type:order.on_account||order.payment==='monthly'?'monthly':'regular',month:order.billing_month||order.created.slice(0,7),closed_at:stamp,demo:!!order.demo,vat_percent:order.vat_percent??18,paid:!!(order.paid||order.settled),customer:{id:target.id,name:target.name,company:target.company,email:target.email},items:statementItems(articles,order),...amounts,bank:{name:'בנק פאג״י - פועלי אגודת ישראל',branch:'174',account:'064314',beneficiary:'גרינטק - מגלינקס'}};
+ const stamp=now(),summary={document_type:'order',order_id:order.id,order_number:order.number,order_date:order.created,order_type:order.on_account||order.payment==='monthly'?'monthly':'regular',month:order.billing_month||order.created.slice(0,7),closed_at:stamp,demo:!!order.demo,vat_percent:order.vat_percent??18,paid:!!(order.paid||order.settled),customer:{id:target.id,name:target.name,company:target.company,email:target.email},items:statementItems(articles,order),...amounts,bank:await statementBank()};
  const operations=[orderGuard(raw),stmt("UPDATE orders SET data=json_set(data,'$.purchase_closed_at',?,'$.purchase_closed_by',?),updated=? WHERE id=?",stamp,actorId,stamp,orderId),stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',orderStatementId(orderId),'order_statement',userId,JSON.stringify({order_id:orderId,summary}),stamp,stamp),stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),actorId,orderId,'הזמנה נסגרה לרכישות והופק סיכום PDF',JSON.stringify({amount:amounts.total,customer_id:userId}),stamp),stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)','email:order-statement:'+orderId,userId,'email','requested',JSON.stringify(orderCloseEmail(summary,origin)),stamp,stamp)];
  return {already_closed:false,summary,target,operations};
 }
