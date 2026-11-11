@@ -1,6 +1,6 @@
 import {supplierLateSql} from './writing-workflow';
 import {monthlySupplierArticle} from './supplier-inventory';
-import {one,all,setting,now,parse,stmt,assert,audit} from './server';
+import {one,all,setting,now,parse,stmt,assert,audit,connection as integrationConnection} from './server';
 import type {Row} from './shared';
 import {fullyCancelledOrderSql} from './order-summary';
 import {adminAreas} from './admin-navigation';
@@ -54,7 +54,7 @@ export async function adminControlCenter(){
  // Queue units may overlap. Category badges count distinct actionable records, not sums.
  if(syncAttention)taskSources.push("SELECT 'sync','sync:catalog'");
  taskSources.push(`SELECT 'supplier_due','settlement:'||settlement_key FROM (SELECT ${supplierKey} AS settlement_key,SUM(COALESCE(json_extract(a.data,'$.cost_cents'),0)) AS amount,(SELECT MAX(COALESCE(json_extract(r.data,'$.amount_paid'),0)) FROM records r WHERE r.kind='supplier_payment' AND json_extract(r.data,'$.settlement_key')=${supplierKey}) AS paid FROM articles a JOIN orders o ON o.id=a.order_id WHERE ${monthlySupplierArticle} AND a.status='published' AND COALESCE(json_extract(o.data,'$.demo'),0)=0 GROUP BY ${supplierKey}) WHERE amount>COALESCE(paid,0)`);
- const connection=await setting('integration_email',{}),emailReady=!!(connection.enabled&&connection.url&&connection.secret);
+ const connection=await integrationConnection('email').catch(()=>({} as Row)),emailReady=!!(connection.enabled&&connection.url&&connection.secret);
  if(!emailReady)taskSources.push("SELECT 'mail','connection:email'");
  const memberships=new Map<string,Set<string>>();
  for(const [page,ids] of Object.entries(adminPageQueues))memberships.set(page,new Set(ids));

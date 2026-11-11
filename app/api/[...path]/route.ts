@@ -169,10 +169,10 @@ async function handle(r: Request,access:ResponseAccess) {
         assert(!origin || origin === new URL(r.url).origin, 'מקור הבקשה אינו מורשה', 403);
     }
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
-    if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin)});}
+    if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin)});}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
-    if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&r.headers.get('authorization')==='Bearer '+key,'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
+    if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
     const knowledgePublic=await knowledgePublicRoutes(r,p);if(knowledgePublic)return knowledgePublic;
     if(p[0]==='catalog-logo'&&p[1]&&method==='GET'){
