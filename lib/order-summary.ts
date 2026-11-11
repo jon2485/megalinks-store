@@ -12,5 +12,10 @@ export function orderSummarySql(alias='o'){
  (SELECT COUNT(*) FROM articles a WHERE a.order_id=${alias}.id) AS article_count,
  (SELECT COUNT(*) FROM articles a WHERE a.order_id=${alias}.id AND COALESCE(json_extract(a.data,'$.publication_refunded'),0)=1 AND (COALESCE(json_extract(a.data,'$.editorial_price'),0)=0 OR COALESCE(json_extract(a.data,'$.writing_refunded'),0)=1)) AS fully_refunded_count,
  (SELECT COUNT(*) FROM articles a WHERE a.order_id=${alias}.id AND (COALESCE(json_extract(a.data,'$.publication_refunded'),0)=1 OR COALESCE(json_extract(a.data,'$.writing_refunded'),0)=1)) AS refunded_count,
- (SELECT COUNT(*) FROM articles a WHERE a.order_id=${alias}.id AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=1) AS cancel_pending_count`;
+ (SELECT COUNT(*) FROM articles a WHERE a.order_id=${alias}.id AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=1) AS cancel_pending_count,
+ (SELECT json_extract(cr.data,'$.status') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_status,
+ (SELECT json_extract(cr.data,'$.reason') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_reason,
+ (SELECT json_extract(cr.data,'$.requested_at') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_requested_at,
+ (SELECT json_extract(cr.data,'$.decision_note') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_note,
+ (SELECT json_extract(cr.data,'$.handled_at') FROM records cr WHERE cr.id='cancel-request:'||${alias}.id AND cr.kind='order_cancel_request') AS cancel_request_handled_at`;
 }

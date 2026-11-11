@@ -134,3 +134,6 @@
 .ml-update-day:first-child{margin-top:0}
 .ml-update-day:after{content:"";height:1px;flex:1;background:var(--account-line)}
 .ml-update-day time{font:inherit;color:inherit}
+
+.ml-update-ready .ml-update-image{background:#eaf4ff;color:#1559b3}.ml-update-ready .ml-update-status{color:#1559b3}
+.ml-update-cancel_request .ml-update-image{background:#fff7e7;color:#805400}.ml-update-cancel_request .ml-update-status{color:#805400}

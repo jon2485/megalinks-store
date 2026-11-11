@@ -1,0 +1,7 @@
+.customer-cancel-request{margin-top:16px;padding:14px 16px;border:1px solid #d8e4ef;border-radius:14px;background:#fff}
+.customer-cancel-request>summary{cursor:pointer;font-weight:700;color:#ad2545}
+.customer-cancel-request p{margin:8px 0 0}
+.customer-cancel-request-status{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.customer-cancel-request-field{display:grid;gap:6px;margin:12px 0}
+.customer-cancel-request-field textarea{width:100%;border:1px solid #c9d8e6;border-radius:10px;padding:10px;font:inherit;resize:vertical}
+.customer-cancel-request-error{color:#ad2545;margin:0 0 8px}

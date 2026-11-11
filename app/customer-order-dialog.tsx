@@ -11,6 +11,7 @@ import {exportSpreadsheet} from '@/lib/office';
 import {type Ctx} from './workspace';
 import {customerOrderStatusLabel,orderDate} from './customer-order-screen';
 import {CustomerPaymentReport} from './payment-reports';
+import {CustomerCancelRequest} from './customer-cancel-request';
 import SiteReference from './site-reference';
 import {orderTimestamp} from './order-presentation';
 import './customer-order-reference.css';
@@ -47,6 +48,7 @@ export default function CustomerOrderDialog({ctx,order,articles}:{ctx:Ctx;order:
    <dl className="customer-order-glass-totals"><div><dt>לפני מע״מ</dt><dd><bdi>{money(amounts.net)}</bdi></dd></div><div><dt>מע״מ ({order.vat_percent??18}%)</dt><dd><bdi>{money(amounts.vat)}</bdi></dd></div><div><dt>{refunded>0?'סכום לאחר זיכויים':'סה״כ לתשלום'}</dt><dd><bdi>{money(amounts.total)}</bdi></dd></div></dl>
    <details className="customer-reference-more"><summary>פרטים נוספים וייצוא</summary><p className="customer-finance-note">מחירי הפריטים לפני מע״מ; שירות כתיבה נכלל אם נרכש.</p><ul>{articles.map(a=><li key={a.id}><strong>{a.website_name||ctx.catalog?.find(w=>w.id===a.website_id)?.name||'אתר'}</strong><span>{a.title||a.topic||'טרם נוספה כותרת'}</span><time dateTime={a.purchased_at||order.created}>{orderTimestamp(a.purchased_at||order.created)}</time></li>)}</ul><p className="customer-finance-note">{paid?'שולם במקור':'סכום ההזמנה'}: <bdi>{money(paid?order.total:amounts.total)}</bdi></p><Button type="button" variant="outline" onClick={exportOrder}><Download size={18} aria-hidden="true"/>ייצוא לאקסל</Button></details>
    {!paid&&!order.demo&&!cancelled&&<CustomerPaymentReport ctx={ctx} order={order} compact/>}
+   <CustomerCancelRequest ctx={ctx} order={order} articles={articles}/>
   </div>
   <footer className="customer-order-glass-actions">{order.invoice_file_id?<><a className="customer-finance-primary" href={'/api/orders/'+order.id+'/invoice'} target="_blank" rel="noopener noreferrer"><FileText size={21} aria-hidden="true"/>צפייה בחשבונית</a><a href={'/api/orders/'+order.id+'/invoice'} download><Download size={20} aria-hidden="true"/>הורדה</a></>:<>{paid&&!order.demo&&<span className="customer-finance-note">חשבונית / קבלה טרם צורפה</span>}<Button type="button" variant="outline" onClick={exportOrder}><Download size={18} aria-hidden="true"/>ייצוא לאקסל</Button></>}</footer>
  </section>;

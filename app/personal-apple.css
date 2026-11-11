@@ -368,6 +368,9 @@
 .client-hub.approved-account.personal-apple :is(.ml-update-credit,.ml-update-payment) .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#2fc06b,#1a9a52);box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0c4f2a40,0 8px 20px -10px #1a9a52b3}
 .client-hub.approved-account.personal-apple .ml-update-cancelled .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#ef5a50,#c4302b);box-shadow:inset 0 1px 0 #ffffff4d,0 1px 2px #6b141040,0 8px 20px -10px #c4302bb3}
 .client-hub.approved-account.personal-apple .ml-update-revision .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#ffb547,#f08c00);box-shadow:inset 0 1px 0 #ffffff66,0 1px 2px #6b3d0040,0 8px 20px -10px #f08c00b3}
+.client-hub.approved-account.personal-apple .ml-update-ready .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#2a86f0,#1673e6);box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0a3c8c40,0 8px 20px -10px #1673e6b3}
+.client-hub.approved-account.personal-apple .ml-update-cancel_request .ml-update-action [data-slot=button]{background:linear-gradient(180deg,#ffb547,#f08c00);box-shadow:inset 0 1px 0 #ffffff66,0 1px 2px #6b3d0040,0 8px 20px -10px #f08c00b3}
+.client-hub.approved-account.personal-apple .ml-update-ready .ml-update-status{background:#eaf4ff;color:#1559b3}.client-hub.approved-account.personal-apple .ml-update-cancel_request .ml-update-status{background:#fff2df;color:#9a5800}
 .client-hub.approved-account.personal-apple .ml-update-revision{box-shadow:0 0 0 1.5px #f08c0059,0 12px 26px -18px #f08c0099}
 @media(hover:hover) and (pointer:fine){.client-hub.approved-account.personal-apple .ml-update .ml-update-action [data-slot=button]:hover{color:#fff;filter:brightness(1.06);transform:translateY(-1px)}}
 

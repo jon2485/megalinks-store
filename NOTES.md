@@ -978,3 +978,21 @@ Owner approved `docs/mockups/lobby-v1.html` and three decisions: the folding "ת
   - Lower: old `/lobby-*` addresses still open; `/supplier-finance` gives suppliers an error; some tabs don't keep their place on reload; a rejected seller request still creates a seller record; checkout offers card while the provider is off (fails cleanly).
 - **לפני העלאה:** nothing temporary in the code. The local QA runner lives outside the repository.
 - **Next:** owner reviews the summary and the local preview; deploy to Staging only after approval.
+
+## 11.11.2026 (2): Owner's answers to the open questions, built locally
+
+The owner answered the five questions. What was decided and built:
+
+- **1. Cancellation needs admin approval.** A customer never cancels alone. `POST orders/:id/cancel` from a non-admin now saves a request (`records` id `cancel-request:<orderId>`, kind `order_cancel_request`, `lib/cancel-request.ts`) and changes nothing else. The admin approves (the existing whole-order cancel runs and closes the request) or rejects with a note (`POST orders/:id/cancel-request/reject`); the customer sees the note and can ask again.
+  - Customer: "בקשה לביטול ההזמנה" (reason required) at the bottom of the open order in "ההזמנות שלי" and in the order dialog (`app/customer-cancel-request.tsx`); feed items "בקשת הביטול נשלחה למנהל" / "בקשת הביטול לא אושרה" with the note; emails on reject and approve.
+  - Admin: work-center row "בקשת ביטול מהלקוח" (urgent lane, opens the order); orders list label and the "בקשות ביטול" filter; banner + dialog on the order page (`app/admin-cancel-request.tsx`); email to admins on a new request.
+  - While a request waits, an article of that order can't be approved or sent to the supplier (manual, writer-publish and scheduled), so nothing goes out before the decision.
+  - Order fields `cancel_request_*` come from `orderSummarySql` and are allowed to the customer in `lib/customer-privacy.ts`.
+- **2. Withdraw a cancellation.** Covered by 1: the admin rejects the request and it returns to the customer.
+- **3. Supplier link check.** `verifyPublishedArticle` (`lib/checks.ts`) runs on the supplier token report and the supplier/seller inbox: the page must open (same site domain), hold every external link that was in the article (ignoring www, trailing slash and utm), and its title / h1 / og:title must share at least 60% of the article title words (or the body 80%). Otherwise the supplier gets a clear Hebrew error and the article stays "sent". The admin's manual "published" keeps the old simple check, so the admin can still close a case when a site blocks bots.
+- **4. Text ready.** The "המאמר שלכם מוכן לבדיקה" email already existed. Added the customer feed item "הטקסט מוכן לאישורך" with a button to open the text (`lib/client-updates.ts`, `app/client-updates.tsx`). The admin still writes and returns the text; no writer role.
+- **5. Locked after approval.** The API refuses a customer edit of an approved article (409, "הכתבה אושרה לפרסום ואי אפשר לשנות אותה"). The admin can still edit. Editing while it waits for review keeps the old behaviour (back to draft); the editor was already locked in the UI.
+- **6. Articles waiting for a brief:** stay hidden from the admin, as the owner wants.
+- **Tests:** a new runtime script (outside the repo) passes 36/36: request, duplicate, other customer, reject/re-ask/approve, work center, orders filter, dispatch block, edit lock, the four link cases (404, missing link, wrong topic, other domain) and the good page, text-ready item and email, no leak to another customer. `tsc` clean. All 140 repo tests: no test fails that did not already fail on the previous commit. Screens checked in the browser (customer order, customer feed, admin dialog).
+- **לפני העלאה:** nothing temporary in the code. For local link checks only, the container has a hosts entry `qab-pub.example.net` and a small fake site on port 80 (outside the repo).
+- **Next:** owner reviews in the local preview; commit is local only; push and Staging deploy only after approval.

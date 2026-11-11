@@ -7,6 +7,7 @@ import {paymentMethodLabel} from '@/lib/payment-state';
 import type {Ctx} from './workspace';
 import SiteReference from './site-reference';
 import {CustomerPaymentReport} from './payment-reports';
+import {CustomerCancelRequest} from './customer-cancel-request';
 
 function dateLabel(value:string){
  if(!value)return 'לא תועד';
@@ -68,5 +69,6 @@ export default function CustomerPaymentDetail({ctx,order:o,items}:{ctx:Ctx;order
    <div className="order-payment-document-name"><FileText size={30} aria-hidden="true"/><div><h3>{facts.documentTitle}</h3><p>{o.invoice_file_id?'המסמך שצורף להזמנה · PDF':'טרם צורף מסמך להזמנה'}{o.invoice_file_id&&o.invoice_document_number&&<> · <bdi>{o.invoice_document_number}</bdi></>}</p></div></div>
    {o.invoice_file_id&&<div className="order-payment-document-actions"><a className="order-payment-action is-primary" href={invoiceUrl+'?view=inline'} target="_blank" rel="noopener noreferrer"><Eye size={19} aria-hidden="true"/>{o.invoice_document_type==='receipt'?'צפייה בקבלה':'צפייה בחשבונית'}<span className="sr-only"> בחלון חדש</span></a><a className="order-payment-action" href={invoiceUrl} download><Download size={19} aria-hidden="true"/>הורדה</a></div>}
   </section>
+  <CustomerCancelRequest ctx={ctx} order={o} articles={items}/>
  </div>;
 }

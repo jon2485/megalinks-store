@@ -99,7 +99,7 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  function commit(change:Partial<typeof initial>){setRowError(null);setFoundAll(false);setSaved(s=>({...s,...change,page:change.page??1,scroll:0}));}
  function refresh(){refreshing.current=true;setRefreshed(false);ctx.refresh();}
  function open(key:string,page:string,preset?:[string,unknown]){if(preset)saveAdminViewState(preset[0],preset[1]);setOpening(key);saveAdminViewState('updates',{...saved,scroll:window.scrollY});ctx.go(page);later(()=>setOpening(''),4000);}
- function openRow(row:Row,key:string){if(row.kind==='cancellation'&&row.resource_id){openCancelFocus(ctx,row.resource_id);return;}open(key,row.page,row.kind==='topup'?['topups-search',row.detail||row.user_name]:undefined);}
+ function openRow(row:Row,key:string){if(row.kind==='cancellation'&&row.resource_id&&!String(row.id).startsWith('cancel-request:')){openCancelFocus(ctx,row.resource_id);return;}open(key,row.page,row.kind==='topup'?['topups-search',row.detail||row.user_name]:undefined);}
  function openTask(def:TaskDef,t:Row){const first:Row|undefined=t.rows?.[0];if(t.total===1&&first&&!def.list)return openRow(first,'task:'+def.id);open('task:'+def.id,def.page,def.preset);}
  function openPrices(){ctx.open({title:'שינויי מחירים לבדיקה',description:'שינויים במחירון שטרם נבדקו',render:(close:()=>void)=><PriceReview ctx={ctx} queues={queues} close={close}/>});}
  function jump(id:string){setFlash(id);later(()=>setFlash(f=>f===id?'':f),1200);const el=document.getElementById('lb-g-'+id);el?.scrollIntoView({behavior:still()?'auto':'smooth',block:'start'});el?.querySelector<HTMLElement>('h3')?.focus({preventScroll:true});}

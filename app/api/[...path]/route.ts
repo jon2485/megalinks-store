@@ -45,6 +45,7 @@ import {walletAvailable,cardAmount,completeOrderPayment} from '@/lib/split-payme
 import {walletUsageHistory} from '@/lib/wallet-usage';
 import {ledgerView} from '@/lib/ledger-view';
 import {orderSummarySql,fullyCancelledOrderSql} from '@/lib/order-summary';
+import {requestOrderCancel,rejectOrderCancel,approveOrderCancel,pendingCancelRequest} from '@/lib/cancel-request';
 import {articleGuard,financialGuard,orderGuard} from '@/lib/monthly-order';
 import {createOrder} from '@/lib/order-create';
 import {accountManagementRoutes} from '@/lib/account-management';
@@ -53,7 +54,7 @@ import {minimumWarning,customerPrice} from '@/lib/pricing-rules';
 import {saveCatalogBatch} from '@/lib/catalog-bulk';
 import {financeRoutes,isTopUp} from '@/lib/finance';
 import { workflowRoutes } from '@/lib/workflow-routes';
-import { articleChecks, checkLink } from '@/lib/checks';
+import { articleChecks, checkLink, verifyPublishedArticle } from '@/lib/checks';
 import { writingRequestMail, articleMail, queueMail } from '@/lib/mail';
 import { articleDocx } from '@/lib/delivery-docx';
 import { closeMonth } from '@/lib/monthly';
@@ -227,7 +228,7 @@ async function handle(r: Request,access:ResponseAccess) {
             const b = await json(r);
             assert(!JSON.parse(a.data).cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409);
             const url = httpUrl(b.url);
-            assert(url, 'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const checked=await checkLink(url,w.url);assert(checked.ok,checked.message,422);assert(a.status==='sent','הכתבה כבר טופלה',409);
+            assert(url, 'יש להזין קישור לפרסום');assert(a.status==='sent','הכתבה כבר טופלה',409);const w=await website(a.website_id,true);const checked=await verifyPublishedArticle(url,w.url,a);assert(checked.ok,checked.message,422);
             const publication=publicationPeriod();
             const reportResult=await db().batch([articleGuard(a),stmt('UPDATE tokens SET used=1 WHERE id=? AND used=0', token.id), stmt("UPDATE articles SET status='published',published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?,'$.published_at',?) WHERE id=? AND status='sent'", url, publication.stamp,publication.month,publication.stamp,a.id), stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)', uid(), token.user_id, a.id, 'הספק דיווח על פרסום', JSON.stringify({ url }), now())]);
             assert(reportResult[1].meta.changes===1,'קישור הספק כבר נוצל',403);await stmt("UPDATE jobs SET status='completed',updated=? WHERE id=?",now(),'publication:'+a.id).run();await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",a.id).run();await articleMail({...a,published_url:url},'published',new URL(r.url).origin);await syncOrder(a.order_id);
@@ -275,7 +276,7 @@ async function handle(r: Request,access:ResponseAccess) {
         if (method==='GET' && query.get('inline')){const image=(await inlineImages(article.content)).find(i=>i.id===query.get('inline'));assert(image,'התמונה אינה חלק מהמשלוח',404);const f=await one('SELECT * FROM files WHERE id=?',image.id);assert(f,'התמונה לא נמצאה',404);const blob=await env.BUCKET?.get(f.key);assert(blob,'התמונה לא נמצאה',404);return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}});}
         if (method==='GET' && query.get('image')==='1') { const f=await one('SELECT * FROM files WHERE id=?',(query.get('secondary')==='1'?article.secondary_image_id:article.image_id)||''); assert(f,'תמונה לא נמצאה',404); const blob=await env.BUCKET?.get(f.key); assert(blob,'תמונה לא נמצאה',404); return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}}); }
         if (method==='GET') return response({delivery:u.role==='admin'?job:supplierDelivery(job),article:{id:article.id,title:article.title,content:await supplierContent(article.content,'/api/supplier-inbox/'+encodeURIComponent(job.id)+'?inline='),image_id:article.image_id,image_credit:article.image_credit,image_credit_url:article.image_credit_url,secondary_image_id:article.secondary_image_id,secondary_image_credit:article.secondary_image_credit,meta_description:article.meta_description,client_notes:article.client_notes,scheduled:article.scheduled||'',status:article.status,cancel_pending:!!article.cancel_pending}});
-        if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); const url=job.demo?'':httpUrl(b.url||''); assert(job.demo || url,'יש להזין קישור לפרסום'); if(!job.demo){const w=await website(article.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);}
+        if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); const url=job.demo?'':httpUrl(b.url||''); assert(job.demo || url,'יש להזין קישור לפרסום'); if(!job.demo){const w=await website(article.website_id,true);const check=await verifyPublishedArticle(url,w.url,article);assert(check.ok,check.message,422);}
             const publication=publicationPeriod();await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?,'$.published_at',?) WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,publication.stamp,publication.month,publication.stamp,article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
             if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':u.role==='admin'?'מנהל דיווח על פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
     }
@@ -426,6 +427,9 @@ if (p[0] === 'cart') {
             await audit(u, order.id, 'תשלום אומת ידנית', { method:'bank_transfer' });
             return response({ ok: true });
         }
+        // A customer only asks: the admin approves (the cancel below) or rejects the request.
+        if (p[2] === 'cancel' && method === 'POST' && u.role !== 'admin') return response(await requestOrderCancel(order, u, await json(r), new URL(r.url).origin));
+        if (p[2] === 'cancel-request' && p[3] === 'reject' && method === 'POST') return response(await rejectOrderCancel(order, u, await json(r), new URL(r.url).origin));
         if (p[2] === 'cancel' && method === 'POST') {
             const articles = await all(`SELECT a.*,${articleCustomerColumns},w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id ${articleCustomerJoins} WHERE a.order_id=?`, order.id);
             assert(!['cancelled', 'completed'].includes(order.status), 'ההזמנה כבר נסגרה');
@@ -454,6 +458,7 @@ if (p[0] === 'cart') {
             await db().batch(ops);
             await refreshOrderStatement(order.id);
             await audit(u, order.id, 'הזמנה בוטלה', { reason: b.reason || '', reference: b.reference || '' });
+            await approveOrderCancel(order, u, maxText(b.reason, 1500), new URL(r.url).origin);
             return response({ ok: true });
         }
     }
@@ -502,6 +507,8 @@ if (p[0] === 'cart') {
             if(u.role!=='admin'&&writingSubmitted(a))assert(['draft','review','revisions'].includes(a.status)&&writingCustomerEditor(a),'הכתבה בטיפול אצל עורך התוכן או כבר נשלחה לאישור',409);
             const b = await json(r);
             assert(!['published', 'cancelled', 'sent','demo_completed','scheduled'].includes(a.status), 'הכתבה סגורה לעריכה. כדי לשנות תזמון יש לבטל תחילה את השליחה המתוזמנת');
+            // Owner rule: once the admin approved the article, the customer can no longer change it.
+            assert(u.role==='admin'||a.status!=='approved','הכתבה אושרה לפרסום ואי אפשר לשנות אותה. לשינוי יש לפנות אלינו.',409);
             assert(Number(b.version) === a.version, 'הכתבה עודכנה במקביל. טענו מחדש לפני שמירה', 409);
             const content = b.content_format === 'html' ? await sanitizeRichHtml(maxText(b.content,150000)) : contentHtml(maxText(b.content, 150000), JSON.parse(a.data));
             const embedded=await inlineImages(content);assert(embedded.length<=10,'אפשר לצרף עד 10 תמונות בתוך המאמר');
@@ -526,7 +533,7 @@ if (p[0] === 'cart') {
             if (data.image_id)
                 owns(u, await one('SELECT * FROM files WHERE id=?', data.image_id));
             // An admin fixing an article during review or after approval keeps its status.
-            // A customer edit of a submitted or approved article sends it back for editing.
+            // A customer edit of a submitted article sends it back for editing (approved articles are locked above).
             const keepReview = u.role==='admin' && ['admin_review','approved'].includes(a.status);
             if(keepReview&&a.status==='approved'&&(data.scheduled||'')!==(priorData.scheduled||'')){const at=dispatchAtFor(data);data.dispatch_at=at&&Date.parse(at)>Date.parse(now())?at:now();delete data.dispatch_attempted_at;}
             const result = await stmt('UPDATE articles SET title=?,content=?,data=?,status=?,version=version+1,updated=? WHERE id=? AND version=?', title, content, JSON.stringify(data), keepReview?a.status:['approved','admin_review'].includes(a.status)?(writingSubmitted(a)?'writing':'draft'):a.status, now(), a.id, a.version).run();
@@ -542,6 +549,7 @@ if (p[0] === 'cart') {
             if(u.role!=='admin'&&JSON.parse(a.data).editorial){assert(next==='admin_review'&&['draft','review','revisions'].includes(a.status)&&writingCustomerEditor(a),'הטקסט עדיין אינו זמין לשליחה; תיקונים שולחים דרך בקשת תיקונים',409);}
             assert(next !== 'cancelled', 'ביטול כתבה נעשה דרך ביטול ההזמנה כדי לשמור על תיעוד התשלום');
             assert((articleTransitions[a.status] || []).includes(next), 'מעבר הסטטוס אינו אפשרי');
+            if (next === 'approved' || next === 'sent') assert(!await pendingCancelRequest(a.order_id), 'הלקוח ביקש לבטל את ההזמנה. יש לאשר או לדחות את הבקשה לפני אישור הכתבה.', 409);
             // A writer's text that needs changes stays with the writer; "revisions" would hand it to the customer as a manager note.
             assert(!(JSON.parse(a.data).editorial && a.status === 'writing' && next === 'revisions'), 'טקסט של הכותב מוחזר לכותב דרך בקשת התיקונים, לא ללקוח', 409);
             // A customer sends text for review, or asks for changes on text waiting for them. Pulling back an article that is
