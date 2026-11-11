@@ -31,7 +31,7 @@ export function CancelRequestDialog({ctx,order,articles,close,done}:{ctx:Ctx;ord
   {scope==='article'?<><div className="ccr-label">איזה אתר?</div><div className="ccr-sites" role="radiogroup">
    {opts.sites.map(a=><button type="button" role="radio" aria-checked={site===a.id} key={a.id} className={'ccr-site'+(site===a.id?' is-on':'')} onClick={()=>setSite(a.id)}><span className="ccr-radio" aria-hidden="true"/><span className="ccr-grow"><b dir="ltr">{siteOf(a)}</b><small>{a.title||a.topic||'כתבה'}{a.status==='sent'?' · נשלחה לפרסום, נבדוק מול האתר':''}</small></span><span className="ccr-price"><bdi>{money(remainingArticleNet(a,order))}</bdi></span></button>)}
    {locked.map(a=><div key={a.id} className="ccr-site is-off"><span className="ccr-radio" aria-hidden="true"/><span className="ccr-grow"><b dir="ltr">{siteOf(a)}</b><small>{a.status==='published'?'כבר פורסם · לא ניתן לבטל':'בטיפול ביטול'}</small></span><span className="ccr-price"><bdi>{money(remainingArticleNet(a,order))}</bdi></span></div>)}
-  </div></>:<div className="ccr-note"><b>יבוטלו כל האתרים בהזמנה:</b> {articles.filter(articleOpen).map(siteOf).join(' · ')}</div>}
+  </div></>:<div className="ccr-note"><b>{articles.filter(articleOpen).length===1?'האתר שיבוטל:':'יבוטלו כל האתרים בהזמנה:'}</b> {articles.filter(articleOpen).map(siteOf).join(' · ')}</div>}
   <label className="ccr-field"><span className="ccr-label">סיבת הביטול *</span><textarea value={reason} maxLength={1500} rows={3} disabled={busy} onChange={e=>{setReason(e.target.value);setError('');}}/></label>
   <p className="ccr-note">הבקשה נשלחת לאישור. עד ההחלטה הכול ממשיך כרגיל. תקבלו עדכון כאן, בעדכונים האישיים ובמייל.</p>
   {error&&<p className="ccr-error" role="alert">{error}</p>}
