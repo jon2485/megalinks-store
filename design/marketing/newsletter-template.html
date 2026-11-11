@@ -7,35 +7,45 @@
   3. שולחים רק למי שהסכים במפורש (הרשימה שמיוצאת מהמערכת), ולא למי שביקש הסרה.
   מקומות למילוי לפני כל שליחה: {{...}}. {{unsubscribe_url}} = קישור ההסרה של כלי הדיוור (למשל *|UNSUB|* ב-Mailchimp).
   פרטים שחסרים מבעל העסק מסומנים [חסר: ...] ויש להשלים אותם פעם אחת בתבנית.
+  עיצוב: מסר אחד ופעולה אחת. כותרת גדולה עם ריווח אותיות צפוף, טקסט ברוחב קריא, צל רך במקום מסגרת,
+  והחלק המשפטי בתחתית שקט אבל קריא (ניגודיות מספקת, לא מוסתר).
 -->
-<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>פרסומת: {{subject}}</title></head>
-<body style="margin:0;padding:0;background:#f5f7fa;font-family:Heebo,Arial,Helvetica,sans-serif;color:#0b1b2f">
+<html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>פרסומת: {{subject}}</title>
+<style>@media (max-width:480px){.ml-card{padding:30px 22px 26px!important}.ml-h1{font-size:26px!important}}</style></head>
+<body style="margin:0;padding:0;background:#f2f4f7;font-family:Heebo,Arial,Helvetica,sans-serif;color:#0b1b2f;-webkit-font-smoothing:antialiased">
 <div style="display:none;max-height:0;overflow:hidden">{{preheader}}</div>
-<div style="max-width:560px;margin:0 auto;padding:28px 14px">
- <div style="background:#ffffff;border:1px solid #e6ecf2;border-radius:28px;overflow:hidden">
-  <div style="padding:30px 28px 6px;text-align:center"><img src="{{site_url}}/brand/megalinks-logo-dark.png" alt="Mega Links" width="190" style="max-width:190px;height:auto"></div>
-  <div style="padding:12px 28px 30px;text-align:right">
-   <div style="text-align:center"><span style="display:inline-block;padding:5px 14px;border-radius:999px;background:#fff3df;color:#8a4b00;font-size:13px;font-weight:800">פרסומת</span></div>
-   <h1 style="margin:16px 0 10px;font-size:26px;line-height:1.3;font-weight:800;color:#0b1b2f;text-align:center">{{headline}}</h1>
-   <p style="margin:0 0 22px;font-size:16px;line-height:1.75;color:#4f5d6e;text-align:center">{{intro}}</p>
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f2f4f7"><tr><td align="center" style="padding:32px 12px 8px">
+ <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;border-collapse:separate">
+  <tr><td style="padding:0 6px 18px;text-align:right">
+   <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+    <td style="text-align:right;vertical-align:middle"><img src="{{site_url}}/brand/megalinks-logo-dark.png" alt="Mega Links" width="132" style="display:block;max-width:132px;height:auto;border:0"></td>
+    <td style="text-align:left;vertical-align:middle"><span style="display:inline-block;padding:4px 12px;border-radius:999px;background:#ffffff;color:#8a4b00;font-size:12px;font-weight:700;box-shadow:0 0 0 1px rgba(138,75,0,.22)">פרסומת</span></td>
+   </tr></table>
+  </td></tr>
 
-   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse">
-    <tr><td style="padding:16px 18px;border-radius:18px;background:#f5f9ff;border:1px solid #d8e6f7">
-     <div style="font-size:13px;color:#1673e6;font-weight:800;margin-bottom:4px">{{offer_label}}</div>
-     <div style="font-size:18px;color:#0b1b2f;font-weight:800;line-height:1.5">{{offer_title}}</div>
-     <div style="font-size:15px;color:#4f5d6e;line-height:1.7;margin-top:4px">{{offer_text}}</div>
+  <tr><td class="ml-card" style="background:#ffffff;border-radius:24px;box-shadow:0 1px 2px rgba(11,27,47,.06),0 8px 28px rgba(11,27,47,.06);padding:40px 32px 34px;text-align:right">
+   <h1 class="ml-h1" style="margin:0 0 12px;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;color:#0b1b2f">{{headline}}</h1>
+   <p style="margin:0 0 28px;max-width:44ch;font-size:17px;line-height:1.65;color:#4a5869">{{intro}}</p>
+
+   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate">
+    <tr><td style="padding:20px 22px;border-radius:16px;background:#f4f8fe">
+     <div style="font-size:13px;line-height:1.4;color:#1460c4;font-weight:700;margin:0 0 6px">{{offer_label}}</div>
+     <div style="font-size:24px;line-height:1.25;color:#0b1b2f;font-weight:800;letter-spacing:.04em;font-variant-numeric:tabular-nums">{{offer_title}}</div>
+     <div style="font-size:15px;line-height:1.65;color:#4a5869;margin-top:8px">{{offer_text}}</div>
     </td></tr>
    </table>
 
-   <div style="margin:24px 0 6px;text-align:center"><a href="{{cta_url}}" style="display:inline-block;padding:14px 30px;border-radius:14px;background:#1673e6;color:#ffffff;font-size:16px;font-weight:800;text-decoration:none">{{cta_label}}</a></div>
-   <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:#7b8796;text-align:center">{{offer_terms}}</p>
-  </div>
- </div>
+   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:28px 0 0"><tr><td align="center" style="border-radius:14px;background:#1673e6">
+    <a href="{{cta_url}}" style="display:block;padding:15px 24px;border-radius:14px;color:#ffffff;font-size:16px;line-height:1.3;font-weight:700;text-decoration:none;text-align:center">{{cta_label}}</a>
+   </td></tr></table>
+   <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:#6b7787;text-align:center">{{offer_terms}}</p>
+  </td></tr>
 
- <div style="padding:20px 18px 6px;text-align:center;font-size:12.5px;line-height:1.8;color:#5b6b82">
-  <p style="margin:0 0 8px">קיבלתם את המייל הזה כי ביקשתם לקבל ממגה לינקס עדכונים ומבצעים במייל.</p>
-  <p style="margin:0 0 8px"><strong style="color:#0b1b2f">אפשר להפסיק בכל עת ובלי עלות:</strong> <a href="{{unsubscribe_url}}" style="color:#0a5fc2;font-weight:700">להסרה מרשימת הדיוור</a>, או בהשבה למייל הזה עם המילה "הסר".</p>
-  <p style="margin:0">[חסר: שם הישות המשפטית] · [חסר: כתובת העסק] · טלפון <a href="tel:+972507508850" style="color:#5b6b82">050-750-8850</a> · [חסר: כתובת דוא"ל לפניות] · <a href="{{site_url}}/privacy" style="color:#5b6b82">מדיניות הפרטיות</a></p>
- </div>
-</div>
+  <tr><td style="padding:26px 22px 10px;text-align:right;font-size:13px;line-height:1.75;color:#526175">
+   <p style="margin:0 0 10px">קיבלתם את המייל הזה כי ביקשתם לקבל ממגה לינקס עדכונים ומבצעים במייל.</p>
+   <p style="margin:0 0 10px"><strong style="color:#0b1b2f;font-weight:700">אפשר להפסיק בכל עת ובלי עלות:</strong> <a href="{{unsubscribe_url}}" style="color:#0a5fc2;font-weight:700;text-decoration:underline">להסרה מרשימת הדיוור</a>, או בהשבה למייל הזה עם המילה "הסר".</p>
+   <p style="margin:0;padding-top:12px;border-top:1px solid rgba(11,27,47,.08)">[חסר: שם הישות המשפטית] · [חסר: כתובת העסק]<br>טלפון <a href="tel:+972507508850" style="color:#526175">050-750-8850</a> · [חסר: כתובת דוא"ל לפניות] · <a href="{{site_url}}/privacy" style="color:#526175">מדיניות הפרטיות</a></p>
+  </td></tr>
+ </table>
+</td></tr></table>
 </body></html>
