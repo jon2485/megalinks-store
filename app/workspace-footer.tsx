@@ -1,6 +1,10 @@
 'use client';
-import { Phone, Headphones, FileText } from 'lucide-react';
+import { Phone, Headphones, FileText, ShieldCheck, Undo2, PackageCheck, Accessibility, Cookie } from 'lucide-react';
 import BrandLogo from './brand-logo';
+import { LEGAL_DOCS } from '@/lib/legal-docs';
+
+// The legal pages of the site, each with its own small icon, in the same list style as before.
+const legalIcons = { terms: FileText, privacy: ShieldCheck, cancellation: Undo2, supply: PackageCheck, accessibility: Accessibility, cookies: Cookie };
 
 export default function WorkspaceFooter({ go, adminMode = false }: { go: (page: string) => void; adminMode?: boolean }) {
     return <footer className="megalinks-footer" dir="rtl">
@@ -17,7 +21,7 @@ export default function WorkspaceFooter({ go, adminMode = false }: { go: (page: 
                 </section>
                 <nav className="megalinks-footer-legal megalinks-footer-group" aria-labelledby="footer-legal-title">
                     <h2 id="footer-legal-title">מידע משפטי</h2>
-                    <div className="megalinks-footer-link-list"><a href="/terms"><FileText size={18} aria-hidden="true"/>תקנון ותנאי שימוש</a></div>
+                    <div className="megalinks-footer-link-list megalinks-footer-legal-list">{LEGAL_DOCS.map(doc => { const Icon = legalIcons[doc.id]; return <a key={doc.id} href={doc.path} onClick={event=>{if(event.button!==0||event.metaKey||event.ctrlKey||event.shiftKey||event.altKey)return;event.preventDefault();go(doc.id);}}><Icon size={18} aria-hidden="true"/>{doc.title}</a>; })}</div>
                 </nav>
             </div>
             <div className="megalinks-footer-copyright"><span>© {new Date().getFullYear()} <bdi>MegaLinks</bdi>. כל הזכויות שמורות.</span></div>

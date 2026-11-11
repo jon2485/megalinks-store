@@ -1,6 +1,6 @@
 'use client';
-import React,{useMemo} from 'react';
-import {Headphones,ListTree,ShieldAlert} from 'lucide-react';
+import React,{useEffect,useMemo,useState} from 'react';
+import {ChevronDown,Headphones,ListTree,Phone,ShieldAlert} from 'lucide-react';
 import {LEGAL_DOCS,legalDoc,type LegalDocId} from '@/lib/legal-docs';
 import {LEGAL_CONTENT} from '@/lib/legal-content.generated';
 import {parseLegalMarkdown,type LegalInline} from '@/lib/legal-markdown';
@@ -22,6 +22,9 @@ export default function LegalPage({id,go}:{id:LegalDocId;go:(view:string)=>void}
  const doc=legalDoc(id)!,content=LEGAL_CONTENT[id];
  const blocks=useMemo(()=>content?parseLegalMarkdown(content.markdown):[],[content]);
  const sections=blocks.filter(block=>block.type==='h2') as {type:'h2';id:string;text:string}[];
+ // The contents list is open on a wide screen and starts closed on a phone, so the text itself is not pushed down.
+ const [tocOpen,setTocOpen]=useState(true);
+ useEffect(()=>{setTocOpen(!window.matchMedia('(max-width:900px)').matches);},[id]);
  return <article className="legal" dir="rtl" aria-labelledby="legal-title">
   <header className="legal-hero">
    <p className="legal-kicker">מידע משפטי</p>
@@ -38,8 +41,8 @@ export default function LegalPage({id,go}:{id:LegalDocId;go:(view:string)=>void}
   </nav>
   <div className="legal-layout">
    {sections.length>1&&<aside className="legal-toc" aria-label="תוכן העניינים">
-    <details open>
-     <summary><ListTree size={18} aria-hidden="true"/>בעמוד זה</summary>
+    <details open={tocOpen} onToggle={event=>setTocOpen((event.currentTarget as HTMLDetailsElement).open)}>
+     <summary><ListTree size={18} aria-hidden="true"/>בעמוד זה<ChevronDown size={18} className="legal-toc-chevron" aria-hidden="true"/></summary>
      <ol>{sections.map(section=><li key={section.id}><a href={'#'+section.id}>{section.text}</a></li>)}</ol>
     </details>
    </aside>}
@@ -53,8 +56,11 @@ export default function LegalPage({id,go}:{id:LegalDocId;go:(view:string)=>void}
      :block.type==='note'?<p key={i} className="legal-note"><Inline parts={block.inline} go={go}/></p>
      :<div key={i} className="legal-table" role="region" aria-label="טבלה" tabIndex={0}><table><thead><tr>{block.head.map((cell,n)=><th key={n} scope="col"><Inline parts={cell} go={go}/></th>)}</tr></thead><tbody>{block.rows.map((row,r)=><tr key={r}>{row.map((cell,n)=><td key={n}><Inline parts={cell} go={go}/></td>)}</tr>)}</tbody></table></div>)}
     <footer className="legal-contact">
-     <div><strong>יש שאלה על המסמך הזה?</strong><span>אפשר לפנות אלינו ונחזור אליך.</span></div>
-     <a className="legal-contact-button" href="/support" onClick={event=>{if(!plain(event))return;event.preventDefault();go('support');}}><Headphones size={18} aria-hidden="true"/>פנייה לתמיכה</a>
+     <div><strong>יש שאלה על המסמך הזה?</strong><span>אפשר להתקשר אלינו, וגם בלי להתחבר לחשבון. לקוחות מחוברים יכולים לפתוח פנייה לתמיכה.</span></div>
+     <div className="legal-contact-actions">
+      <a className="legal-contact-phone" href="tel:+972507508850" aria-label="התקשרו למגה לינקס: 050-750-8850"><Phone size={18} aria-hidden="true"/><bdi>050-750-8850</bdi></a>
+      <a className="legal-contact-button" href="/support" onClick={event=>{if(!plain(event))return;event.preventDefault();go('support');}}><Headphones size={18} aria-hidden="true"/>פנייה לתמיכה</a>
+     </div>
     </footer>
    </div>
   </div>
