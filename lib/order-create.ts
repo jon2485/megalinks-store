@@ -4,6 +4,8 @@ import {businessMonth} from './monthly';
 import {openMonthlyOrder,monthlyOrderClosedSql,financialGuard,orderGuard} from './monthly-order';
 import type {Row} from './shared';
 export async function createOrder(user:Row,actor:Row,q:Row,b:Row){
+ // Only a manager ordering for someone else skips the cart; the flag in the request body is not trusted on its own.
+ const adminOrder=!!b.admin_order&&actor.id!==user.id&&actor.role==='admin';
  const prior=await one("SELECT data FROM records WHERE id=?",'purchase:'+user.id+':'+b.idempotency);if(prior)return JSON.parse(prior.data);
  const demo=String(b.payment).startsWith('demo_'),monthly=['monthly','demo_monthly'].includes(b.payment),stamp=now();
  const existing=monthly?await openMonthlyOrder(user.id,demo):null;
@@ -32,8 +34,8 @@ export async function createOrder(user:Row,actor:Row,q:Row,b:Row){
   ops.push(stmt('INSERT INTO articles(id,order_id,user_id,website_id,status,title,content,version,published_url,data,updated) VALUES (?,?,?,?,?,?,?,?,?,?,?)',uid(),id,user.id,x.website_id,'draft',x.topic,'',1,'',JSON.stringify(data),stamp));
  }
  const claim='checkout:'+await hash(user.id+JSON.stringify(q.items.map((x:Row)=>({id:x.id,quantity:x.quantity,data:x.data})).sort((a:Row,b:Row)=>a.id.localeCompare(b.id))));
- const resultData=JSON.stringify({id,status,payment_required:split||payment==='card',card_amount:split?q.total-walletAmount:payment==='card'?q.total:0,wallet_amount:walletAmount});for(const key of ['purchase:'+user.id+':'+b.idempotency,...(b.admin_order?[]:[claim])])ops.push(stmt("INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,json_set(?,'$.number',(SELECT number FROM orders WHERE id=?)),?,?)",key,'checkout',user.id,resultData,id,stamp,stamp));
- if(!b.admin_order)q.items.forEach((x:Row)=>ops.push(stmt('DELETE FROM cart WHERE id=? AND user_id=?',x.id,user.id)));
+ const resultData=JSON.stringify({id,status,payment_required:split||payment==='card',card_amount:split?q.total-walletAmount:payment==='card'?q.total:0,wallet_amount:walletAmount});for(const key of ['purchase:'+user.id+':'+b.idempotency,...(adminOrder?[]:[claim])])ops.push(stmt("INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,json_set(?,'$.number',(SELECT number FROM orders WHERE id=?)),?,?)",key,'checkout',user.id,resultData,id,stamp,stamp));
+ if(!adminOrder)q.items.forEach((x:Row)=>ops.push(stmt('DELETE FROM cart WHERE id=? AND user_id=?',x.id,user.id)));
  ops.push(stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),actor.id,id,existing?'נוספו כתבות להזמנה חודשית':actor.id!==user.id?'נוצרה הזמנה בשם הלקוח':'נוצרה הזמנה',JSON.stringify({customer_id:user.id,total:q.total}),stamp));
  await db().batch(ops);return {id,number:(await one('SELECT number FROM orders WHERE id=?',id))!.number,status,payment_required:split||payment==='card',card_amount:split?q.total-walletAmount:payment==='card'?q.total:0,wallet_amount:walletAmount};
 }
