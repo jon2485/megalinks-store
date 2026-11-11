@@ -2,49 +2,68 @@
 <!--
   תבנית מייל שיווקי (ניוזלטר) של מגה לינקס – לשימוש בכלי הדיוור החיצוני.
   טיוטה לאישור עורך דין. נוסח לפי חוק התקשורת (בזק ושידורים), סעיף 30א:
-  1. שורת הנושא חייבת להתחיל במילה "פרסומת", למשל: "פרסומת: מבצע נובמבר על כתבות באתרי טכנולוגיה".
+  1. שורת הנושא חייבת להתחיל במילה "פרסומת", למשל: "פרסומת: כתבה באתר טכנולוגיה, עם 15% הנחה".
   2. בגוף ההודעה: שם המפרסם, הכתובת ודרכי יצירת הקשר; הודעה על הזכות לסרב; קישור הסרה שעובד ובלי עלות.
   3. שולחים רק למי שהסכים במפורש (הרשימה שמיוצאת מהמערכת), ולא למי שביקש הסרה.
   מקומות למילוי לפני כל שליחה: {{...}}. {{unsubscribe_url}} = קישור ההסרה של כלי הדיוור (למשל *|UNSUB|* ב-Mailchimp).
+  {{first_name}} = שם פרטי מכלי הדיוור, עם ברירת מחדל "שלום" כשאין שם.
   פרטים שחסרים מבעל העסק מסומנים [חסר: ...] ויש להשלים אותם פעם אחת בתבנית.
-  עיצוב: מסר אחד ופעולה אחת. כותרת גדולה עם ריווח אותיות צפוף, טקסט ברוחב קריא, צל רך במקום מסגרת,
+
+  כללי כתיבה (סקיל המיילים והקופירייטינג):
+  - מייל אחד, מטרה אחת, כפתור אחד. כיתוב הכפתור = פעולה + תוצאה ("לבחירת אתר טכנולוגיה").
+  - נושא 40-60 תווים, ברור ולא מתחכם. טקסט התצוגה המקדימה ממשיך את הנושא ולא חוזר עליו.
+  - פתיחה שתופסת, הקשר, שלוש נקודות ערך קצרות, כפתור, חתימה אנושית. 120-200 מילים.
+  - רק טענות שאפשר לעמוד מאחוריהן. בלי "זה לא X, זה Y" ובלי רשימות "בלי X, בלי Y, בלי Z".
+  כללי עברית (סקיל rtl-hebrew-docs):
+  - dir="rtl" על כל בלוק. מספרים, תאריכים, טלפון, קוד קופון ומילים באנגלית עטופים ב-span עם dir="ltr", unicode-bidi:isolate ו-white-space:nowrap (שלא יישברו בין שורות).
+  - בלי חיצים (→ ← « ») בגוף הטקסט, כי תוכנות דואר הופכות אותם. בלי Roboto: רק גופנים עם עברית (Heebo, Arial).
+  עיצוב (סקיל apple-design): מסר אחד, כותרת גדולה עם ריווח אותיות צפוף, שורות ברוחב קריא, צל רך במקום מסגרת,
   והחלק המשפטי בתחתית שקט אבל קריא (ניגודיות מספקת, לא מוסתר).
 -->
 <html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>פרסומת: {{subject}}</title>
 <style>@media (max-width:480px){.ml-card{padding:30px 22px 26px!important}.ml-h1{font-size:26px!important}}</style></head>
-<body style="margin:0;padding:0;background:#f2f4f7;font-family:Heebo,Arial,Helvetica,sans-serif;color:#0b1b2f;-webkit-font-smoothing:antialiased">
+<body dir="rtl" style="margin:0;padding:0;background:#f2f4f7;font-family:Heebo,'Segoe UI',Arial,sans-serif;color:#0b1b2f;-webkit-font-smoothing:antialiased">
 <div style="display:none;max-height:0;overflow:hidden">{{preheader}}</div>
-<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f2f4f7"><tr><td align="center" style="padding:32px 12px 8px">
- <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;border-collapse:separate">
-  <tr><td style="padding:0 6px 18px;text-align:right">
-   <table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr>
+<table role="presentation" dir="rtl" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f2f4f7"><tr><td align="center" style="padding:32px 12px 8px">
+ <table role="presentation" dir="rtl" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;border-collapse:separate">
+  <tr><td style="padding:0 6px 18px">
+   <table role="presentation" dir="rtl" width="100%" cellspacing="0" cellpadding="0"><tr>
     <td style="text-align:right;vertical-align:middle"><img src="{{site_url}}/brand/megalinks-logo-dark.png" alt="Mega Links" width="132" style="display:block;max-width:132px;height:auto;border:0"></td>
     <td style="text-align:left;vertical-align:middle"><span style="display:inline-block;padding:4px 12px;border-radius:999px;background:#ffffff;color:#8a4b00;font-size:12px;font-weight:700;box-shadow:0 0 0 1px rgba(138,75,0,.22)">פרסומת</span></td>
    </tr></table>
   </td></tr>
 
-  <tr><td class="ml-card" style="background:#ffffff;border-radius:24px;box-shadow:0 1px 2px rgba(11,27,47,.06),0 8px 28px rgba(11,27,47,.06);padding:40px 32px 34px;text-align:right">
-   <h1 class="ml-h1" style="margin:0 0 12px;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;color:#0b1b2f">{{headline}}</h1>
-   <p style="margin:0 0 28px;max-width:44ch;font-size:17px;line-height:1.65;color:#4a5869">{{intro}}</p>
+  <tr><td class="ml-card" dir="rtl" style="background:#ffffff;border-radius:24px;box-shadow:0 1px 2px rgba(11,27,47,.06),0 8px 28px rgba(11,27,47,.06);padding:40px 32px 34px;text-align:right">
+   <p style="margin:0 0 14px;font-size:15px;line-height:1.5;color:#1460c4;font-weight:700">{{first_name}},</p>
+   <h1 class="ml-h1" style="margin:0 0 14px;font-size:30px;line-height:1.18;font-weight:800;letter-spacing:-0.02em;color:#0b1b2f">{{headline}}</h1>
+   <p style="margin:0 0 24px;max-width:46ch;font-size:17px;line-height:1.65;color:#4a5869">{{intro}}</p>
 
-   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate">
-    <tr><td style="padding:20px 22px;border-radius:16px;background:#f4f8fe">
+   <table role="presentation" dir="rtl" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin:0 0 26px">
+    <tr><td width="28" valign="top" style="padding:2px 0 12px"><span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#e6f0fd;color:#1460c4;font-size:12px;line-height:20px;font-weight:800;text-align:center">1</span></td><td style="padding:0 0 12px;font-size:16px;line-height:1.6;color:#0b1b2f">{{point_1}}</td></tr>
+    <tr><td width="28" valign="top" style="padding:2px 0 12px"><span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#e6f0fd;color:#1460c4;font-size:12px;line-height:20px;font-weight:800;text-align:center">2</span></td><td style="padding:0 0 12px;font-size:16px;line-height:1.6;color:#0b1b2f">{{point_2}}</td></tr>
+    <tr><td width="28" valign="top" style="padding:2px 0 0"><span style="display:inline-block;width:20px;height:20px;border-radius:50%;background:#e6f0fd;color:#1460c4;font-size:12px;line-height:20px;font-weight:800;text-align:center">3</span></td><td style="padding:0;font-size:16px;line-height:1.6;color:#0b1b2f">{{point_3}}</td></tr>
+   </table>
+
+   <table role="presentation" dir="rtl" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate">
+    <tr><td style="padding:18px 22px;border-radius:16px;background:#f4f8fe">
      <div style="font-size:13px;line-height:1.4;color:#1460c4;font-weight:700;margin:0 0 6px">{{offer_label}}</div>
-     <div style="font-size:24px;line-height:1.25;color:#0b1b2f;font-weight:800;letter-spacing:.04em;font-variant-numeric:tabular-nums">{{offer_title}}</div>
-     <div style="font-size:15px;line-height:1.65;color:#4a5869;margin-top:8px">{{offer_text}}</div>
+     <div style="font-size:24px;line-height:1.25;color:#0b1b2f;font-weight:800;letter-spacing:.04em"><span dir="ltr" style="unicode-bidi:isolate;white-space:nowrap">{{offer_title}}</span></div>
+     <div style="font-size:15px;line-height:1.65;color:#4a5869;margin-top:6px">{{offer_text}}</div>
     </td></tr>
    </table>
 
-   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:28px 0 0"><tr><td align="center" style="border-radius:14px;background:#1673e6">
+   <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:26px 0 0"><tr><td align="center" style="border-radius:14px;background:#1673e6">
     <a href="{{cta_url}}" style="display:block;padding:15px 24px;border-radius:14px;color:#ffffff;font-size:16px;line-height:1.3;font-weight:700;text-decoration:none;text-align:center">{{cta_label}}</a>
    </td></tr></table>
-   <p style="margin:14px 0 0;font-size:13px;line-height:1.6;color:#6b7787;text-align:center">{{offer_terms}}</p>
+   <p style="margin:12px 0 0;font-size:13px;line-height:1.6;color:#6b7787;text-align:center">{{offer_terms}}</p>
+
+   <p style="margin:28px 0 0;padding-top:20px;border-top:1px solid rgba(11,27,47,.08);font-size:15px;line-height:1.65;color:#4a5869">{{signoff}}</p>
   </td></tr>
 
-  <tr><td style="padding:26px 22px 10px;text-align:right;font-size:13px;line-height:1.75;color:#526175">
+  <tr><td dir="rtl" style="padding:26px 22px 10px;text-align:right;font-size:13px;line-height:1.75;color:#526175">
    <p style="margin:0 0 10px">קיבלתם את המייל הזה כי ביקשתם לקבל ממגה לינקס עדכונים ומבצעים במייל.</p>
    <p style="margin:0 0 10px"><strong style="color:#0b1b2f;font-weight:700">אפשר להפסיק בכל עת ובלי עלות:</strong> <a href="{{unsubscribe_url}}" style="color:#0a5fc2;font-weight:700;text-decoration:underline">להסרה מרשימת הדיוור</a>, או בהשבה למייל הזה עם המילה "הסר".</p>
-   <p style="margin:0;padding-top:12px;border-top:1px solid rgba(11,27,47,.08)">[חסר: שם הישות המשפטית] · [חסר: כתובת העסק]<br>טלפון <a href="tel:+972507508850" style="color:#526175">050-750-8850</a> · [חסר: כתובת דוא"ל לפניות] · <a href="{{site_url}}/privacy" style="color:#526175">מדיניות הפרטיות</a></p>
+   <p style="margin:0;padding-top:12px;border-top:1px solid rgba(11,27,47,.08)">[חסר: שם הישות המשפטית] · [חסר: כתובת העסק]<br>טלפון <a href="tel:+972507508850" style="color:#526175"><span dir="ltr" style="unicode-bidi:isolate;white-space:nowrap">050-750-8850</span></a> · [חסר: כתובת דוא"ל לפניות] · <a href="{{site_url}}/privacy" style="color:#526175">מדיניות הפרטיות</a></p>
   </td></tr>
  </table>
 </td></tr></table>
