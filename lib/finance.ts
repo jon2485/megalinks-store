@@ -5,6 +5,7 @@ import {orderSummarySql,fullyCancelledOrderSql} from './order-summary';
 import {env} from 'cloudflare:workers';
 import {Row,money} from './shared';
 import {admin,assert,all,one,stmt,db,parse,uid,now,setting,saveSetting,audit,hash,owns} from './server';
+import {requireUnusedReference} from './payment-reference';
 import {queueMail} from './mail';
 
 export const isTopUp = (row:Row) => row.kind==='wallet_topup'||(row.kind==='ticket'&&row.payment_method==='bank_transfer'&&Number(row.amount_cents)>0);
@@ -61,6 +62,8 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   if(decision==='approved'){
    const reference='bank-transfer:'+await hash(text(row.reference).normalize('NFKC').toLowerCase());
    const prior=await one('SELECT id FROM ledger WHERE reference=?',reference);assert(!prior,'אסמכתא זו כבר זוכתה. יש לבדוק את תנועות הארנק',409);
+   // The same transfer may already have paid an order or a month.
+   await requireUnusedReference(row.reference,'',b.confirm_duplicate_reference);
    ops.push(stmt(`INSERT INTO ledger(id,user_id,amount,reason,reference,created) SELECT ?,user_id,?,'הטענת יתרה בהעברה בנקאית',?,? FROM records WHERE ${pending}`,ledgerId,amount,reference,stamp,row.id));
    ops.push(stmt('UPDATE users SET credits=credits+? WHERE id=? AND EXISTS(SELECT id FROM ledger WHERE id=?)',amount,row.user_id,ledgerId));
   }
