@@ -3,7 +3,7 @@
 // header band, section tabs, and the customers page (list on the right, one customer's screen with tabs).
 // Every action uses the existing records and routes, so nothing here is a copy of "הכתבות שלי" or "ההזמנות שלי".
 import React,{useEffect,useMemo,useState} from 'react';
-import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff,Printer,Settings as SettingsIcon,FileSpreadsheet} from 'lucide-react';
+import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff,Printer,Settings as SettingsIcon,FileSpreadsheet,CalendarDays,ChevronRight,ChevronLeft} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
 import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
@@ -11,7 +11,7 @@ import type {Ctx} from './workspace';
 import {setBuyingFor} from './agency-buying';
 import './agency-center.css';
 
-const SECTIONS=[['overview','סקירה',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks],['reports','דוחות',ChartColumn],['settings','הגדרות',SettingsIcon]] as const;
+const SECTIONS=[['overview','סקירה',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks],['calendar','לוח פרסומים',CalendarDays],['reports','דוחות',ChartColumn],['settings','הגדרות',SettingsIcon]] as const;
 const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['links','קישורים ועוגנים',Link2],['notes','הערות',NotebookPen],['details','פרטים',IdCard]] as const;
 const COLORS=['#1673e6','#7c3aed','#0f9f8f','#ea580c','#b45309','#db2777','#0369a1','#16a34a','#0891b2','#65a30d','#c2410c','#be185d'];
 const colorFor=(id:string)=>COLORS[[...String(id)].reduce((s,c)=>s+c.charCodeAt(0),0)%COLORS.length];
@@ -42,7 +42,7 @@ export default function AgencyCenter({ctx,view}:{ctx:Ctx;view:string}){
    <button type="button" className="ag-btn buy" onClick={()=>ctx.go('catalog')}><ShoppingCart size={18}/>רכישת פרסום</button>
   </header>
   <nav className="ag-tabs" aria-label="מרכז הסוכנות">{SECTIONS.map(([key,label,Icon])=><Link key={key} ctx={ctx} to={'purchased/agency/'+key} current={section===key} className=""><Icon size={18} aria-hidden="true"/>{label}</Link>)}</nav>
-  {section==='overview'?<Overview ctx={ctx}/>:section==='reports'?<section className="ag-card ag-main"><h2 className="ag-page-title">דוחות</h2><Reports ctx={ctx}/></section>:section==='settings'?<section className="ag-card ag-main"><h2 className="ag-page-title">הגדרות הסוכנות</h2><AgencySettings ctx={ctx}/></section>:section==='tasks'?<section className="ag-card ag-main"><h2 className="ag-page-title">לטיפול</h2><Tasks ctx={ctx}/></section>
+  {section==='overview'?<Overview ctx={ctx}/>:section==='reports'?<section className="ag-card ag-main"><h2 className="ag-page-title">דוחות</h2><Reports ctx={ctx}/></section>:section==='calendar'?<section className="ag-card ag-main"><h2 className="ag-page-title">לוח פרסומים</h2><Calendar ctx={ctx}/></section>:section==='settings'?<section className="ag-card ag-main"><h2 className="ag-page-title">הגדרות הסוכנות</h2><AgencySettings ctx={ctx}/></section>:section==='tasks'?<section className="ag-card ag-main"><h2 className="ag-page-title">לטיפול</h2><Tasks ctx={ctx}/></section>
    :section==='publications'?<section className="ag-card ag-main"><h2 className="ag-page-title">כל הפרסומים</h2><Publications ctx={ctx} customer=""/></section>
    :<Customers ctx={ctx} customerId={rest[1]||''} tab={rest[2]||''}/>}
  </section>;
@@ -383,4 +383,30 @@ function AgencySettings({ctx}:{ctx:Ctx}){
   <label className="ag-check wide"><input type="checkbox" checked={!!v.show_costs} onChange={e=>set('show_costs',e.target.checked)}/>להציג עלויות בדוח ללקוח כברירת מחדל</label>
  </div>{error&&<p className="ag-alert" role="alert">{error}</p>}{saved&&<p className="ag-ok" role="status">ההגדרות נשמרו</p>}
  <div className="ag-actions"><button type="submit" className="ag-btn primary" disabled={busy}>{busy?<LoaderCircle size={17} className="animate-spin"/>:<Save size={17}/>}שמירת הגדרות</button></div></form>;
+}
+
+// ---------- publication calendar (spec 5.5) ----------
+const WEEKDAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+function Calendar({ctx}:{ctx:Ctx}){
+ const today=israelToday(),[ym,setYm]=useState({y:today.y,m:today.m}),[who,setWho]=useState(''),[open,setOpen]=useState('');
+ const month=`${ym.y}-${pad(ym.m)}`,state=useData('agency/calendar?month='+month,ctx.revision),customers=useData('agency/customers',ctx.revision);
+ // While another month loads, the previous month's items are not shown on this month's grid.
+ const items:Row[]=(state.data?.month===month?state.data.items:[]).filter((i:Row)=>!who||(who==='none'?!i.customer_id:i.customer_id===who));
+ const days=new Date(Date.UTC(ym.y,ym.m,0)).getUTCDate(),first=new Date(Date.UTC(ym.y,ym.m-1,1)).getUTCDay();
+ const byDay=new Map<string,Row[]>();for(const i of items)byDay.set(i.date,[...(byDay.get(i.date)||[]),i]);
+ const move=(d:number)=>{setOpen('');setYm(({y,m})=>{const t=new Date(Date.UTC(y,m-1+d,1));return {y:t.getUTCFullYear(),m:t.getUTCMonth()+1};});};
+ const todayKey=`${today.y}-${pad(today.m)}-${pad(today.d)}`,openItems=open?byDay.get(open)||[]:[];
+ return <>
+  <div className="ag-filters"><button type="button" className="ag-btn ghost sm" aria-label="החודש הקודם" onClick={()=>move(-1)}><ChevronRight size={17}/></button><b style={{fontSize:17,minWidth:120,textAlign:'center'}}>{MONTHS[ym.m-1]} {ym.y}</b><button type="button" className="ag-btn ghost sm" aria-label="החודש הבא" onClick={()=>move(1)}><ChevronLeft size={17}/></button>
+   <label className="ag-select"><small>לקוח</small><select value={who} onChange={e=>setWho(e.target.value)}><option value="">כל הלקוחות</option><option value="none">ללא לקוח</option>{(customers.data?.customers||[]).filter((c:Row)=>c.status!=='archived').map((c:Row)=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>
+   <span className="grow"/><span className="ag-legend"><i className="pub"/>פורסם</span><span className="ag-legend"><i className="sch"/>מתוכנן</span></div>
+  {state.error&&<p className="ag-alert" role="alert">{state.error}</p>}
+  <div className="ag-cal" role="grid" aria-label={'לוח פרסומים '+MONTHS[ym.m-1]+' '+ym.y}>
+   {WEEKDAYS.map(w=><div key={w} className="ag-cal-head" role="columnheader">{w}</div>)}
+   {Array.from({length:first},(_,i)=><div key={'e'+i} className="ag-cal-day empty"/>)}
+   {Array.from({length:days},(_,i)=>{const key=`${month}-${pad(i+1)}`,list=byDay.get(key)||[];return <button key={key} type="button" role="gridcell" className={'ag-cal-day'+(key===todayKey?' today':'')+(open===key?' on':'')} disabled={!list.length} aria-label={`${i+1} ${MONTHS[ym.m-1]}: ${list.length} פרסומים`} onClick={()=>setOpen(open===key?'':key)}><span className="n">{i+1}</span><span className="dots">{list.slice(0,6).map(x=><i key={x.id} className={x.kind==='published'?'pub':'sch'} style={x.customer_id?{background:x.kind==='published'?colorFor(x.customer_id):undefined,borderColor:colorFor(x.customer_id)}:undefined}/>)}{list.length>6&&<small>+{list.length-6}</small>}</span></button>;})}
+  </div>
+  {open&&<section className="ag-cal-list" aria-live="polite"><h3 className="ag-stage">{day(open+'T12:00:00Z')}<span>{openItems.length}</span></h3>{openItems.map(i=><div key={i.id} className="ag-task"><span className="ag-av" style={{background:i.customer_id?colorFor(i.customer_id):'#9fb0c4',width:30,height:30,fontSize:13}}>{(i.customer_name||'?').charAt(0)}</span><span className="t"><b>{i.website_name}</b><small>{i.customer_name||'ללא לקוח'} · {i.kind==='published'?'פורסם':'מתוכנן'}</small></span>{i.published_url?<a className="ag-link" href={i.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>:<Link ctx={ctx} to={'article/'+i.id} className="ag-btn ghost sm">פתיחה</Link>}</div>)}</section>}
+  {!items.length&&!state.loading&&<p className="ag-muted" style={{marginTop:12}}>אין פרסומים בחודש הזה.</p>}
+ </>;
 }

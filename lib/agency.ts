@@ -282,3 +282,18 @@ export async function saveAgencySettings(u:Row,body:Row){
  await audit(u,settingsId(u),'הגדרות מרכז הסוכנות עודכנו',{});
  return {ok:true,...data};
 }
+
+// ---------- publication calendar (spec 5.5) ----------
+export async function agencyCalendar(u:Row,month:string){
+ assertAgency(u);assert(/^\d{4}-(0[1-9]|1[0-2])$/.test(month),'חודש לא תקין');
+ const day=(iso:string)=>iso?new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem'}).format(new Date(iso)):'';
+ const rows=(await agencyArticles(u)).map(agencyArticleRow).filter(a=>!a.demo&&a.status!=='cancelled'&&(a.paid||a.on_account));
+ const items:Row[]=[];
+ for(const a of rows){
+  const base={id:a.id,customer_id:a.customer_id,customer_name:a.customer_name,website_name:a.website_name,title:a.title||a.topic,published_url:a.published_url};
+  if(a.status==='published'){const d=day(a.published_at);if(d.startsWith(month))items.push({...base,date:d,kind:'published'});}
+  else if(a.scheduled){const d=String(a.scheduled).slice(0,10);if(d.startsWith(month))items.push({...base,date:d,kind:'scheduled'});}
+ }
+ items.sort((x,y)=>x.date.localeCompare(y.date));
+ return {month,items};
+}

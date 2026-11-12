@@ -28,7 +28,7 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
-import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit,agencyOverview,agencyTasks,adminAgencyView,agencyLinks,agencyNotes,addAgencyNote,changeAgencyNote,agencySettings,saveAgencySettings} from '@/lib/agency';
+import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit,agencyOverview,agencyTasks,adminAgencyView,agencyLinks,agencyNotes,addAgencyNote,changeAgencyNote,agencySettings,saveAgencySettings,agencyCalendar} from '@/lib/agency';
 import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
@@ -306,6 +306,7 @@ async function handle(r: Request,access:ResponseAccess) {
         if (p[1] === 'customers' && p[2] && p[3] === 'articles' && method === 'GET') return response(await agencyCustomerArticles(u, p[2]));
         if (p[1] === 'publications' && !p[2] && method === 'GET') return response(await agencyPublications(u, new URL(r.url).searchParams));
         if (p[1] === 'overview' && !p[2] && method === 'GET') return response(await agencyOverview(u));
+        if (p[1] === 'calendar' && !p[2] && method === 'GET') return response(await agencyCalendar(u, String(new URL(r.url).searchParams.get('month') || '')));
         if (p[1] === 'settings' && !p[2] && method === 'GET') return response(await agencySettings(u));
         if (p[1] === 'settings' && !p[2] && method === 'PATCH') return response(await saveAgencySettings(u, await json(r)));
         if (p[1] === 'tasks' && !p[2] && method === 'GET') return response(await agencyTasks(u));
