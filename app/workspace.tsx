@@ -59,6 +59,7 @@ import {AdminTopups,AdminInvoices} from './admin-finance';
 import PremiumCatalog from './catalog-view';
 import {notifyCartAdded} from './cart-add-feedback';
 import { CartView, OrdersView, ArticlesView, ArticleEditor, Dashboard, WalletView, FilesView, RecordView, SettingsView, ReportsView, UsersView, CouponsView, LogsView, ApiView, ProfileView, BulkView, SupplierView } from './screens';
+import {hasAgencyCentre} from '@/lib/agency-shared';
 export const categories: Record<string, string> = { news_national: 'חדשות ארציות', news_local: 'חדשות מקומיות', tech: 'טכנולוגיה', finance: 'כלכלה ופיננסים', business: 'עסקים', lifestyle: 'לייף סטייל', magazines: 'מגזינים', real_estate: 'נדל״ן', health: 'בריאות', legal: 'משפטים', education: 'חינוך', tourism: 'תיירות', food: 'אוכל', sports: 'ספורט', entertainment: 'בידור', religion: 'דת ומסורת', israeli_foreign_lang: 'שפות זרות', general: 'כללי' };
 export const navClient = [['catalog', 'קטלוג אתרים', Globe], ['offers', 'מבצעים וחבילות', Gift], ['purchased', 'אזור אישי', FileText]] as const;
 const clientContentView = clientHubRoute;
@@ -117,7 +118,7 @@ export default function Workspace({ initialCatalog, initialView = 'catalog' }: {
     useEffect(()=>{if(!user)return;const timer=setInterval(()=>api('me','GET',undefined,{background:true}).then(me.setData).catch(()=>{}),45000);return()=>clearInterval(timer);},[user?.id]);
     const fullCatalog = catalogData.data?.websites || (premiumCatalog&&!user?initialCatalog:[]);
     // Agency buying for one of its customers: sites already used for that customer are greyed or left out (agency-buying.tsx).
-    const buying = useBuyingFor(user?.role==='agency'), usedSites = useUsedSites(buying, revision);
+    const buying = useBuyingFor(hasAgencyCentre(user)), usedSites = useUsedSites(buying, revision);
     const catalog = catalogForBuying(fullCatalog, buying, usedSites), hiddenForBuying = fullCatalog.length - catalog.length, usedForBuying = usedSites ? fullCatalog.filter((site: Row) => usedSites.hidden.has(site.id)).length : 0;
     const adminMode = view.startsWith('admin');
     useEffect(()=>{

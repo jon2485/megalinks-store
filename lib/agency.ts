@@ -1,14 +1,14 @@
-// Agency centre (design/agency-dashboard/spec.md): server side. Only accounts of type "סוכנות" (role 'agency').
+// Agency centre (design/agency-dashboard/spec.md): server side. Every customer account (role 'customer' or 'agency', see hasAgencyCentre).
 // Every number is read from the existing articles, orders and customer records: nothing is copied, so an action in the
 // agency centre and in "הכתבות שלי" is the same action on the same rows.
 import type {Row} from './shared';
 import {assert,all,one,stmt,now,audit,uid} from './server';
 import {articleCustomerJoins,articleCustomerColumns} from './article-customer';
 import {customerInput,customerErrors} from './customer-fields';
-import {normalizeDomain,articleSpend,usedSiteKey,usedSiteMatches,parseUsedSites} from './agency-shared';
+import {normalizeDomain,articleSpend,usedSiteKey,usedSiteMatches,parseUsedSites,hasAgencyCentre} from './agency-shared';
 export {normalizeDomain,articleSpend};
 
-export function assertAgency(u:Row){assert(u?.role==='agency','מרכז הסוכנות פתוח לחשבונות סוכנות בלבד',403);}
+export function assertAgency(u:Row){assert(hasAgencyCentre(u),'ניהול הלקוחות פתוח לחשבונות לקוח בלבד',403);}
 
 // ---------- customers ----------
 const TAG_MAX=12,DOMAIN_MAX=20;
@@ -229,7 +229,7 @@ export async function agencyOverview(u:Row){
 
 // ---------- admin view of an agency (spec 10), read only ----------
 export async function adminAgencyView(target:Row){
- assert(target?.role==='agency','החשבון אינו חשבון סוכנות',404);
+ assert(hasAgencyCentre(target),'לחשבון הזה אין ניהול לקוחות',404);
  const [{customers,unassigned},used]=await Promise.all([agencyCustomers(target),all("SELECT id,data FROM records WHERE kind='customer_used_sites' AND user_id=?",target.id)]);
  const usedBy=new Map(used.map(r=>{const d=JSON.parse(r.data||'{}');return [String(r.id).slice('used-sites:'.length),{manual:(d.entries||[]).length,mode:d.mode==='hide'?'hide':'warn'}];}));
  return {customers:[...customers].sort((x,y)=>Number(x.status==='archived')-Number(y.status==='archived')).map(c=>({id:c.id,name:c.name,company:c.company||'',domains:c.domains,tags:c.tags,status:c.status,stats:c.stats,used_sites:usedBy.get(c.id)||{manual:0,mode:'warn'}})),unassigned};

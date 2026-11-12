@@ -10,6 +10,7 @@ import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
 import type {Ctx} from './workspace';
 import {setBuyingFor} from './agency-buying';
 import './agency-center.css';
+import {hasAgencyCentre,agencyCentreName} from '@/lib/agency-shared';
 
 const SECTIONS=[['overview','סקירה',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks],['calendar','לוח פרסומים',CalendarDays],['reports','דוחות',ChartColumn],['settings','הגדרות',SettingsIcon]] as const;
 const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['links','קישורים ועוגנים',Link2],['notes','הערות',NotebookPen],['details','פרטים',IdCard]] as const;
@@ -30,19 +31,19 @@ function Link({ctx,to,className,children,label,current}:{ctx:Ctx;to:string;class
 
 export default function AgencyCenter({ctx,view}:{ctx:Ctx;view:string}){
  const rest=view.split('/').slice(2),section=rest[0]||'overview';
- const agency=ctx.user?.role==='agency';
+ const agency=hasAgencyCentre(ctx.user),name=agencyCentreName(ctx.user);
  useEffect(()=>{if(ctx.user&&!agency)ctx.go('purchased/customers');},[agency,ctx]);
- if(!agency)return <section className="ag" dir="rtl"><div className="ag-card ag-empty"><Users size={34}/><h3>מרכז הסוכנות פתוח לחשבונות סוכנות</h3><p>מעבירים אתכם לרשימת הלקוחות שלכם.</p></div></section>;
+ if(!agency)return <section className="ag" dir="rtl"><div className="ag-card ag-empty"><Users size={34}/><h3>ניהול הלקוחות פתוח לחשבונות לקוח</h3><p>מעבירים אתכם לרשימת הלקוחות שלכם.</p></div></section>;
  return <section className="ag" dir="rtl" aria-labelledby="ag-title">
   <header className="ag-band">
    <Link ctx={ctx} to="purchased" className="ag-btn ghost sm"><ArrowRight size={16}/>לאזור האישי</Link>
    <span className="sep"/>
    <img src="/brand/megalinks-logo-dark.png" alt="Mega Links" width={140} height={30}/>
    <span className="sep"/>
-   <div className="grow"><h1 id="ag-title">מרכז הסוכנות</h1><p><bdi>{ctx.user?.company||ctx.user?.name}</bdi></p></div>
+   <div className="grow"><h1 id="ag-title">{name}</h1><p><bdi>{ctx.user?.company||ctx.user?.name}</bdi></p></div>
    <button type="button" className="ag-btn buy" onClick={()=>ctx.go('catalog')}><ShoppingCart size={18}/>רכישת פרסום</button>
   </header>
-  <nav className="ag-tabs" aria-label="מרכז הסוכנות">{SECTIONS.map(([key,label,Icon])=><Link key={key} ctx={ctx} to={'purchased/agency/'+key} current={section===key} className=""><Icon size={18} aria-hidden="true"/>{label}</Link>)}</nav>
+  <nav className="ag-tabs" aria-label={name}>{SECTIONS.map(([key,label,Icon])=><Link key={key} ctx={ctx} to={'purchased/agency/'+key} current={section===key} className=""><Icon size={18} aria-hidden="true"/>{label}</Link>)}</nav>
   {section==='overview'?<Overview ctx={ctx}/>:section==='reports'?<section className="ag-card ag-main"><h2 className="ag-page-title">דוחות</h2><Reports ctx={ctx}/></section>:section==='calendar'?<section className="ag-card ag-main"><h2 className="ag-page-title">לוח פרסומים</h2><Calendar ctx={ctx}/></section>:section==='settings'?<section className="ag-card ag-main"><h2 className="ag-page-title">הגדרות הסוכנות</h2><AgencySettings ctx={ctx}/></section>:section==='tasks'?<section className="ag-card ag-main"><h2 className="ag-page-title">לטיפול</h2><Tasks ctx={ctx}/></section>
    :section==='publications'?<section className="ag-card ag-main"><h2 className="ag-page-title">כל הפרסומים</h2><Publications ctx={ctx} customer=""/></section>
    :<Customers ctx={ctx} customerId={rest[1]||''} tab={rest[2]||''}/>}
@@ -269,7 +270,7 @@ function Overview({ctx}:{ctx:Ctx}){
  if(state.error)return <p className="ag-alert" role="alert">{state.error}</p>;
  if(!d)return <div className="ag-kpis">{[0,1,2,3].map(i=><div key={i} className="ag-card ag-kpi"><span className="ag-skel" style={{width:'60%'}}/></div>)}</div>;
  const k=d.kpis,diff=k.published_month-k.published_prev;
- if(!k.customers&&!d.recent.length)return <section className="ag-card ag-main"><div className="ag-empty"><LayoutDashboard size={32}/><h3>ברוכים הבאים למרכז הסוכנות</h3><p>שלושה צעדים כדי להתחיל:</p>
+ if(!k.customers&&!d.recent.length)return <section className="ag-card ag-main"><div className="ag-empty"><LayoutDashboard size={32}/><h3>ברוכים הבאים ל{agencyCentreName(ctx.user)}</h3><p>שלושה צעדים כדי להתחיל:</p>
   <div className="ag-start">{[['1','הוסיפו לקוח','purchased/agency/customers/new'],['2','רכשו פרסום עבורו','purchased/agency/customers'],['3','שייכו כתבות קיימות','purchased/articles']].map(([n,l,to])=><Link key={n} ctx={ctx} to={to} className="ag-start-step"><span>{n}</span>{l}</Link>)}</div></div></section>;
  const kpis:[React.ElementType,string,React.ReactNode,string,string,string][]=[[Users,'לקוחות פעילים',k.customers,k.customers_new_month?`+${k.customers_new_month} החודש`:'\u00a0','','purchased/agency/customers'],[Globe,'פרסומים החודש',k.published_month,diff?`${diff>0?'+':''}${diff} מהחודש הקודם`:'כמו בחודש הקודם','','purchased/agency/publications'],[Wallet,'הוצאה החודש · לפני מע״מ',<bdi key="s">{ils(k.spend_month)}</bdi>,'מתחילת החודש','','purchased/agency/publications'],[ListChecks,'כתבות שמחכות לך',k.waiting,k.urgent?`${k.urgent} דחופות`:'אין דחופות',k.urgent?'warn':'','purchased/agency/tasks']];
  return <>

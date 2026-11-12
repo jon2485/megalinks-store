@@ -6,6 +6,7 @@
 import React,{useEffect,useState} from 'react';
 import {X,EyeOff,CalendarCheck,Users,History,Check} from 'lucide-react';
 import {api} from '@/lib/client';
+import {hasAgencyCentre} from '@/lib/agency-shared';
 import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
 import './agency-center.css';
@@ -55,7 +56,7 @@ export async function patchCartChecked(id:string,payload:Row){
 const day=(iso?:string)=>iso?new Date(iso).toLocaleDateString('he-IL',{timeZone:'Asia/Jerusalem'}):'';
 
 export default function AgencyBuyingLayer({ctx,view,hiddenCount,usedCount}:{ctx:Ctx;view:string;hiddenCount:number;usedCount:number}){
- const agency=ctx.user?.role==='agency',buying=useBuyingFor(agency);
+ const agency=hasAgencyCentre(ctx.user),buying=useBuyingFor(agency);
  const [ask,setAsk]=useState<{info:UsedInfo;resolve:(v:boolean)=>void}|null>(null);
  useEffect(()=>{const on=(e:Event)=>{const d=(e as CustomEvent).detail;d.handled=true;setAsk({info:d.info,resolve:d.resolve});};window.addEventListener(CONFIRM,on);return()=>window.removeEventListener(CONFIRM,on);},[]);
  const answer=(v:boolean)=>{ask?.resolve(v);setAsk(null);};

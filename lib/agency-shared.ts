@@ -1,6 +1,12 @@
 // Pure helpers of the agency centre, without server imports (used by the server and by tests).
 import type {Row} from './shared';
 
+// Who gets the customer management centre. The owner (12.11.2026): for now every customer, not only "סוכנות" accounts.
+export const AGENCY_CENTRE_ROLES=['customer','agency'];
+export const hasAgencyCentre=(u?:Row|null)=>!!u&&AGENCY_CENTRE_ROLES.includes(String(u.role||''));
+// The name on the tab and the page: agencies keep "מרכז הסוכנות", other customers see "ניהול לקוחות".
+export const agencyCentreName=(u?:Row|null)=>u?.role==='agency'?'מרכז הסוכנות':'ניהול לקוחות';
+
 export function normalizeDomain(input:unknown){
  let text=String(input??'').trim().toLowerCase().replace(/^[a-z][a-z0-9+.-]*:\/\//,'').replace(/^www\./,'');
  text=text.split(/[\/?#\s]/)[0].replace(/:\d+$/,'').replace(/\.$/,'');

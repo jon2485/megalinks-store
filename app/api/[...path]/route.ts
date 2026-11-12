@@ -71,6 +71,7 @@ import { aiArticleHtml } from '@/lib/ai-article-content';
 import { env } from 'cloudflare:workers';
 import { Row, websitePricing, calculateQuote, articleTransitions, httpUrl, plainText, textToHtml } from '@/lib/shared';
 import { ApiError, db, stmt, one, all, parse, actor, admin, owns, assert, setting, saveSetting, audit, ensureCatalog, publicWebsite, website, uid, now, hash, encrypt, connection, geminiServerKey, externalFetch, externalUrl, notify, syncOrder, basicAuth } from '@/lib/server';
+import {hasAgencyCentre} from '@/lib/agency-shared';
 export const dynamic = 'force-dynamic';
 const response = (data: any, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const json = async (r: Request): Promise<Row> => { assert(Number(r.headers.get('content-length') || 0) <= 500000, 'הבקשה גדולה מדי', 413); const raw = await r.text(); assert(raw.length <= 500000, 'הבקשה גדולה מדי', 413); try {
@@ -160,7 +161,7 @@ async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: i
     const c = owns(u, await one('SELECT * FROM records WHERE id=? AND kind=?', d.customer_id, 'customer'));
     assert(c.kind === 'customer', 'לקוח לא תקין');
     // Agency centre: a site already used for this customer needs an explicit confirmation (spec section 7).
-    if (u.role === 'agency') { const hit = await usedSiteHit(u, c.id, w); if (hit) { assert(input.confirm_used_site === true || input.used_site_confirmed === true, 'USED_SITE:' + JSON.stringify({ site: w.name, customer: JSON.parse(c.data || '{}').name || '', ...hit }), 409); (d as Row).used_site_confirmed = true; } }
+    if (hasAgencyCentre(u)) { const hit = await usedSiteHit(u, c.id, w); if (hit) { assert(input.confirm_used_site === true || input.used_site_confirmed === true, 'USED_SITE:' + JSON.stringify({ site: w.name, customer: JSON.parse(c.data || '{}').name || '', ...hit }), 409); (d as Row).used_site_confirmed = true; } }
 } for (const file of [d.image_id, d.document_id].filter(Boolean))
     owns(u, await one('SELECT * FROM files WHERE id=?', file)); return d; }
 type ResponseAccess={privileged:boolean};

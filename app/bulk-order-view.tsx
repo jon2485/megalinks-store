@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import {bulkTemplateBytes} from '@/lib/bulk-template';
 import {downloadSpreadsheetBytes} from '@/lib/office';
 import BulkInstructions from './bulk-instructions';
+import { addToCartChecked } from './agency-buying';
 import './bulk-order-approved.css';
 
 export default function BulkView({ ctx }: { ctx: Ctx }) {
@@ -38,7 +39,8 @@ export default function BulkView({ ctx }: { ctx: Ctx }) {
         lock.current = true; setBusy(true); setError(''); let added = 0;
         try {
             for (const row of rows) {
-                await api('cart', 'POST', bulkCartPayload(row)); added++;
+                // A site already used for the chosen customer asks first (agency-buying.tsx); "no" keeps the row here.
+                if (!await addToCartChecked(bulkCartPayload(row))) continue; added++;
                 setRows(rs => rs.filter(r => r.id !== row.id));
             }
             ctx.refresh(); toast.success('ההזמנות נוספו לסל'); ctx.go('cart');
