@@ -30,7 +30,13 @@ function agencyCustomerErrors(values:Row){
  if(values.contact_name.length>200)errors.contact_name='שם איש הקשר ארוך מדי';
  return errors;
 }
-const parseRecord=(r:Row)=>({id:r.id,created:r.created,updated:r.updated,...JSON.parse(r.data||'{}')});
+// The stored JSON never decides the id or the dates, and text fields are always text (an older route stores the record as sent).
+const asText=(v:unknown)=>typeof v==='string'?v:v==null?'':typeof v==='number'?String(v):'';
+const asList=(v:unknown)=>Array.isArray(v)?v.filter(x=>typeof x==='string'):[];
+const parseRecord=(r:Row):any=>{let d:Row={};try{const p=JSON.parse(r.data||'{}');if(p&&typeof p==='object'&&!Array.isArray(p))d=p;}catch{}
+ for(const k of ['name','company','contact_name','phone','email','notes','status'])if(k in d)d[k]=asText(d[k]);
+ if('domains' in d)d.domains=asList(d.domains);if('tags' in d)d.tags=asList(d.tags);
+ return {...d,id:r.id,created:r.created,updated:r.updated};};
 
 export const WAITING_FOR_AGENCY=['draft','review','revisions'];
 export const isUnusedPurchase=(a:Row)=>a.status==='draft'&&!a.demo&&(a.paid||a.on_account);
@@ -156,7 +162,10 @@ const catalogSites=()=>all("SELECT id,name,url FROM websites WHERE active=1");
 export async function agencyUsedSites(u:Row,customerId:string){
  await agencyCustomer(u,customerId);
  const [rec,system,sites]=await Promise.all([usedRecord(u,customerId),systemUsed(u,customerId),catalogSites()]);
- const manual=rec.entries.map(e=>{const hits=sites.filter(s=>usedSiteMatches(e,s.url));return {...e,catalog:hits.map(s=>({id:s.id,name:s.name}))};});
+ // Each catalog site's key is worked out once, then every entry looks its domain up (a list can hold 5,000 entries).
+ const byDomain=new Map<string,{id:string;name:string;path:string}[]>();
+ for(const s of sites){const k=usedSiteKey(s.url);if(!k)continue;const group=byDomain.get(k.domain);if(group)group.push({id:s.id,name:s.name,path:k.path});else byDomain.set(k.domain,[{id:s.id,name:s.name,path:k.path}]);}
+ const manual=rec.entries.map(e=>({...e,catalog:(byDomain.get(e.domain)||[]).filter(s=>!e.path||s.path===e.path).map(s=>({id:s.id,name:s.name}))}));
  const hidden=new Set([...system.map(s=>s.website_id),...manual.flatMap(m=>m.catalog.map((c:Row)=>c.id))]);
  // What the catalog shows on a used site's card while buying for this customer: the last publication, or the manual entry.
  const used:Record<string,Row>={};

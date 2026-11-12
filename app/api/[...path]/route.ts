@@ -303,6 +303,8 @@ async function handle(r: Request,access:ResponseAccess) {
         admin(u); assert(method === 'GET', 'צפייה בלבד: אי אפשר לשנות דבר מכאן', 403);
         const target = await one('SELECT * FROM users WHERE id=?', p[2]); assert(target && hasAgencyCentre(target), 'לחשבון הזה אין ניהול לקוחות', 404);
         if (!p[3]) { await audit(u, target.id, 'צפייה במרכז הלקוחות של החשבון (קריאה בלבד)', {}); return response({ user: { id: target.id, name: target.name || '', company: target.company || '', role: target.role } }); }
+        // Every section the admin opens is logged too, once per section in ten minutes so the log stays readable.
+        { const section = [p[3], p[5]].filter(Boolean).join('/'), action = 'צפייה במרכז הלקוחות של החשבון: ' + maxText(section, 60); if (!await one('SELECT id FROM activity WHERE user_id=? AND resource=? AND action=? AND created>?', u.id, target.id, action, new Date(Date.now() - 600000).toISOString())) await audit(u, target.id, action, p[4] ? { customer_id: maxText(p[4], 100) } : {}); }
         u = target; p.splice(0, 3, 'agency');
     }
     if (p[0] === 'agency') {
