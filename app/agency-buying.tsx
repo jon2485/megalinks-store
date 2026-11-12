@@ -53,7 +53,7 @@ export async function patchCartChecked(id:string,payload:Row){
   if(!await confirmUsedSite(info))return null;
   return await api('cart/'+id,'PATCH',{...payload,confirm_used_site:true});}
 }
-// Brief defaults of the customer being bought for (spec 5.6): brand, audience, style, keywords, target link and anchor.
+// Brief defaults of the customer being bought for (spec 5.6, owner 13.11.2026): brand, audience and style only.
 // Kept as a promise, so an add right after entering customer mode still waits for them; read again after a change.
 // Returns the cart payload for that customer: the customer's id, and the defaults in the fields the buyer left empty.
 // Outside customer mode the payload is returned as it is.
@@ -76,20 +76,34 @@ export function useBriefDefaultsNote(ctx:Ctx,customerId:string,brief:Row){
  // The style is left out: a brief with no style shows the first style anyway.
  return enabled&&customer&&briefDefaultsUsed(brief,customer.brief_defaults).some(key=>key!=='style')?<p className="agc-filled">מולא לפי ברירות המחדל של <bdi>{customer.name}</bdi></p>:null;
 }
+// In a brief of an article bought for one of the account's customers: the target links already sent for that customer,
+// most used first, with how many times. A tap puts the link in the brief; typing a new one is always possible.
+// A link used 3 times or more is marked, so the buyer can vary. Only for the account itself, never in admin screens.
+export function CustomerLinkPicks({ctx,customerId,current,pick,disabled}:{ctx:Ctx;customerId:string;current:string;pick:(url:string)=>void;disabled?:boolean}){
+ const enabled=!!customerId&&hasAgencyCentre(ctx.user)&&!ctx.adminMode,base='agency/customers/'+encodeURIComponent(customerId||'');
+ const customer=useData(enabled?base:'',ctx.revision,enabled).data?.customer,links:Row[]=useData(enabled?base+'/links':'',ctx.revision,enabled).data?.links||[];
+ if(!enabled||!customer||!links.length)return null;
+ const now=String(current||'').trim().replace(/\/+$/,'');
+ // When every link is on the customer's one site, the site is named once and each link shows only its page, so links
+ // on a narrow phone do not all look the same.
+ const host=(u:string)=>{try{return new URL(u).hostname.replace(/^www\./,'');}catch{return '';}},hosts=new Set(links.map(l=>host(String(l.target_url||'')))),one=hosts.size===1?[...hosts][0]:'';
+ const label=(u:string)=>{if(!one)return u.replace(/^https?:\/\/(www\.)?/,'');try{const x=new URL(u),path=decodeURI(x.pathname+x.search).replace(/\/+$/,'');return path||'עמוד הבית';}catch{return u;}};
+ return <div className="agc-links" role="group" aria-label={'קישורים שכבר נשלחו עבור '+customer.name}>
+  <p>קישורים שכבר נשלחו עבור <bdi>{customer.name}</bdi>{one&&<> באתר <bdi dir="ltr">{one}</bdi></>}. בוחרים בלחיצה, או כותבים קישור חדש.</p>
+  <div className="agc-links-row">{links.slice(0,8).map(l=>{const url=String(l.target_url||''),on=!!now&&url.replace(/\/+$/,'')===now;return <button key={url} type="button" className={'agc-link'+(on?' on':'')+(l.count>=3?' hot':'')} aria-pressed={on} disabled={disabled} onClick={()=>pick(url)}><bdi dir="ltr" title={url}>{label(url)}</bdi><span>{l.count===1?'פעם אחת':l.count+' פעמים'}</span></button>;})}</div>
+ </div>;
+}
 // The "ברירות מחדל לבריף" part of the customer's details form in the centre (agency-center.tsx). Saved with the customer.
-export const emptyBriefDefaults=(saved?:unknown):Record<string,string>=>({brand:'',audience:'',style:'',keywords:'',target_url:'',anchor:'',...briefDefaultsInput(saved).values});
+export const emptyBriefDefaults=(saved?:unknown):Record<string,string>=>({brand:'',audience:'',style:'',...briefDefaultsInput(saved).values});
 export function BriefDefaultsFields({value,change,disabled}:{value:Record<string,string>;change:(key:string,value:string)=>void;disabled?:boolean}){
- const text=(key:string,label:string,hint?:React.ReactNode,ltr?:boolean,placeholder?:string)=><label>{label}{hint&&<small>{hint}</small>}<input type="text" value={value[key]||''} maxLength={BRIEF_DEFAULT_MAX[key]} placeholder={placeholder} disabled={disabled} dir={ltr?'ltr':undefined} style={ltr?{textAlign:'right'}:undefined} inputMode={ltr?'url':undefined} onChange={e=>change(key,e.target.value)}/></label>;
+ const text=(key:string,label:string,placeholder?:string)=><label>{label}<input type="text" value={value[key]||''} maxLength={BRIEF_DEFAULT_MAX[key]} placeholder={placeholder} disabled={disabled} onChange={e=>change(key,e.target.value)}/></label>;
  return <div className="ag-bd" role="group" aria-label="ברירות מחדל לבריף">
   <h3>ברירות מחדל לבריף</h3>
-  <p className="ag-bd-hint">ממלאות את הבריף לבד כשרוכשים עבור הלקוח הזה. אפשר לשנות אותן בכל כתבה.</p>
+  <p className="ag-bd-hint">מה שקבוע בכל הכתבות של הלקוח. נכנס לבריף לבד, ואפשר לשנות בכל כתבה. את הקישור, העוגן ומילות המפתח בוחרים בכל כתבה מחדש.</p>
   <div className="ag-form">
-   {text('brand','מותג')}
-   {text('audience','קהל יעד')}
+   {text('brand','שם העסק','למשל: קפה הבוקר')}
+   {text('audience','קהל יעד','למשל: תושבי הצפון שאוהבים קפה')}
    <label>סגנון כתיבה<select value={value.style||''} disabled={disabled} onChange={e=>change('style',e.target.value)}><option value="">בלי ברירת מחדל</option>{writingStyles.map(style=><option key={style} value={style}>{style}</option>)}</select></label>
-   {text('keywords','מילות מפתח',undefined,false,'מופרדות בפסיק')}
-   {text('target_url','קישור יעד',<>כתובת אחת, למשל <bdi>example.co.il/page</bdi></>,true)}
-   {text('anchor','עוגן',<>לא חובה. המילים שיהיו הקישור</>)}
   </div>
  </div>;
 }

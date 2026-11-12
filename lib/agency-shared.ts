@@ -1,7 +1,6 @@
 // Pure helpers of the agency centre, without server imports (used by the server and by tests).
 import type {Row} from './shared';
 import {writingStyles} from './shared';
-import {writingBriefLink} from './writing-brief-validation';
 
 // Who gets the customer management centre. The owner (12.11.2026): for now every customer, not only "סוכנות" accounts.
 export const AGENCY_CENTRE_ROLES=['customer','agency'];
@@ -68,24 +67,22 @@ export function budgetState(spendCents:unknown,budgetCents:unknown){
 // A cell of an exported file (CSV, Excel): a value that starts like a formula is written as plain text.
 export const safeCell=(v:unknown)=>String(v??'').replace(/^[=+\-@\t\r]/,"'$&");
 // ---------- brief defaults of a customer (spec 5.6 and 6.1) ----------
-// What the buyer would otherwise retype in every brief for this customer. The limits are the brief's own (validBrief in
-// the API route) and the link is checked like the link of a writer's brief. One target link and its anchor for now.
-export const BRIEF_DEFAULT_KEYS=['brand','audience','style','keywords','target_url','anchor'] as const;
-export const BRIEF_DEFAULT_MAX:Record<string,number>={brand:200,audience:500,style:100,keywords:300,target_url:2000,anchor:200};
-// Text only, trimmed and cut to the limit; empty fields are left out. A link that is not a web address is reported and dropped.
+// Only what stays the same in every article of this customer (owner 13.11.2026): business name, audience and style.
+// The target link, anchor and keywords change from article to article, so they are never filled automatically: the
+// brief shows the links already sent for this customer to pick from instead. The limits are the brief's own (validBrief).
+export const BRIEF_DEFAULT_KEYS=['brand','audience','style'] as const;
+export const BRIEF_DEFAULT_MAX:Record<string,number>={brand:200,audience:500,style:100};
+// Text only, trimmed and cut to the limit; empty fields are left out. Older records with a link or keywords are ignored.
 export function briefDefaultsInput(input:unknown){
- const src:Row=input&&typeof input==='object'&&!Array.isArray(input)?input as Row:{},values:Record<string,string>={};let error='';
- for(const key of BRIEF_DEFAULT_KEYS){const text=typeof src[key]==='string'?src[key].trim().slice(0,BRIEF_DEFAULT_MAX[key]).trim():'';if(text)values[key]=text;}
+ const src:Row=input&&typeof input==='object'&&!Array.isArray(input)?input as Row:{},values:Record<string,string>={};
+ const error='';for(const key of BRIEF_DEFAULT_KEYS){const text=typeof src[key]==='string'?src[key].trim().slice(0,BRIEF_DEFAULT_MAX[key]).trim():'';if(text)values[key]=text;}
  if(values.style&&!writingStyles.includes(values.style))delete values.style;
- if(values.target_url){const link=writingBriefLink(values.target_url);if(link.error){error='קישור היעד: '+link.error;delete values.target_url;}else values.target_url=link.url;}
  return {values,error};
 }
 // Fills the fields of a brief that are still empty from the customer's defaults. What the buyer typed always stays.
-// The anchor belongs to the default link, so it is not put beside another link the buyer typed.
 export function fillBriefDefaults(brief:Row,defaults:unknown){
  const d=briefDefaultsInput(defaults).values,has=(key:string)=>!!String(brief?.[key]??'').trim(),out:Row={...brief},filled:string[]=[];
- const ownLink=has('target_url')&&String(brief.target_url).trim()!==d.target_url;
- for(const key of BRIEF_DEFAULT_KEYS){if(!d[key]||has(key)||key==='anchor'&&ownLink)continue;out[key]=d[key];filled.push(key);}
+ for(const key of BRIEF_DEFAULT_KEYS){if(!d[key]||has(key))continue;out[key]=d[key];filled.push(key);}
  return {brief:out,filled};
 }
 // A cart item that moves to another customer: what came from the old customer's defaults is replaced by the new
