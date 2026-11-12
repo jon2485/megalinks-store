@@ -26,6 +26,7 @@ const lanes:{id:Lane;label:string;sub:string}[]=[
 const taskDefs:TaskDef[]=[
  {id:'cancellation',lane:'urgent',icon:XCircle,one:'בקשת ביטול וזיכוי',many:'בקשות ביטול וזיכוי',go:'טיפול בביטול',goMany:'לבקשות הביטול',page:'admin-orders',preset:['orders-bucket','attention'],old:'הוותיקה',quiet:'בקשות ביטול וזיכוי'},
  {id:'bank',lane:'urgent',icon:Landmark,one:'דיווח תשלום לאישור',many:'דיווחי תשלום לאישור',go:'בדיקה ואישור',goMany:'בדיקה ואישור',page:'admin-payment-reports',old:'הוותיק',quiet:'דיווחי תשלום',list:true},
+ {id:'unapplied',lane:'urgent',icon:CreditCard,one:'תשלום בכרטיס שלא זוכה',many:'תשלומים בכרטיס שלא זוכו',go:'טיפול בתשלום',goMany:'טיפול בתשלומים',page:'admin-orders',old:'הוותיק',quiet:'תשלומים בכרטיס שלא זוכו',list:true},
  {id:'topup',lane:'urgent',icon:Wallet,one:'בקשת הטענת יתרה',many:'בקשות הטענת יתרה',go:'בדיקת הבקשה',goMany:'בדיקת הבקשות',page:'admin-topups',old:'הוותיקה',quiet:'הטענות יתרה'},
  {id:'delivery',lane:'urgent',icon:TriangleAlert,one:'תקלה בשליחה לספק',many:'תקלות שליחה לספק',go:'פתיחת הכתבה',goMany:'לתקלות השליחה',page:'admin-publication',old:'הוותיקה',quiet:'תקלות שליחה לספק'},
  {id:'article',lane:'content',icon:FileText,one:'כתבה לאישור שלך',many:'כתבות לאישור שלך',go:'בדיקת הכתבה',goMany:'בדיקת הכתבות',page:'admin-approvals',old:'הוותיקה',quiet:'כתבות לאישור'},
@@ -36,7 +37,7 @@ const taskDefs:TaskDef[]=[
  {id:'seller_request',lane:'service',icon:Store,one:'בקשת ספק לבדיקה',many:'בקשות ספקים לבדיקה',go:'בדיקת הבקשה',goMany:'לבקשות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'requests'}],old:'הוותיקה',quiet:'בקשות ספקים'},
  {id:'seller_invoice',lane:'service',icon:ReceiptText,one:'חשבונית ספק לבדיקה',many:'חשבוניות ספקים לבדיקה',go:'בדיקת החשבונית',goMany:'לחשבוניות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'invoices'}],old:'הוותיקה',quiet:'חשבוניות ספקים'},
 ];
-const kindIcons:Record<string,Icon>={cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
+const kindIcons:Record<string,Icon>={cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,unapplied:CreditCard,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
 const date=(s:string)=>{const d=new Date(s);return Number.isNaN(+d)?'לא תועד':new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);};
 const clock=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',hour:'2-digit',minute:'2-digit'}).format(d);
 const dayLine=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',weekday:'long',day:'numeric',month:'long'}).format(d);
@@ -53,6 +54,7 @@ const real=(s:unknown)=>typeof s==='string'&&s.trim()&&s!=='כתבה ללא כו
 function lines(r:Row,task:string):{lead:string;short:unknown[];full:unknown[]}{
  const ref=r.detail&&'אסמכתא '+r.detail;
  if(task==='bank'||task==='topup')return {lead:r.user_name,short:[r.number,ref],full:[ref||r.status]};
+ if(task==='unapplied')return {lead:r.user_name,short:[r.number,r.detail],full:[r.number,r.detail]};
  if(task==='cancellation')return {lead:r.user_name,short:[r.number,r.website_name],full:[r.number,r.website_name,real(r.detail)]};
  if(task==='seller_request')return {lead:r.user_name,short:[r.website_name],full:[r.website_name]};
  if(task==='seller_invoice')return {lead:r.user_name,short:[r.detail&&'חודש '+r.detail],full:[r.detail&&'חודש '+r.detail]};
@@ -71,6 +73,22 @@ function PriceReview({ctx,queues,close}:{ctx:Ctx;queues:Row[];close:()=>void}){
    <button type="button" disabled={!!busy} aria-busy={busy===p.id||undefined} onClick={async()=>{if(busy)return;setBusy(p.id);setError('');try{await ctx.run(()=>api('admin/control-center/prices/'+p.id,'POST',{}),'עדכון המחיר סומן כנבדק');setTick(t=>t+1);}catch(e){setError((e as Error).message);}finally{setBusy('');}}}>{busy===p.id?'מסמן…':'בדקתי את השינוי'}</button></div>)}
   {!rows.length&&(state.loading&&!state.data?<p className="lb-pr-none" role="status">טוען שינויי מחירים…</p>:<p className="lb-pr-none">אין שינויי מחירים שממתינים לבדיקה.</p>)}
   <button type="button" className="is-quiet" onClick={()=>leave('admin-websites')}>בדיקת סנכרון וניהול האתרים</button>
+ </div>;
+}
+
+// A card charge the provider confirmed that was not applied to its order. The admin checks it, then closes it with a note.
+function UnappliedReview({ctx,close}:{ctx:Ctx;close:()=>void}){
+ const [tick,setTick]=useState(0),state=useData('admin/unapplied-payments',ctx.revision+tick,true,30000),[busy,setBusy]=useState(''),[error,setError]=useState(''),[notes,setNotes]=useState<Record<string,string>>({});
+ const rows:Row[]=state.data?.payments||[];
+ async function handle(p:Row){const note=(notes[p.id]||'').trim();if(busy)return;if(note.length<2){setError('יש לכתוב מה נעשה עם התשלום.');return;}setBusy(p.id);setError('');try{await ctx.run(()=>api('admin/unapplied-payments/handle','POST',{id:p.id,note}),'התשלום סומן כטופל');setTick(t=>t+1);}catch(e){setError((e as Error).message);}finally{setBusy('');}}
+ return <div className="lb-prices" dir="rtl">
+  <p className="lb-pr-none">הכרטיס חויב, והסכום לא נרשם להזמנה ולא זוכה ליתרה. בדקו מול חברת הסליקה, טפלו בכסף, ורק אז סמנו כטופל.</p>
+  {(state.error||error)&&<p className="lb-pr-err" role="alert">{state.error||error}</p>}
+  {rows.map(p=><div className="lb-pr" key={p.id}><div><b><bdi>{p.user_name||'לקוח'}</bdi> · הזמנה <bdi>{p.number}</bdi></b><small><bdi>{money(p.amount_cents)}</bdi> · <bdi>{date(p.created)}</bdi>{p.reason_label&&' · '+p.reason_label}</small></div>
+   <button type="button" className="is-quiet" onClick={()=>{close();ctx.go('admin-order/'+p.order_id);}}>פתיחת ההזמנה</button>
+   <input type="text" maxLength={500} aria-label={'מה נעשה עם התשלום של '+(p.user_name||'הלקוח')} placeholder="מה נעשה? למשל: הוחזר ללקוח בכרטיס" value={notes[p.id]||''} onChange={e=>setNotes(n=>({...n,[p.id]:e.target.value}))}/>
+   <button type="button" disabled={!!busy} aria-busy={busy===p.id||undefined} onClick={()=>handle(p)}>{busy===p.id?'מסמן…':'סימון כטופל'}</button></div>)}
+  {!rows.length&&(state.loading&&!state.data?<p className="lb-pr-none" role="status">טוען תשלומים…</p>:<p className="lb-pr-none">אין תשלומים בכרטיס שמחכים לטיפול.</p>)}
  </div>;
 }
 
@@ -100,7 +118,8 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  function refresh(){refreshing.current=true;setRefreshed(false);ctx.refresh();}
  function open(key:string,page:string,preset?:[string,unknown]){if(preset)saveAdminViewState(preset[0],preset[1]);setOpening(key);saveAdminViewState('updates',{...saved,scroll:window.scrollY});ctx.go(page);later(()=>setOpening(''),4000);}
  function openRow(row:Row,key:string){if(row.kind==='cancellation'&&row.resource_id&&!String(row.id).startsWith('cancel-request:')){openCancelFocus(ctx,row.resource_id);return;}open(key,row.page,row.kind==='topup'?['topups-search',row.detail||row.user_name]:undefined);}
- function openTask(def:TaskDef,t:Row){const first:Row|undefined=t.rows?.[0];if(t.total===1&&first&&!def.list)return openRow(first,'task:'+def.id);open('task:'+def.id,def.page,def.preset);}
+ function openUnapplied(){ctx.open({title:'תשלומים בכרטיס שלא זוכו',description:'כסף שנגבה בכרטיס ולא נרשם להזמנה',render:(close:()=>void)=><UnappliedReview ctx={ctx} close={close}/>});}
+ function openTask(def:TaskDef,t:Row){if(def.id==='unapplied')return openUnapplied();const first:Row|undefined=t.rows?.[0];if(t.total===1&&first&&!def.list)return openRow(first,'task:'+def.id);open('task:'+def.id,def.page,def.preset);}
  function openPrices(){ctx.open({title:'שינויי מחירים לבדיקה',description:'שינויים במחירון שטרם נבדקו',render:(close:()=>void)=><PriceReview ctx={ctx} queues={queues} close={close}/>});}
  function jump(id:string){setFlash(id);later(()=>setFlash(f=>f===id?'':f),1200);const el=document.getElementById('lb-g-'+id);el?.scrollIntoView({behavior:still()?'auto':'smooth',block:'start'});el?.querySelector<HTMLElement>('h3')?.focus({preventScroll:true});}
  function more(id:string,all:number,shown:number,step=10){setMoreBusy(id);commit({limits:{...saved.limits,[id]:Math.min(all,shown+step)}});}
@@ -124,7 +143,7 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
   return <div className={'lb-it'+(finished?' is-finished':'')} key={r.id}>
    <div className="lb-txt"><b><bdi>{lead}</bdi>{(def.id==='bank'||def.id==='topup')&&r.number&&<> · <bdi>{r.number}</bdi></>}</b><small>{dot(full)}</small></div>
    <div className="lb-meta">{r.amount!=null&&<bdi className="lb-amt">{money(r.amount)}</bdi>}{waitPill(r.happened_at)}</div>
-   {finished?<span className="lb-finished" role="status"><CheckCircle2 size={18} aria-hidden="true"/>סומן כטופל</span>:<>{link(r.id,r.page,()=>openRow(r,r.id),'lb-btn is-ghost',<span>{opening===r.id?'פותח…':r.action}</span>)}{doneButton(r)}</>}
+   {finished?<span className="lb-finished" role="status"><CheckCircle2 size={18} aria-hidden="true"/>סומן כטופל</span>:<>{link(r.id,r.page,()=>openRow(r,r.id),'lb-btn is-ghost',<span>{opening===r.id?'פותח…':r.action}</span>)}{def.id!=='unapplied'&&doneButton(r)}</>}
    {failed(r.id)}
   </div>;};
  const taskRow=(def:TaskDef)=>{const t:Row|undefined=tasks[def.id];if(!t?.total)return null;
@@ -136,7 +155,7 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
     <div className="lb-txt"><b><Icon size={17} aria-hidden="true"/>{single?def.one:def.many}</b>{first&&<small>{!single&&def.old+': '}{dot(single?[lead,...short]:[lead,short[0]])}</small>}</div>
     <div className="lb-meta">{Number(t.amount)>0&&<bdi className="lb-amt">{whole(t.amount)}</bdi>}{t.oldest&&waitPill(t.oldest)}</div>
     {link(key,single&&!def.list?first.page:def.page,()=>openTask(def,t),'lb-btn '+(def.lane==='urgent'?'is-pri':'is-soft'),<><span>{opening===key?'פותח…':single?def.go:def.goMany}</span>{arrow(key)}</>)}
-    {single?(finished?<span className="lb-finished" role="status" aria-label="סומן כטופל"><Check size={18} aria-hidden="true"/></span>:doneButton(first)):<button type="button" className="lb-end" aria-expanded={shown} aria-controls={'lb-items-'+def.id} aria-label={(shown?'הסתרת הפריטים: ':'הצגת הפריטים: ')+def.many} onClick={toggle}><ChevronDown size={20} aria-hidden="true"/></button>}
+    {single?(finished?<span className="lb-finished" role="status" aria-label="סומן כטופל"><Check size={18} aria-hidden="true"/></span>:def.id!=='unapplied'&&doneButton(first)):<button type="button" className="lb-end" aria-expanded={shown} aria-controls={'lb-items-'+def.id} aria-label={(shown?'הסתרת הפריטים: ':'הצגת הפריטים: ')+def.many} onClick={toggle}><ChevronDown size={20} aria-hidden="true"/></button>}
    </div>
    {single&&failed(first.id)}
    {shown&&<div className="lb-items" id={'lb-items-'+def.id}>{rows.map(r=>item(r,def))}
@@ -160,7 +179,7 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
  ];
  const tiles=follow.filter(f=>f.n>0);
  const quiet:{id:string;label:string;page:string;run:()=>void}[]=[
-  ...(data&&!saved.q?taskDefs.filter(d=>!tasks[d.id]?.total).map(d=>({id:d.id,label:d.quiet,page:d.page,run:()=>open('quiet:'+d.id,d.page,d.preset)})):[]),
+  ...(data&&!saved.q?taskDefs.filter(d=>!tasks[d.id]?.total).map(d=>({id:d.id,label:d.quiet,page:d.page,run:()=>d.id==='unapplied'?openUnapplied():open('quiet:'+d.id,d.page,d.preset)})):[]),
   ...follow.filter(f=>f.ready&&f.n===0).map(f=>({id:f.id,label:f.label,page:f.page,run:f.run})),
   // The old desk always had a way to the connection settings; the warning above covers it only while e-mail is off.
   ...(attention.data&&attention.data.email_ready!==false?[{id:'email',label:'חיבור הדוא״ל',page:'admin-connections',run:()=>open('quiet:email','admin-connections')}]:[]),

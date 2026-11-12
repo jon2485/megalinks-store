@@ -232,6 +232,7 @@
 .lb-prices .lb-pr b{display:block;font-weight:700}
 .lb-prices .lb-pr small{display:block;color:#6e6e73;font-size:13px}
 .lb-prices .lb-pr.is-alert{background:#fff7e8;color:#7a4a00}
+.lb-prices .lb-pr input{min-width:0;min-height:44px;padding:0 14px;border:0;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px #dcdfe6;font:inherit;font-size:14px;color:inherit}
 .lb-prices .lb-pr-none{padding:18px 4px;color:#6e6e73}
 .lb-prices .lb-pr-err{padding:10px 12px;border-radius:12px;background:#ffeceb;color:#8a1020;font-size:13.5px}
 .lb-prices button{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:#0071e3;color:#fff;font:inherit;font-weight:700;font-size:14px;white-space:nowrap;cursor:pointer;transition:transform .12s,filter .12s}

@@ -44,6 +44,7 @@ import {sheetsAdmin,receiveSheets} from '@/lib/sheets-sync';
 import {paymentEvidenceRows,orderPaymentEvidence} from '@/lib/payment-evidence';
 import {canWorkOrder,isBankPayment,isCardPayment} from '@/lib/payment-state';
 import {walletAvailable,cardAmount,completeOrderPayment} from '@/lib/split-payment';
+import {recordUnappliedPayment,unappliedId,unappliedPaymentCount,adminUnappliedPayments,handleUnappliedPayment} from '@/lib/unapplied-payments';
 import {walletUsageHistory} from '@/lib/wallet-usage';
 import {ledgerView} from '@/lib/ledger-view';
 import {orderSummarySql,fullyCancelledOrderSql} from '@/lib/order-summary';
@@ -209,16 +210,28 @@ async function handle(r: Request,access:ResponseAccess) {
         if(b.topup_id||String(b.order_id||'').startsWith('topup:'))return response(await completeWalletCard(b));
         assert(b.status === 'paid' && b.currency === 'ILS' && b.event_id, 'אירוע התשלום אינו תקין');
         const order = await one('SELECT * FROM orders WHERE id=?', b.order_id);
-        assert(order && (isCardPayment(order)||((['invoice','bank_transfer','monthly'].includes(order.payment))&&!!await one("SELECT id FROM jobs WHERE id=? AND kind='payment_link' AND status='succeeded'",'payment-link:'+order.id))) && order.status!=='cancelled' && (order.paid||order.status==='pending'||order.payment==='monthly'), 'הזמנה אינה זמינה לתשלום', 409);
+        // The callback is signed by the provider, so the card was really charged. Money that cannot be applied to the
+        // order is never dropped: it is recorded once for the admin (no credit and no refund happen here).
+        const eventId = maxText(b.event_id, 100), event = 'payment:' + eventId;
+        const payable = !!order && (isCardPayment(order)||((['invoice','bank_transfer','monthly'].includes(order.payment))&&!!await one("SELECT id FROM jobs WHERE id=? AND kind='payment_link' AND status='succeeded'",'payment-link:'+order.id))) && order.status!=='cancelled' && (order.paid||order.status==='pending'||order.payment==='monthly');
+        if (order && !payable) await recordUnappliedPayment(order, eventId, b.amount_cents, 'order_not_payable');
+        assert(order && payable, 'הזמנה אינה זמינה לתשלום', 409);
+        if (order.paid) {
+            if (await one('SELECT id FROM records WHERE id IN (?,?)', event, unappliedId(eventId))) return response({ ok: true, duplicate: true });
+            await recordUnappliedPayment(order, eventId, b.amount_cents, 'order_already_paid');
+            return response({ ok: true, unapplied: true });
+        }
         // The customer may pay through a link made before an item was removed. That money was really charged, so the
         // order is settled and the difference goes to the wallet. Any other amount is refused.
         const dueNow=cardAmount(order),got=Number(b.amount_cents),linkJob=await one("SELECT data FROM jobs WHERE id=?",'payment-link:'+order.id),sent:number[]=linkJob?(JSON.parse(linkJob.data||'{}').amounts||[]):[];
         const surplus=got>dueNow&&Number.isSafeInteger(got)&&sent.includes(got)?got-dueNow:0;
+        if (!(got===dueNow||surplus>0)) await recordUnappliedPayment(order, eventId, got, 'amount_mismatch');
         assert(got===dueNow||surplus>0, 'סכום התשלום אינו תואם', 409);
-        const event = 'payment:' + maxText(b.event_id, 100);
         if (await one('SELECT id FROM records WHERE id=?', event))
             return response({ ok: true, duplicate: true });
-        await completeOrderPayment(order,event,{amount_cents:b.amount_cents,payment_method:'card',reference:maxText(b.event_id,100),...(surplus?{surplus_credit:surplus}:{})},surplus?[stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),order.user_id,surplus,'זיכוי הפרש תשלום '+order.number,'payment-surplus:'+order.id,now()),stmt('UPDATE users SET credits=credits+? WHERE id=?',surplus,order.user_id)]:[]);
+        const done = await completeOrderPayment(order,event,{amount_cents:b.amount_cents,payment_method:'card',reference:maxText(b.event_id,100),...(surplus?{surplus_credit:surplus}:{})},surplus?[stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),order.user_id,surplus,'זיכוי הפרש תשלום '+order.number,'payment-surplus:'+order.id,now()),stmt('UPDATE users SET credits=credits+? WHERE id=?',surplus,order.user_id)]:[]);
+        // Nothing was applied (the order was settled in the meantime): record it instead of reporting a verified payment.
+        if ((done as Row).duplicate) { await recordUnappliedPayment(order, eventId, got, 'order_already_paid'); return response({ ok: true, unapplied: true }); }
         await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
         return response({ ok: true });
     }
@@ -351,7 +364,7 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     if (p[0] === 'me') {
         if (method === 'GET') {
-            const payments=u.role==='admin'?(await one("SELECT COUNT(*) AS n FROM orders o WHERE paid=0 AND status<>'cancelled' AND NOT "+fullyCancelledOrderSql()+" AND ((status IN ('pending','awaiting_approval') AND payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(data,'$.demo'),0)=0) OR EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending'))"))!.n:0;
+            const payments=u.role==='admin'?(await one("SELECT COUNT(*) AS n FROM orders o WHERE paid=0 AND status<>'cancelled' AND NOT "+fullyCancelledOrderSql()+" AND ((status IN ('pending','awaiting_approval') AND payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(data,'$.demo'),0)=0) OR EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending'))"))!.n+await unappliedPaymentCount():0;
             return response({ user: {...u,credits_available:await walletAvailable(u),marketing:await marketingStatus(u.id),monthly_account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id)}, counts: {...await one('SELECT (SELECT COUNT(*) FROM orders WHERE user_id=?) AS orders,(SELECT COUNT(*) FROM articles WHERE (?=1 OR user_id=?) AND status=?) AS approvals,(SELECT COUNT(*) FROM cart WHERE user_id=?) AS cart', u.id, u.role==='admin'?1:0, u.id, 'admin_review', u.id),payments} });
         }
         if (method === 'PATCH') {
@@ -1014,6 +1027,7 @@ if (p[0] === 'cart') {
             return new Response(monthReportWorkbook(result) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','Content-Disposition':'attachment; filename="monthly-summary-'+result.from+'-'+result.to+'.xlsx"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});
         }
 
+        if(p[1]==='unapplied-payments'){if(method==='GET'&&!p[2])return response(await adminUnappliedPayments());assert(method==='POST'&&p[2]==='handle'&&!p[3],'פעולה לא נתמכת',405);return response(await handleUnappliedPayment(u,await json(r)));}
         if(p[1]==='control-center'){if(p[2]==='updates'&&method==='POST'){assert(p.length===3||(p.length===4&&p[3]==='reopen'),'כתובת לא נמצאה',404);const body=await json(r);return response(p[3]==='reopen'?await reopenAdminUpdate(u,body):await handleAdminUpdate(u,body));}if(method==='POST'&&p[2]==='prices'&&p[3])return response(await reviewPriceChange(p[3],u));assert(method==='GET','פעולה לא נתמכת',405);if(p[2]==='updates')return response(await adminUpdates(query));if(p[2]==='pulse')return response(await adminPulse());if(p[2]==='search')return response(await adminLobbySearch(query.get('q')||''));if(p[2]==='prices')return response({prices:(await all("SELECT a.*,w.name AS website_name,w.url AS website_url FROM activity a LEFT JOIN websites w ON w.id=a.resource WHERE json_type(a.data,'$.before_price') IS NOT NULL AND COALESCE(json_extract(a.data,'$.after_price'),json_extract(a.data,'$.price'))<>json_extract(a.data,'$.before_price') AND NOT EXISTS(SELECT 1 FROM records r WHERE r.id='price-reviewed:'||a.id) ORDER BY a.created DESC")).map(parse)});return response(await adminControlCenter());}
         if(p[1]==='sheets')return response(await sheetsAdmin(r,p,u,json));
         if (p[1] === 'users') {

@@ -4,6 +4,7 @@ import type {Row} from './shared';
 import {fullyCancelledOrderSql} from './order-summary';
 import {adminUnionCtes} from './admin-sql';
 import {ORDER_ABANDONED_DAYS} from './admin-order-buckets';
+import {unappliedOpenSql,unappliedReasonSql} from './unapplied-payments';
 
 // Source events remain read-only; manual handling is separate metadata.
 export function adminUpdatesCte(){
@@ -24,6 +25,8 @@ export function adminUpdatesCte(){
   `SELECT 'cancellation:'||a.id,'cancellation',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(a.title,''),'כתבה ללא כותרת'),a.updated,NULL,'בקשת ביטול וזיכוי','ביטול בבדיקה','טיפול בביטול וזיכוי','admin-order/'||o.id,1 FROM ${articleBase} WHERE COALESCE(json_extract(a.data,'$.cancel_pending'),0)=1`,
   // A customer's request to cancel a whole order. Unpaid orders count too: the admin decides either way.
   `SELECT 'cancel-request:'||o.id,'cancellation',o.id,o.number,u.name,'',COALESCE(json_extract(r.data,'$.target')||' · ','')||COALESCE(json_extract(r.data,'$.reason'),''),r.updated,o.total,CASE WHEN json_extract(r.data,'$.scope')='article' THEN 'בקשת ביטול לאתר בהזמנה' ELSE 'בקשת ביטול מהלקוח' END,'ממתינה להחלטה','טיפול בבקשת הביטול','admin-order/'||o.id,1 FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=o.user_id WHERE r.kind='order_cancel_request' AND json_extract(r.data,'$.status')='pending'`,
+  // A card charge the provider confirmed that was not applied to its order. It leaves the list only when the admin closes it with a note.
+  `SELECT 'unapplied:'||r.id,'unapplied',r.id,o.number,u.name,'',${unappliedReasonSql('r')},r.created,json_extract(r.data,'$.amount_cents'),'תשלום בכרטיס שלא זוכה','נדרש טיפול','פתיחת ההזמנה','admin-order/'||o.id,1 FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=o.user_id WHERE ${unappliedOpenSql('r')}`,
   `SELECT 'topup:'||r.id,'topup',r.id,'',u.name,'',COALESCE(json_extract(r.data,'$.reference'),''),r.updated,json_extract(r.data,'$.amount_cents'),'בקשת הטענת יתרה','ממתינה לאישור','בדיקת הבקשה','admin-topups',1 FROM records r JOIN users u ON u.id=r.user_id WHERE (r.kind='wallet_topup' OR (r.kind='ticket' AND json_extract(r.data,'$.payment_method')='bank_transfer' AND json_extract(r.data,'$.amount_cents')>0)) AND COALESCE(json_extract(r.data,'$.decision'),'pending')='pending'`,
  ];
  const feed=adminUnionCtes('feed',branches);
@@ -34,6 +37,7 @@ const sameEvent=(alias='feed')=>`json_extract(h.data,'$.snapshot.id')=${alias}.i
 const eventVersion=(row:Row)=>hash(JSON.stringify([row.id,row.happened_at,row.status,row.detail,row.amount]));
 export async function handleAdminUpdate(user:Row,body:Row){
  assert(typeof body.id==='string'&&body.id.length<500&&typeof body.version==='string','התראה לא תקינה');
+ assert(!body.id.startsWith('unapplied:'),'תשלום שלא זוכה נסגר רק עם הערה, בחלון הטיפול בתשלום',409);
  const cte=adminUpdatesCte(),row=await one(`WITH ${cte} SELECT * FROM feed WHERE id=?`,body.id);
  assert(row,'ההתראה השתנתה או כבר אינה זמינה. יש לרענן',409);assert(await eventVersion(row)===body.version,'ההתראה התעדכנה. יש לרענן לפני הסימון',409);
  const id='admin-update-handled:'+body.version,stamp=now(),snapshot=Object.fromEntries(snapshotFields.map(k=>[k,row[k]]));
@@ -47,7 +51,7 @@ export async function reopenAdminUpdate(user:Row,body:Row){
  assert(row&&await eventVersion(row)===h.version,'האירוע המקורי השתנה. ההתראה נשארה בהיסטוריה',409);
  await stmt("DELETE FROM records WHERE id=? AND kind='admin_update_handled'",raw.id).run();await audit(user,raw.id,'התראה הוחזרה לטיפול',{event_id:row.id});return {ok:true};
 }
-const laneSql=`CASE kind WHEN 'cancellation' THEN 'urgent' WHEN 'delivery' THEN 'urgent' WHEN 'bank' THEN 'urgent' WHEN 'topup' THEN 'urgent' WHEN 'article' THEN 'content' WHEN 'publication' THEN 'content' WHEN 'writing' THEN 'content' WHEN 'late' THEN 'content' WHEN 'support' THEN 'service' WHEN 'seller' THEN 'service' ELSE 'info' END`;
+const laneSql=`CASE kind WHEN 'cancellation' THEN 'urgent' WHEN 'delivery' THEN 'urgent' WHEN 'bank' THEN 'urgent' WHEN 'topup' THEN 'urgent' WHEN 'unapplied' THEN 'urgent' WHEN 'article' THEN 'content' WHEN 'publication' THEN 'content' WHEN 'writing' THEN 'content' WHEN 'late' THEN 'content' WHEN 'support' THEN 'service' WHEN 'seller' THEN 'service' ELSE 'info' END`;
 const laneLimits={urgent:20,content:5,service:5,info:3} as const;
 const withVersion=async(row:Row):Promise<Row>=>({...row,page:String(row.id).startsWith('seller-request:')?'admin-seller-request/'+encodeURIComponent(String(row.resource_id)):row.page,version:await eventVersion(row)});
 // Open updates per work lane: oldest waiting first, information newest first. Counts come from the same rows as the list.
@@ -68,7 +72,7 @@ async function adminUpdateLanes(query:URLSearchParams){
 // Lobby (10.11.2026): the same open rows, grouped by the kind of work instead of one long list per lane.
 // Each task type carries its count, the money it holds and its oldest rows, so the lobby shows one line per type.
 const taskSql=`CASE WHEN id LIKE 'seller-invoice:%' THEN 'seller_invoice' WHEN kind='seller' THEN 'seller_request' ELSE kind END`;
-const taskIds=['cancellation','delivery','bank','topup','article','publication','writing','late','support','seller_request','seller_invoice','paid'] as const;
+const taskIds=['cancellation','delivery','bank','topup','unapplied','article','publication','writing','late','support','seller_request','seller_invoice','paid'] as const;
 async function adminUpdateTasks(query:URLSearchParams){
  const open=`SELECT * FROM feed WHERE NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`;
  const q=(query.get('q')||'').trim().slice(0,120),args=[q,'%'+q.replace(/[\\%_]/g,c=>'\\'+c)+'%'];
