@@ -28,7 +28,7 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
-import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit,agencyOverview,agencyTasks,adminAgencyView} from '@/lib/agency';
+import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit,agencyOverview,agencyTasks,adminAgencyView,agencyLinks,agencyNotes,addAgencyNote,changeAgencyNote} from '@/lib/agency';
 import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
@@ -307,6 +307,13 @@ async function handle(r: Request,access:ResponseAccess) {
         if (p[1] === 'publications' && !p[2] && method === 'GET') return response(await agencyPublications(u, new URL(r.url).searchParams));
         if (p[1] === 'overview' && !p[2] && method === 'GET') return response(await agencyOverview(u));
         if (p[1] === 'tasks' && !p[2] && method === 'GET') return response(await agencyTasks(u));
+        if (p[1] === 'customers' && p[2] && p[3] === 'links' && !p[4] && method === 'GET') return response(await agencyLinks(u, p[2]));
+        if (p[1] === 'customers' && p[2] && p[3] === 'notes') {
+            if (!p[4] && method === 'GET') return response(await agencyNotes(u, p[2]));
+            if (!p[4] && method === 'POST') return response(await addAgencyNote(u, p[2], await json(r)), 201);
+            if (p[4] && method === 'PATCH') return response(await changeAgencyNote(u, p[2], decodeURIComponent(p[4]), await json(r)));
+            if (p[4] && method === 'DELETE') return response(await changeAgencyNote(u, p[2], decodeURIComponent(p[4]), null));
+        }
         if (p[1] === 'customers' && p[2] && p[3] === 'used-sites') {
             if (!p[4] && method === 'GET') return response(await agencyUsedSites(u, p[2]));
             if (!p[4] && method === 'PATCH') { const b = await json(r); return response(await setUsedMode(u, p[2], String(b.mode || ''))); }

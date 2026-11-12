@@ -225,3 +225,43 @@ export async function adminAgencyView(target:Row){
  const usedBy=new Map(used.map(r=>{const d=JSON.parse(r.data||'{}');return [String(r.id).slice('used-sites:'.length),{manual:(d.entries||[]).length,mode:d.mode==='warn'?'warn':'hide'}];}));
  return {customers:[...customers].sort((x,y)=>Number(x.status==='archived')-Number(y.status==='archived')).map(c=>({id:c.id,name:c.name,company:c.company||'',domains:c.domains,tags:c.tags,status:c.status,stats:c.stats,used_sites:usedBy.get(c.id)||{manual:0,mode:'hide'}})),unassigned};
 }
+
+// ---------- links and anchors, notes (spec 5.2 tabs 6 and 7) ----------
+const targetKey=(url:string)=>{try{const x=new URL(url);return (x.hostname.replace(/^www\./,'')+x.pathname.replace(/\/+$/,'')).toLowerCase();}catch{return String(url||'').trim().toLowerCase();}};
+export async function agencyLinks(u:Row,customerId:string){
+ await agencyCustomer(u,customerId);
+ const rows=(await agencyArticles(u)).map(agencyArticleRow).filter(a=>a.customer_id===customerId&&!a.demo&&a.status!=='cancelled'&&(a.paid||a.on_account));
+ const groups=new Map<string,Row>();
+ for(const a of rows)for(const [url,anchor] of [[a.target_url,a.anchor],[a.target_url_2,a.anchor_2]] as [string,string][]){
+  if(!url)continue;const key=targetKey(url),g=groups.get(key)||{target_url:url,count:0,anchors:new Map<string,number>(),sites:new Set<string>(),last:''};
+  g.count++;const an=String(anchor||'').trim()||'(בלי עוגן)';g.anchors.set(an,(g.anchors.get(an)||0)+1);g.sites.add(a.website_name);
+  const when=a.published_at||a.purchased_at;if(when>g.last)g.last=when;groups.set(key,g);
+ }
+ return {links:[...groups.values()].map(g=>({target_url:g.target_url,count:g.count,last:g.last,sites:[...g.sites],anchors:[...g.anchors].map(([anchor,count])=>({anchor,count})).sort((x,y)=>y.count-x.count)})).sort((x,y)=>y.count-x.count)};
+}
+const NOTE_MAX=200,NOTE_TEXT=4000;
+export async function agencyNotes(u:Row,customerId:string){
+ await agencyCustomer(u,customerId);
+ const rows=await all("SELECT id,data,created,updated FROM records WHERE kind='customer_note' AND user_id=? AND json_extract(data,'$.customer_id')=? ORDER BY created DESC",u.id,customerId);
+ const notes=rows.map(r=>{const d=JSON.parse(r.data||'{}');return {id:r.id,text:d.text||'',pinned:!!d.pinned,created:r.created,updated:r.updated};});
+ return {notes:[...notes.filter(n=>n.pinned),...notes.filter(n=>!n.pinned)]};
+}
+export async function addAgencyNote(u:Row,customerId:string,body:Row){
+ await agencyCustomer(u,customerId);
+ const text=String(body.text??'').trim();assert(text,'יש לכתוב את ההערה');assert(text.length<=NOTE_TEXT,'אפשר עד 4,000 תווים בהערה');
+ const n=await one("SELECT COUNT(*) AS n FROM records WHERE kind='customer_note' AND user_id=? AND json_extract(data,'$.customer_id')=?",u.id,customerId);
+ assert(Number(n?.n||0)<NOTE_MAX,'אפשר לשמור עד 200 הערות ללקוח',409);
+ const id='customer-note:'+uid(),stamp=now();
+ await stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',id,'customer_note',u.id,JSON.stringify({customer_id:customerId,text,pinned:body.pinned===true}),stamp,stamp).run();
+ return {ok:true,id};
+}
+export async function changeAgencyNote(u:Row,customerId:string,noteId:string,body:Row|null){
+ await agencyCustomer(u,customerId);
+ const r=await one("SELECT * FROM records WHERE id=? AND kind='customer_note' AND user_id=?",noteId,u.id);
+ assert(r&&JSON.parse(r.data||'{}').customer_id===customerId,'ההערה לא נמצאה',404);
+ if(!body){await stmt('DELETE FROM records WHERE id=? AND user_id=?',noteId,u.id).run();return {ok:true};}
+ const d=JSON.parse(r.data||'{}'),text=body.text===undefined?d.text:String(body.text).trim();
+ assert(text,'יש לכתוב את ההערה');assert(text.length<=NOTE_TEXT,'אפשר עד 4,000 תווים בהערה');
+ await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND user_id=?',JSON.stringify({...d,text,pinned:body.pinned===undefined?!!d.pinned:body.pinned===true}),now(),noteId,u.id).run();
+ return {ok:true};
+}

@@ -3,7 +3,7 @@
 // header band, section tabs, and the customers page (list on the right, one customer's screen with tabs).
 // Every action uses the existing records and routes, so nothing here is a copy of "הכתבות שלי" or "ההזמנות שלי".
 import React,{useEffect,useMemo,useState} from 'react';
-import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen} from 'lucide-react';
+import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
 import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
@@ -12,7 +12,7 @@ import {setBuyingFor} from './agency-buying';
 import './agency-center.css';
 
 const SECTIONS=[['overview','סקירה',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks]] as const;
-const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['details','פרטים',IdCard]] as const;
+const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['links','קישורים ועוגנים',Link2],['notes','הערות',NotebookPen],['details','פרטים',IdCard]] as const;
 const COLORS=['#1673e6','#7c3aed','#0f9f8f','#ea580c','#b45309','#db2777','#0369a1','#16a34a','#0891b2','#65a30d','#c2410c','#be185d'];
 const colorFor=(id:string)=>COLORS[[...String(id)].reduce((s,c)=>s+c.charCodeAt(0),0)%COLORS.length];
 const ils=(cents:number)=>'₪'+(Math.round(Number(cents||0))/100).toLocaleString('he-IL',{maximumFractionDigits:2});
@@ -96,7 +96,7 @@ function CustomerScreen({ctx,customer,tab}:{ctx:Ctx;customer:Row;tab:string}){
   </div>
   <div className="ag-ctabs" role="tablist" aria-label={'הלקוח '+customer.name}>{CUSTOMER_TABS.map(([key,label,Icon])=><button key={key} type="button" role="tab" aria-selected={current===key} className={current===key?'on':''} onClick={()=>ctx.go(base+'/'+key)}><Icon size={16} aria-hidden="true"/>{label}{key==='articles'&&customer.stats?.waiting>0&&<span className="ag-pending">{customer.stats.waiting}</span>}</button>)}</div>
   <div role="tabpanel">
-   {current==='details'?<CustomerDetails ctx={ctx} customer={customer}/>:current==='used-sites'?<UsedSites ctx={ctx} customer={customer}/>:current==='articles'?<CustomerArticles ctx={ctx} customer={customer}/>:<Publications ctx={ctx} customer={customer.id}/>}
+   {current==='details'?<CustomerDetails ctx={ctx} customer={customer}/>:current==='used-sites'?<UsedSites ctx={ctx} customer={customer}/>:current==='links'?<CustomerLinks ctx={ctx} customer={customer}/>:current==='notes'?<CustomerNotes ctx={ctx} customer={customer}/>:current==='articles'?<CustomerArticles ctx={ctx} customer={customer}/>:<Publications ctx={ctx} customer={customer.id}/>}
   </div>
  </>;
 }
@@ -291,4 +291,35 @@ function Tasks({ctx}:{ctx:Ctx}){
  if(!tasks.length)return <div className="ag-empty"><ListChecks size={30}/><h3>הכול מטופל</h3><p>כשכתבה תחכה לאישור שלכם, תחזור לתיקון או תחכה לתשלום, היא תופיע כאן.</p></div>;
  const groups=new Map<string,Row[]>();for(const t of tasks){const key=t.kind==='payment'?'תשלומים':t.customer_name||'ללא לקוח';groups.set(key,[...(groups.get(key)||[]),t]);}
  return <>{[...groups].map(([name,items])=><section key={name} aria-label={name}><h3 className="ag-stage">{name}<span>{items.length}</span></h3>{items.map((t,i)=><TaskRow key={i} ctx={ctx} t={t}/>)}</section>)}</>;
+}
+
+// ---------- links and anchors ----------
+function CustomerLinks({ctx,customer}:{ctx:Ctx;customer:Row}){
+ const state=useData('agency/customers/'+encodeURIComponent(customer.id)+'/links',ctx.revision),rows:Row[]=state.data?.links||[];
+ if(state.error)return <p className="ag-alert" role="alert">{state.error}</p>;
+ if(state.loading&&!state.data)return <div className="ag-skel" style={{height:120}}/>;
+ if(!rows.length)return <div className="ag-empty"><Link2 size={30}/><h3>עדיין אין קישורים</h3><p>קישורי היעד והעוגנים מהכתבות של הלקוח יופיעו כאן, כדי לגוון עוגנים ולא לחזור על אותו עוגן.</p></div>;
+ return <><p className="ag-muted" style={{margin:'0 0 12px',fontSize:14.5}}>כל קישור יעד שנשלח עבור הלקוח, כמה פעמים ובאילו עוגנים. עוגן שחוזר הרבה מסומן.</p>
+  {rows.map(l=><section key={l.target_url} className="ag-linkcard"><div className="ag-linkhead"><span className="ag-ltr ag-linkurl">{String(l.target_url).replace(/^https?:\/\/(www\.)?/,'')}</span><span className="ag-chip">{l.count} פעמים</span>{l.last&&<span className="ag-muted" style={{fontSize:12.5}}>אחרון <bdi>{day(l.last)}</bdi></span>}</div>
+   <div className="ag-chips">{l.anchors.map((a:Row)=><span key={a.anchor} className={'ag-chip'+(a.count>=3?' hot':'')} title={a.count>=3?'העוגן הזה חוזר הרבה':undefined}>{a.anchor} · {a.count}</span>)}</div>
+   <p className="ag-muted" style={{margin:'8px 0 0',fontSize:12.5}}>באתרים: {l.sites.join(', ')}</p></section>)}</>;
+}
+// ---------- notes ----------
+function CustomerNotes({ctx,customer}:{ctx:Ctx;customer:Row}){
+ const base='agency/customers/'+encodeURIComponent(customer.id)+'/notes';
+ const state=useData(base,ctx.revision),notes:Row[]=state.data?.notes||[];
+ const [text,setText]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const run=async(fn:()=>Promise<any>,done:string)=>{if(busy)return;setBusy(true);setError('');try{await ctx.run(fn,done);return true;}catch(e){setError((e as Error).message);return false;}finally{setBusy(false);}};
+ return <>
+  <form className="ag-paste" style={{marginTop:0}} onSubmit={async e=>{e.preventDefault();if(text.trim()&&await run(()=>api(base,'POST',{text}),'ההערה נשמרה'))setText('');}}>
+   <label htmlFor="ag-note" style={{display:'flex',alignItems:'center',gap:7,fontSize:15,fontWeight:700}}><NotebookPen size={17}/>הערה חדשה</label>
+   <textarea id="ag-note" value={text} maxLength={4000} disabled={busy} placeholder="מה סוכם עם הלקוח, ממה לא לפרסם, איש קשר..." onChange={e=>setText(e.target.value)} style={{direction:'rtl',fontFamily:'inherit',marginTop:8}}/>
+   <div className="ag-result"><button type="submit" className="ag-btn primary sm" disabled={busy||!text.trim()}><Plus size={16}/>שמירת הערה</button></div>
+  </form>
+  {(error||state.error)&&<p className="ag-alert" role="alert">{error||state.error}</p>}
+  {state.loading&&!state.data?<div className="ag-skel" style={{height:80,marginTop:14}}/>:!notes.length?<div className="ag-empty"><NotebookPen size={28}/><h3>אין הערות</h3><p>הערות נשמרות רק אצלכם, עם תאריך.</p></div>
+   :<div className="ag-notes">{notes.map(n=><article key={n.id} className={'ag-note'+(n.pinned?' pinned':'')}><p>{n.text}</p><footer><bdi>{day(n.created)}</bdi>{n.pinned&&<span className="ag-chip">מוצמדת</span>}<span className="grow"/>
+    <button type="button" className="ag-btn ghost sm" disabled={busy} aria-label={n.pinned?'ביטול הצמדה':'הצמדה למעלה'} onClick={()=>run(()=>api(base+'/'+encodeURIComponent(n.id),'PATCH',{pinned:!n.pinned}),n.pinned?'ההצמדה בוטלה':'ההערה הוצמדה')}>{n.pinned?<PinOff size={15}/>:<Pin size={15}/>}</button>
+    <button type="button" className="ag-btn ghost sm" disabled={busy} aria-label="מחיקת ההערה" onClick={()=>{if(window.confirm('למחוק את ההערה?'))run(()=>api(base+'/'+encodeURIComponent(n.id),'DELETE'),'ההערה נמחקה');}}><Trash2 size={15}/></button></footer></article>)}</div>}
+ </>;
 }
