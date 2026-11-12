@@ -1177,3 +1177,11 @@ Owner decision: the supplier (without an account) gets all article details and f
 - **Checks:** sec 73, sec2 9, p16 57 and all earlier agency scripts pass; `tsc --noEmit`; repo tests agency-centre, cart-checkout-actions, checkout-phone-actions, cart-add-feedback, customer-account-actions, seo, bulk-order.
 - **Local test leftovers (local DB only):** archived fictional customers "לקוח רשומה משובשת" (qa-cust-a) and "בדיקת עומס זמנית" (qa-cust-b).
 - **לפני העלאה:** nothing temporary in the code.
+
+## 12.11.2026 (16): Login screen with Apple / Google and a terms approval step: mockup only (owner's request)
+
+- **Asked:** a preparation for the login screen: sign in with Apple or with Google, then a screen where a new customer approves the terms of use to register, with a checkbox there. Designed with the installed skills (signup flow, Apple-style design).
+- **Today:** the app has no login screen of its own. Identity comes from the hosting platform's headers (`actor()` in `lib/server.ts`); Staging has its own email + password page in `scripts/railway-staging-gateway.mjs`.
+- **Mockup (not built, nothing in the app changed):** `design/login-screen/mockup.html` (`?s=login`, `?s=terms`, `?s=ready`) and four images next to it. Screen 1: "כניסה לחשבון" with "כניסה עם Apple", "כניסה עם Google", and below "כניסה עם מייל וסיסמה" (kept so today's accounts are not locked out), plus a line on what we receive from Apple / Google. Screen 2, first sign-in only: the account that signed in, a required box for the terms of use and the privacy policy (starts empty; the button is off until it is ticked), an optional box for marketing mail (the existing marketing consent), "פתיחת החשבון". The time of approval and the terms version are to be saved.
+- **Needed from the owner before building:** approval of the design; a Google Cloud project (OAuth client) and an Apple Developer account (Sign in with Apple needs the paid developer programme); the site's final address for the return links; whether email + password stays as a third way.
+- **Open for the lawyer:** wording of the approval line; the terms box must not come pre-ticked.
