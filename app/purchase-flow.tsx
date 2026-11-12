@@ -3,7 +3,7 @@ import './cart-checkout-refresh.css';
 import './checkout-consents.css';
 import {MARKETING_WORDING} from '@/lib/marketing-wording';
 import EditorialAddon from './cart-editorial-addon';
-import {patchCartChecked} from './agency-buying';
+import {patchCartChecked,withCustomerDefaults} from './agency-buying';
 import CheckoutPaymentTiles from './checkout-payment-tiles';
 import {MonthlyCheckoutNotice} from './monthly-checkout-notice';
 import {BankTransferInstructions} from './payment-review';
@@ -83,7 +83,7 @@ ctx.go(result.id?'order-confirmed/'+result.id:'purchased');}catch(e){setError((e
                 <div className="reference-quantity"><label htmlFor={'publication-quantity-'+item.id}>כמות פרסומים</label><div className="cart-quantity-stepper"><Button type="button" variant="ghost" disabled={busy||quantityBusy[item.id]||item.quantity<=1} aria-label={'הפחתת כמות עבור '+item.name} onClick={()=>changeQuantity(item.id,item.quantity-1)}><Minus size={14} aria-hidden="true"/></Button><select id={'publication-quantity-'+item.id} aria-label={'מספר כתבות לפרסום ב־'+item.name} value={item.quantity} disabled={busy||quantityBusy[item.id]} onChange={e=>changeQuantity(item.id,Number(e.target.value))}>{Array.from({length:20},(_,i)=><option key={i+1} value={i+1}>{i+1}</option>)}</select><Button type="button" variant="ghost" disabled={busy||quantityBusy[item.id]||item.quantity>=20} aria-label={'הגדלת כמות עבור '+item.name} onClick={()=>changeQuantity(item.id,item.quantity+1)}><Plus size={14} aria-hidden="true"/></Button></div></div>
                 <div className={'reference-price-current'+(item.regular_price>item.publication_price?' is-on-sale':'')}>{item.regular_price>item.publication_price&&<span className="reference-sale-row"><s><bdi dir="ltr">{money(item.regular_price)}</bdi></s><span className="reference-discount" aria-label={Math.round((1-item.publication_price/item.regular_price)*100)+'% הנחה'}><bdi dir="ltr">−{Math.round((1-item.publication_price/item.regular_price)*100)}%</bdi></span></span>}<strong><bdi dir="ltr">{money(item.publication_price)}</bdi></strong><small>לפרסום אחד · לפני מע״מ</small>{item.quantity>1&&<small className="cart-line-total">סה״כ פרסום: <bdi dir="ltr">{money(item.publication_price*item.quantity)}</bdi></small>}</div>
                 <Button variant="ghost" size="icon" className="reference-remove" aria-label={'הסרת '+item.name+' מהסל'} disabled={busy||quantityBusy[item.id]} onClick={()=>ctx.run(()=>api('cart/'+item.id,'DELETE'),'האתר הוסר מהסל').then(()=>setDrafts(d=>({...d,[item.id]:false}))).catch(()=>{})}><Trash2 size={17}/></Button>
-            </div></CardContent><EditorialAddon customers={cartCustomers.data?.records||[]} customersError={cartCustomers.error} customersLoading={cartCustomers.loading} item={item} save={b=>saveItem(item.id,b)} dirty={v=>setDrafts(d=>({...d,[item.id]:v}))}/>
+            </div></CardContent><EditorialAddon customers={cartCustomers.data?.records||[]} customersError={cartCustomers.error} customersLoading={cartCustomers.loading} item={item} save={b=>saveItem(item.id,withCustomerDefaults(item,b,cartCustomers.data?.records||[]))} dirty={v=>setDrafts(d=>({...d,[item.id]:v}))}/>
         </Card>)}
         {items.length>2&&<Button variant="outline" className="cart-show-more" aria-expanded={showAllItems} disabled={Object.values(drafts).some(Boolean)} onClick={()=>setShowAllItems(!showAllItems)}>{showAllItems?'הצגת פחות פריטים':`הצגת יתר הפריטים (${items.length-2})`}<ChevronDown size={18}/></Button>}
     </section>;

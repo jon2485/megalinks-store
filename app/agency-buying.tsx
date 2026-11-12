@@ -3,11 +3,11 @@
 // its customers, the catalog shows a strip with the customer's name, hides (or keeps, by the customer's setting) the
 // sites already used for that customer, adds the customer to every item put in the cart, and asks before adding a site
 // that was already used. The server refuses such a site without the confirmation anyway.
-import React,{useEffect,useState} from 'react';
+import React,{useEffect,useRef,useState} from 'react';
 import {X,EyeOff,CalendarCheck,Users,History,Check} from 'lucide-react';
-import {api} from '@/lib/client';
-import {hasAgencyCentre} from '@/lib/agency-shared';
-import type {Row} from '@/lib/shared';
+import {api,useData} from '@/lib/client';
+import {hasAgencyCentre,fillBriefDefaults,moveBriefDefaults,briefDefaultsUsed,briefDefaultsInput,BRIEF_DEFAULT_MAX} from '@/lib/agency-shared';
+import {type Row,writingStyles} from '@/lib/shared';
 import type {Ctx} from './workspace';
 import './agency-center.css';
 
@@ -52,6 +52,46 @@ export async function patchCartChecked(id:string,payload:Row){
   let info:UsedInfo;try{info=JSON.parse(text.slice(at+10));}catch{throw new Error('האתר כבר שימש עבור הלקוח.');}
   if(!await confirmUsedSite(info))return null;
   return await api('cart/'+id,'PATCH',{...payload,confirm_used_site:true});}
+}
+// Brief defaults of the customer being bought for (spec 5.6): brand, audience, style, keywords, target link and anchor.
+// Kept as a promise, so an add right after entering customer mode still waits for them; read again after a change.
+// Returns the cart payload for that customer: the customer's id, and the defaults in the fields the buyer left empty.
+// Outside customer mode the payload is returned as it is.
+export function useBriefDefaults(buying:Buying,revision=0){
+ const ref=useRef<Promise<{id:string;values:Row|null}>>(Promise.resolve({id:'',values:null}));
+ useEffect(()=>{const id=buying?.id||'';ref.current=id?api('agency/customers/'+encodeURIComponent(id),'GET',undefined,{background:true}).then(d=>({id,values:d.customer?.brief_defaults||null})).catch(()=>({id,values:null})):Promise.resolve({id:'',values:null});},[buying?.id,revision]);
+ return async(payload:Row)=>{if(!buying)return payload;const d=await ref.current;return fillBriefDefaults({...payload,customer_id:buying.id},d.id===buying.id?d.values:null).brief;};
+}
+// A cart item given to another customer takes that customer's defaults in place of the previous customer's; what the
+// buyer typed stays. `customers` are the account's customer records as the cart already loads them.
+export function withCustomerDefaults(item:Row,change:Row,customers:Row[]){
+ if(change.customer_id===undefined||String(change.customer_id||'')===String(item.customer_id||''))return change;
+ const of=(id:unknown)=>customers.find(c=>c.id===id)?.brief_defaults;
+ return {...moveBriefDefaults(item,of(item.customer_id),of(change.customer_id)),...change};
+}
+// The quiet line in a brief form whose fields hold the customer's defaults. Only for the account itself, never in admin screens.
+export function useBriefDefaultsNote(ctx:Ctx,customerId:string,brief:Row){
+ const enabled=!!customerId&&hasAgencyCentre(ctx.user)&&!ctx.adminMode;
+ const customer=useData(enabled?'agency/customers/'+encodeURIComponent(customerId):'',ctx.revision,enabled).data?.customer;
+ // The style is left out: a brief with no style shows the first style anyway.
+ return enabled&&customer&&briefDefaultsUsed(brief,customer.brief_defaults).some(key=>key!=='style')?<p className="agc-filled">מולא לפי ברירות המחדל של <bdi>{customer.name}</bdi></p>:null;
+}
+// The "ברירות מחדל לבריף" part of the customer's details form in the centre (agency-center.tsx). Saved with the customer.
+export const emptyBriefDefaults=(saved?:unknown):Record<string,string>=>({brand:'',audience:'',style:'',keywords:'',target_url:'',anchor:'',...briefDefaultsInput(saved).values});
+export function BriefDefaultsFields({value,change,disabled}:{value:Record<string,string>;change:(key:string,value:string)=>void;disabled?:boolean}){
+ const text=(key:string,label:string,hint?:React.ReactNode,ltr?:boolean,placeholder?:string)=><label>{label}{hint&&<small>{hint}</small>}<input type="text" value={value[key]||''} maxLength={BRIEF_DEFAULT_MAX[key]} placeholder={placeholder} disabled={disabled} dir={ltr?'ltr':undefined} style={ltr?{textAlign:'right'}:undefined} inputMode={ltr?'url':undefined} onChange={e=>change(key,e.target.value)}/></label>;
+ return <div className="ag-bd" role="group" aria-label="ברירות מחדל לבריף">
+  <h3>ברירות מחדל לבריף</h3>
+  <p className="ag-bd-hint">ממלאות את הבריף לבד כשרוכשים עבור הלקוח הזה. אפשר לשנות אותן בכל כתבה.</p>
+  <div className="ag-form">
+   {text('brand','מותג')}
+   {text('audience','קהל יעד')}
+   <label>סגנון כתיבה<select value={value.style||''} disabled={disabled} onChange={e=>change('style',e.target.value)}><option value="">בלי ברירת מחדל</option>{writingStyles.map(style=><option key={style} value={style}>{style}</option>)}</select></label>
+   {text('keywords','מילות מפתח',undefined,false,'מופרדות בפסיק')}
+   {text('target_url','קישור יעד',<>כתובת אחת, למשל <bdi>example.co.il/page</bdi></>,true)}
+   {text('anchor','עוגן',<>לא חובה. המילים שיהיו הקישור</>)}
+  </div>
+ </div>;
 }
 const day=(iso?:string)=>iso?new Date(iso).toLocaleDateString('he-IL',{timeZone:'Asia/Jerusalem'}):'';
 

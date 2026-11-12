@@ -543,3 +543,5 @@ body .admin-design-v172 .orders-match-screen [data-slot=button]:not([data-varian
 @media(max-width:760px){.orders-match-screen .om-summary>button{flex:1 1 100%;padding:10px 12px;border-inline-start:0;border-top:1px solid var(--om-line)}.orders-match-screen .om-catalog-phone-tabs{display:block;margin-bottom:12px}.orders-match-screen.om-catalog .om-catalog-tabs{display:none!important}}
 
 @media(max-width:760px){.orders-match-screen .om-catalog-phone-tabs .orders-reference-month-filter{display:block!important;width:100%}.orders-match-screen .om-catalog-phone-tabs [data-slot=select-trigger]{display:flex!important;width:100%!important}}
+/* brief defaults + admin used-site tag */
+.om-used-site{display:block;width:fit-content;max-width:100%;justify-self:start;margin:4px 0 0!important;padding:2px 9px;border-radius:999px;background:#eef6f4;color:#0b5c53!important;font-size:12.5px!important;font-weight:600;line-height:1.5;white-space:normal;overflow-wrap:anywhere}

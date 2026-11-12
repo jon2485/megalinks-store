@@ -8,7 +8,7 @@ import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
 import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
 import type {Ctx} from './workspace';
-import {setBuyingFor} from './agency-buying';
+import {setBuyingFor,BriefDefaultsFields,emptyBriefDefaults} from './agency-buying';
 import './agency-center.css';
 import {hasAgencyCentre,agencyCentreName} from '@/lib/agency-shared';
 import {budgetState,safeCell} from '@/lib/agency-shared';
@@ -154,9 +154,12 @@ function BudgetMark({customer}:{customer:Row}){
 function CustomerDetails({ctx,customer}:{ctx:Ctx;customer:Row|null}){
  const initial=()=>({name:customer?.name||'',company:customer?.company||'',contact_name:customer?.contact_name||'',email:customer?.email||'',phone:customer?.phone||'',domains:(customer?.domains||[]).join('\n'),tags:(customer?.tags||[]).join(', '),monthly_budget_ils:customer?.monthly_budget_cents?String(customer.monthly_budget_cents/100):'',notes:customer?.notes||''});
  const [v,setV]=useState(initial),[busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(false);
+ // Brief defaults (spec 5.6): fill the brief when buying for this customer; saved with the customer's details.
+ const [bd,setBd]=useState(()=>emptyBriefDefaults(customer?.brief_defaults));
  const set=(k:string,value:string)=>{setV(x=>({...x,[k]:value}));setSaved(false);};
  const save=async(status?:string)=>{if(busy)return;if(!v.name.trim()){setError('יש להזין את שם הלקוח');return;}setBusy(true);setError('');try{
    const body={...v,name:v.name.trim(),domains:v.domains.split(/[\n,]+/),tags:v.tags.split(','),status:status||customer?.status||'active'};
+   Object.assign(body,{brief_defaults:bd});
    const out=await ctx.run(()=>api(customer?AP+'/customers/'+encodeURIComponent(customer.id):AP+'/customers',customer?'PATCH':'POST',body),status==='archived'?'הלקוח הועבר לארכיון':status==='active'&&customer?.status==='archived'?'הלקוח הוחזר מהארכיון':'פרטי הלקוח נשמרו');
    if(!customer&&out?.id)ctx.go(RP+'/customers/'+encodeURIComponent(out.id)+'/details');else setSaved(true);
   }catch(e){setError((e as Error).message);}finally{setBusy(false);}};
@@ -174,6 +177,7 @@ function CustomerDetails({ctx,customer}:{ctx:Ctx;customer:Row|null}){
    {field('tags','תגיות',{hint:'מופרדות בפסיק, למשל ריטיינר, חד פעמי'})}
    {field('notes','הערות',{area:true,wide:true})}
   </div>
+  <BriefDefaultsFields value={bd} disabled={busy} change={(key,value)=>{setBd(x=>({...x,[key]:value}));setSaved(false);}}/>
   {error&&<p className="ag-alert" role="alert">{error}</p>}
   {saved&&<p className="ag-ok" role="status">השינויים נשמרו</p>}
   <div className="ag-actions">

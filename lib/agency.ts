@@ -7,6 +7,7 @@ import {articleCustomerJoins,articleCustomerColumns} from './article-customer';
 import {customerInput,customerErrors} from './customer-fields';
 import {normalizeDomain,articleSpend,usedSiteKey,usedSiteMatches,parseUsedSites,hasAgencyCentre,budgetState} from './agency-shared';
 export {normalizeDomain,articleSpend};
+import {briefDefaultsInput} from './agency-shared';
 
 export function assertAgency(u:Row){assert(hasAgencyCentre(u),'ניהול הלקוחות פתוח לחשבונות לקוח בלבד',403);}
 
@@ -23,6 +24,8 @@ export function agencyCustomerInput(input:Row){
   domains:list(input.domains,DOMAIN_MAX,normalizeDomain),
   tags:list(input.tags,TAG_MAX,v=>v.trim().slice(0,40)),
   monthly_budget_cents:budget!=null&&Number.isSafeInteger(budget)&&budget>0?budget:null,
+  // Brief defaults (spec 5.6): kept as they are when the request does not send them.
+  ...(input.brief_defaults===undefined?{}:{brief_defaults:briefDefaultsInput(input.brief_defaults).values}),
  };
 }
 function agencyCustomerErrors(values:Row){
@@ -36,6 +39,7 @@ const asList=(v:unknown)=>Array.isArray(v)?v.filter(x=>typeof x==='string'):[];
 const parseRecord=(r:Row):any=>{let d:Row={};try{const p=JSON.parse(r.data||'{}');if(p&&typeof p==='object'&&!Array.isArray(p))d=p;}catch{}
  for(const k of ['name','company','contact_name','phone','email','notes','status'])if(k in d)d[k]=asText(d[k]);
  if('domains' in d)d.domains=asList(d.domains);if('tags' in d)d.tags=asList(d.tags);
+ if('brief_defaults' in d)d.brief_defaults=briefDefaultsInput(d.brief_defaults).values;
  return {...d,id:r.id,created:r.created,updated:r.updated};};
 
 export const WAITING_FOR_AGENCY=['draft','review','revisions'];
@@ -85,6 +89,7 @@ export async function saveAgencyCustomer(u:Row,id:string|null,body:Row){
  assertAgency(u);
  const values=agencyCustomerInput(body),errors=agencyCustomerErrors(values);
  assert(!Object.keys(errors).length,Object.values(errors)[0]);
+ const briefError=briefDefaultsInput(body.brief_defaults).error;assert(!briefError,briefError);
  const stamp=now();
  if(id){
   const r=await one("SELECT * FROM records WHERE id=? AND kind='customer' AND user_id=?",id,u.id);assert(r,'הלקוח לא נמצא',404);

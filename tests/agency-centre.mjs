@@ -56,6 +56,34 @@ assert.equal(budgetState(undefined,200000).level,'ok','no spend yet');
 // Exported cells (CSV and Excel): a value that starts like a formula becomes plain text.
 for(const [input,expected] of [['=1+1',"'=1+1"],['+972',"'+972"],['-5',"'-5"],['@x',"'@x"],['\tx',"'\tx"],['רגיל','רגיל'],['a=b','a=b'],[12.5,'12.5'],[null,'']])assert.equal(safeCell(input),expected,String(input));
 console.log('agency centre: budget levels and export cells ok');
+// Brief defaults of a customer (spec 5.6): what is stored, and how a brief is filled from them.
+{const {briefDefaultsInput,fillBriefDefaults,moveBriefDefaults,briefDefaultsUsed}=require(realpathSync('.sites-runtime/agency-shared.cjs'));
+ const saved=briefDefaultsInput({brand:'  דנה עיצובים ',audience:'בעלי דירות',style:'מקצועי וסמכותי',keywords:'עיצוב פנים, שיפוץ',target_url:'dana.example.co.il/services',anchor:'עיצוב פנים',price_cents:1,notes:'x',topic:'y'});
+ assert.deepEqual(saved.values,{brand:'דנה עיצובים',audience:'בעלי דירות',style:'מקצועי וסמכותי',keywords:'עיצוב פנים, שיפוץ',target_url:'https://dana.example.co.il/services',anchor:'עיצוב פנים'},'only the six fields, trimmed, link with https');
+ assert.equal(saved.error,'');
+ assert.deepEqual(briefDefaultsInput({brand:7,audience:['a'],style:'סגנון שלא קיים',keywords:{},anchor:null}).values,{},'text only, and a style from the list only');
+ assert.equal(briefDefaultsInput({brand:'א'.repeat(900)}).values.brand.length,200,'brand cut to the limit of the brief');
+ assert.equal(briefDefaultsInput({keywords:'א'.repeat(900)}).values.keywords.length,300);assert.equal(briefDefaultsInput({anchor:'א'.repeat(900)}).values.anchor.length,200);
+ for(const bad of ['javascript:alert(1)','not a link','ftp://example.com/a']){const out=briefDefaultsInput({target_url:bad});assert(out.error,bad);assert.equal(out.values.target_url,undefined,bad);}
+ for(const none of [undefined,null,'text',[1],7])assert.deepEqual(briefDefaultsInput(none),{values:{},error:''});
+ const d=saved.values,quick={website_id:'w1',topic:'כתבה עבור אתר',words:500,quantity:1,customer_id:'c1'};
+ const full=fillBriefDefaults(quick,d);
+ assert.deepEqual(full.brief,{...quick,...d},'an empty brief gets every default and keeps its own fields');assert.deepEqual(full.filled,Object.keys(d));
+ const typed=fillBriefDefaults({...quick,brand:'מותג אחר',keywords:'  ',target_url:'https://other.example.com/',anchor:''},d);
+ assert.equal(typed.brief.brand,'מותג אחר','a typed field is kept');assert.equal(typed.brief.keywords,d.keywords,'spaces only count as empty');
+ assert.equal(typed.brief.target_url,'https://other.example.com/','a typed link is kept');assert.equal(typed.brief.anchor,'','the default anchor is not put beside another link');
+ assert.deepEqual(typed.filled,['audience','style','keywords']);
+ assert.deepEqual(fillBriefDefaults(quick,null),{brief:quick,filled:[]},'no defaults: nothing changes');
+ assert.deepEqual(fillBriefDefaults(quick,{target_url:'javascript:alert(1)',brand:5}).brief,quick,'a bad stored record fills nothing');
+ assert.equal(Object.keys(full.brief).some(k=>!['website_id','topic','words','quantity','customer_id','brand','audience','style','keywords','target_url','anchor'].includes(k)),false,'no new field on a cart item');
+ // A cart item moved from one customer to another.
+ const other={brand:'משה שיפוצים',target_url:'https://moshe.example.co.il/'},item={...full.brief,audience:'קהל שהוקלד'};
+ assert.deepEqual(moveBriefDefaults(item,d,other),{brand:'משה שיפוצים',style:'',keywords:'',target_url:'https://moshe.example.co.il/',anchor:''},'old defaults replaced or emptied, typed text kept');
+ assert.deepEqual(moveBriefDefaults(item,d,undefined),{brand:'',style:'',keywords:'',target_url:'',anchor:''},'back to no customer: the old defaults are removed');
+ assert.deepEqual(moveBriefDefaults({topic:'x',brand:''},undefined,other),{brand:'משה שיפוצים',target_url:'https://moshe.example.co.il/'},'first customer on an item');
+ assert.deepEqual(moveBriefDefaults({topic:'x'},undefined,undefined),{},'customers without defaults: nothing changes');
+ assert.deepEqual(briefDefaultsUsed(item,d),['brand','style','keywords','target_url','anchor']);assert.deepEqual(briefDefaultsUsed({brand:'אחר'},d),[]);assert.deepEqual(briefDefaultsUsed(item,null),[]);
+ console.log('agency centre: brief defaults ok');}
 // Guard (12.11.2026): a CSS edit once dropped the calendar, notes, links and reports rules and the screens fell apart.
 // Every class the centre's screens use must have a rule in the stylesheet.
 {const {readFileSync}=await import('node:fs');const css=readFileSync('app/agency-center.css','utf8');
