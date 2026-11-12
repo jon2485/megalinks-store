@@ -3,6 +3,7 @@ import './cart-checkout-refresh.css';
 import './checkout-consents.css';
 import {MARKETING_WORDING} from '@/lib/marketing-wording';
 import EditorialAddon from './cart-editorial-addon';
+import {patchCartChecked} from './agency-buying';
 import CheckoutPaymentTiles from './checkout-payment-tiles';
 import {MonthlyCheckoutNotice} from './monthly-checkout-notice';
 import {BankTransferInstructions} from './payment-review';
@@ -61,7 +62,7 @@ export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean
     }, [billingDraftKey, billingLoaded, form.name, form.invoice_name, form.phone, form.payment]);
 
     useEffect(()=>{let live=true;setQuote(null);if(items.length)api('quote','POST',{coupon}).then(q=>live&&setQuote(q)).catch(e=>live&&setError(e.message));return()=>{live=false;};},[state.data]);
-    const saveItem=async(id:string,b:Row)=>{setQuote(null);try{await api('cart/'+id,'PATCH',b);ctx.refresh();}catch(e){try{setQuote(await api('quote','POST',{coupon}));}catch{}throw e;}};
+    const saveItem=async(id:string,b:Row)=>{setQuote(null);try{await patchCartChecked(id,b);ctx.refresh();}catch(e){try{setQuote(await api('quote','POST',{coupon}));}catch{}throw e;}};
     const changeQuantity=async(id:string,quantity:number)=>{if(quantityLocks.current.has(id)||!Number.isInteger(quantity)||quantity<1||quantity>20)return;quantityLocks.current.add(id);setQuantityBusy(v=>({...v,[id]:true}));try{await saveItem(id,{quantity});}catch(e){setError((e as Error).message);}finally{quantityLocks.current.delete(id);setQuantityBusy(v=>({...v,[id]:false}));}};
     const checkout=async()=>{if(lock.current)return;setError('');if(!form.invoice_name.trim()){setError('יש למלא שם לחשבונית');return;}const phone=String(form.phone||ctx.user?.phone||'').trim();if(!phone){setError('מלאו טלפון ליצירת קשר');document.getElementById('checkout-phone')?.focus();return;}if(!form.accepted){setError('אשרו את פרטי ההזמנה');return;}lock.current=true;setBusy(true);try{const result=await api('checkout','POST',{...form,phone,monthly_order_id:form.payment==='monthly'?monthlyOpen.data?.order?.id:undefined,coupon:quote?.coupon?.code||'',idempotency:idem.current,expected_total:quote?.total,pricing_token:quote?.pricing_token});try{sessionStorage.removeItem(billingDraftKey);}catch{}ctx.refresh();if(result.payment_required){toast.info('ההזמנה ממתינה לאישור התשלום באשראי');try{const link=await api('orders/'+result.id+'/payment-link','POST',{});window.location.assign(link.payment_url);}catch(e){toast.error((e as Error).message);ctx.go('wallet');}return;}// Every completed checkout lands on its confirmation screen, which explains the next step for the chosen payment
 ctx.go(result.id?'order-confirmed/'+result.id:'purchased');}catch(e){setError((e as Error).message);if(form.payment==='monthly')try{const latest=await api('monthly-open','GET',undefined,{background:true});monthlyOpen.setData?.(latest);}catch{}if(items.length)try{setQuote(await api('quote','POST',{coupon}));}catch{}}finally{setBusy(false);lock.current=false;}};

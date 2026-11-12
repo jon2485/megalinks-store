@@ -8,6 +8,7 @@ import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
 import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
 import type {Ctx} from './workspace';
+import {setBuyingFor} from './agency-buying';
 import './agency-center.css';
 
 const SECTIONS=[['customers','לקוחות',Users],['publications','פרסומים',Globe]] as const;
@@ -90,6 +91,7 @@ function CustomerScreen({ctx,customer,tab}:{ctx:Ctx;customer:Row;tab:string}){
    <div style={{flex:1,minWidth:0}}><h2>{customer.name}</h2>
     <div className="ag-chips">{customer.company&&<span className="ag-chip">{customer.company}</span>}{(customer.domains||[]).slice(0,2).map((d:string)=><span key={d} className="ag-chip"><Globe size={13}/><span className="ag-ltr">{d}</span></span>)}{(customer.tags||[]).map((t:string)=><span key={t} className="ag-chip tag">{t}</span>)}{customer.status==='archived'&&<span className="ag-chip">בארכיון</span>}</div>
    </div>
+   {customer.status!=='archived'&&<div className="ag-head-actions"><button type="button" className="ag-btn buy" onClick={()=>{setBuyingFor({id:customer.id,name:customer.name});ctx.go('catalog');}}><Plus size={17}/>רכישה עבור הלקוח</button></div>}
   </div>
   <div className="ag-ctabs" role="tablist" aria-label={'הלקוח '+customer.name}>{CUSTOMER_TABS.map(([key,label,Icon])=><button key={key} type="button" role="tab" aria-selected={current===key} className={current===key?'on':''} onClick={()=>ctx.go(base+'/'+key)}><Icon size={16} aria-hidden="true"/>{label}{key==='articles'&&customer.stats?.waiting>0&&<span className="ag-pending">{customer.stats.waiting}</span>}</button>)}</div>
   <div role="tabpanel">
