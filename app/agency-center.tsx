@@ -11,6 +11,8 @@ import type {Ctx} from './workspace';
 import {setBuyingFor} from './agency-buying';
 import './agency-center.css';
 import {hasAgencyCentre,agencyCentreName} from '@/lib/agency-shared';
+import {budgetState,safeCell} from '@/lib/agency-shared';
+import {exportSpreadsheet} from '@/lib/office';
 
 const SECTIONS=[['overview','סקירה',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks],['calendar','לוח פרסומים',CalendarDays],['reports','דוחות',ChartColumn],['settings','הגדרות',SettingsIcon]] as const;
 const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['links','קישורים ועוגנים',Link2],['notes','הערות',NotebookPen],['details','פרטים',IdCard]] as const;
@@ -97,7 +99,7 @@ function Customers({ctx,customerId,tab}:{ctx:Ctx;customerId:string;tab:string}){
     {state.error&&<p className="ag-alert" role="alert">{state.error}</p>}
     {state.loading&&!state.data?[0,1,2,3].map(i=><div key={i} className="ag-cust"><span className="ag-av" style={{background:'#e8eef5'}}/><span className="t"><span className="ag-skel" style={{width:'70%'}}/></span></div>)
      :!rows.length?<div className="ag-empty"><Users size={28}/><h3>{query?'לא נמצאו לקוחות':filter==='archived'?'אין לקוחות בארכיון':'עדיין אין לקוחות'}</h3><p>{query?'נסו חיפוש אחר.':'מוסיפים לקוח, ומשייכים אליו כתבות ופרסומים.'}</p></div>
-     :rows.map(c=><div role="listitem" key={c.id}><Link ctx={ctx} to={RP+'/customers/'+encodeURIComponent(c.id)} current={shown?.id===c.id} className={'ag-cust'+(shown?.id===c.id?' on':'')}><Avatar name={c.name} id={c.id}/><span className="t"><b>{c.name}</b><small>{c.company||c.domains?.[0]||' '}</small></span>{c.stats?.waiting>0&&<span className="ag-pending" aria-label={c.stats.waiting+' כתבות מחכות לכם'}>{c.stats.waiting}</span>}</Link></div>)}
+     :rows.map(c=><div role="listitem" key={c.id}><Link ctx={ctx} to={RP+'/customers/'+encodeURIComponent(c.id)} current={shown?.id===c.id} className={'ag-cust'+(shown?.id===c.id?' on':'')}><Avatar name={c.name} id={c.id}/><span className="t"><b>{c.name}</b><small>{c.company||c.domains?.[0]||' '}</small></span><BudgetMark customer={c}/>{c.stats?.waiting>0&&<span className="ag-pending" aria-label={c.stats.waiting+' כתבות מחכות לכם'}>{c.stats.waiting}</span>}</Link></div>)}
    </div>
   </aside>
   <section className="ag-card ag-main" aria-live="polite">
@@ -123,12 +125,29 @@ function CustomerScreen({ctx,customer,tab}:{ctx:Ctx;customer:Row;tab:string}){
    </div>
    {customer.status!=='archived'&&<div className="ag-head-actions"><button type="button" className="ag-btn buy" onClick={()=>{setBuyingFor({id:customer.id,name:customer.name});ctx.go('catalog');}}><Plus size={17}/>רכישה עבור הלקוח</button></div>}
   </div>
+  <BudgetLine customer={customer}/>
   {customer.stats?.unused>0&&current!=='articles'&&<button type="button" className="ag-unused-banner" onClick={()=>ctx.go(base+'/articles')}><PackageOpen size={18} aria-hidden="true"/><span><b><bdi>{customer.stats.unused}</bdi> {customer.stats.unused===1?'כתבה נרכשה':'כתבות נרכשו'} ללקוח ועוד לא {customer.stats.unused===1?'נוצלה':'נוצלו'}</b></span><span className="go">לצפייה<ArrowLeft size={15} aria-hidden="true"/></span></button>}
   <div className="ag-ctabs" ref={ctabsRef} role="tablist" aria-label={'הלקוח '+customer.name}>{CUSTOMER_TABS.map(([key,label,Icon])=><button key={key} type="button" role="tab" aria-selected={current===key} className={current===key?'on':''} onClick={()=>ctx.go(base+'/'+key)}><Icon size={16} aria-hidden="true"/>{label}{key==='articles'&&customer.stats?.waiting>0&&<span className="ag-pending">{customer.stats.waiting}</span>}</button>)}</div>
   <div role="tabpanel">
    {current==='details'?<CustomerDetails ctx={ctx} customer={customer}/>:current==='used-sites'?<UsedSites ctx={ctx} customer={customer}/>:current==='links'?<CustomerLinks ctx={ctx} customer={customer}/>:current==='notes'?<CustomerNotes ctx={ctx} customer={customer}/>:current==='articles'?<CustomerArticles ctx={ctx} customer={customer}/>:<Publications ctx={ctx} customer={customer.id}/>}
   </div>
  </>;
+}
+
+// ---------- monthly budget (spec 5.8) ----------
+// This month's spend against the customer's monthly budget, both before VAT. The spend is stats.month_spend from the
+// customers list: the same sum the publications page shows for "החודש". No budget set: nothing is shown.
+function BudgetLine({customer}:{customer:Row}){
+ const b=budgetState(customer.stats?.month_spend,customer.monthly_budget_cents);if(!b)return null;
+ return <div className={'ag-budget '+b.level}>
+  <p>{b.level==='ok'?<>נוצלו <bdi>{b.pct}%</bdi> מהתקציב החודשי</>:<><b>{b.label}</b> · נוצלו <bdi>{b.pct}%</bdi></>} · <bdi>{ils(b.spend)}</bdi> מתוך <bdi>{ils(b.budget)}</bdi></p>
+  <span className="ag-budget-bar" aria-hidden="true"><i style={{width:Math.min(100,b.pct)+'%'}}/></span>
+ </div>;
+}
+// The small marker in the customers list, only from 80% of the budget.
+function BudgetMark({customer}:{customer:Row}){
+ const b=budgetState(customer.stats?.month_spend,customer.monthly_budget_cents);if(!b||b.level==='ok')return null;
+ return <span className={'ag-budget-mark '+b.level} title={b.label}><Wallet size={12} aria-hidden="true"/><span className="sr-only">{b.label} </span><bdi>{b.pct}%</bdi></span>;
 }
 
 // ---------- details ----------
@@ -175,7 +194,9 @@ function ranges():Range[]{const {y,m}=israelToday(),last=(yy:number,mm:number)=>
  const start12=new Date(Date.UTC(y,m-12,1));
  return [{label:'החודש',from:`${y}-${pad(m)}-01`,to:`${y}-${pad(m)}-${pad(last(y,m))}`},{label:'החודש הקודם',from:`${py}-${pad(pm)}-01`,to:`${py}-${pad(pm)}-${pad(last(py,pm))}`},{label:'השנה',from:`${y}-01-01`,to:`${y}-12-31`},{label:'12 חודשים',from:`${start12.getUTCFullYear()}-${pad(start12.getUTCMonth()+1)}-01`,to:`${y}-${pad(m)}-${pad(last(y,m))}`},{label:'הכול',from:'',to:''}];}
 const MONTHS=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
-const csvCell=(v:unknown)=>{const t=String(v??'').replace(/^[=+\-@\t\r]/,"'$&");return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
+const csvCell=(v:unknown)=>{const t=safeCell(v);return /[",\n]/.test(t)?'"'+t.replace(/"/g,'""')+'"':t;};
+// Excel gets the same rows as the CSV, through the site's Excel helper; characters a sheet cannot hold are dropped.
+const xlsCell=(v:unknown)=>safeCell(v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');
 
 function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
  const quick=useMemo(ranges,[]);
@@ -185,8 +206,9 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
  const q=new URLSearchParams({...(customer?{customer}:who?{customer:who}:{}),...(custom.from?{from:custom.from}:{}),...(custom.to?{to:custom.to}:{}),...(status?{status}:{})});
  const state=useData(AP+'/publications?'+q.toString(),ctx.revision),rows:Row[]=state.data?.publications||[],s=state.data?.summary;
  const years=useData(AP+'/publications?'+new URLSearchParams(customer?{customer}:{}).toString(),ctx.revision).data?.years||[];
- const exportCsv=()=>{const head=[...(customer?[]:['לקוח']),'אתר','כתובת האתר','תאריך פרסום','קישור לכתבה','עוגן','קישור יעד','הזמנה','עלות לפני מע"מ','סטטוס'];
+ const exportCsv=(excel=false)=>{const head=[...(customer?[]:['לקוח']),'אתר','כתובת האתר','תאריך פרסום','קישור לכתבה','עוגן','קישור יעד','הזמנה','עלות לפני מע"מ','סטטוס'];
   const lines=[head,...rows.map(a=>[...(customer?[]:[a.customer_name||'ללא לקוח']),a.website_name,a.website_url,a.published_at?day(a.published_at):'',a.published_url,a.anchor,a.target_url,a.number,(a.spend/100).toFixed(2),a.status==='published'?'פורסם':a.status==='cancelled'||a.publication_refunded?'זוכה':'בדרך'])];
+  if(excel){exportSpreadsheet('publications-'+(custom.from||'all')+'.xlsx',lines.map(l=>l.map(xlsCell)),'פרסומים');return;}
   const blob=new Blob(['﻿'+lines.map(l=>l.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');
   link.href=url;link.download='publications-'+(custom.from||'all')+'.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),4000);};
  const statusOf=(a:Row)=>a.status==='cancelled'||a.publication_refunded?['זוכה','off']:a.status==='published'?['פורסם','']:['בדרך','way'];
@@ -198,7 +220,7 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
    <label className="ag-select"><small>סטטוס</small><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">הכול</option><option value="published">פורסם</option><option value="on_the_way">בדרך</option><option value="refunded">זוכה</option></select></label>
    {!customer&&<label className="ag-select"><small>לקוח</small><select value={who} onChange={e=>setWho(e.target.value)}><option value="">כל הלקוחות</option><option value="none">ללא לקוח</option>{(customers.data?.customers||[]).map((c:Row)=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>}
    <span className="grow"/>
-   <button type="button" className="ag-btn ghost sm" disabled={!rows.length} onClick={exportCsv}><Download size={16}/>ייצוא CSV</button>
+   <span className="ag-export"><button type="button" className="ag-btn ghost sm" disabled={!rows.length} onClick={()=>exportCsv()}><Download size={16}/>ייצוא CSV</button><button type="button" className="ag-btn ghost sm" disabled={!rows.length} onClick={()=>exportCsv(true)}><FileSpreadsheet size={16}/>ייצוא לאקסל</button></span>
   </div>
   <div className="ag-stats" aria-live="polite">
    <div className="ag-stat"><small>פרסומים</small><b><bdi>{s?s.count:'…'}</bdi></b><em>{s?`${s.published} פורסמו · ${s.on_the_way} בדרך`:' '}</em></div>
@@ -313,11 +335,11 @@ function Overview({ctx}:{ctx:Ctx}){
  </>;
 }
 // ---------- to-do (spec 5.4) ----------
-const TASK_LOOK:Record<string,[React.ElementType,string,string,string]>={review:[PencilLine,'#eef5ff','#1673e6','לבדיקה'],revisions:[RotateCcw,'#fff4e5','#b45309','לתיקון'],draft:[FilePen,'#f3f0ff','#6d28d9','להשלמה'],payment:[CreditCard,'#fdecec','#c2262e','לתשלום'],scheduled:[CalendarClock,'#eefbf6','#0f7a55','לפרטים']};
+const TASK_LOOK:Record<string,[React.ElementType,string,string,string]>={review:[PencilLine,'#eef5ff','#1673e6','לבדיקה'],revisions:[RotateCcw,'#fff4e5','#b45309','לתיקון'],draft:[FilePen,'#f3f0ff','#6d28d9','להשלמה'],payment:[CreditCard,'#fdecec','#c2262e','לתשלום'],scheduled:[CalendarClock,'#eefbf6','#0f7a55','לפרטים'],budget:[Wallet,'#fff4e5','#b45309','ללקוח'],budget_over:[Wallet,'#fdecec','#c2262e','ללקוח']};
 function TaskRow({ctx,t}:{ctx:Ctx;t:Row}){
- const [Icon,bg,fg,action]=TASK_LOOK[t.kind]||TASK_LOOK.review;
- const to=t.kind==='payment'?'purchased/orders':'article/'+t.article_id;
- const sub=t.kind==='payment'?<>הזמנה <bdi>{t.number}</bdi> · <bdi>{day(t.date)}</bdi></>:<>{t.customer_name||'ללא לקוח'} · {t.title||t.website_name}{t.kind==='scheduled'&&t.date?<> · <bdi>{day(t.date)}</bdi></>:null}</>;
+ const [Icon,bg,fg,action]=TASK_LOOK[t.kind==='budget'&&t.level==='over'?'budget_over':t.kind]||TASK_LOOK.review;
+ const to=t.kind==='payment'?'purchased/orders':t.kind==='budget'?RP+'/customers/'+encodeURIComponent(t.customer_id):'article/'+t.article_id;
+ const sub=t.kind==='payment'?<>הזמנה <bdi>{t.number}</bdi> · <bdi>{day(t.date)}</bdi></>:t.kind==='budget'?<>{t.customer_name} · <bdi>{ils(t.spend)}</bdi> מתוך <bdi>{ils(t.budget)}</bdi> · <bdi>{t.pct}%</bdi></>:<>{t.customer_name||'ללא לקוח'} · {t.title||t.website_name}{t.kind==='scheduled'&&t.date?<> · <bdi>{day(t.date)}</bdi></>:null}</>;
  return <div className="ag-task"><span className="dot" style={{background:bg,color:fg}}><Icon size={17}/></span><span className="t"><b>{t.label}</b><small>{sub}</small></span><Link ctx={ctx} to={to} className="ag-btn ghost sm">{action}</Link></div>;
 }
 function Tasks({ctx}:{ctx:Ctx}){
@@ -390,7 +412,9 @@ function Reports({ctx}:{ctx:Ctx}){
   try{const d=await api(AP+'/publications?'+q({customer:who}));const c=list.find(x=>x.id===who),logo=await logoData(settings.data?.logo_url);win.document.open();win.document.write(reportHtml({agency:settings.data?.report_name||'',color:settings.data?.report_color||'#1673e6',customer:c?.name||'',from:range.from,to:range.to,rows:d.publications||[],costs:showCosts,logo}));win.document.close();}
   catch(e){win.close();setError((e as Error).message);}finally{setBusy('');}};
  const spendReport=async()=>{setBusy('spend');setError('');try{const d=await api(AP+'/publications?'+q());const by=new Map<string,Row>();for(const a of d.publications||[]){const key=a.customer_id||'';const r=by.get(key)||{name:a.customer_name||'ללא לקוח',count:0,published:0,spend:0};r.count++;if(a.status==='published')r.published++;r.spend+=a.spend;by.set(key,r);}setSpend([...by.values()].sort((x,y)=>y.spend-x.spend));}catch(e){setError((e as Error).message);}finally{setBusy('');}};
- const spendCsv=()=>{if(!spend)return;const lines=[['לקוח','פרסומים','פורסמו','הוצאה לפני מע"מ'],...spend.map(r=>[r.name,r.count,r.published,(r.spend/100).toFixed(2)])];const blob=new Blob(['\ufeff'+lines.map(l=>l.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='spend-'+(range.from||'all')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);};
+ const spendCsv=(excel=false)=>{if(!spend)return;const lines=[['לקוח','פרסומים','פורסמו','הוצאה לפני מע"מ'],...spend.map(r=>[r.name,r.count,r.published,(r.spend/100).toFixed(2)])];
+  if(excel){exportSpreadsheet('spend-'+(range.from||'all')+'.xlsx',lines.map(l=>l.map(xlsCell)),'הוצאות לפי לקוח');return;}
+  const blob=new Blob(['\ufeff'+lines.map(l=>l.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='spend-'+(range.from||'all')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);};
  return <>
   <div className="ag-filters" role="group" aria-label="תקופת הדוח">{quick.map(r=><button key={r.label} type="button" className={'ag-pill'+(range.label===r.label?' on':'')} aria-pressed={range.label===r.label} onClick={()=>{setRange(r);setSpend(null);}}>{r.label}</button>)}</div>
   {error&&<p className="ag-alert" role="alert">{error}</p>}
@@ -401,7 +425,7 @@ function Reports({ctx}:{ctx:Ctx}){
     <button type="button" className="ag-btn primary" disabled={!!busy} onClick={customerReport}>{busy==='customer'?<LoaderCircle size={17} className="animate-spin"/>:<Printer size={17}/>}הפקת דוח ללקוח</button></section>
    <section className="ag-report"><span className="ic"><FileSpreadsheet size={22}/></span><h3>דוח הוצאות</h3><p>כמה פורסם וכמה הוצאתם עבור כל לקוח בתקופה, לפני מע״מ. עוזר לחייב את הלקוחות.</p>
     <button type="button" className="ag-btn primary" disabled={!!busy} onClick={spendReport}>{busy==='spend'?<LoaderCircle size={17} className="animate-spin"/>:<ChartColumn size={17}/>}הצגת דוח הוצאות</button>
-    {spend&&(spend.length?<><table className="ag-table" style={{marginTop:12}}><thead><tr><th scope="col">לקוח</th><th scope="col">פרסומים</th><th scope="col">פורסמו</th><th scope="col">הוצאה</th></tr></thead><tbody>{spend.map(r=><tr key={r.name}><td data-label="לקוח">{r.name}</td><td data-label="פרסומים">{r.count}</td><td data-label="פורסמו">{r.published}</td><td data-label="הוצאה"><bdi>{ils(r.spend)}</bdi></td></tr>)}</tbody></table><button type="button" className="ag-btn ghost sm" style={{marginTop:10}} onClick={spendCsv}><Download size={16}/>ייצוא CSV</button></>:<p className="ag-muted">אין פרסומים בתקופה הזו.</p>)}</section>
+    {spend&&(spend.length?<><table className="ag-table" style={{marginTop:12}}><thead><tr><th scope="col">לקוח</th><th scope="col">פרסומים</th><th scope="col">פורסמו</th><th scope="col">הוצאה</th></tr></thead><tbody>{spend.map(r=><tr key={r.name}><td data-label="לקוח">{r.name}</td><td data-label="פרסומים">{r.count}</td><td data-label="פורסמו">{r.published}</td><td data-label="הוצאה"><bdi>{ils(r.spend)}</bdi></td></tr>)}</tbody></table><span className="ag-export"><button type="button" className="ag-btn ghost sm" onClick={()=>spendCsv()}><Download size={16}/>ייצוא CSV</button><button type="button" className="ag-btn ghost sm" onClick={()=>spendCsv(true)}><FileSpreadsheet size={16}/>ייצוא לאקסל</button></span></>:<p className="ag-muted">אין פרסומים בתקופה הזו.</p>)}</section>
   </div>
  </>;
 }

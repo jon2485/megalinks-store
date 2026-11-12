@@ -40,6 +40,22 @@ for(const role of ['admin','supplier','',undefined])assert.equal(hasAgencyCentre
 assert.equal(hasAgencyCentre(null),false);
 assert.equal(agencyCentreName({role:'agency'}),'מרכז הסוכנות');assert.equal(agencyCentreName({role:'customer'}),'ניהול לקוחות');
 console.log('agency centre: access ok');
+// Monthly budget (spec 5.8): below 80% fine, 80% to 99% close, from 100% over, no budget no alert. Amounts in agorot.
+const {budgetState,safeCell}=require(realpathSync('.sites-runtime/agency-shared.cjs'));
+const level=(spend,budget)=>{const b=budgetState(spend,budget);return b&&[b.level,b.pct,b.label];};
+assert.deepEqual(level(0,200000),['ok',0,'']);
+assert.deepEqual(level(124000,200000),['ok',62,'']);
+assert.deepEqual(level(159999,200000),['ok',79,''],'just below 80%');
+assert.deepEqual(level(160000,200000),['near',80,'קרוב לתקציב החודשי'],'exactly 80%');
+assert.deepEqual(level(199999,200000),['near',99,'קרוב לתקציב החודשי'],'just below 100% is not shown as 100%');
+assert.deepEqual(level(200000,200000),['over',100,'חריגה מהתקציב החודשי'],'exactly 100%');
+assert.deepEqual(level(260000,200000),['over',130,'חריגה מהתקציב החודשי']);
+assert.deepEqual(budgetState(124000,'200000'),{level:'ok',pct:62,spend:124000,budget:200000,label:''},'stored as text');
+for(const none of [null,undefined,0,'',-500,'abc',NaN,Infinity,{}])assert.equal(budgetState(500000,none),null,'no budget: '+String(none));
+assert.equal(budgetState(undefined,200000).level,'ok','no spend yet');
+// Exported cells (CSV and Excel): a value that starts like a formula becomes plain text.
+for(const [input,expected] of [['=1+1',"'=1+1"],['+972',"'+972"],['-5',"'-5"],['@x',"'@x"],['\tx',"'\tx"],['רגיל','רגיל'],['a=b','a=b'],[12.5,'12.5'],[null,'']])assert.equal(safeCell(input),expected,String(input));
+console.log('agency centre: budget levels and export cells ok');
 // Guard (12.11.2026): a CSS edit once dropped the calendar, notes, links and reports rules and the screens fell apart.
 // Every class the centre's screens use must have a rule in the stylesheet.
 {const {readFileSync}=await import('node:fs');const css=readFileSync('app/agency-center.css','utf8');

@@ -354,3 +354,27 @@ a.ag-task{text-decoration:none;color:inherit}
 .ag-kpi small .sub i{font-style:normal}
 /* a checkbox inside a form is not a text field */
 .ag-form .ag-check input{flex:none;width:20px;height:20px;min-height:0;padding:0;border-radius:6px;background:none;box-shadow:none}
+/* budget alerts + excel export */
+/* The budget line under the customer's name: quiet text and a thin bar; amber from 80%, red from 100%. */
+.ag-budget{margin:12px 0;font-size:13.5px;line-height:1.5;color:var(--muted)}
+.ag-budget p{margin:0 0 6px}
+.ag-budget b{font-weight:800}
+.ag-budget-bar{display:block;max-width:420px;height:5px;border-radius:999px;background:#e6edf5;overflow:hidden}
+.ag-budget-bar i{display:block;height:100%;border-radius:999px;background:var(--blue)}
+.ag-budget.near,.ag-budget.over{padding:10px 14px 12px;border-radius:14px}
+.ag-budget.near{background:#fff7e6;color:#7a4a00}.ag-budget.near .ag-budget-bar{background:#f6e3ba}.ag-budget.near .ag-budget-bar i{background:#d98a00}
+.ag-budget.over{background:#fdecec;color:#a11d24}.ag-budget.over .ag-budget-bar{background:#f6c9cc}.ag-budget.over .ag-budget-bar i{background:#d43a41}
+/* the marker in the customers list, only from 80% */
+.ag-budget-mark{flex:none;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:999px;background:#fff1e0;color:#b45309;font-size:11.5px;font-weight:800}
+.ag-budget-mark.over{background:#fdecec;color:#c2262e}
+/* a long customer name is cut with "..." instead of widening the list on a phone, so the marker stays in sight */
+.ag-list{min-width:0}
+/* "ייצוא CSV" and "ייצוא לאקסל" side by side */
+.ag-export{display:inline-flex;flex-wrap:wrap;gap:8px}
+@media(max-width:760px){
+ /* publications filter: the two export buttons share one full row, and a last select left alone takes a full row too */
+ .ag-filters.pubs .ag-export{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}
+ .ag-filters.pubs label.ag-select:nth-of-type(odd):nth-last-of-type(1){grid-column:1/-1}
+ .ag-export .ag-btn{min-height:42px;padding:0 8px}
+ .ag-task .ag-btn.sm{min-height:40px}
+}

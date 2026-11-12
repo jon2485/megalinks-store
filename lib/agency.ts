@@ -5,7 +5,7 @@ import type {Row} from './shared';
 import {assert,all,one,stmt,now,audit,uid} from './server';
 import {articleCustomerJoins,articleCustomerColumns} from './article-customer';
 import {customerInput,customerErrors} from './customer-fields';
-import {normalizeDomain,articleSpend,usedSiteKey,usedSiteMatches,parseUsedSites,hasAgencyCentre} from './agency-shared';
+import {normalizeDomain,articleSpend,usedSiteKey,usedSiteMatches,parseUsedSites,hasAgencyCentre,budgetState} from './agency-shared';
 export {normalizeDomain,articleSpend};
 
 export function assertAgency(u:Row){assert(hasAgencyCentre(u),'ניהול הלקוחות פתוח לחשבונות לקוח בלבד',403);}
@@ -208,7 +208,7 @@ export async function usedSiteHit(u:Row,customerId:string,site:Row){
 const monthKey=(iso:string)=>israelMonth(iso);
 function lastMonths(n:number){const now=new Date(),[y,m]=israelMonth(now.toISOString()).split('-').map(Number),out:string[]=[];for(let i=n-1;i>=0;i--){const d=new Date(Date.UTC(y,m-1-i,1));out.push(d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0'));}return out;}
 // What waits for the agency: an action it has to take, or something it should know about soon.
-export async function agencyTasks(u:Row){
+export async function agencyTasks(u:Row,loaded?:Row[]){
  assertAgency(u);
  const [articles,unpaid]=await Promise.all([agencyArticles(u),all("SELECT id,number,created,data FROM orders WHERE user_id=? AND paid=0 AND status IN ('pending','awaiting_approval') AND COALESCE(json_extract(data,'$.demo'),0)=0 AND COALESCE(json_extract(data,'$.on_account'),0)=0 ORDER BY created DESC",u.id)]);
  const rows=articles.map(agencyArticleRow).filter(a=>!a.demo&&a.status!=='cancelled'),nowMs=Date.now(),tasks:Row[]=[];
@@ -220,12 +220,18 @@ export async function agencyTasks(u:Row){
   if(a.scheduled&&a.status!=='published'){const t=Date.parse(a.scheduled);if(t>=nowMs-86400000&&t-nowMs<=7*86400000)tasks.push({...base,kind:'scheduled',urgency:5,label:'פרסום מתוכנן השבוע',date:a.scheduled});}
  }
  for(const o of unpaid)tasks.push({kind:'payment',urgency:4,label:'הזמנה מחכה לתשלום',order_id:o.id,number:o.number,date:o.created,customer_id:'',customer_name:''});
+ // A customer close to the monthly budget or over it (spec 5.4, 5.8). The spend is the customers list's month spend
+ // (stats.month_spend), the same sum the publications page shows for the month. Over comes right after the article tasks
+ // that wait for the agency (1, 2); close comes after the payments.
+ for(const c of loaded||(await agencyCustomers(u)).customers){if(c.status==='archived')continue;const b=budgetState(c.stats?.month_spend,c.monthly_budget_cents);
+  if(b&&b.level!=='ok')tasks.push({kind:'budget',level:b.level,urgency:b.level==='over'?2.5:4.5,label:b.label,customer_id:c.id,customer_name:c.name,spend:b.spend,budget:b.budget,pct:b.pct});}
  tasks.sort((x,y)=>x.urgency-y.urgency||String(x.customer_name).localeCompare(String(y.customer_name),'he'));
  return {tasks};
 }
 export async function agencyOverview(u:Row){
  assertAgency(u);
- const [{customers,unassigned},articles,{tasks}]=await Promise.all([agencyCustomers(u),agencyArticles(u),agencyTasks(u)]);
+ const loaded=agencyCustomers(u);
+ const [{customers,unassigned},articles,{tasks}]=await Promise.all([loaded,agencyArticles(u),loaded.then(r=>agencyTasks(u,r.customers))]);
  const rows=articles.map(agencyArticleRow).filter(a=>!a.demo&&(a.paid||a.on_account)),months=lastMonths(12),current=months[11],previous=months[10];
  const chart=months.map(m=>({month:m,published:0,spend:0}));const at=new Map(chart.map(c=>[c.month,c]));
  for(const a of rows){const pm=a.status==='published'?monthKey(a.published_at):'';if(pm&&at.has(pm))at.get(pm)!.published++;const sm=monthKey(a.published_at||a.purchased_at);if(at.has(sm))at.get(sm)!.spend+=a.spend;}

@@ -53,3 +53,15 @@ export function parseUsedSites(text:string,existing:{domain:string;path:string}[
  }
  return {added,duplicates,invalid};
 }
+
+// Monthly budget of a customer (spec 5.8), in agorot before VAT: how much of it this month's spend used.
+// Below 80% is fine, from 80% it is close, from 100% it is over. No budget set: no line and no alert (null).
+export function budgetState(spendCents:unknown,budgetCents:unknown){
+ const budget=Math.round(Number(budgetCents)),spend=Math.max(0,Math.round(Number(spendCents)||0));
+ if(!Number.isFinite(budget)||budget<=0)return null;
+ const level:'ok'|'near'|'over'=spend>=budget?'over':spend*5>=budget*4?'near':'ok';
+ return {level,pct:Math.floor(spend*100/budget),spend,budget,label:level==='over'?'חריגה מהתקציב החודשי':level==='near'?'קרוב לתקציב החודשי':''};
+}
+
+// A cell of an exported file (CSV, Excel): a value that starts like a formula is written as plain text.
+export const safeCell=(v:unknown)=>String(v??'').replace(/^[=+\-@\t\r]/,"'$&");
