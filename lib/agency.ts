@@ -185,3 +185,35 @@ export async function usedSiteHit(u:Row,customerId:string,site:Row){
  const manual=rec.entries.find(e=>usedSiteMatches(e,site.url));if(manual)return {source:'manual',date:manual.added_at||''};
  return null;
 }
+
+// ---------- overview and to-do (spec 5.1, 5.4) ----------
+const monthKey=(iso:string)=>israelMonth(iso);
+function lastMonths(n:number){const now=new Date(),[y,m]=israelMonth(now.toISOString()).split('-').map(Number),out:string[]=[];for(let i=n-1;i>=0;i--){const d=new Date(Date.UTC(y,m-1-i,1));out.push(d.getUTCFullYear()+'-'+String(d.getUTCMonth()+1).padStart(2,'0'));}return out;}
+// What waits for the agency: an action it has to take, or something it should know about soon.
+export async function agencyTasks(u:Row){
+ assertAgency(u);
+ const [articles,unpaid]=await Promise.all([agencyArticles(u),all("SELECT id,number,created,data FROM orders WHERE user_id=? AND paid=0 AND status IN ('pending','awaiting_approval') AND COALESCE(json_extract(data,'$.demo'),0)=0 AND COALESCE(json_extract(data,'$.on_account'),0)=0 ORDER BY created DESC",u.id)]);
+ const rows=articles.map(agencyArticleRow).filter(a=>!a.demo&&a.status!=='cancelled'),nowMs=Date.now(),tasks:Row[]=[];
+ for(const a of rows){
+  const base={article_id:a.id,customer_id:a.customer_id,customer_name:a.customer_name,title:a.title||a.topic,website_name:a.website_name,number:a.number};
+  if(a.status==='review')tasks.push({...base,kind:'review',urgency:1,label:'כתבה מחכה לאישור שלך'});
+  else if(a.status==='revisions')tasks.push({...base,kind:'revisions',urgency:2,label:'כתבה הוחזרה לתיקון'});
+  else if(a.status==='draft'&&(a.paid||a.on_account)&&nowMs-Date.parse(a.purchased_at||a.updated)>3*86400000)tasks.push({...base,kind:'draft',urgency:3,label:'כתבה בטיוטה שעוד לא נשלחה'});
+  if(a.scheduled&&a.status!=='published'){const t=Date.parse(a.scheduled);if(t>=nowMs-86400000&&t-nowMs<=7*86400000)tasks.push({...base,kind:'scheduled',urgency:5,label:'פרסום מתוכנן השבוע',date:a.scheduled});}
+ }
+ for(const o of unpaid)tasks.push({kind:'payment',urgency:4,label:'הזמנה מחכה לתשלום',order_id:o.id,number:o.number,date:o.created,customer_id:'',customer_name:''});
+ tasks.sort((x,y)=>x.urgency-y.urgency||String(x.customer_name).localeCompare(String(y.customer_name),'he'));
+ return {tasks};
+}
+export async function agencyOverview(u:Row){
+ assertAgency(u);
+ const [{customers,unassigned},articles,{tasks}]=await Promise.all([agencyCustomers(u),agencyArticles(u),agencyTasks(u)]);
+ const rows=articles.map(agencyArticleRow).filter(a=>!a.demo&&(a.paid||a.on_account)),months=lastMonths(12),current=months[11],previous=months[10];
+ const chart=months.map(m=>({month:m,published:0,spend:0}));const at=new Map(chart.map(c=>[c.month,c]));
+ for(const a of rows){const pm=a.status==='published'?monthKey(a.published_at):'';if(pm&&at.has(pm))at.get(pm)!.published++;const sm=monthKey(a.published_at||a.purchased_at);if(at.has(sm))at.get(sm)!.spend+=a.spend;}
+ const active=customers.filter(c=>c.status!=='archived');
+ const top=active.map(c=>({id:c.id,name:c.name,published:c.stats.month_published,spend:c.stats.month_spend})).filter(c=>c.published||c.spend).sort((x,y)=>y.published-x.published||y.spend-x.spend).slice(0,5);
+ const recent=rows.filter(a=>a.status==='published').sort((x,y)=>String(y.published_at).localeCompare(String(x.published_at))).slice(0,5);
+ return {kpis:{customers:active.length,customers_new_month:active.filter(c=>monthKey(c.created)===current).length,published_month:at.get(current)!.published,published_prev:at.get(previous)!.published,spend_month:at.get(current)!.spend,waiting:tasks.filter(t=>['review','revisions','draft'].includes(t.kind)).length,urgent:tasks.filter(t=>t.urgency<=2).length},
+  chart,tasks:tasks.slice(0,5),tasks_total:tasks.length,top,recent,unassigned_waiting:unassigned.waiting};
+}
