@@ -1,0 +1,22 @@
+// Agency centre (design/agency-dashboard/spec.md): page paths, domain normalization and spend per article.
+import assert from 'node:assert/strict';
+import {realpathSync} from 'node:fs';
+import {createRequire} from 'node:module';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
+await build({entryPoints:['lib/seo.ts'],outfile:'.sites-runtime/agency-seo.cjs',bundle:true,platform:'node',format:'cjs'});
+await build({entryPoints:['lib/agency-shared.ts'],outfile:'.sites-runtime/agency-shared.cjs',bundle:true,platform:'node',format:'cjs'});
+const {isWorkspacePath}=require(realpathSync('.sites-runtime/agency-seo.cjs'));
+const {normalizeDomain,articleSpend}=require(realpathSync('.sites-runtime/agency-shared.cjs'));
+for(const route of ['purchased/agency','purchased/agency/customers','purchased/agency/publications','purchased/agency/customers/new','purchased/agency/customers/customer-1/details','purchased/agency/customers/customer-1/publications','purchased/agency/customers/customer-1/articles'])assert(isWorkspacePath(route.split('/')),route);
+for(const route of ['purchased/agency/bogus','purchased/agency/customers/x/bogus','purchased/agency/publications/x','purchased/agency/customers/x/details/more'])assert(!isWorkspacePath(route.split('/')),route);
+const cases={'https://www.Example.co.il/path?x=1':'example.co.il','EXAMPLE.co.il':'example.co.il','http://sub.example.com:8080/':'sub.example.com','www.example.com.':'example.com','example':'','not a domain':'','':'','https://xn--4dbrk0ce.example/':'xn--4dbrk0ce.example','https://דוגמה.co.il/a':'xn--6dbbec0c.co.il'};
+for(const [input,expected] of Object.entries(cases))assert.equal(normalizeDomain(input),expected,input);
+const art=(status,data,paid=1)=>({status,paid,data:JSON.stringify(data)});
+assert.equal(articleSpend(art('published',{paid_net_amount:50000,writing_net_amount:10000})),50000,'paid article');
+assert.equal(articleSpend(art('published',{paid_net_amount:50000,writing_net_amount:10000,publication_refunded:true})),10000,'publication refunded, writing kept');
+assert.equal(articleSpend(art('cancelled',{paid_net_amount:50000,writing_net_amount:10000,publication_refunded:true,writing_refunded:true})),0,'fully refunded');
+assert.equal(articleSpend(art('cancelled',{paid_net_amount:50000})),0,'cancelled without refund flags');
+assert.equal(articleSpend(art('draft',{paid_net_amount:50000},0)),0,'unpaid order');
+assert.equal(articleSpend(art('draft',{paid_net_amount:50000,on_account:true},0)),50000,'monthly account counts');
+assert.equal(articleSpend(art('demo_completed',{paid_net_amount:50000,demo:true})),0,'demo');
+console.log('agency centre: paths, domains and spend ok');

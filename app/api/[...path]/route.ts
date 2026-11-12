@@ -28,6 +28,7 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
+import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications} from '@/lib/agency';
 import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
@@ -294,6 +295,16 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
     if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND NOT "+fullyCancelledOrderSql()+" AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
+    if (p[0] === 'agency') {
+        assertAgency(u);
+        if (p[1] === 'customers' && !p[2] && method === 'GET') return response(await agencyCustomers(u));
+        if (p[1] === 'customers' && !p[2] && method === 'POST') return response(await saveAgencyCustomer(u, null, await json(r)), 201);
+        if (p[1] === 'customers' && p[2] && !p[3] && method === 'GET') return response({ customer: await agencyCustomer(u, p[2]) });
+        if (p[1] === 'customers' && p[2] && !p[3] && method === 'PATCH') return response(await saveAgencyCustomer(u, p[2], await json(r)));
+        if (p[1] === 'customers' && p[2] && p[3] === 'articles' && method === 'GET') return response(await agencyCustomerArticles(u, p[2]));
+        if (p[1] === 'publications' && !p[2] && method === 'GET') return response(await agencyPublications(u, new URL(r.url).searchParams));
+        assert(false, 'הבקשה אינה נתמכת', 404);
+    }
     if (p[0] === 'me' && p[1] === 'marketing' && method === 'PATCH') {
         const b = await json(r); assert(typeof b.subscribed === 'boolean', 'בקשה לא תקינה');
         await setMarketing(u, b.subscribed, 'account'); return response({ ok: true, marketing: await marketingStatus(u.id) });

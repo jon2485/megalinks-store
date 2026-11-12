@@ -22,8 +22,19 @@ const privateRoots = new Set([
 const nestedRoots = new Set(['article','admin-article','admin-supplier','admin-supplier-articles','admin-supplier-stock','admin-supplier-billing','admin-supplier-order','admin-supplier-package','supplier-invoice','admin-supplier-invoice','admin-seller-request','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge','admin-order','admin-support','order-confirmed']);
 const hubTabs = new Set(['articles','orders','payments','selling','customers','profile','files','support','api','notifications','monthly']);
 
+const agencySections=new Set(['customers','publications','tasks','calendar','reports','settings']);
+const agencyCustomerTabs=new Set(['overview','details','publications','articles','used-sites','links','notes']);
+function isAgencyPath(rest:string[]){
+    if(!rest.length)return true;
+    if(!agencySections.has(rest[0]))return false;
+    if(rest.length===1)return true;
+    if(rest[0]!=='customers'||!rest[1]||rest[1].length>200||rest.length>3)return false;
+    return rest.length===2||agencyCustomerTabs.has(rest[2]);
+}
 export function isWorkspacePath(parts:string[]) {
     if(parts.length===1)return privateRoots.has(parts[0]);
+    // The agency centre: /purchased/agency[/section] and /purchased/agency/customers/<id>[/tab] (design/agency-dashboard/spec.md).
+    if(parts[0]==='purchased'&&parts[1]==='agency')return isAgencyPath(parts.slice(2));
     if(parts.length===3&&parts[1]&&parts[1].length<=200){
         if(['article','admin-article'].includes(parts[0]))return parts[2]==='ai';
         if(parts[0]==='admin-customer-account')return ['orders','payments','monthly','articles','profile','history'].includes(parts[2]);
