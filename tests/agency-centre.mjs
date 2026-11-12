@@ -40,3 +40,12 @@ for(const role of ['admin','supplier','',undefined])assert.equal(hasAgencyCentre
 assert.equal(hasAgencyCentre(null),false);
 assert.equal(agencyCentreName({role:'agency'}),'מרכז הסוכנות');assert.equal(agencyCentreName({role:'customer'}),'ניהול לקוחות');
 console.log('agency centre: access ok');
+// Guard (12.11.2026): a CSS edit once dropped the calendar, notes, links and reports rules and the screens fell apart.
+// Every class the centre's screens use must have a rule in the stylesheet.
+{const {readFileSync}=await import('node:fs');const css=readFileSync('app/agency-center.css','utf8');
+ const ids=new Set(['ag-title','ag-unused-title','ag-used-text','agc-used-text','agc-used-title']);
+ for(const file of ['app/agency-center.tsx','app/agency-buying.tsx'])for(const name of new Set(readFileSync(file,'utf8').match(/\bagc?-[a-z0-9-]+/g)||[]))
+  assert(ids.has(name)||new RegExp('\\.'+name+'(?![a-z0-9-])').test(css),file+': class '+name+' has no rule in app/agency-center.css');
+ for(const must of ['.ag-cal{','.ag-cal-day{','.ag-note{','.ag-linkcard{','.ag-reports{','.ag-kpi{'])assert(css.includes(must),'missing rule '+must);
+ assert.equal((css.match(/\{/g)||[]).length,(css.match(/\}/g)||[]).length,'unbalanced braces in agency-center.css');
+ console.log('agency centre: stylesheet covers every class');}

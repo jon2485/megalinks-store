@@ -1147,3 +1147,19 @@ Owner decision: the supplier (without an account) gets all article details and f
 ## 12.11.2026 (13): Deploy to Staging (owner approved: "תעלה")
 
 - Staging service `megalinks-web` (staging environment only) switched from `8086a4e` to `879a54b` on `claude/order-flow-qa-20261111`; deployment `02a975bc` succeeded (health check passed, server up, no errors in the log). Includes everything since 8086a4e: payments decisions, legal pages (drafts with "טיוטה לאישור עורך דין", kept out of search engines), marketing mailing base, the customer management / agency centre (all phases, logo, admin read-only view). No database schema changes. Staging's build command passed locally first (tsc, three repo tests, pnpm build). Production and `main` not touched.
+
+## 12.11.2026 (14): Phone pass on the customer management centre (owner: "something there does not work out and is not clear")
+
+- **Root cause found (my mistake):** commit `7815e42` (the green "שומש עבור" line) deleted 49 lines of `app/agency-center.css` by accident: the rules of the publication calendar, notes, links and anchors, reports cards, overview card links, start steps and the screen-reader table. Since then those screens had no layout on phone **and on desktop** (calendar as a list of numbers, notes and links as plain text). The click tests still passed because they checked behaviour, not look. **This broken version is what Staging runs now (879a54b).** Restored the block from git history at its old place.
+- **Guard added:** `tests/agency-centre.mjs` now fails if a class used in `app/agency-center.tsx` / `app/agency-buying.tsx` has no rule in the stylesheet, if key rules are missing, or if braces are unbalanced. Local script `p16` checks layout on phone and desktop (57 checks: 7-column calendar, cards styled, every control on screen, no horizontal scroll, current tab in view).
+- **Phone improvements (CSS in `app/agency-center.css`, small hooks in `app/agency-center.tsx`):**
+  - Main tabs and customer tabs still scroll sideways, but the side that hides more now fades and the current tab is brought into view (`useScrollHint`).
+  - Filters no longer scroll sideways: the quick ranges sit three in a row, the selects two in a row and "ייצוא CSV" beside them, so nothing hides off the side (the selects and the export button used to be off screen). The calendar's customer select wraps under the month.
+  - Overview cards are compact (icon beside the label); the 12-month chart is drawn at phone size so month names and numbers are readable (`useNarrow`).
+  - Article rows: status and "לכתבה" get their own line instead of squeezing the text into three lines.
+  - "רכישה עבור הלקוח" is full width on the customer screen.
+  - The "show amounts" checkbox in settings was drawn as a tall text field (form input rule); fixed on phone and desktop.
+  - Wording for regular customers: the settings page is "הגדרות" (agency accounts keep "הגדרות הסוכנות"), hint "למשל שם העסק שלכם".
+- **Checks:** p16 57/57; all earlier agency scripts pass (API 31 + 16, ui 31, ui2 13, ui3 17, p7 23, p8 12, p9 17, p10 19, p11 12, p12 36, p13 32, p14 24, p15 35); `tsc --noEmit`; repo tests agency-centre, cart-checkout-actions, checkout-phone-actions, cart-add-feedback, customer-account-actions, seo, bulk-order.
+- **Not changed:** the floating WhatsApp button (site-wide) still covers a corner of the content on phone.
+- **לפני העלאה:** nothing temporary in the code. Local only so far; Staging still runs 879a54b with the broken screens until the owner approves a new deploy.

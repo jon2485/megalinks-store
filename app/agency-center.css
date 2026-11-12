@@ -224,6 +224,55 @@ body:has(.agc-bar){padding-bottom:96px}
 .agc-dialog .ag-btn.primary{background:linear-gradient(180deg,#1a8ae8,#0569c9);color:#fff;box-shadow:0 8px 18px -10px #0569c9}
 .agc-dialog .ag-btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px #c7daea}
 @media(max-width:760px){.agc-bar{bottom:10px;padding:10px;flex-wrap:wrap;gap:8px 10px}body:has(.agc-bar){padding-bottom:132px}.agc-bar .used-note{order:5;flex-basis:100%;justify-content:center}.agc-bar .ag-btn{min-width:40px;min-height:40px;padding:0 10px}.agc-bar .ag-btn .lbl{display:none}}
+.ag-kpi{display:block;text-decoration:none;color:inherit;transition:transform .15s ease-out,box-shadow .15s ease-out}
+@media(hover:hover){.ag-kpi:hover{transform:translateY(-1px);box-shadow:0 1px 2px #0b285010,0 14px 32px -14px #0b28503a}}
+.ag-kpi em.warn{color:#b45309}
+.ag-grid2.even{grid-template-columns:1fr 1fr}
+.ag-sec h3 .more{margin-inline-start:auto;border:0;background:none;font:inherit;font-size:13px;font-weight:700;color:#0a5fc2;text-decoration:none;cursor:pointer}
+a.ag-task{text-decoration:none;color:inherit}
+.ag-start{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:8px}
+.ag-start-step{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:14px;background:#f4f8fe;color:var(--ink);font-weight:700;text-decoration:none}
+.ag-start-step span{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:760px){.ag-grid2.even{grid-template-columns:1fr}.ag-kpi{padding:14px}.ag-kpi b{font-size:24px}.ag-sec{padding:16px}}
+.ag-linkcard{padding:14px 16px;border-radius:16px;box-shadow:inset 0 0 0 1px #e3eaf2}
+.ag-linkcard+.ag-linkcard{margin-top:10px}
+.ag-linkhead{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:8px}
+.ag-linkurl{font-weight:800;font-size:15px;overflow-wrap:anywhere}
+.ag-chip.hot{background:#fff4e5;color:#a35a00}
+.ag-notes{display:grid;gap:10px;margin-top:14px}
+.ag-note{padding:14px 16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px #e3eaf2}
+.ag-note.pinned{background:#fffbeb;box-shadow:inset 0 0 0 1px #f3dfb8}
+.ag-note p{margin:0;white-space:pre-wrap;line-height:1.65;font-size:14.5px}
+.ag-note footer{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px;color:var(--muted)}
+.ag-note footer .grow{flex:1}
+.ag-reports{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+.ag-report{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:18px;border-radius:18px;box-shadow:inset 0 0 0 1px #e3eaf2}
+.ag-report .ic{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--soft);color:var(--blue)}
+.ag-report h3{margin:0;font-size:18px;font-weight:800}
+.ag-report p{margin:0;font-size:14px;line-height:1.6;color:var(--muted)}
+.ag-check{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;cursor:pointer}
+.ag-check input{width:18px;height:18px;accent-color:var(--blue)}
+.ag-fieldset{border:0;padding:0;margin:0}.ag-fieldset legend{font-size:14px;font-weight:700;color:#33445a;margin-bottom:8px}
+@media(max-width:760px){.ag-reports{grid-template-columns:1fr}}
+.ag-form label.ag-check{flex-direction:row;align-items:center}
+.ag-legend{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted)}
+.ag-legend i,.ag-cal-day .dots i{display:inline-block;width:9px;height:9px;border-radius:50%}
+.ag-legend i.pub,.ag-cal-day .dots i.pub{background:var(--blue)}
+.ag-legend i.sch,.ag-cal-day .dots i.sch{background:#fff;box-shadow:inset 0 0 0 2px #1673e6}
+.ag-cal-day .dots i.sch{border:2px solid #1673e6;box-shadow:none;background:#fff}
+.ag-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:14px}
+.ag-cal-head{padding:4px 0;text-align:center;font-size:12.5px;font-weight:700;color:var(--muted)}
+.ag-cal-day{display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:78px;padding:8px;border:0;border-radius:12px;background:#f7f9fc;font:inherit;color:var(--ink);text-align:right;cursor:pointer}
+.ag-cal-day.empty{background:none}
+.ag-cal-day:disabled{cursor:default;color:#9fb0c4}
+.ag-cal-day.today{box-shadow:inset 0 0 0 2px #1673e6}
+.ag-cal-day.on{background:#eef5ff}
+.ag-cal-day .n{font-size:13px;font-weight:700}
+.ag-cal-day .dots{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.ag-cal-day .dots small{font-size:11px;color:var(--muted)}
+.ag-cal-list{margin-top:14px}
+@media(max-width:760px){.ag-cal{gap:3px}.ag-cal-day{min-height:52px;padding:5px;border-radius:9px}.ag-cal-day .dots i{width:7px;height:7px}}
 /* A catalog card of a site already used for the customer being bought for: one calm green line, the card keeps its colours. */
 .publication-catalog-card.pc-apple .pc-used-row{display:flex;align-items:center;gap:8px;margin:2px 0 0;padding:8px 12px;border-radius:12px;background:#effaf4;box-shadow:inset 0 0 0 1px #cdeedd;color:#14532d;font-family:Heebo,Arial,sans-serif;font-size:13.5px;font-weight:500;line-height:1.4}
 .publication-catalog-card.pc-apple .pc-used-row b{font-weight:700}
@@ -269,3 +318,39 @@ body:has(.agc-bar){padding-bottom:96px}
 .ag.readonly .ag-form,.ag.readonly .ag-mode,.ag.readonly form,.ag.readonly .ag-check{pointer-events:none}
 /* Admin screens give every table full width; the chart's screen-reader table must stay hidden there too. */
 .ag table.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;min-width:0!important}
+
+/* Phone pass (owner 12.11.2026): nothing important hides off the side, and tighter overview cards. */
+@media(max-width:760px){
+ /* a row that still scrolls sideways (main tabs, customer tabs) fades on the side that hides more */
+ .ag [data-more=s],.ag [data-more=e],.ag [data-more=se]{--fs:#000;--fe:#000;-webkit-mask-image:linear-gradient(to left,var(--fs),#000 40px,#000 calc(100% - 40px),var(--fe));mask-image:linear-gradient(to left,var(--fs),#000 40px,#000 calc(100% - 40px),var(--fe))}
+ .ag [data-more*=s]{--fs:transparent}.ag [data-more*=e]{--fe:transparent}
+ .ag-tabs a{padding:0 12px;gap:6px}
+ .ag-tabs{gap:6px}
+ /* filters wrap instead of scrolling, so the selects and the export button are always in sight */
+ .ag-filters{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+ .ag-filters .grow{display:none}
+ .ag-filters .ag-select{flex:1 1 calc(50% - 4px);min-width:0;height:42px}.ag-filters .ag-select select{flex:1;min-width:0}
+ .ag-filters .ag-pill{flex:1 1 auto;min-height:38px;text-align:center}
+ /* overview cards: icon beside the label, less empty space */
+ .ag-kpis{gap:10px}
+ .ag-kpi{display:grid;grid-template-columns:auto 1fr;align-items:center;column-gap:9px;padding:14px}
+ .ag-kpi .ic{width:34px;height:34px;border-radius:11px}
+ .ag-kpi small{margin:0;font-size:12.5px;line-height:1.3}
+ .ag-kpi b{grid-column:1/-1;margin-top:10px;font-size:24px}
+ .ag-kpi em{grid-column:1/-1}
+ /* article rows: status and action get their own line instead of squeezing the text */
+ .ag-art{flex-wrap:wrap;row-gap:8px}
+ .ag-art .t{flex:1 1 calc(100% - 60px)}
+ .ag-art .ag-status{margin-inline-start:52px}
+ .ag-art>a{margin-inline-start:auto}
+ .ag-chead .ag-head-actions>:only-child{grid-column:1/-1}
+ .ag-kpi small .sub{display:block;font-weight:500}.ag-kpi small .sub i{display:none}
+ /* publications filter: quick ranges three in a row, then the selects two in a row with the export beside them */
+ .ag-filters.pubs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+ .ag-filters.pubs .ag-pill{grid-column:span 2;padding:0 6px;font-size:13px;white-space:nowrap}
+ .ag-filters.pubs .ag-select,.ag-filters.pubs>.ag-btn{grid-column:span 3;height:42px;min-height:42px}
+ .ag-filters.pubs>.ag-btn{justify-content:center}
+}
+.ag-kpi small .sub i{font-style:normal}
+/* a checkbox inside a form is not a text field */
+.ag-form .ag-check input{flex:none;width:20px;height:20px;min-height:0;padding:0;border-radius:6px;background:none;box-shadow:none}
