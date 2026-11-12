@@ -28,6 +28,7 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
+import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
 import {adminPulse} from '@/lib/admin-pulse';
@@ -293,10 +294,20 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
     if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND NOT "+fullyCancelledOrderSql()+" AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
+    if (p[0] === 'me' && p[1] === 'marketing' && method === 'PATCH') {
+        const b = await json(r); assert(typeof b.subscribed === 'boolean', 'בקשה לא תקינה');
+        await setMarketing(u, b.subscribed, 'account'); return response({ ok: true, marketing: await marketingStatus(u.id) });
+    }
+    if (p[0] === 'admin' && p[1] === 'marketing') {
+        admin(u);
+        if (!p[2] && method === 'GET') return response(await marketingList());
+        if (p[2] === 'export' && method === 'GET') { await audit(u, 'marketing-list', 'ייצוא רשימת הדיוור השיווקי'); return new Response(await marketingCsv(), { headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename=megalinks-newsletter.csv', 'Cache-Control': 'no-store' } }); }
+        if (p[2] === 'remove' && method === 'POST') { const b = await json(r); return response(await marketingRemove(u, String(b.text || '').slice(0, 200000))); }
+    }
     if (p[0] === 'me') {
         if (method === 'GET') {
             const payments=u.role==='admin'?(await one("SELECT COUNT(*) AS n FROM orders o WHERE paid=0 AND status<>'cancelled' AND NOT "+fullyCancelledOrderSql()+" AND ((status IN ('pending','awaiting_approval') AND payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(data,'$.demo'),0)=0) OR EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending'))"))!.n:0;
-            return response({ user: {...u,credits_available:await walletAvailable(u),monthly_account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id)}, counts: {...await one('SELECT (SELECT COUNT(*) FROM orders WHERE user_id=?) AS orders,(SELECT COUNT(*) FROM articles WHERE (?=1 OR user_id=?) AND status=?) AS approvals,(SELECT COUNT(*) FROM cart WHERE user_id=?) AS cart', u.id, u.role==='admin'?1:0, u.id, 'admin_review', u.id),payments} });
+            return response({ user: {...u,credits_available:await walletAvailable(u),marketing:await marketingStatus(u.id),monthly_account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id)}, counts: {...await one('SELECT (SELECT COUNT(*) FROM orders WHERE user_id=?) AS orders,(SELECT COUNT(*) FROM articles WHERE (?=1 OR user_id=?) AND status=?) AS approvals,(SELECT COUNT(*) FROM cart WHERE user_id=?) AS cart', u.id, u.role==='admin'?1:0, u.id, 'admin_review', u.id),payments} });
         }
         if (method === 'PATCH') {
             const b = await json(r);
@@ -362,7 +373,10 @@ if (p[0] === 'cart') {
         assert(b.accepted === true, 'יש לאשר את תנאי ההזמנה');
         if(b.payment==='card'||(b.payment==='credits'&&await walletAvailable(u)<q.total)){const c=await connection('payments');assert(c.enabled&&c.url&&c.secret,'נדרשת השלמה באשראי, אך חיבור הסליקה טרם הופעל. היתרה לא חויבה וההזמנה לא בוצעה',503);}
 
-        return response(await createOrder(u,u,q,b),201);
+        const created=await createOrder(u,u,q,b);
+        // The newsletter box at checkout is separate and optional: only a ticked box subscribes; an empty box changes nothing.
+        if(b.marketing===true)await setMarketing(u,true,'checkout');
+        return response(created,201);
     }
     if (p[0] === 'orders') {
         if (method === 'GET' && !p[1]) {

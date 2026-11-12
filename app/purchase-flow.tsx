@@ -1,5 +1,7 @@
 'use client';
 import './cart-checkout-refresh.css';
+import './checkout-consents.css';
+import {MARKETING_WORDING} from '@/lib/marketing-wording';
 import EditorialAddon from './cart-editorial-addon';
 import CheckoutPaymentTiles from './checkout-payment-tiles';
 import {MonthlyCheckoutNotice} from './monthly-checkout-notice';
@@ -36,7 +38,7 @@ export function Journey({step=1,premium=false}:{step?:number;premium?:boolean}) 
     if(premium)return <ol className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="שלבי הרכישה">{['בחירת אתר','סל ותשלום הדגמה','הכנת התוכן','אישור מנהל','טיפול הספק'].map((label,i)=><li key={label} aria-current={step===i+1?'step':undefined} className={'flex min-w-0 items-center gap-2 rounded-xl px-2 py-2.5 text-sm leading-snug '+(step===i+1?'bg-orange-50 font-semibold text-orange-900':'text-slate-500')}><b className={'grid size-7 shrink-0 place-items-center rounded-full text-xs '+(step===i+1?'bg-orange-400 text-slate-950':'bg-slate-100 text-slate-500')}>{i+1}</b>{label}</li>)}</ol>;
     return <ol className="journey" aria-label="שלבי הרכישה">{['בחירת אתר','סל ותשלום הדגמה','הכנת התוכן','אישור מנהל','טיפול הספק'].map((label,i)=><li key={label} aria-current={step===i+1?'step':undefined} className={step===i+1?'current':''}><b>{i+1}</b>{label}</li>)}</ol>;}
 export function CartFlow({ctx,checkoutOnly=false}:{ctx:Ctx;checkoutOnly?:boolean}) {
-    const state=useData('cart',ctx.revision+(ctx.pricingRevision||0)),[quote,setQuote]=useState<Row|null>(null),[coupon,setCoupon]=useState(typeof window==='undefined'?'':new URLSearchParams(window.location.search).get('coupon')||''),[form,setForm]=useState<Row>({name:ctx.user?.name||'',invoice_name:ctx.user?.company||ctx.user?.name||'',phone:ctx.user?.phone||'',payment:'invoice',accepted:false}),[error,setError]=useState(''),[busy,setBusy]=useState(false),[drafts,setDrafts]=useState<Record<string,boolean>>({});
+    const state=useData('cart',ctx.revision+(ctx.pricingRevision||0)),[quote,setQuote]=useState<Row|null>(null),[coupon,setCoupon]=useState(typeof window==='undefined'?'':new URLSearchParams(window.location.search).get('coupon')||''),[form,setForm]=useState<Row>({name:ctx.user?.name||'',invoice_name:ctx.user?.company||ctx.user?.name||'',phone:ctx.user?.phone||'',payment:'invoice',accepted:false,marketing:false}),[error,setError]=useState(''),[busy,setBusy]=useState(false),[drafts,setDrafts]=useState<Record<string,boolean>>({});
     const cartCustomers=useData('records/customer',ctx.revision,!!ctx.user);
     const monthlyEnabled=!!ctx.user?.monthly_account?.enabled;
     const monthlyOpen=useData('monthly-open',ctx.revision,monthlyEnabled,15000);
@@ -121,10 +123,16 @@ ctx.go(result.id?'order-confirmed/'+result.id:'purchased');}catch(e){setError((e
                     {form.payment==='credits'&&quote&&<div className="purchase-payment-guidance"><p>מהיתרה: <bdi dir="ltr">{money(Math.min(quote.total,ctx.user?.credits_available??ctx.user?.credits??0))}</bdi></p><p>להשלמה באשראי: <bdi dir="ltr">{money(Math.max(0,quote.total-(ctx.user?.credits_available??ctx.user?.credits??0)))}</bdi></p><p>ההזמנה וחיוב היתרה יושלמו רק לאחר אישור מלוא התשלום.</p></div>}
                     {form.payment==='invoice'&&<><div className="purchase-payment-guidance"><strong>העברה בנקאית</strong><p>אפשר לדווח על התשלום גם לאחר אישור ההזמנה, דרך האזור האישי.</p><p>ההזמנה תיפתח לטיפול לאחר אימות קבלת התשלום.</p></div>{quote&&<details className="purchase-bank-details"><summary>פרטי ההעברה הבנקאית<ChevronDown size={16}/></summary><BankTransferInstructions ctx={ctx} total={quote.total}/></details>}<Field label="אסמכתת העברה (רשות)"><Input value={form.bank_reference||''} onChange={e=>setForm({...form,bank_reference:e.target.value})} placeholder="אם כבר ביצעתם העברה"/></Field></>}
                     {form.payment==='card'&&<p className="purchase-payment-guidance">תועברו לתשלום מאובטח. ההזמנה תושלם רק לאחר אישור עסקה משירות הסליקה.</p>}
-                    <label className="checkbox-label"><Checkbox disabled={busy} checked={form.accepted} onCheckedChange={accepted=>setForm({...form,accepted})}/><span>קראתי ואני מאשר/ת את <a href="/terms" target="_blank" rel="noreferrer">תנאי השימוש</a> ואת פרטי ההזמנה</span></label>
+                    <div className="checkout-consents">
+                     <label className="checkout-consent"><Checkbox disabled={busy} checked={form.accepted} onCheckedChange={accepted=>setForm({...form,accepted:accepted===true})}/><span>אני מסכים/ה ל<a href="/terms" target="_blank" rel="noreferrer">תנאי השימוש</a>, כולל <a href="/cancellation" target="_blank" rel="noreferrer">מדיניות הביטולים</a> ו<a href="/supply" target="_blank" rel="noreferrer">מדיניות האספקה</a>, ומאשר/ת את פרטי ההזמנה</span></label>
+                     {ctx.user?.marketing?.subscribed
+                      ?<div className="checkout-consent" data-done="true"><Check size={20} aria-hidden="true"/><span>אתם רשומים לעדכונים ומבצעים במייל<small>אפשר להסיר בהגדרות החשבון</small></span></div>
+                      :<label className="checkout-consent"><Checkbox disabled={busy} checked={form.marketing} onCheckedChange={marketing=>setForm({...form,marketing:marketing===true})}/><span>{MARKETING_WORDING}<small>לא חובה. אפשר להסיר בכל עת.</small></span></label>}
+                    </div>
                     <ErrorBox error={error}/>
                     {Object.values(drafts).some(Boolean)&&<p role="status" className="notice">יש לשמור את שירותי הכתיבה לפני המשך ההזמנה.</p>}
                     <div className="checkout-action-bar" data-ready={!!form.accepted}><span className="mobile-purchase-total"><bdi dir="ltr">{quote?money(quote.total):'מחשב…'}</bdi><small>כולל מע״מ</small></span><Button className="purchase-primary" disabled={checkoutDisabled} onClick={checkout}><ChevronLeft size={18}/>{busy?'משלים רכישה…':form.payment==='monthly'?'הוספה להתחשבנות החודשית':form.payment==='invoice'?<><span className="desktop-action-label">אישור הזמנה בהעברה בנקאית</span><span className="mobile-action-label">אישור ההזמנה</span></>:form.payment==='credits'?'המשך לתשלום מהיתרה':'מעבר לתשלום באשראי'}</Button>{!form.accepted&&<p className="checkout-terms-hint">כדי להמשיך יש לאשר את התנאים</p>}</div>
+                    <p className="checkout-privacy-line">הפרטים נחוצים לביצוע ההזמנה ולחשבונית, ונשמרים אצל מגה לינקס ואצל נותני שירות שמפעילים עבורנו את האתר. אפשר לעיין בהם ולתקן אותם. <a href="/privacy" target="_blank" rel="noreferrer">מדיניות הפרטיות</a></p>
                 </div></CardContent></Card>
             </section>}
             {!checkoutOnly&&error&&<div className="purchase-cart-error"><ErrorBox error={error}/></div>}
