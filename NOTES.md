@@ -1198,3 +1198,9 @@ Each agent worked in its own git worktree (note: the worktrees were created from
 - **My checks on the merged build:** `scratchpad/qa/AGENCY/p17.mjs` 52/52 on phone and desktop (budget line, list markers, tasks, Excel download, defaults saved and shown at 16px, quick add for a customer carries the defaults, same price with and without a customer, admin order tag, lobby row, dialog, required note, mark as handled, customers and suppliers refused, nothing about it in the customer's order); all earlier scripts pass (sec 73, sec2 9, API 31 + 16, ui 31, ui2 13, ui3 17, p7 23, p8 12, p9 17, p10 19, p11 12, p12 36, p13 32, p14 24, p15 35, p16 57; p13 had a timing flake in the test itself, fixed); `tsc --noEmit`; repo tests agency-centre, payment-unapplied, payment-audit, cart-checkout-actions, checkout-phone-actions, cart-add-feedback, customer-account-actions, seo, bulk-order, split-payment, admin-lobby-panels, admin-glass.
 - **Local test data added (local DB only):** budgets and brief defaults on the fictional customers "קפה הבוקר" and "מוסך הצפון", a few fictional orders, one fictional unapplied payment (marked handled), archived test customers.
 - **לפני העלאה:** nothing temporary in the code. Staging still runs 879a54b; the deploy of the stylesheet fix (staged at e53add5) is waiting for the owner's click in Railway and should now point at the new tip.
+
+## 13.11.2026 (18): Owner's decisions
+
+- **Unapplied card payment:** alert only, as built (no automatic credit). The owner expects payment links to close after payment, so this should be rare.
+- **Login:** start with Google only; Apple is dropped for now (it needs a paid developer account, a signed key and private-relay addresses). **Admins sign in only with Google.**
+- The owner asked for the remaining questions one at a time, each with a short plain explanation and a choice (approve or write a correction).
