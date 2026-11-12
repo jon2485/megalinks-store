@@ -335,21 +335,23 @@ function CustomerNotes({ctx,customer}:{ctx:Ctx;customer:Row}){
 
 // ---------- reports (spec 5.7) ----------
 const esc=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'} as Record<string,string>)[c]);
-function reportHtml({agency,color,customer,from,to,rows,costs}:{agency:string;color:string;customer:string;from:string;to:string;rows:Row[];costs:boolean}){
+function reportHtml({agency,color,customer,from,to,rows,costs,logo}:{agency:string;color:string;customer:string;from:string;to:string;rows:Row[];costs:boolean;logo?:string}){
  const published=rows.filter(a=>a.status==='published'),sites=new Set(published.map(a=>a.website_id)).size,total=rows.reduce((s,a)=>s+a.spend,0);
  const font=window.location.origin+'/brand/heebo-variable.ttf';
  return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><title>${esc('דוח פרסומים · '+customer)}</title><style>@font-face{font-family:H;src:url(${font})}body{margin:0;font-family:H,Arial,sans-serif;color:#0b1b2f;font-variant-numeric:tabular-nums}main{max-width:900px;margin:0 auto;padding:36px 28px}
-header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:16px;border-bottom:3px solid ${esc(color)}}h1{margin:0;font-size:26px;letter-spacing:-.02em}header p{margin:4px 0 0;color:#5b6b82}.agency{font-weight:800;font-size:18px;color:${esc(color)}}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:16px;border-bottom:3px solid ${esc(color)}}h1{margin:0;font-size:26px;letter-spacing:-.02em}header p{margin:4px 0 0;color:#5b6b82}.agency{display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;color:${esc(color)}}.agency img{max-height:56px;max-width:160px;object-fit:contain}
 .stats{display:flex;gap:12px;margin:20px 0}.stats div{flex:1;padding:12px 14px;border-radius:12px;background:#f4f8fe}.stats small{display:block;color:#5b6b82;font-size:12.5px}.stats b{font-size:22px}
 table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:right;padding:8px;border-bottom:1px solid #d6e2ee;color:#5b6b82;font-size:12px}td{padding:9px 8px;border-bottom:1px solid #eef2f6;vertical-align:top}td a{color:#0a5fc2;word-break:break-all}.ltr{direction:ltr;unicode-bidi:isolate}
 footer{margin-top:24px;color:#7b8796;font-size:12px}@media print{main{padding:0}.noprint{display:none}}</style></head><body><main>
-<header><div><h1>דוח פרסומים · ${esc(customer)}</h1><p>תקופה: <span class="ltr">${esc(from?day(from):'מההתחלה')}</span> עד <span class="ltr">${esc(to?day(to):day(new Date().toISOString()))}</span></p></div><div class="agency">${esc(agency)}</div></header>
+<header><div><h1>דוח פרסומים · ${esc(customer)}</h1><p>תקופה: <span class="ltr">${esc(from?day(from):'מההתחלה')}</span> עד <span class="ltr">${esc(to?day(to):day(new Date().toISOString()))}</span></p></div><div class="agency">${logo&&/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(logo)?`<img src="${logo}" alt="">`:''}<span>${esc(agency)}</span></div></header>
 <div class="stats"><div><small>פרסומים</small><b>${published.length}</b></div><div><small>אתרים שונים</small><b>${sites}</b></div>${costs?`<div><small>עלות לפני מע״מ</small><b class="ltr">${esc(ils(total))}</b></div>`:''}</div>
 <table><thead><tr><th>אתר</th><th>תאריך פרסום</th><th>קישור לכתבה</th><th>עוגן</th><th>קישור יעד</th>${costs?'<th>עלות</th>':''}</tr></thead><tbody>
 ${published.map(a=>`<tr><td><b>${esc(a.website_name)}</b></td><td class="ltr">${esc(day(a.published_at))}</td><td>${a.published_url?`<a class="ltr" href="${esc(a.published_url)}">${esc(String(a.published_url).replace(/^https?:\/\//,''))}</a>`:'—'}</td><td>${esc(a.anchor||'—')}</td><td class="ltr">${esc(String(a.target_url||'').replace(/^https?:\/\//,'')||'—')}</td>${costs?`<td class="ltr">${esc(ils(a.spend))}</td>`:''}</tr>`).join('')||'<tr><td colspan="6">אין פרסומים בתקופה הזו.</td></tr>'}
 </tbody></table><footer>הופק ב-<span class="ltr">${esc(day(new Date().toISOString()))}</span></footer>
 <p class="noprint" style="margin-top:20px"><button onclick="window.print()" style="font:inherit;padding:10px 18px;border-radius:10px;border:0;background:${esc(color)};color:#fff;cursor:pointer">הדפסה או שמירה כ-PDF</button></p></main></body></html>`;
 }
+// The report window is written from here, so the logo goes in as data (it also stays in a saved PDF).
+async function logoData(url?:string){if(!url)return '';try{const r=await fetch(url,{credentials:'same-origin'});if(!r.ok)return '';const blob=await r.blob();if(!['image/png','image/jpeg','image/webp'].includes(blob.type))return '';return await new Promise<string>(ok=>{const f=new FileReader();f.onload=()=>ok(String(f.result||''));f.onerror=()=>ok('');f.readAsDataURL(blob);});}catch{return '';}}
 function Reports({ctx}:{ctx:Ctx}){
  const quick=useMemo(ranges,[]);
  const customers=useData('agency/customers',ctx.revision),settings=useData('agency/settings',ctx.revision);
@@ -358,7 +360,7 @@ function Reports({ctx}:{ctx:Ctx}){
  const showCosts=costs??!!settings.data?.show_costs;
  const q=(extra:Record<string,string>={})=>new URLSearchParams({...(range.from?{from:range.from}:{}),...(range.to?{to:range.to}:{}),...extra}).toString();
  const customerReport=async()=>{if(!who){setError('בחרו לקוח');return;}setError('');const win=window.open('','_blank');if(!win){setError('הדפדפן חסם חלון חדש. אפשרו חלונות קופצים לאתר.');return;}win.document.write('<p dir="rtl" style="font-family:Arial;padding:24px">מכין את הדוח…</p>');setBusy('customer');
-  try{const d=await api('agency/publications?'+q({customer:who}));const c=list.find(x=>x.id===who);win.document.open();win.document.write(reportHtml({agency:settings.data?.report_name||'',color:settings.data?.report_color||'#1673e6',customer:c?.name||'',from:range.from,to:range.to,rows:d.publications||[],costs:showCosts}));win.document.close();}
+  try{const d=await api('agency/publications?'+q({customer:who}));const c=list.find(x=>x.id===who),logo=await logoData(settings.data?.logo_url);win.document.open();win.document.write(reportHtml({agency:settings.data?.report_name||'',color:settings.data?.report_color||'#1673e6',customer:c?.name||'',from:range.from,to:range.to,rows:d.publications||[],costs:showCosts,logo}));win.document.close();}
   catch(e){win.close();setError((e as Error).message);}finally{setBusy('');}};
  const spendReport=async()=>{setBusy('spend');setError('');try{const d=await api('agency/publications?'+q());const by=new Map<string,Row>();for(const a of d.publications||[]){const key=a.customer_id||'';const r=by.get(key)||{name:a.customer_name||'ללא לקוח',count:0,published:0,spend:0};r.count++;if(a.status==='published')r.published++;r.spend+=a.spend;by.set(key,r);}setSpend([...by.values()].sort((x,y)=>y.spend-x.spend));}catch(e){setError((e as Error).message);}finally{setBusy('');}};
  const spendCsv=()=>{if(!spend)return;const lines=[['לקוח','פרסומים','פורסמו','הוצאה לפני מע"מ'],...spend.map(r=>[r.name,r.count,r.published,(r.spend/100).toFixed(2)])];const blob=new Blob(['\ufeff'+lines.map(l=>l.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='spend-'+(range.from||'all')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);};
@@ -385,9 +387,18 @@ function AgencySettings({ctx}:{ctx:Ctx}){
  if(!v)return <div className="ag-skel" style={{height:120}}/>;
  const set=(k:string,value:unknown)=>{setV({...v,[k]:value});setSaved(false);};
  const save=async(e:React.FormEvent)=>{e.preventDefault();if(busy)return;setBusy(true);setError('');try{await ctx.run(()=>api('agency/settings','PATCH',v),'ההגדרות נשמרו');setSaved(true);}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
+ // The report logo is saved right away: upload the image, then store it in the settings.
+ const setLogo=async(file?:File|null)=>{if(!file||busy)return;setError('');setSaved(false);
+  if(!['image/png','image/jpeg','image/webp'].includes(file.type)){setError('הלוגו צריך להיות תמונה מסוג PNG, JPG או WEBP.');return;}
+  if(file.size>1024*1024){setError('הלוגו גדול מדי. אפשר עד 1MB.');return;}
+  setBusy(true);try{const form=new FormData();form.append('file',file);const up=await api('files','POST',form);const out=await ctx.run(()=>api('agency/settings','PATCH',{...v,logo_file_id:up.id}),'הלוגו נשמר');setV({...v,logo_file_id:out.logo_file_id,logo_url:out.logo_url});}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
+ const dropLogo=async()=>{if(busy)return;setBusy(true);setError('');try{const out=await ctx.run(()=>api('agency/settings','PATCH',{...v,logo_file_id:''}),'הלוגו הוסר');setV({...v,logo_file_id:out.logo_file_id,logo_url:''});}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
  return <form onSubmit={save}><div className="ag-form">
   <label>השם שיופיע בדוחות<small>למשל שם הסוכנות</small><input value={v.report_name} maxLength={120} disabled={busy} onChange={e=>set('report_name',e.target.value)}/></label>
   <label>צבע הדוחות<small>הצבע של הכותרת בדוח ללקוח</small><input type="color" value={v.report_color} disabled={busy} onChange={e=>set('report_color',e.target.value)} style={{height:46,padding:4}}/></label>
+  <div className="wide ag-logo-set"><span className="pic">{v.logo_url?<img src={v.logo_url} alt="הלוגו לדוחות"/>:<span>לוגו</span>}</span><span className="t"><b>לוגו לדוחות</b><small>מופיע בראש הדוח ללקוח. קובץ תמונה עד <bdi>1MB</bdi>.</small></span>
+   <label className={'ag-btn ghost sm'+(busy?' off':'')}><Upload size={15} aria-hidden="true"/>{v.logo_url?'החלפה':'העלאת לוגו'}<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e=>{setLogo(e.target.files?.[0]);e.target.value='';}} className="sr-only"/></label>
+   {v.logo_url&&<button type="button" className="ag-btn ghost sm" disabled={busy} onClick={dropLogo}><Trash2 size={15} aria-hidden="true"/>הסרה</button>}</div>
   <fieldset className="wide ag-fieldset"><legend>אתרים שכבר שימשו, לכל לקוח חדש</legend><div className="ag-mode">{([['warn','להציג עם סימון "שומש עבור הלקוח"','מומלץ'],['hide','להסתיר מהמחירון','']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={v.used_mode===mode} className={'ag-opt'+(v.used_mode===mode?' on':'')} onClick={()=>set('used_mode',mode)}><span className="ag-radio"/><span><b>{title}</b>{sub&&<small>{sub}</small>}</span></button>)}</div><p className="ag-muted" style={{fontSize:13,margin:'8px 0 0'}}>אפשר לשנות לכל לקוח בלשונית "אתרים שכבר שימשו".</p></fieldset>
   <label className="ag-check wide"><input type="checkbox" checked={!!v.show_costs} onChange={e=>set('show_costs',e.target.checked)}/>להציג עלויות בדוח ללקוח כברירת מחדל</label>
  </div>{error&&<p className="ag-alert" role="alert">{error}</p>}{saved&&<p className="ag-ok" role="status">ההגדרות נשמרו</p>}

@@ -251,3 +251,13 @@ body:has(.agc-bar){padding-bottom:96px}
 /* Article lines in the customer screen: easier to read. */
 .ag-art b{font-size:15px;font-weight:700}
 .ag-art small{font-size:13.5px;font-weight:500;color:#3c4d63}
+/* Report logo in the agency settings. */
+.ag-logo-set{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:14px;border-radius:16px;background:#f7fafc;box-shadow:inset 0 0 0 1px #e1ecf3}
+.ag-logo-set .pic{display:grid;place-items:center;flex:none;width:64px;height:64px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px #dfe8f1;overflow:hidden}
+.ag-logo-set .pic img{width:100%;height:100%;object-fit:contain;padding:6px}
+.ag-logo-set .pic>span{font-size:12px;font-weight:600;color:#8193a8;border:1.5px dashed #b5c6d6;border-radius:12px;width:52px;height:52px;display:grid;place-items:center}
+.ag-logo-set .t{flex:1;min-width:180px;display:flex;flex-direction:column;gap:2px}
+.ag-logo-set .t b{font-size:15px}.ag-logo-set .t small{font-size:13px;color:#506982}
+.ag-logo-set label.ag-btn{cursor:pointer}.ag-logo-set label.ag-btn.off{opacity:.55;pointer-events:none}
+.ag-logo-set label.ag-btn:focus-within{outline:2px solid #0579d7;outline-offset:2px}
+.ag-form .ag-logo-set label.ag-btn,.ag-logo-set .ag-btn{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:13.5px;font-weight:700;color:#0b274d;margin:0}

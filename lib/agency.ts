@@ -280,14 +280,22 @@ const settingsId=(u:Row)=>'agency-settings:'+u.id;
 export async function agencySettings(u:Row){
  assertAgency(u);
  const r=await one("SELECT data FROM records WHERE id=? AND kind='agency_settings' AND user_id=?",settingsId(u),u.id),d=r?JSON.parse(r.data||'{}'):{};
- return {report_name:d.report_name||u.company||u.name||'',report_color:/^#[0-9a-f]{6}$/i.test(d.report_color||'')?d.report_color:'#1673e6',used_mode:d.used_mode==='hide'?'hide':'warn',show_costs:!!d.show_costs};
+ const logo=typeof d.logo_file_id==='string'&&d.logo_file_id?d.logo_file_id:'';
+ return {report_name:d.report_name||u.company||u.name||'',report_color:/^#[0-9a-f]{6}$/i.test(d.report_color||'')?d.report_color:'#1673e6',used_mode:d.used_mode==='hide'?'hide':'warn',show_costs:!!d.show_costs,logo_file_id:logo,logo_url:logo?'/api/files/'+logo:''};
 }
+// The report logo (owner, 12.11.2026): an image the account uploaded itself, PNG, JPG or WEBP, up to 1MB.
+const LOGO_TYPES=['image/png','image/jpeg','image/webp'],LOGO_MAX=1024*1024;
 export async function saveAgencySettings(u:Row,body:Row){
  assertAgency(u);
- const data={report_name:String(body.report_name??'').trim().slice(0,120),report_color:/^#[0-9a-f]{6}$/i.test(String(body.report_color||''))?String(body.report_color):'#1673e6',used_mode:body.used_mode==='hide'?'hide':'warn',show_costs:body.show_costs===true},stamp=now();
+ let logo_file_id=(await agencySettings(u)).logo_file_id;
+ if('logo_file_id' in body){
+  logo_file_id=String(body.logo_file_id||'');
+  if(logo_file_id){const f=await one('SELECT type,size FROM files WHERE id=? AND user_id=?',logo_file_id,u.id);assert(f,'הלוגו לא נמצא',400);assert(LOGO_TYPES.includes(f.type),'הלוגו צריך להיות תמונה מסוג PNG, JPG או WEBP',400);assert(Number(f.size)<=LOGO_MAX,'הלוגו גדול מדי. אפשר עד 1MB.',400);}
+ }
+ const data={report_name:String(body.report_name??'').trim().slice(0,120),report_color:/^#[0-9a-f]{6}$/i.test(String(body.report_color||''))?String(body.report_color):'#1673e6',used_mode:body.used_mode==='hide'?'hide':'warn',show_costs:body.show_costs===true,logo_file_id},stamp=now();
  await stmt("INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated=excluded.updated WHERE records.user_id=excluded.user_id AND records.kind='agency_settings'",settingsId(u),'agency_settings',u.id,JSON.stringify(data),stamp,stamp).run();
  await audit(u,settingsId(u),'הגדרות מרכז הסוכנות עודכנו',{});
- return {ok:true,...data};
+ return {ok:true,...data,logo_url:logo_file_id?'/api/files/'+logo_file_id:''};
 }
 
 // ---------- publication calendar (spec 5.5) ----------
