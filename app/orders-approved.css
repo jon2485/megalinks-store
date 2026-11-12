@@ -68,3 +68,6 @@ body:has(.approved-order-management) .admin-all-areas{width:44px;min-width:44px;
 body:has(.approved-order-management) .admin-all-areas>span,body:has(.approved-order-management) .admin-all-areas>svg:not(.orders-phone-menu-icon){display:none}
 body:has(.approved-order-management) .admin-all-areas .orders-phone-menu-icon{display:block}
 }
+
+/* Admin only: the buyer added a site that was already used for that end-customer and approved it in the order. */
+.finance-managed-site .om-used-site{display:block;flex-basis:100%;width:fit-content;max-width:100%;margin:4px 0 0;padding:2px 9px;border-radius:999px;background:#eef6f4;color:#0b5c53;font-size:12.5px;font-weight:600;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
