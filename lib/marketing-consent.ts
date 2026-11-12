@@ -4,7 +4,7 @@
 import {stmt,one,all,now,audit} from './server';
 import type {Row} from './shared';
 
-import {MARKETING_WORDING} from './marketing-wording';
+import {MARKETING_WORDING,ACCOUNT_MARKETING_WORDING} from './marketing-wording';
 export type MarketingSource='checkout'|'account'|'admin';
 const recordId=(userId:string)=>'marketing:'+userId;
 
@@ -22,7 +22,7 @@ export async function setMarketing(user:Row,subscribed:boolean,source:MarketingS
  if(!old&&!subscribed)return false;
  const change={status:subscribed?'subscribed':'unsubscribed',at:stamp,source};
  const data={...(old||{}),status:change.status,email:user.email,
-  ...(subscribed?{subscribed_at:stamp,source,wording:MARKETING_WORDING}:{unsubscribed_at:stamp,unsubscribed_source:source}),
+  ...(subscribed?{subscribed_at:stamp,source,wording:source==='account'?ACCOUNT_MARKETING_WORDING:MARKETING_WORDING}:{unsubscribed_at:stamp,unsubscribed_source:source}),
   history:[...(old?.history||[]),change].slice(-20)};
  await stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated=excluded.updated',
   id,'marketing_consent',user.id,JSON.stringify(data),stamp,stamp).run();

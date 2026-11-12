@@ -2,19 +2,26 @@
 import React,{useState} from 'react';
 import {Mail,UserRound,Save,LogOut,LoaderCircle,CheckCircle2,Megaphone} from 'lucide-react';
 import {Switch} from '@/components/ui/switch';
-import {MARKETING_WORDING} from '@/lib/marketing-wording';
+import {ACCOUNT_MARKETING_TITLE} from '@/lib/marketing-wording';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
 import {api} from '@/lib/client';
 import {type Ctx,ErrorBox} from './workspace';
 
 // The newsletter consent: off unless the customer turns it on; turning it off removes them from the next list export.
+// Drawn as a sibling of the account e-mail box above it: icon tile, title and status, and the switch at the end.
 function MarketingSwitch({ctx}:{ctx:Ctx}){
- const [on,setOn]=useState(!!ctx.user?.marketing?.subscribed),[busy,setBusy]=useState(false),[error,setError]=useState('');
- const since=on&&ctx.user?.marketing?.subscribed&&ctx.user?.marketing?.at?new Date(ctx.user.marketing.at).toLocaleDateString('he-IL'):'';
- const change=async(next:boolean)=>{if(busy)return;setBusy(true);setError('');try{await ctx.run(()=>api('me/marketing','PATCH',{subscribed:next}),next?'נרשמתם לעדכונים במייל':'הוסרתם מרשימת הדיוור');setOn(next);}catch(e){setError((e as Error).message);}finally{setBusy(false);}};
- return <div className="account-marketing"><Megaphone size={21} aria-hidden="true"/><label htmlFor="account-marketing"><span>{MARKETING_WORDING}</span><small>{on?<>רשומים{since&&<> מ-<bdi>{since}</bdi></>}. אפשר להסיר בכל עת.</>:'לא חובה. אפשר להסיר בכל עת.'}</small></label><Switch id="account-marketing" checked={on} disabled={busy} onCheckedChange={v=>change(v===true)}/><ErrorBox error={error}/></div>;
+ const [on,setOn]=useState(!!ctx.user?.marketing?.subscribed),[since,setSince]=useState<string>(ctx.user?.marketing?.subscribed?ctx.user?.marketing?.at||'':''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ const change=async(next:boolean)=>{if(busy)return;setBusy(true);setError('');try{const out=await ctx.run(()=>api('me/marketing','PATCH',{subscribed:next}),next?'נרשמתם לעדכונים במייל':'הוסרתם מרשימת הדיוור');setOn(next);setSince(next?out?.marketing?.at||new Date().toISOString():'');}catch(e){setError((e as Error).message);}finally{setBusy(false);}};
+ const date=since?new Date(since).toLocaleDateString('he-IL'):'';
+ return <div className="account-marketing" data-on={on}>
+  <Megaphone size={20} aria-hidden="true"/>
+  <div className="account-marketing-text"><label htmlFor="account-marketing">{ACCOUNT_MARKETING_TITLE}</label><small id="account-marketing-status">{on?<>רשומים{date&&<> מ-<bdi>{date}</bdi></>} · אפשר להסיר בכל עת</>:'לא חובה · אפשר להסיר בכל עת'}</small></div>
+  <Switch id="account-marketing" aria-describedby="account-marketing-status" checked={on} disabled={busy} onCheckedChange={v=>change(v===true)}/>
+  {error&&<div className="account-marketing-error"><ErrorBox error={error}/></div>}
+ </div>;
 }
+
 
 export default function AccountSettings({ctx}:{ctx:Ctx}){
  const [values,setValues]=useState(()=>({name:ctx.user?.name||'',phone:ctx.user?.phone||'',company:ctx.user?.company||''}));

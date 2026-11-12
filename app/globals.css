@@ -1591,16 +1591,18 @@ html,body{max-width:100%;overflow-x:clip;}
 .azure-studio .studio-editor-card button,.azure-studio .studio-editor-card a,.azure-studio .studio-editor-card label.studio-outline{white-space:normal;height:auto;min-height:44px;}
 .azure-studio .studio-editor-card [data-slot=card-content]{min-width:0;}
 
-/* Account settings: the newsletter switch, under the account e-mail (app/account-settings.tsx). */
-.account-marketing{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin:-8px 0 22px;padding:16px 18px;border-radius:14px;background:#f6f9fc;box-shadow:inset 0 0 0 1px #e2edf3;color:#203c56}
-.account-marketing>svg{flex:none;color:#1673e6}
-.account-marketing>label{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px;cursor:pointer}
-.account-marketing>label span{font-size:15px;font-weight:700;line-height:1.5;color:#0b1b2f}
-.account-marketing>label small{font-size:13px;line-height:1.5;color:#5b6b82}
-.account-marketing>button[role=switch]{flex:none}
-.account-marketing>:last-child:not(button){flex-basis:100%}
-.account-marketing [data-slot=switch]{direction:ltr;width:48px;height:28px;padding:2px;background:#cbd5e1;box-shadow:none}
+/* Account settings: the newsletter switch, a sibling of the account e-mail box above it (app/account-settings.tsx). */
+.account-marketing{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:-8px 0 22px;padding:15px 18px;border-radius:16px;background:#f2f6fb;box-shadow:inset 0 0 0 1px #0b285012}
+.account-marketing>svg{flex:none;box-sizing:content-box;padding:9px;border-radius:12px;background:#fff;color:#1673e6;box-shadow:0 2px 6px -2px #0b285033}
+.account-marketing-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.account-marketing-text label{font-size:15px;font-weight:700;line-height:1.4;color:#0b1b2f;cursor:pointer}
+.account-marketing-text small{font-size:13px;line-height:1.45;color:#5b6b82}
+.account-marketing[data-on=true] .account-marketing-text small{color:#16794a}
+.account-marketing-error{flex-basis:100%}
+.account-marketing [data-slot=switch]{flex:none;direction:ltr;width:50px;height:30px;padding:3px;border:0;background:#d3dbe5;box-shadow:inset 0 0 0 1px #0b28500d;transition:background-color .2s ease-out}
 .account-marketing [data-slot=switch][data-state=checked]{background:#1673e6}
-.account-marketing [data-slot=switch-thumb]{width:24px;height:24px;background:#fff;box-shadow:0 1px 3px #0b1b2f40;translate:none!important;transform:translateX(0)}
-.account-marketing [data-slot=switch][data-state=checked] [data-slot=switch-thumb]{transform:translateX(18px)}
-@media(prefers-reduced-motion:reduce){.account-marketing [data-slot=switch-thumb]{transition:none}}
+.account-marketing [data-slot=switch]:active [data-slot=switch-thumb]{width:28px}
+.account-marketing [data-slot=switch-thumb]{width:24px;height:24px;background:#fff;box-shadow:0 2px 4px #0b1b2f33;translate:none!important;transform:translateX(0);transition:transform .2s ease-out,width .15s ease-out}
+.account-marketing [data-slot=switch][data-state=checked] [data-slot=switch-thumb]{transform:translateX(20px)}
+.account-marketing [data-slot=switch][data-state=checked]:active [data-slot=switch-thumb]{transform:translateX(16px)}
+@media(prefers-reduced-motion:reduce){.account-marketing [data-slot=switch],.account-marketing [data-slot=switch-thumb]{transition:none}}
