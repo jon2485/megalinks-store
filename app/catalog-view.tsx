@@ -2,7 +2,7 @@
 import './account-navigation-refinements.css';
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ExternalLink, ArrowLeft, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Download, ShoppingCart, Pencil, Globe, Heart, MessageSquareText, Plus, Search, SlidersHorizontal, Tag, Wallet, ListFilter, RotateCcw, X, Check, Newspaper, Monitor, BriefcaseBusiness, House, Plane, HeartPulse, Gamepad2, Utensils, LayoutGrid, ClipboardPaste, Info, History } from 'lucide-react';
+import { ExternalLink, ArrowLeft, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Download, ShoppingCart, Pencil, Globe, Heart, MessageSquareText, Plus, Search, SlidersHorizontal, Tag, Wallet, ListFilter, RotateCcw, X, Check, Newspaper, Monitor, BriefcaseBusiness, House, Plane, HeartPulse, Gamepad2, Utensils, LayoutGrid, ClipboardPaste, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -64,7 +64,7 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
         return () => document.removeEventListener('pointerdown', close);
     }, [metricTip]);
     const metricHelp = { DR: 'חוזק הדומיין כולו (Domain Rating). ככל שהוא גבוה יותר, הקישור מעביר יותר כוח.', UR: 'חוזק העמוד הספציפי (URL Rating), כלומר העמוד שבו תפורסם הכתבה.' } as const;
-    // While an agency buys for a customer, a site already used for that customer is greyed and marked (agency-buying.tsx).
+    // While an agency buys for a customer, a site already used for that customer gets a green "שומש עבור" line (agency-buying.tsx).
     const used = site.used_for_customer as Row | undefined;
     const usedDay = used?.date ? new Date(used.date).toLocaleDateString('he-IL', { timeZone: 'Asia/Jerusalem' }) : '';
     return <Card dir="rtl" className={'publication-catalog-card pc-apple' + (hasDiscount ? ' pc-on-sale' : '') + (used ? ' pc-used' : '')}>
@@ -73,7 +73,8 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
             <div className="pc-name"><h2>{site.name}</h2><a href={site.url} target="_blank" rel="noreferrer" dir="ltr" title={site.url}><span>{domain}</span><ExternalLink size={13} aria-hidden="true"/></a></div>
             {!managing && <button type="button" className="pc-fav" onClick={onFavorite} aria-label={(favorite ? 'הסרת ' : 'שמירת ') + site.name + ' במועדפים'} aria-pressed={favorite}><Heart size={18} fill={favorite ? 'currentColor' : 'none'} aria-hidden="true"/></button>}
         </div>
-        <div className="pc-chips">{used && <span className="pc-chip pc-chip-used" title={'האתר כבר שומש עבור ' + used.customer}><History size={13} aria-hidden="true"/>שומש כבר{usedDay ? <> · <bdi>{usedDay}</bdi></> : null}</span>}{site.is_on_sale && <span className="pc-chip pc-chip-deal">מבצע</span>}<span className="pc-chip pc-chip-cat"><LayoutGrid size={13} aria-hidden="true"/>{categories[site.category] || site.category}</span>{site.features?.includes('dofollow') && <span className="pc-chip pc-chip-do"><Check size={13} aria-hidden="true"/>קישור <bdi dir="ltr">Dofollow</bdi></span>}<span className="pc-chip"><IsraelFlag/>ישראל</span></div>
+        {used && <div className="pc-used-row"><span className="pc-used-check" aria-hidden="true"><Check size={12} strokeWidth={3}/></span><span>שומש עבור <b>{used.customer}</b>{usedDay ? <> · <bdi>{usedDay}</bdi></> : null}</span></div>}
+        <div className="pc-chips">{site.is_on_sale && <span className="pc-chip pc-chip-deal">מבצע</span>}<span className="pc-chip pc-chip-cat"><LayoutGrid size={13} aria-hidden="true"/>{categories[site.category] || site.category}</span>{site.features?.includes('dofollow') && <span className="pc-chip pc-chip-do"><Check size={13} aria-hidden="true"/>קישור <bdi dir="ltr">Dofollow</bdi></span>}<span className="pc-chip"><IsraelFlag/>ישראל</span></div>
         <div className="pc-metrics" role="group" aria-label="מדדי האתר">
             {(['DR', 'UR'] as const).map(key => <div className="pc-metric" key={key}><b>{(key === 'DR' ? site.dr : site.ur) ?? '—'}</b><span className="pc-metric-key"><bdi dir="ltr">{key}</bdi><button type="button" className="pc-info" data-site={site.id} aria-label={'מה זה ' + key + '?'} aria-expanded={metricTip === key} onClick={() => setMetricTip(metricTip === key ? null : key)}>i</button></span><span className="pc-tip" role="tooltip"><b dir="ltr">{key}:</b> {metricHelp[key]}</span></div>)}
         </div>

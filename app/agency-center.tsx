@@ -21,7 +21,8 @@ const norm=(v:unknown)=>String(v||'').trim().toLocaleLowerCase();
 const plain=(e:React.MouseEvent)=>e.button===0&&!e.metaKey&&!e.ctrlKey&&!e.shiftKey&&!e.altKey;
 
 // A site's logo, or the globe icon when there is none or it does not load.
-function SiteLogo({src}:{src?:string}){const [failed,setFailed]=useState(false);return <span className="ag-logo">{src&&!failed?<img src={src} alt="" width={34} height={34} style={{borderRadius:10,objectFit:'contain'}} onError={()=>setFailed(true)}/>:<Globe size={17}/>}</span>;}
+// The site's logo; if there is none or it does not load, the site's name in the same tile (as on the catalog cards).
+function SiteLogo({src,name}:{src?:string;name?:string}){const [failed,setFailed]=useState(false);const label=String(name||'').trim();return <span className="ag-logo">{src&&!failed?<img src={src} alt="" style={{width:'100%',height:'100%',borderRadius:9,objectFit:'contain'}} onError={()=>setFailed(true)}/>:label?<span className="nm" aria-hidden="true">{label.split(/\s+/)[0].slice(0,8)}</span>:<Globe size={17}/>}</span>;}
 function Avatar({name,id,size=36}:{name:string;id:string;size?:number}){return <span className="ag-av" aria-hidden="true" style={{background:colorFor(id),width:size,height:size,fontSize:Math.round(size*.42)}}>{String(name||'?').trim().charAt(0)||'?'}</span>;}
 function Link({ctx,to,className,children,label,current}:{ctx:Ctx;to:string;className?:string;children:React.ReactNode;label?:string;current?:boolean}){
  return <a href={'/'+to} className={className} aria-label={label} aria-current={current?'page':undefined} onClick={e=>{if(!plain(e))return;e.preventDefault();ctx.go(to);}}>{children}</a>;
@@ -182,7 +183,7 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
    :<div className="ag-table-wrap"><table className="ag-table"><thead><tr>{!customer&&<th scope="col">לקוח</th>}<th scope="col">אתר</th><th scope="col">פורסם</th><th scope="col">עוגן</th><th scope="col">קישור יעד</th><th scope="col">עלות</th><th scope="col">סטטוס</th><th scope="col"><span className="sr-only">קישור</span></th></tr></thead>
     <tbody>{rows.map(a=>{const [label,tone]=statusOf(a);return <tr key={a.id}>
      {!customer&&<td data-label="לקוח">{a.customer_name||<span className="ag-muted">ללא לקוח</span>}</td>}
-     <td className="ag-td-site"><div className="ag-site"><SiteLogo src={a.website_logo}/><span><b>{a.website_name}</b><small>{String(a.website_url||'').replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</small></span></div></td>
+     <td className="ag-td-site"><div className="ag-site"><SiteLogo src={a.website_logo} name={a.website_name}/><span><b>{a.website_name}</b><small>{String(a.website_url||'').replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</small></span></div></td>
      <td data-label="פורסם"><bdi>{a.published_at?day(a.published_at):'—'}</bdi></td>
      <td data-label="עוגן">{a.anchor||<span className="ag-muted">—</span>}</td>
      <td data-label="קישור יעד"><span className="ag-ltr ag-muted">{String(a.target_url||'').replace(/^https?:\/\/(www\.)?/,'')||'—'}</span></td>
@@ -205,10 +206,10 @@ function CustomerArticles({ctx,customer}:{ctx:Ctx;customer:Row}){
  if(!rows.length)return <div className="ag-empty"><FileText size={30}/><h3>אין כתבות משויכות ללקוח</h3><p>כתבה משויכת ללקוח כשרוכשים עבורו, או מהמסך "הכתבות שלי" בבחירת לקוח לכתבה.</p></div>;
  return <>{unused.length>0&&<section className="ag-unused" aria-labelledby="ag-unused-title">
   <header><span className="ic" aria-hidden="true"><PackageOpen size={20}/></span><div><h3 id="ag-unused-title">נרכשו ועוד לא נוצלו<span>{unused.length}</span></h3><p>כתבות ששולמו עבור {customer.name} ועדיין מחכות לתוכן. פותחים כתבה וממלאים את התוכן, כמו ב"הכתבות שלי".</p></div></header>
-  <div className="ag-unused-list">{unused.map(a=><div key={a.id} className="ag-unused-item"><SiteLogo src={a.website_logo}/><span className="t"><b>{a.website_name}</b><small>נרכשה <bdi>{day(a.purchased_at)}</bdi> · הזמנה <bdi>{a.number}</bdi></small></span><Link ctx={ctx} to={'article/'+a.id} className="ag-btn primary sm">לשימוש בכתבה<ArrowLeft size={15} aria-hidden="true"/></Link></div>)}</div>
+  <div className="ag-unused-list">{unused.map(a=><div key={a.id} className="ag-unused-item"><SiteLogo src={a.website_logo} name={a.website_name}/><span className="t"><b>{a.website_name}</b><small>נרכשה <bdi>{day(a.purchased_at)}</bdi> · הזמנה <bdi>{a.number}</bdi></small></span><Link ctx={ctx} to={'article/'+a.id} className="ag-btn primary sm">לעריכת הכתבה<ArrowLeft size={15} aria-hidden="true"/></Link></div>)}</div>
  </section>}
  {groups.map(g=><section key={g.key} aria-label={g.label}><h3 className="ag-stage">{g.label}<span>{g.items.length}</span></h3>
-  {g.items.map(a=><div key={a.id} className="ag-art"><SiteLogo src={a.website_logo}/><span className="t"><b>{a.title||a.topic||'כתבה ללא כותרת'}</b><small>{a.website_name} · הזמנה <bdi>{a.number}</bdi>{a.published_at?<> · פורסם <bdi>{day(a.published_at)}</bdi></>:null}</small></span><span className={'ag-status '+tone(a)}>{stages[a.status]||a.status}</span>
+  {g.items.map(a=><div key={a.id} className="ag-art"><SiteLogo src={a.website_logo} name={a.website_name}/><span className="t"><b>{a.title||a.topic||'כתבה ללא כותרת'}</b><small>{a.website_name} · הזמנה <bdi>{a.number}</bdi>{a.published_at?<> · פורסם <bdi>{day(a.published_at)}</bdi></>:null}</small></span><span className={'ag-status '+tone(a)}>{stages[a.status]||a.status}</span>
    {a.published_url?<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>:<Link ctx={ctx} to={'article/'+a.id} className="ag-btn ghost sm">{['draft','review','revisions'].includes(a.status)?'לטיפול':'פתיחה'}</Link>}
   </div>)}</section>)}</>;
 }
@@ -229,7 +230,7 @@ function UsedSites({ctx,customer}:{ctx:Ctx;customer:Row}){
  return <>
   <p className="ag-muted" style={{margin:'0 0 12px',fontSize:14.5}}>אתרים שהלקוח כבר קיבל בהם פרסום. מה שפורסם דרך המערכת נכנס לבד. אתרים מבחוץ מוסיפים כאן.</p>
   <div className="ag-mode" role="radiogroup" aria-label="מה קורה ברכישה עבור הלקוח">
-   {([['warn','להציג באפור','במחירון של '+customer.name+' האתרים יופיעו באפור עם הסימון "שומש כבר"'],['hide','להסתיר מהמחירון','במחירון של '+customer.name+' האתרים האלה לא יוצגו']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={data?.mode===mode} className={'ag-opt'+(data?.mode===mode?' on':'')} disabled={!!busy} onClick={()=>data?.mode!==mode&&run('mode',()=>api(base,'PATCH',{mode}),'ההגדרה נשמרה')}><span className="ag-radio"/><span><b>{title}</b><small>{sub}</small></span></button>)}
+   {([['warn','להציג עם סימון','במחירון של '+customer.name+' האתרים יופיעו עם שורה ירוקה "שומש עבור '+customer.name+'"'],['hide','להסתיר מהמחירון','במחירון של '+customer.name+' האתרים האלה לא יוצגו']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={data?.mode===mode} className={'ag-opt'+(data?.mode===mode?' on':'')} disabled={!!busy} onClick={()=>data?.mode!==mode&&run('mode',()=>api(base,'PATCH',{mode}),'ההגדרה נשמרה')}><span className="ag-radio"/><span><b>{title}</b><small>{sub}</small></span></button>)}
   </div>
   <div className="ag-paste">
    <label htmlFor="ag-used-text" style={{display:'flex',alignItems:'center',gap:7,fontSize:15,fontWeight:700}}><ClipboardPaste size={17}/>הוספת רשימה</label>
@@ -279,7 +280,7 @@ function Overview({ctx}:{ctx:Ctx}){
   </div>
   <div className="ag-grid2 even">
    <section className="ag-card ag-sec"><h3><Trophy size={19}/>הלקוחות הפעילים החודש</h3>{d.top.length?d.top.map((c:Row)=><Link key={c.id} ctx={ctx} to={'purchased/agency/customers/'+encodeURIComponent(c.id)} className="ag-task"><Avatar name={c.name} id={c.id} size={34}/><span className="t"><b>{c.name}</b><small>{c.published} פרסומים</small></span><b><bdi>{ils(c.spend)}</bdi></b></Link>):<p className="ag-muted">עדיין אין פעילות החודש.</p>}</section>
-   <section className="ag-card ag-sec"><h3><Globe size={19}/>פרסומים אחרונים<Link ctx={ctx} to="purchased/agency/publications" className="more">לכל הפרסומים</Link></h3>{d.recent.length?d.recent.map((a:Row)=><div key={a.id} className="ag-task"><SiteLogo src={a.website_logo}/><span className="t"><b>{a.website_name}</b><small>{a.customer_name||'ללא לקוח'} · <bdi>{day(a.published_at)}</bdi></small></span>{a.published_url&&<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>}</div>):<p className="ag-muted">עדיין לא פורסמו כתבות.</p>}</section>
+   <section className="ag-card ag-sec"><h3><Globe size={19}/>פרסומים אחרונים<Link ctx={ctx} to="purchased/agency/publications" className="more">לכל הפרסומים</Link></h3>{d.recent.length?d.recent.map((a:Row)=><div key={a.id} className="ag-task"><SiteLogo src={a.website_logo} name={a.website_name}/><span className="t"><b>{a.website_name}</b><small>{a.customer_name||'ללא לקוח'} · <bdi>{day(a.published_at)}</bdi></small></span>{a.published_url&&<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>}</div>):<p className="ag-muted">עדיין לא פורסמו כתבות.</p>}</section>
   </div>
  </>;
 }
@@ -386,7 +387,7 @@ function AgencySettings({ctx}:{ctx:Ctx}){
  return <form onSubmit={save}><div className="ag-form">
   <label>השם שיופיע בדוחות<small>למשל שם הסוכנות</small><input value={v.report_name} maxLength={120} disabled={busy} onChange={e=>set('report_name',e.target.value)}/></label>
   <label>צבע הדוחות<small>הצבע של הכותרת בדוח ללקוח</small><input type="color" value={v.report_color} disabled={busy} onChange={e=>set('report_color',e.target.value)} style={{height:46,padding:4}}/></label>
-  <fieldset className="wide ag-fieldset"><legend>אתרים שכבר שימשו, לכל לקוח חדש</legend><div className="ag-mode">{([['warn','להציג באפור עם הסימון "שומש כבר"','מומלץ'],['hide','להסתיר מהמחירון','']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={v.used_mode===mode} className={'ag-opt'+(v.used_mode===mode?' on':'')} onClick={()=>set('used_mode',mode)}><span className="ag-radio"/><span><b>{title}</b>{sub&&<small>{sub}</small>}</span></button>)}</div><p className="ag-muted" style={{fontSize:13,margin:'8px 0 0'}}>אפשר לשנות לכל לקוח בלשונית "אתרים שכבר שימשו".</p></fieldset>
+  <fieldset className="wide ag-fieldset"><legend>אתרים שכבר שימשו, לכל לקוח חדש</legend><div className="ag-mode">{([['warn','להציג עם סימון "שומש עבור הלקוח"','מומלץ'],['hide','להסתיר מהמחירון','']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={v.used_mode===mode} className={'ag-opt'+(v.used_mode===mode?' on':'')} onClick={()=>set('used_mode',mode)}><span className="ag-radio"/><span><b>{title}</b>{sub&&<small>{sub}</small>}</span></button>)}</div><p className="ag-muted" style={{fontSize:13,margin:'8px 0 0'}}>אפשר לשנות לכל לקוח בלשונית "אתרים שכבר שימשו".</p></fieldset>
   <label className="ag-check wide"><input type="checkbox" checked={!!v.show_costs} onChange={e=>set('show_costs',e.target.checked)}/>להציג עלויות בדוח ללקוח כברירת מחדל</label>
  </div>{error&&<p className="ag-alert" role="alert">{error}</p>}{saved&&<p className="ag-ok" role="status">ההגדרות נשמרו</p>}
  <div className="ag-actions"><button type="submit" className="ag-btn primary" disabled={busy}>{busy?<LoaderCircle size={17} className="animate-spin"/>:<Save size={17}/>}שמירת הגדרות</button></div></form>;

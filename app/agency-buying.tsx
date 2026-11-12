@@ -4,7 +4,7 @@
 // sites already used for that customer, adds the customer to every item put in the cart, and asks before adding a site
 // that was already used. The server refuses such a site without the confirmation anyway.
 import React,{useEffect,useState} from 'react';
-import {X,EyeOff,CalendarCheck,Users,History} from 'lucide-react';
+import {X,EyeOff,CalendarCheck,Users,History,Check} from 'lucide-react';
 import {api} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
@@ -26,7 +26,7 @@ export function useUsedSites(buying:Buying,revision=0){
  useEffect(()=>{if(!buying){setState(null);return;}let live=true;api('agency/customers/'+encodeURIComponent(buying.id)+'/used-sites','GET',undefined,{background:true}).then(d=>{if(live)setState({mode:d.mode,hidden:new Set(d.hidden_site_ids||[]),info:d.used||{}});}).catch(()=>{if(live)setState(null);});return()=>{live=false;};},[buying?.id,revision]);
  return state;
 }
-// "hide": used sites are left out. Otherwise they stay in the catalog, greyed and marked "שומש כבר", after the others.
+// "hide": used sites are left out. Otherwise they stay in the catalog with a green "שומש עבור" line, after the others.
 export function catalogForBuying<T extends Row>(sites:T[],buying:Buying,used:Used|null){
  if(!buying||!used||!used.hidden.size)return sites;
  if(used.mode==='hide'&&!buying.show)return sites.filter(s=>!used.hidden.has(s.id));
@@ -66,7 +66,7 @@ export default function AgencyBuyingLayer({ctx,view,hiddenCount,usedCount}:{ctx:
   {buying&&catalogView&&<div className="agc-bar" role="region" aria-label={'מחירון עבור '+buying.name}>
    <span className="ag-av" aria-hidden="true">{buying.name.charAt(0)}</span>
    <span className="who"><small>המחירון עבור הלקוח</small><b>{buying.name}</b></span>
-   {usedCount>0&&<span className="used-note">{hidden?<><EyeOff size={15} aria-hidden="true"/>הוסתרו <bdi>{usedCount}</bdi> אתרים שכבר שומשו ללקוח</>:<><span className="dot" aria-hidden="true"/><bdi>{usedCount}</bdi> אתרים שכבר שומשו ללקוח מסומנים באפור</>}
+   {usedCount>0&&<span className="used-note">{hidden?<><EyeOff size={15} aria-hidden="true"/>הוסתרו <bdi>{usedCount}</bdi> אתרים שכבר שומשו ללקוח</>:<><span className="dot" aria-hidden="true"><Check size={11} strokeWidth={3}/></span><bdi>{usedCount}</bdi> אתרים כבר שומשו ללקוח ומסומנים בכרטיס</>}
     {(hidden||buying.show)&&<button type="button" onClick={()=>setBuyingFor({...buying,show:hidden})}>{hidden?'הצגה':'הסתרה'}</button>}</span>}
    <span className="grow"/>
    <button type="button" className="ag-btn ghost sm" aria-label="החלפת לקוח" onClick={()=>ctx.go('purchased/agency/customers')}><Users size={15} aria-hidden="true"/><span className="lbl">החלפת לקוח</span></button>
