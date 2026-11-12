@@ -28,7 +28,7 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
-import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit,agencyOverview,agencyTasks} from '@/lib/agency';
+import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit,agencyOverview,agencyTasks,adminAgencyView} from '@/lib/agency';
 import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
@@ -318,6 +318,10 @@ async function handle(r: Request,access:ResponseAccess) {
     if (p[0] === 'me' && p[1] === 'marketing' && method === 'PATCH') {
         const b = await json(r); assert(typeof b.subscribed === 'boolean', 'בקשה לא תקינה');
         await setMarketing(u, b.subscribed, 'account'); return response({ ok: true, marketing: await marketingStatus(u.id) });
+    }
+    if (p[0] === 'admin' && p[1] === 'agency' && p[2] && !p[3] && method === 'GET') {
+        admin(u); const target = await one('SELECT * FROM users WHERE id=?', p[2]); assert(target, 'החשבון לא נמצא', 404);
+        await audit(u, target.id, 'צפייה בלקוחות הסוכנות', {}); return response(await adminAgencyView(target));
     }
     if (p[0] === 'admin' && p[1] === 'marketing') {
         admin(u);

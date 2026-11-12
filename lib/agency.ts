@@ -217,3 +217,11 @@ export async function agencyOverview(u:Row){
  return {kpis:{customers:active.length,customers_new_month:active.filter(c=>monthKey(c.created)===current).length,published_month:at.get(current)!.published,published_prev:at.get(previous)!.published,spend_month:at.get(current)!.spend,waiting:tasks.filter(t=>['review','revisions','draft'].includes(t.kind)).length,urgent:tasks.filter(t=>t.urgency<=2).length},
   chart,tasks:tasks.slice(0,5),tasks_total:tasks.length,top,recent,unassigned_waiting:unassigned.waiting};
 }
+
+// ---------- admin view of an agency (spec 10), read only ----------
+export async function adminAgencyView(target:Row){
+ assert(target?.role==='agency','החשבון אינו חשבון סוכנות',404);
+ const [{customers,unassigned},used]=await Promise.all([agencyCustomers(target),all("SELECT id,data FROM records WHERE kind='customer_used_sites' AND user_id=?",target.id)]);
+ const usedBy=new Map(used.map(r=>{const d=JSON.parse(r.data||'{}');return [String(r.id).slice('used-sites:'.length),{manual:(d.entries||[]).length,mode:d.mode==='warn'?'warn':'hide'}];}));
+ return {customers:[...customers].sort((x,y)=>Number(x.status==='archived')-Number(y.status==='archived')).map(c=>({id:c.id,name:c.name,company:c.company||'',domains:c.domains,tags:c.tags,status:c.status,stats:c.stats,used_sites:usedBy.get(c.id)||{manual:0,mode:'hide'}})),unassigned};
+}
