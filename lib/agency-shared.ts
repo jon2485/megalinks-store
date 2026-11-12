@@ -19,3 +19,31 @@ export function articleSpend(a:Row){
  if(a.status==='cancelled'&&!d.publication_refunded&&!d.writing_refunded)return 0;
  return (d.publication_refunded?0:publication)+(d.writing_refunded?0:writing);
 }
+
+// A site in the "already used" list: its domain, and optionally a section path (e.g. ynet.co.il + /capital).
+// An entry with no path covers every catalog site on that domain; an entry with a path covers that section only.
+export function usedSiteKey(input:unknown){
+ const raw=String(input??'').trim();if(!raw)return null;
+ const domain=normalizeDomain(raw);if(!domain)return null;
+ let path='';
+ try{const url=new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(raw)?raw:'http://'+raw);path=decodeURIComponent(url.pathname).toLowerCase().replace(/\/+$/,'');}catch{}
+ // Only a first-level section is kept: an article address like /article/123 is the site itself, not a section.
+ const first=path.split('/').filter(Boolean)[0]||'';
+ const section=first&&!/^\d+$/.test(first)&&!/^(article|articles|item|news|post|posts|p|story|blog|[a-z]{2})$/.test(first)&&path.split('/').filter(Boolean).length===1?'/'+first:'';
+ return {domain,path:section};
+}
+export function usedSiteMatches(entry:{domain:string;path:string},siteUrl:string){
+ const site=usedSiteKey(siteUrl);if(!site||site.domain!==entry.domain)return false;
+ return !entry.path||site.path===entry.path;
+}
+// Splits a pasted list (new lines, commas, semicolons, tabs, spaces) into entries; reports duplicates and bad lines.
+export function parseUsedSites(text:string,existing:{domain:string;path:string}[]=[]){
+ const seen=new Set(existing.map(e=>e.domain+e.path)),added:{domain:string;path:string}[]=[],invalid:string[]=[];let duplicates=0;
+ for(const part of String(text||'').split(/[\n\r,;\t ]+/).map(s=>s.trim()).filter(Boolean).slice(0,10000)){
+  const key=usedSiteKey(part);
+  if(!key){invalid.push(part.slice(0,120));continue;}
+  if(seen.has(key.domain+key.path)){duplicates++;continue;}
+  seen.add(key.domain+key.path);added.push(key);
+ }
+ return {added,duplicates,invalid};
+}

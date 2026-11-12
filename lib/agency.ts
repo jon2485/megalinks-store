@@ -5,7 +5,7 @@ import type {Row} from './shared';
 import {assert,all,one,stmt,now,audit,uid} from './server';
 import {articleCustomerJoins,articleCustomerColumns} from './article-customer';
 import {customerInput,customerErrors} from './customer-fields';
-import {normalizeDomain,articleSpend} from './agency-shared';
+import {normalizeDomain,articleSpend,usedSiteKey,usedSiteMatches,parseUsedSites} from './agency-shared';
 export {normalizeDomain,articleSpend};
 
 export function assertAgency(u:Row){assert(u?.role==='agency','מרכז הסוכנות פתוח לחשבונות סוכנות בלבד',403);}
@@ -125,4 +125,63 @@ export async function agencyPublications(u:Row,q:URLSearchParams){
 export async function agencyCustomerArticles(u:Row,id:string){
  await agencyCustomer(u,id);
  return {articles:(await agencyArticles(u)).map(agencyArticleRow).filter(a=>a.customer_id===id)};
+}
+
+// ---------- sites already used for a customer (spec section 7) ----------
+type UsedEntry={domain:string;path:string;added_at?:string};
+const usedId=(customerId:string)=>'used-sites:'+customerId;
+const USED_MAX=5000;
+async function usedRecord(u:Row,customerId:string){
+ const r=await one("SELECT data FROM records WHERE id=? AND kind='customer_used_sites' AND user_id=?",usedId(customerId),u.id);
+ const d=r?JSON.parse(r.data||'{}'):{};return {mode:d.mode==='warn'?'warn':'hide',entries:(Array.isArray(d.entries)?d.entries:[]) as UsedEntry[],exists:!!r};
+}
+async function saveUsedRecord(u:Row,customerId:string,data:Row){
+ const stamp=now();
+ await stmt("INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated=excluded.updated WHERE records.user_id=excluded.user_id AND records.kind='customer_used_sites'",usedId(customerId),'customer_used_sites',u.id,JSON.stringify(data),stamp,stamp).run();
+}
+// Sites the customer already got a publication in through the system: published, or sent to the site for publication.
+async function systemUsed(u:Row,customerId:string){
+ const rows=(await agencyArticles(u,"AND a.status IN ('published','sent')")).map(agencyArticleRow).filter(a=>a.customer_id===customerId&&!a.demo);
+ const bySite=new Map<string,Row>();
+ for(const a of rows){const prev=bySite.get(a.website_id),when=a.published_at||a.purchased_at;if(!prev||when>prev.last)bySite.set(a.website_id,{website_id:a.website_id,website_name:a.website_name,website_url:a.website_url,last:when,status:a.status,number:a.number});}
+ return [...bySite.values()];
+}
+const catalogSites=()=>all("SELECT id,name,url FROM websites WHERE active=1");
+
+export async function agencyUsedSites(u:Row,customerId:string){
+ await agencyCustomer(u,customerId);
+ const [rec,system,sites]=await Promise.all([usedRecord(u,customerId),systemUsed(u,customerId),catalogSites()]);
+ const manual=rec.entries.map(e=>{const hits=sites.filter(s=>usedSiteMatches(e,s.url));return {...e,catalog:hits.map(s=>({id:s.id,name:s.name}))};});
+ const hidden=new Set([...system.map(s=>s.website_id),...manual.flatMap(m=>m.catalog.map((c:Row)=>c.id))]);
+ return {mode:rec.mode,system,manual,hidden_site_ids:[...hidden]};
+}
+export async function importUsedSites(u:Row,customerId:string,text:string){
+ await agencyCustomer(u,customerId);
+ const rec=await usedRecord(u,customerId),parsed=parseUsedSites(String(text||'').slice(0,400000),rec.entries);
+ const room=Math.max(0,USED_MAX-rec.entries.length),stamp=now();
+ const added=parsed.added.slice(0,room).map(e=>({...e,added_at:stamp}));
+ if(added.length)await saveUsedRecord(u,customerId,{mode:rec.mode,entries:[...rec.entries,...added]});
+ const sites=added.length?await catalogSites():[];
+ const inCatalog=added.filter(e=>sites.some(s=>usedSiteMatches(e,s.url))).length;
+ if(added.length)await audit(u,customerId,'נוספו אתרים לרשימת "כבר שימשו"',{added:added.length});
+ return {added:added.length,in_catalog:inCatalog,duplicates:parsed.duplicates,invalid:parsed.invalid.slice(0,50),invalid_count:parsed.invalid.length,over_limit:parsed.added.length-added.length};
+}
+export async function removeUsedSite(u:Row,customerId:string,domain:string,path:string){
+ await agencyCustomer(u,customerId);
+ const rec=await usedRecord(u,customerId),entries=rec.entries.filter(e=>!(e.domain===domain&&e.path===(path||'')));
+ assert(entries.length<rec.entries.length,'האתר אינו ברשימה',404);
+ await saveUsedRecord(u,customerId,{mode:rec.mode,entries});
+ return {ok:true};
+}
+export async function setUsedMode(u:Row,customerId:string,mode:string){
+ await agencyCustomer(u,customerId);assert(['hide','warn'].includes(mode),'בחירה לא תקינה');
+ const rec=await usedRecord(u,customerId);await saveUsedRecord(u,customerId,{mode,entries:rec.entries});
+ return {ok:true,mode};
+}
+// Whether this site was already used for this customer: by a publication through the system, or in the pasted list.
+export async function usedSiteHit(u:Row,customerId:string,site:Row){
+ const [system,rec]=await Promise.all([systemUsed(u,customerId),usedRecord(u,customerId)]);
+ const sys=system.find(s=>s.website_id===site.id);if(sys)return {source:'system',date:sys.last,number:sys.number};
+ const manual=rec.entries.find(e=>usedSiteMatches(e,site.url));if(manual)return {source:'manual',date:manual.added_at||''};
+ return null;
 }

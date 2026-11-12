@@ -3,7 +3,7 @@
 // header band, section tabs, and the customers page (list on the right, one customer's screen with tabs).
 // Every action uses the existing records and routes, so nothing here is a copy of "הכתבות שלי" or "ההזמנות שלי".
 import React,{useEffect,useMemo,useState} from 'react';
-import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X} from 'lucide-react';
+import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
 import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
@@ -11,7 +11,7 @@ import type {Ctx} from './workspace';
 import './agency-center.css';
 
 const SECTIONS=[['customers','לקוחות',Users],['publications','פרסומים',Globe]] as const;
-const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['details','פרטים',IdCard]] as const;
+const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['details','פרטים',IdCard]] as const;
 const COLORS=['#1673e6','#7c3aed','#0f9f8f','#ea580c','#b45309','#db2777','#0369a1','#16a34a','#0891b2','#65a30d','#c2410c','#be185d'];
 const colorFor=(id:string)=>COLORS[[...String(id)].reduce((s,c)=>s+c.charCodeAt(0),0)%COLORS.length];
 const ils=(cents:number)=>'₪'+(Math.round(Number(cents||0))/100).toLocaleString('he-IL',{maximumFractionDigits:2});
@@ -93,7 +93,7 @@ function CustomerScreen({ctx,customer,tab}:{ctx:Ctx;customer:Row;tab:string}){
   </div>
   <div className="ag-ctabs" role="tablist" aria-label={'הלקוח '+customer.name}>{CUSTOMER_TABS.map(([key,label,Icon])=><button key={key} type="button" role="tab" aria-selected={current===key} className={current===key?'on':''} onClick={()=>ctx.go(base+'/'+key)}><Icon size={16} aria-hidden="true"/>{label}{key==='articles'&&customer.stats?.waiting>0&&<span className="ag-pending">{customer.stats.waiting}</span>}</button>)}</div>
   <div role="tabpanel">
-   {current==='details'?<CustomerDetails ctx={ctx} customer={customer}/>:current==='articles'?<CustomerArticles ctx={ctx} customer={customer}/>:<Publications ctx={ctx} customer={customer.id}/>}
+   {current==='details'?<CustomerDetails ctx={ctx} customer={customer}/>:current==='used-sites'?<UsedSites ctx={ctx} customer={customer}/>:current==='articles'?<CustomerArticles ctx={ctx} customer={customer}/>:<Publications ctx={ctx} customer={customer.id}/>}
   </div>
  </>;
 }
@@ -201,4 +201,45 @@ function CustomerArticles({ctx,customer}:{ctx:Ctx;customer:Row}){
   {g.items.map(a=><div key={a.id} className="ag-art"><SiteLogo src={a.website_logo}/><span className="t"><b>{a.title||a.topic||'כתבה ללא כותרת'}</b><small>{a.website_name} · הזמנה <bdi>{a.number}</bdi>{a.published_at?<> · פורסם <bdi>{day(a.published_at)}</bdi></>:null}</small></span><span className={'ag-status '+tone(a)}>{stages[a.status]||a.status}</span>
    {a.published_url?<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>:<Link ctx={ctx} to={'article/'+a.id} className="ag-btn ghost sm">{['draft','review','revisions'].includes(a.status)?'לטיפול':'פתיחה'}</Link>}
   </div>)}</section>)}</>;
+}
+
+// ---------- sites already used for this customer (spec section 7) ----------
+function UsedSites({ctx,customer}:{ctx:Ctx;customer:Row}){
+ const base='agency/customers/'+encodeURIComponent(customer.id)+'/used-sites';
+ const state=useData(base,ctx.revision),data=state.data;
+ const [text,setText]=useState(''),[busy,setBusy]=useState(''),[error,setError]=useState(''),[result,setResult]=useState<Row|null>(null),[query,setQuery]=useState('');
+ const run=async(kind:string,fn:()=>Promise<any>,done:string)=>{if(busy)return;setBusy(kind);setError('');try{return await ctx.run(fn,done);}catch(e){setError((e as Error).message);}finally{setBusy('');}};
+ const add=async(value:string)=>{if(!value.trim())return;const out=await run('import',()=>api(base+'/import','POST',{text:value}),'הרשימה עודכנה');if(out){setResult(out);setText('');}};
+ const readFile=async(file?:File|null)=>{if(!file)return;if(file.size>2_000_000){setError('הקובץ גדול מדי. אפשר עד 2MB.');return;}add(await file.text());};
+ const rows:Row[]=[...(data?.system||[]).map((s:Row)=>({key:'s:'+s.website_id,source:'system',name:s.website_name,domain:String(s.website_url||'').replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,''),date:s.last,catalog:true})),
+  ...(data?.manual||[]).map((m:Row)=>({key:'m:'+m.domain+m.path,source:'manual',name:m.catalog?.[0]?.name||'',domain:m.domain+m.path,date:m.added_at,catalog:!!m.catalog?.length,entry:m,more:Math.max(0,(m.catalog?.length||0)-1)}))]
+  .filter(r=>!query||norm(r.domain+' '+r.name).includes(norm(query)));
+ const exportCsv=()=>{const lines=[['דומיין','שם באתר מגה לינקס','מקור','תאריך'],...rows.map(r=>[r.domain,r.name,r.source==='system'?'פורסם דרך המערכת':'נוסף ידנית',r.date?day(r.date):''])];const blob=new Blob(['\ufeff'+lines.map(l=>l.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='used-sites.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);};
+ if(state.loading&&!data)return <div className="ag-skel" style={{height:120}}/>;
+ return <>
+  <p className="ag-muted" style={{margin:'0 0 12px',fontSize:14.5}}>אתרים שהלקוח כבר קיבל בהם פרסום. מה שפורסם דרך המערכת נכנס לבד. אתרים מבחוץ מוסיפים כאן.</p>
+  <div className="ag-mode" role="radiogroup" aria-label="מה קורה ברכישה עבור הלקוח">
+   {([['hide','להסתיר מהקטלוג','ברכישה עבור '+customer.name+' האתרים האלה לא יוצגו'],['warn','להציג עם התראה','האתרים יוצגו עם תווית "כבר שימש"']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={data?.mode===mode} className={'ag-opt'+(data?.mode===mode?' on':'')} disabled={!!busy} onClick={()=>data?.mode!==mode&&run('mode',()=>api(base,'PATCH',{mode}),'ההגדרה נשמרה')}><span className="ag-radio"/><span><b>{title}</b><small>{sub}</small></span></button>)}
+  </div>
+  <div className="ag-paste">
+   <label htmlFor="ag-used-text" style={{display:'flex',alignItems:'center',gap:7,fontSize:15,fontWeight:700}}><ClipboardPaste size={17}/>הוספת רשימה</label>
+   <p className="ag-muted" style={{margin:'4px 0 10px',fontSize:13}}>מדביקים דומיינים או כתובות, אחד בשורה או מופרדים בפסיק. אפשר גם להעלות קובץ CSV או TXT.</p>
+   <textarea id="ag-used-text" value={text} disabled={!!busy} placeholder={'example.co.il\nhttps://www.example.com/section'} onChange={e=>setText(e.target.value)}/>
+   <div className="ag-result" style={{alignItems:'center'}}>
+    <button type="button" className="ag-btn primary sm" disabled={!!busy||!text.trim()} onClick={()=>add(text)}>{busy==='import'?<LoaderCircle size={16} className="animate-spin"/>:<Plus size={16}/>}הוספה לרשימה</button>
+    <label className="ag-btn ghost sm" style={{cursor:'pointer'}}><Upload size={16}/>העלאת קובץ<input type="file" accept=".csv,.txt,text/csv,text/plain" hidden onChange={e=>{readFile(e.target.files?.[0]);e.target.value='';}}/></label>
+    {result&&<span role="status" style={{display:'contents'}}><span className="ag-src cat">{result.added} נקלטו</span><span className="ag-src sys">{result.in_catalog} נמצאו בקטלוג של מגה לינקס</span>{result.duplicates>0&&<span className="ag-src out">{result.duplicates} כבר היו ברשימה</span>}{result.invalid_count>0&&<span className="ag-src man" title={result.invalid.join(', ')}>{result.invalid_count} לא תקינים</span>}{result.over_limit>0&&<span className="ag-src man">{result.over_limit} מעבר למגבלה של 5,000</span>}</span>}
+   </div>
+  </div>
+  {(error||state.error)&&<p className="ag-alert" role="alert">{error||state.error}</p>}
+  <div className="ag-filters" style={{margin:'18px 0 6px'}}><b style={{fontSize:16}}>{(data?.system?.length||0)+(data?.manual?.length||0)} אתרים ברשימה</b><span className="grow"/><label className="ag-search" style={{flex:'0 1 240px',height:38}}><Search size={16}/><input type="search" placeholder="חיפוש ברשימה" aria-label="חיפוש ברשימת האתרים" value={query} onChange={e=>setQuery(e.target.value)}/></label><button type="button" className="ag-btn ghost sm" disabled={!rows.length} onClick={exportCsv}><Download size={16}/>ייצוא</button></div>
+  {!rows.length?<div className="ag-empty"><ShieldBan size={30}/><h3>{query?'לא נמצא':'הרשימה ריקה'}</h3><p>{query?'נסו חיפוש אחר.':'אתרים שפורסם בהם עבור הלקוח דרך המערכת יופיעו כאן לבד.'}</p></div>
+   :<div className="ag-table-wrap"><table className="ag-table"><thead><tr><th scope="col">אתר</th><th scope="col">מקור</th><th scope="col">מתי</th><th scope="col">בקטלוג</th><th scope="col"><span className="sr-only">פעולות</span></th></tr></thead><tbody>
+    {rows.map(r=><tr key={r.key}><td className="ag-td-site"><div className="ag-site"><span className="ag-logo"><Globe size={16}/></span><span>{r.name?<><b>{r.name}{r.more?` +${r.more}`:''}</b><small>{r.domain}</small></>:<b className="ag-ltr">{r.domain}</b>}</span></div></td>
+     <td data-label="מקור"><span className={'ag-src '+(r.source==='system'?'sys':'man')}>{r.source==='system'?'פורסם דרך המערכת':'נוסף ידנית'}</span></td>
+     <td data-label="מתי"><bdi>{r.date?day(r.date):'—'}</bdi></td>
+     <td data-label="בקטלוג">{r.catalog?<span className="ag-src cat">{data?.mode==='warn'?'כן · יסומן':'כן · יוסתר'}</span>:<span className="ag-src out">לא בקטלוג</span>}</td>
+     <td data-label="פעולות">{r.source==='manual'&&<button type="button" className="ag-btn ghost sm" aria-label={'הסרת '+r.domain+' מהרשימה'} disabled={!!busy} onClick={()=>run('remove',()=>api(base+'/remove','POST',{domain:r.entry.domain,path:r.entry.path}),'האתר הוסר מהרשימה')}><Trash2 size={15}/></button>}</td>
+    </tr>)}</tbody></table></div>}
+ </>;
 }

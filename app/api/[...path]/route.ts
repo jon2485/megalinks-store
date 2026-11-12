@@ -28,7 +28,7 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
-import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications} from '@/lib/agency';
+import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit} from '@/lib/agency';
 import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
@@ -159,6 +159,8 @@ async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: i
 } if (d.customer_id) {
     const c = owns(u, await one('SELECT * FROM records WHERE id=? AND kind=?', d.customer_id, 'customer'));
     assert(c.kind === 'customer', 'לקוח לא תקין');
+    // Agency centre: a site already used for this customer needs an explicit confirmation (spec section 7).
+    if (u.role === 'agency') { const hit = await usedSiteHit(u, c.id, w); if (hit) { assert(input.confirm_used_site === true || input.used_site_confirmed === true, 'USED_SITE:' + JSON.stringify({ site: w.name, customer: JSON.parse(c.data || '{}').name || '', ...hit }), 409); (d as Row).used_site_confirmed = true; } }
 } for (const file of [d.image_id, d.document_id].filter(Boolean))
     owns(u, await one('SELECT * FROM files WHERE id=?', file)); return d; }
 type ResponseAccess={privileged:boolean};
@@ -303,6 +305,12 @@ async function handle(r: Request,access:ResponseAccess) {
         if (p[1] === 'customers' && p[2] && !p[3] && method === 'PATCH') return response(await saveAgencyCustomer(u, p[2], await json(r)));
         if (p[1] === 'customers' && p[2] && p[3] === 'articles' && method === 'GET') return response(await agencyCustomerArticles(u, p[2]));
         if (p[1] === 'publications' && !p[2] && method === 'GET') return response(await agencyPublications(u, new URL(r.url).searchParams));
+        if (p[1] === 'customers' && p[2] && p[3] === 'used-sites') {
+            if (!p[4] && method === 'GET') return response(await agencyUsedSites(u, p[2]));
+            if (!p[4] && method === 'PATCH') { const b = await json(r); return response(await setUsedMode(u, p[2], String(b.mode || ''))); }
+            if (p[4] === 'import' && method === 'POST') { const b = await json(r); return response(await importUsedSites(u, p[2], String(b.text || ''))); }
+            if (p[4] === 'remove' && method === 'POST') { const b = await json(r); return response(await removeUsedSite(u, p[2], String(b.domain || ''), String(b.path || ''))); }
+        }
         assert(false, 'הבקשה אינה נתמכת', 404);
     }
     if (p[0] === 'me' && p[1] === 'marketing' && method === 'PATCH') {

@@ -20,3 +20,16 @@ assert.equal(articleSpend(art('draft',{paid_net_amount:50000},0)),0,'unpaid orde
 assert.equal(articleSpend(art('draft',{paid_net_amount:50000,on_account:true},0)),50000,'monthly account counts');
 assert.equal(articleSpend(art('demo_completed',{paid_net_amount:50000,demo:true})),0,'demo');
 console.log('agency centre: paths, domains and spend ok');
+const {usedSiteKey,usedSiteMatches,parseUsedSites}=require(realpathSync('.sites-runtime/agency-shared.cjs'));
+assert.deepEqual(usedSiteKey('https://www.ynet.co.il/capital'),{domain:'ynet.co.il',path:'/capital'});
+assert.deepEqual(usedSiteKey('ynet.co.il'),{domain:'ynet.co.il',path:''});
+assert.deepEqual(usedSiteKey('https://www.israel-news.example.co.il/article/123'),{domain:'israel-news.example.co.il',path:''});
+assert.deepEqual(usedSiteKey('https://healthy.walla.co.il/item/3823998'),{domain:'healthy.walla.co.il',path:''});
+assert.equal(usedSiteKey('hello'),null);
+assert(usedSiteMatches({domain:'ynet.co.il',path:''},'https://www.ynet.co.il/capital'),'domain entry covers sections');
+assert(usedSiteMatches({domain:'ynet.co.il',path:'/capital'},'https://www.ynet.co.il/capital/'),'section entry covers its section');
+assert(!usedSiteMatches({domain:'ynet.co.il',path:'/capital'},'https://www.ynet.co.il/laisha'),'but not another section');
+assert(!usedSiteMatches({domain:'ynet.co.il',path:''},'https://ynetnews.com'),'other domain');
+const parsed=parseUsedSites('a.co.il\nhttps://www.A.co.il/, b.com; bad\tc.org/news/1 c.org',[{domain:'b.com',path:''}]);
+assert.deepEqual(parsed.added,[{domain:'a.co.il',path:''},{domain:'c.org',path:''}]);assert.equal(parsed.duplicates,3);assert.deepEqual(parsed.invalid,['bad']);
+console.log('agency centre: used sites ok');
