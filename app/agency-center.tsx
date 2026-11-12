@@ -3,7 +3,7 @@
 // header band, section tabs, and the customers page (list on the right, one customer's screen with tabs).
 // Every action uses the existing records and routes, so nothing here is a copy of "הכתבות שלי" or "ההזמנות שלי".
 import React,{useEffect,useMemo,useState} from 'react';
-import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff,Printer,Settings as SettingsIcon,FileSpreadsheet,CalendarDays,ChevronRight,ChevronLeft,PackageOpen,ArrowLeft} from 'lucide-react';
+import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff,Printer,Settings as SettingsIcon,FileSpreadsheet,CalendarDays,ChevronRight,ChevronLeft,PackageOpen,ArrowLeft,Eye} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
 import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
@@ -29,21 +29,29 @@ function Link({ctx,to,className,children,label,current}:{ctx:Ctx;to:string;class
  return <a href={'/'+to} className={className} aria-label={label} aria-current={current?'page':undefined} onClick={e=>{if(!plain(e))return;e.preventDefault();ctx.go(to);}}>{children}</a>;
 }
 
-export default function AgencyCenter({ctx,view}:{ctx:Ctx;view:string}){
+// Where the centre reads its data and where its links go. The admin's read-only view (owner's decision 4) reads through
+// /api/admin/agency-view/<user>/... (GET only on the server) and stays under /admin-agency-view/<user>/...
+let AP='agency',RP='purchased/agency';
+export default function AgencyCenter({ctx,view,viewAs}:{ctx:Ctx;view:string;viewAs?:string}){
  const rest=view.split('/').slice(2),section=rest[0]||'overview';
- const agency=hasAgencyCentre(ctx.user),name=agencyCentreName(ctx.user);
- useEffect(()=>{if(ctx.user&&!agency)ctx.go('purchased/customers');},[agency,ctx]);
+ const owner=useData(viewAs?'admin/agency-view/'+encodeURIComponent(viewAs):'',0,!!viewAs);
+ const who=viewAs?owner.data?.user:ctx.user;
+ AP=viewAs?'admin/agency-view/'+encodeURIComponent(viewAs):'agency';RP=viewAs?'admin-agency-view/'+encodeURIComponent(viewAs):'purchased/agency';
+ const agency=viewAs?ctx.user?.role==='admin':hasAgencyCentre(ctx.user),name=agencyCentreName(who);
+ useEffect(()=>{if(ctx.user&&!agency&&!viewAs)ctx.go('purchased/customers');},[agency,ctx,viewAs]);
  if(!agency)return <section className="ag" dir="rtl"><div className="ag-card ag-empty"><Users size={34}/><h3>ניהול הלקוחות פתוח לחשבונות לקוח</h3><p>מעבירים אתכם לרשימת הלקוחות שלכם.</p></div></section>;
- return <section className="ag" dir="rtl" aria-labelledby="ag-title">
+ if(viewAs&&owner.error)return <section className="ag" dir="rtl"><p className="ag-alert" role="alert">{owner.error}</p></section>;
+ if(viewAs&&!who)return <section className="ag" dir="rtl"><div className="ag-skel" style={{height:160}}/></section>;
+ return <section className={'ag'+(viewAs?' readonly':'')} dir="rtl" aria-labelledby="ag-title">
+  {viewAs&&<div className="ag-viewas" role="status"><Eye size={17} aria-hidden="true"/><span><b>צפייה בלבד</b> · כך <bdi>{who.company||who.name}</bdi> רואה את {name}. אי אפשר לשנות דבר, והצפייה נרשמה ביומן הפעולות.</span><Link ctx={ctx} to={'admin-customer-account/'+encodeURIComponent(viewAs)+'/agency'} className="ag-btn ghost sm"><ArrowRight size={15} aria-hidden="true"/>חזרה לכרטיס</Link></div>}
   <header className="ag-band">
-   <Link ctx={ctx} to="purchased" className="ag-btn ghost sm"><ArrowRight size={16}/>לאזור האישי</Link>
-   <span className="sep"/>
+   {!viewAs&&<><Link ctx={ctx} to="purchased" className="ag-btn ghost sm"><ArrowRight size={16}/>לאזור האישי</Link><span className="sep"/></>}
    <img src="/brand/megalinks-logo-dark.png" alt="Mega Links" width={140} height={30}/>
    <span className="sep"/>
-   <div className="grow"><h1 id="ag-title">{name}</h1><p><bdi>{ctx.user?.company||ctx.user?.name}</bdi></p></div>
-   <button type="button" className="ag-btn buy" onClick={()=>ctx.go('catalog')}><ShoppingCart size={18}/>רכישת פרסום</button>
+   <div className="grow"><h1 id="ag-title">{name}</h1><p><bdi>{who?.company||who?.name}</bdi></p></div>
+   {!viewAs&&<button type="button" className="ag-btn buy" onClick={()=>ctx.go('catalog')}><ShoppingCart size={18}/>רכישת פרסום</button>}
   </header>
-  <nav className="ag-tabs" aria-label={name}>{SECTIONS.map(([key,label,Icon])=><Link key={key} ctx={ctx} to={'purchased/agency/'+key} current={section===key} className=""><Icon size={18} aria-hidden="true"/>{label}</Link>)}</nav>
+  <nav className="ag-tabs" aria-label={name}>{SECTIONS.map(([key,label,Icon])=><Link key={key} ctx={ctx} to={RP+'/'+key} current={section===key} className=""><Icon size={18} aria-hidden="true"/>{label}</Link>)}</nav>
   {section==='overview'?<Overview ctx={ctx}/>:section==='reports'?<section className="ag-card ag-main"><h2 className="ag-page-title">דוחות</h2><Reports ctx={ctx}/></section>:section==='calendar'?<section className="ag-card ag-main"><h2 className="ag-page-title">לוח פרסומים</h2><Calendar ctx={ctx}/></section>:section==='settings'?<section className="ag-card ag-main"><h2 className="ag-page-title">הגדרות הסוכנות</h2><AgencySettings ctx={ctx}/></section>:section==='tasks'?<section className="ag-card ag-main"><h2 className="ag-page-title">לטיפול</h2><Tasks ctx={ctx}/></section>
    :section==='publications'?<section className="ag-card ag-main"><h2 className="ag-page-title">כל הפרסומים</h2><Publications ctx={ctx} customer=""/></section>
    :<Customers ctx={ctx} customerId={rest[1]||''} tab={rest[2]||''}/>}
@@ -52,7 +60,7 @@ export default function AgencyCenter({ctx,view}:{ctx:Ctx;view:string}){
 
 // ---------- customers ----------
 function Customers({ctx,customerId,tab}:{ctx:Ctx;customerId:string;tab:string}){
- const state=useData('agency/customers',ctx.revision),all:Row[]=state.data?.customers||[];
+ const state=useData(AP+'/customers',ctx.revision),all:Row[]=state.data?.customers||[];
  const [query,setQuery]=useState(''),[filter,setFilter]=useState<'active'|'archived'|'all'>('active');
  const counts={active:all.filter(c=>c.status!=='archived').length,archived:all.filter(c=>c.status==='archived').length};
  const rows=all.filter(c=>(filter==='all'||(filter==='archived')===(c.status==='archived'))&&(!query||[c.name,c.company,c.email,c.phone,c.contact_name,...(c.domains||[])].some(v=>norm(v).includes(norm(query)))));
@@ -64,30 +72,30 @@ function Customers({ctx,customerId,tab}:{ctx:Ctx;customerId:string;tab:string}){
   <aside className="ag-card ag-list" aria-label="הלקוחות שלי">
    <div className="ag-list-top">
     <label className="ag-search"><Search size={17} aria-hidden="true"/><input type="search" placeholder="חיפוש לקוח או דומיין" aria-label="חיפוש לקוח לפי שם, חברה, מייל, טלפון או דומיין" value={query} onChange={e=>setQuery(e.target.value)}/>{query&&<button type="button" className="ag-icon-btn" aria-label="ניקוי החיפוש" onClick={()=>setQuery('')}><X size={16}/></button>}</label>
-    <Link ctx={ctx} to="purchased/agency/customers/new" className="ag-btn primary sm" label="לקוח חדש"><UserPlus size={17}/></Link>
+    <Link ctx={ctx} to={RP+'/customers/new'} className="ag-btn primary sm" label="לקוח חדש"><UserPlus size={17}/></Link>
    </div>
    <div className="ag-seg" role="group" aria-label="סינון לקוחות">{([['active','פעילים',counts.active],['archived','ארכיון',counts.archived],['all','הכול',all.length]] as const).map(([key,label,n])=><button key={key} type="button" aria-pressed={filter===key} onClick={()=>setFilter(key)}>{label} · <bdi>{n}</bdi></button>)}</div>
    <div className="ag-list-items" role="list">
     {state.error&&<p className="ag-alert" role="alert">{state.error}</p>}
     {state.loading&&!state.data?[0,1,2,3].map(i=><div key={i} className="ag-cust"><span className="ag-av" style={{background:'#e8eef5'}}/><span className="t"><span className="ag-skel" style={{width:'70%'}}/></span></div>)
      :!rows.length?<div className="ag-empty"><Users size={28}/><h3>{query?'לא נמצאו לקוחות':filter==='archived'?'אין לקוחות בארכיון':'עדיין אין לקוחות'}</h3><p>{query?'נסו חיפוש אחר.':'מוסיפים לקוח, ומשייכים אליו כתבות ופרסומים.'}</p></div>
-     :rows.map(c=><div role="listitem" key={c.id}><Link ctx={ctx} to={'purchased/agency/customers/'+encodeURIComponent(c.id)} current={shown?.id===c.id} className={'ag-cust'+(shown?.id===c.id?' on':'')}><Avatar name={c.name} id={c.id}/><span className="t"><b>{c.name}</b><small>{c.company||c.domains?.[0]||' '}</small></span>{c.stats?.waiting>0&&<span className="ag-pending" aria-label={c.stats.waiting+' כתבות מחכות לכם'}>{c.stats.waiting}</span>}</Link></div>)}
+     :rows.map(c=><div role="listitem" key={c.id}><Link ctx={ctx} to={RP+'/customers/'+encodeURIComponent(c.id)} current={shown?.id===c.id} className={'ag-cust'+(shown?.id===c.id?' on':'')}><Avatar name={c.name} id={c.id}/><span className="t"><b>{c.name}</b><small>{c.company||c.domains?.[0]||' '}</small></span>{c.stats?.waiting>0&&<span className="ag-pending" aria-label={c.stats.waiting+' כתבות מחכות לכם'}>{c.stats.waiting}</span>}</Link></div>)}
    </div>
   </aside>
   <section className="ag-card ag-main" aria-live="polite">
-   {open&&<Link ctx={ctx} to="purchased/agency/customers" className="ag-back"><ArrowRight size={16}/>כל הלקוחות</Link>}
+   {open&&<Link ctx={ctx} to={RP+'/customers'} className="ag-back"><ArrowRight size={16}/>כל הלקוחות</Link>}
    {isNew?<CustomerDetails ctx={ctx} customer={null}/>
     :shown?<CustomerScreen key={shown.id} ctx={ctx} customer={shown} tab={tab}/>
     :state.loading?<div className="ag-skel" style={{height:24,width:'40%'}}/>
     :customerId?<div className="ag-empty"><Users size={30}/><h3>הלקוח לא נמצא</h3><p>ייתכן שנמחק. בחרו לקוח מהרשימה.</p></div>
-    :<div className="ag-empty"><UserPlus size={30}/><h3>הוסיפו את הלקוח הראשון</h3><p>שומרים את פרטי הלקוח, ואז רואים במקום אחד את כל מה שפורסם עבורו.</p><Link ctx={ctx} to="purchased/agency/customers/new" className="ag-btn primary"><Plus size={17}/>לקוח חדש</Link></div>}
+    :<div className="ag-empty"><UserPlus size={30}/><h3>הוסיפו את הלקוח הראשון</h3><p>שומרים את פרטי הלקוח, ואז רואים במקום אחד את כל מה שפורסם עבורו.</p><Link ctx={ctx} to={RP+'/customers/new'} className="ag-btn primary"><Plus size={17}/>לקוח חדש</Link></div>}
   </section>
  </div>;
 }
 
 function CustomerScreen({ctx,customer,tab}:{ctx:Ctx;customer:Row;tab:string}){
  const current=CUSTOMER_TABS.some(([k])=>k===tab)?tab:'publications';
- const base='purchased/agency/customers/'+encodeURIComponent(customer.id);
+ const base=RP+'/customers/'+encodeURIComponent(customer.id);
  return <>
   <div className="ag-chead">
    <Avatar name={customer.name} id={customer.id} size={54}/>
@@ -111,8 +119,8 @@ function CustomerDetails({ctx,customer}:{ctx:Ctx;customer:Row|null}){
  const set=(k:string,value:string)=>{setV(x=>({...x,[k]:value}));setSaved(false);};
  const save=async(status?:string)=>{if(busy)return;if(!v.name.trim()){setError('יש להזין את שם הלקוח');return;}setBusy(true);setError('');try{
    const body={...v,name:v.name.trim(),domains:v.domains.split(/[\n,]+/),tags:v.tags.split(','),status:status||customer?.status||'active'};
-   const out=await ctx.run(()=>api(customer?'agency/customers/'+encodeURIComponent(customer.id):'agency/customers',customer?'PATCH':'POST',body),status==='archived'?'הלקוח הועבר לארכיון':status==='active'&&customer?.status==='archived'?'הלקוח הוחזר מהארכיון':'פרטי הלקוח נשמרו');
-   if(!customer&&out?.id)ctx.go('purchased/agency/customers/'+encodeURIComponent(out.id)+'/details');else setSaved(true);
+   const out=await ctx.run(()=>api(customer?AP+'/customers/'+encodeURIComponent(customer.id):AP+'/customers',customer?'PATCH':'POST',body),status==='archived'?'הלקוח הועבר לארכיון':status==='active'&&customer?.status==='archived'?'הלקוח הוחזר מהארכיון':'פרטי הלקוח נשמרו');
+   if(!customer&&out?.id)ctx.go(RP+'/customers/'+encodeURIComponent(out.id)+'/details');else setSaved(true);
   }catch(e){setError((e as Error).message);}finally{setBusy(false);}};
  const field=(k:keyof ReturnType<typeof initial>,label:string,opts:{type?:string;wide?:boolean;area?:boolean;hint?:string;ltr?:boolean;required?:boolean}={})=><label className={opts.wide?'wide':''}>{label}{opts.hint&&<small>{opts.hint}</small>}{opts.area?<textarea value={v[k]} disabled={busy} dir={opts.ltr?'ltr':undefined} onChange={e=>set(k,e.target.value)}/>:<input type={opts.type||'text'} value={v[k]} required={opts.required} disabled={busy} dir={opts.ltr?'ltr':undefined} style={opts.ltr?{textAlign:'right'}:undefined} inputMode={opts.type==='number'?'decimal':undefined} onChange={e=>set(k,e.target.value)}/>}</label>;
  return <form onSubmit={e=>{e.preventDefault();save();}} noValidate>
@@ -153,11 +161,11 @@ const csvCell=(v:unknown)=>{const t=String(v??'').replace(/^[=+\-@\t\r]/,"'$&");
 function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
  const quick=useMemo(ranges,[]);
  const [range,setRange]=useState<Range>(quick[2]),[year,setYear]=useState(''),[month,setMonth]=useState(''),[status,setStatus]=useState(''),[who,setWho]=useState('');
- const customers=useData(customer?'':'agency/customers',ctx.revision,!customer);
+ const customers=useData(customer?'':AP+'/customers',ctx.revision,!customer);
  const custom=year?{from:`${year}-${month||'01'}-01`,to:month?`${year}-${month}-${pad(new Date(Date.UTC(Number(year),Number(month),0)).getUTCDate())}`:`${year}-12-31`}:range;
  const q=new URLSearchParams({...(customer?{customer}:who?{customer:who}:{}),...(custom.from?{from:custom.from}:{}),...(custom.to?{to:custom.to}:{}),...(status?{status}:{})});
- const state=useData('agency/publications?'+q.toString(),ctx.revision),rows:Row[]=state.data?.publications||[],s=state.data?.summary;
- const years=useData('agency/publications?'+new URLSearchParams(customer?{customer}:{}).toString(),ctx.revision).data?.years||[];
+ const state=useData(AP+'/publications?'+q.toString(),ctx.revision),rows:Row[]=state.data?.publications||[],s=state.data?.summary;
+ const years=useData(AP+'/publications?'+new URLSearchParams(customer?{customer}:{}).toString(),ctx.revision).data?.years||[];
  const exportCsv=()=>{const head=[...(customer?[]:['לקוח']),'אתר','כתובת האתר','תאריך פרסום','קישור לכתבה','עוגן','קישור יעד','הזמנה','עלות לפני מע"מ','סטטוס'];
   const lines=[head,...rows.map(a=>[...(customer?[]:[a.customer_name||'ללא לקוח']),a.website_name,a.website_url,a.published_at?day(a.published_at):'',a.published_url,a.anchor,a.target_url,a.number,(a.spend/100).toFixed(2),a.status==='published'?'פורסם':a.status==='cancelled'||a.publication_refunded?'זוכה':'בדרך'])];
   const blob=new Blob(['﻿'+lines.map(l=>l.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');
@@ -197,7 +205,7 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
 
 // ---------- articles of one customer ----------
 function CustomerArticles({ctx,customer}:{ctx:Ctx;customer:Row}){
- const state=useData('agency/customers/'+encodeURIComponent(customer.id)+'/articles',ctx.revision),rows:Row[]=(state.data?.articles||[]).filter((a:Row)=>a.status!=='cancelled'&&!a.demo);
+ const state=useData(AP+'/customers/'+encodeURIComponent(customer.id)+'/articles',ctx.revision),rows:Row[]=(state.data?.articles||[]).filter((a:Row)=>a.status!=='cancelled'&&!a.demo);
  // Bought for the customer and not used yet (paid, no content sent): shown first, apart from the rest.
  const unused=rows.filter(a=>a.status==='draft'&&(a.paid||a.on_account)),rest=rows.filter(a=>!unused.includes(a));
  const groups=purchaseStages.map(s=>({...s,items:rest.filter(a=>purchaseStage(a)===s.key)})).filter(g=>g.items.length);
@@ -217,7 +225,7 @@ function CustomerArticles({ctx,customer}:{ctx:Ctx;customer:Row}){
 
 // ---------- sites already used for this customer (spec section 7) ----------
 function UsedSites({ctx,customer}:{ctx:Ctx;customer:Row}){
- const base='agency/customers/'+encodeURIComponent(customer.id)+'/used-sites';
+ const base=AP+'/customers/'+encodeURIComponent(customer.id)+'/used-sites';
  const state=useData(base,ctx.revision),data=state.data;
  const [text,setText]=useState(''),[busy,setBusy]=useState(''),[error,setError]=useState(''),[result,setResult]=useState<Row|null>(null),[query,setQuery]=useState('');
  const run=async(kind:string,fn:()=>Promise<any>,done:string)=>{if(busy)return;setBusy(kind);setError('');try{return await ctx.run(fn,done);}catch(e){setError((e as Error).message);}finally{setBusy('');}};
@@ -266,22 +274,22 @@ function MonthChart({rows,field}:{rows:Row[];field:'published'|'spend'}){
  </svg><table className="sr-only"><caption>{field==='published'?'פרסומים לפי חודש':'הוצאה לפי חודש'}</caption><tbody>{rows.map(r=><tr key={r.month}><th scope="row">{r.month}</th><td>{field==='spend'?ils(r.spend):r.published}</td></tr>)}</tbody></table></>;
 }
 function Overview({ctx}:{ctx:Ctx}){
- const state=useData('agency/overview',ctx.revision),d=state.data,[field,setField]=useState<'published'|'spend'>('published');
+ const state=useData(AP+'/overview',ctx.revision),d=state.data,[field,setField]=useState<'published'|'spend'>('published');
  if(state.error)return <p className="ag-alert" role="alert">{state.error}</p>;
  if(!d)return <div className="ag-kpis">{[0,1,2,3].map(i=><div key={i} className="ag-card ag-kpi"><span className="ag-skel" style={{width:'60%'}}/></div>)}</div>;
  const k=d.kpis,diff=k.published_month-k.published_prev;
  if(!k.customers&&!d.recent.length)return <section className="ag-card ag-main"><div className="ag-empty"><LayoutDashboard size={32}/><h3>ברוכים הבאים ל{agencyCentreName(ctx.user)}</h3><p>שלושה צעדים כדי להתחיל:</p>
-  <div className="ag-start">{[['1','הוסיפו לקוח','purchased/agency/customers/new'],['2','רכשו פרסום עבורו','purchased/agency/customers'],['3','שייכו כתבות קיימות','purchased/articles']].map(([n,l,to])=><Link key={n} ctx={ctx} to={to} className="ag-start-step"><span>{n}</span>{l}</Link>)}</div></div></section>;
- const kpis:[React.ElementType,string,React.ReactNode,string,string,string][]=[[Users,'לקוחות פעילים',k.customers,k.customers_new_month?`+${k.customers_new_month} החודש`:'\u00a0','','purchased/agency/customers'],[Globe,'פרסומים החודש',k.published_month,diff?`${diff>0?'+':''}${diff} מהחודש הקודם`:'כמו בחודש הקודם','','purchased/agency/publications'],[Wallet,'הוצאה החודש · לפני מע״מ',<bdi key="s">{ils(k.spend_month)}</bdi>,'מתחילת החודש','','purchased/agency/publications'],[ListChecks,'כתבות שמחכות לך',k.waiting,k.urgent?`${k.urgent} דחופות`:'אין דחופות',k.urgent?'warn':'','purchased/agency/tasks']];
+  <div className="ag-start">{[['1','הוסיפו לקוח',RP+'/customers/new'],['2','רכשו פרסום עבורו',RP+'/customers'],['3','שייכו כתבות קיימות','purchased/articles']].map(([n,l,to])=><Link key={n} ctx={ctx} to={to} className="ag-start-step"><span>{n}</span>{l}</Link>)}</div></div></section>;
+ const kpis:[React.ElementType,string,React.ReactNode,string,string,string][]=[[Users,'לקוחות פעילים',k.customers,k.customers_new_month?`+${k.customers_new_month} החודש`:'\u00a0','',RP+'/customers'],[Globe,'פרסומים החודש',k.published_month,diff?`${diff>0?'+':''}${diff} מהחודש הקודם`:'כמו בחודש הקודם','',RP+'/publications'],[Wallet,'הוצאה החודש · לפני מע״מ',<bdi key="s">{ils(k.spend_month)}</bdi>,'מתחילת החודש','',RP+'/publications'],[ListChecks,'כתבות שמחכות לך',k.waiting,k.urgent?`${k.urgent} דחופות`:'אין דחופות',k.urgent?'warn':'',RP+'/tasks']];
  return <>
   <div className="ag-kpis">{kpis.map(([Icon,label,value,note,tone,to])=><Link key={label} ctx={ctx} to={to} className="ag-card ag-kpi"><span className="ic"><Icon size={20}/></span><small>{label}</small><b>{value}</b><em className={tone}>{note}</em></Link>)}</div>
   <div className="ag-grid2">
    <section className="ag-card ag-sec"><h3><ChartColumn size={19}/>{field==='published'?'פרסומים לפי חודש':'הוצאה לפי חודש · ₪ לפני מע״מ'}<button type="button" className="more" onClick={()=>setField(field==='published'?'spend':'published')}>{field==='published'?'הוצאה לפי חודש':'פרסומים לפי חודש'}</button></h3><MonthChart rows={d.chart} field={field}/></section>
-   <section className="ag-card ag-sec"><h3><ListChecks size={19}/>לטיפול עכשיו{d.tasks_total>0&&<Link ctx={ctx} to="purchased/agency/tasks" className="more">לכל המשימות · {d.tasks_total}</Link>}</h3>{d.tasks.length?d.tasks.map((t:Row,i:number)=><TaskRow key={i} ctx={ctx} t={t}/>):<div className="ag-empty" style={{padding:'24px 8px'}}><ListChecks size={26}/><p>אין כרגע משימות פתוחות.</p></div>}</section>
+   <section className="ag-card ag-sec"><h3><ListChecks size={19}/>לטיפול עכשיו{d.tasks_total>0&&<Link ctx={ctx} to={RP+'/tasks'} className="more">לכל המשימות · {d.tasks_total}</Link>}</h3>{d.tasks.length?d.tasks.map((t:Row,i:number)=><TaskRow key={i} ctx={ctx} t={t}/>):<div className="ag-empty" style={{padding:'24px 8px'}}><ListChecks size={26}/><p>אין כרגע משימות פתוחות.</p></div>}</section>
   </div>
   <div className="ag-grid2 even">
-   <section className="ag-card ag-sec"><h3><Trophy size={19}/>הלקוחות הפעילים החודש</h3>{d.top.length?d.top.map((c:Row)=><Link key={c.id} ctx={ctx} to={'purchased/agency/customers/'+encodeURIComponent(c.id)} className="ag-task"><Avatar name={c.name} id={c.id} size={34}/><span className="t"><b>{c.name}</b><small>{c.published} פרסומים</small></span><b><bdi>{ils(c.spend)}</bdi></b></Link>):<p className="ag-muted">עדיין אין פעילות החודש.</p>}</section>
-   <section className="ag-card ag-sec"><h3><Globe size={19}/>פרסומים אחרונים<Link ctx={ctx} to="purchased/agency/publications" className="more">לכל הפרסומים</Link></h3>{d.recent.length?d.recent.map((a:Row)=><div key={a.id} className="ag-task"><SiteLogo src={a.website_logo} name={a.website_name}/><span className="t"><b>{a.website_name}</b><small>{a.customer_name||'ללא לקוח'} · <bdi>{day(a.published_at)}</bdi></small></span>{a.published_url&&<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>}</div>):<p className="ag-muted">עדיין לא פורסמו כתבות.</p>}</section>
+   <section className="ag-card ag-sec"><h3><Trophy size={19}/>הלקוחות הפעילים החודש</h3>{d.top.length?d.top.map((c:Row)=><Link key={c.id} ctx={ctx} to={RP+'/customers/'+encodeURIComponent(c.id)} className="ag-task"><Avatar name={c.name} id={c.id} size={34}/><span className="t"><b>{c.name}</b><small>{c.published} פרסומים</small></span><b><bdi>{ils(c.spend)}</bdi></b></Link>):<p className="ag-muted">עדיין אין פעילות החודש.</p>}</section>
+   <section className="ag-card ag-sec"><h3><Globe size={19}/>פרסומים אחרונים<Link ctx={ctx} to={RP+'/publications'} className="more">לכל הפרסומים</Link></h3>{d.recent.length?d.recent.map((a:Row)=><div key={a.id} className="ag-task"><SiteLogo src={a.website_logo} name={a.website_name}/><span className="t"><b>{a.website_name}</b><small>{a.customer_name||'ללא לקוח'} · <bdi>{day(a.published_at)}</bdi></small></span>{a.published_url&&<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>}</div>):<p className="ag-muted">עדיין לא פורסמו כתבות.</p>}</section>
   </div>
  </>;
 }
@@ -294,7 +302,7 @@ function TaskRow({ctx,t}:{ctx:Ctx;t:Row}){
  return <div className="ag-task"><span className="dot" style={{background:bg,color:fg}}><Icon size={17}/></span><span className="t"><b>{t.label}</b><small>{sub}</small></span><Link ctx={ctx} to={to} className="ag-btn ghost sm">{action}</Link></div>;
 }
 function Tasks({ctx}:{ctx:Ctx}){
- const state=useData('agency/tasks',ctx.revision),tasks:Row[]=state.data?.tasks||[];
+ const state=useData(AP+'/tasks',ctx.revision),tasks:Row[]=state.data?.tasks||[];
  if(state.error)return <p className="ag-alert" role="alert">{state.error}</p>;
  if(state.loading&&!state.data)return <div className="ag-skel" style={{height:120}}/>;
  if(!tasks.length)return <div className="ag-empty"><ListChecks size={30}/><h3>הכול מטופל</h3><p>כשכתבה תחכה לאישור שלכם, תחזור לתיקון או תחכה לתשלום, היא תופיע כאן.</p></div>;
@@ -304,7 +312,7 @@ function Tasks({ctx}:{ctx:Ctx}){
 
 // ---------- links and anchors ----------
 function CustomerLinks({ctx,customer}:{ctx:Ctx;customer:Row}){
- const state=useData('agency/customers/'+encodeURIComponent(customer.id)+'/links',ctx.revision),rows:Row[]=state.data?.links||[];
+ const state=useData(AP+'/customers/'+encodeURIComponent(customer.id)+'/links',ctx.revision),rows:Row[]=state.data?.links||[];
  if(state.error)return <p className="ag-alert" role="alert">{state.error}</p>;
  if(state.loading&&!state.data)return <div className="ag-skel" style={{height:120}}/>;
  if(!rows.length)return <div className="ag-empty"><Link2 size={30}/><h3>עדיין אין קישורים</h3><p>קישורי היעד והעוגנים מהכתבות של הלקוח יופיעו כאן, כדי לגוון עוגנים ולא לחזור על אותו עוגן.</p></div>;
@@ -315,7 +323,7 @@ function CustomerLinks({ctx,customer}:{ctx:Ctx;customer:Row}){
 }
 // ---------- notes ----------
 function CustomerNotes({ctx,customer}:{ctx:Ctx;customer:Row}){
- const base='agency/customers/'+encodeURIComponent(customer.id)+'/notes';
+ const base=AP+'/customers/'+encodeURIComponent(customer.id)+'/notes';
  const state=useData(base,ctx.revision),notes:Row[]=state.data?.notes||[];
  const [text,setText]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');
  const run=async(fn:()=>Promise<any>,done:string)=>{if(busy)return;setBusy(true);setError('');try{await ctx.run(fn,done);return true;}catch(e){setError((e as Error).message);return false;}finally{setBusy(false);}};
@@ -354,15 +362,15 @@ ${published.map(a=>`<tr><td><b>${esc(a.website_name)}</b></td><td class="ltr">${
 async function logoData(url?:string){if(!url)return '';try{const r=await fetch(url,{credentials:'same-origin'});if(!r.ok)return '';const blob=await r.blob();if(!['image/png','image/jpeg','image/webp'].includes(blob.type))return '';return await new Promise<string>(ok=>{const f=new FileReader();f.onload=()=>ok(String(f.result||''));f.onerror=()=>ok('');f.readAsDataURL(blob);});}catch{return '';}}
 function Reports({ctx}:{ctx:Ctx}){
  const quick=useMemo(ranges,[]);
- const customers=useData('agency/customers',ctx.revision),settings=useData('agency/settings',ctx.revision);
+ const customers=useData(AP+'/customers',ctx.revision),settings=useData(AP+'/settings',ctx.revision);
  const list:Row[]=(customers.data?.customers||[]).filter((c:Row)=>c.status!=='archived');
  const [who,setWho]=useState(''),[range,setRange]=useState<Range>(quick[1]),[costs,setCosts]=useState<boolean|null>(null),[busy,setBusy]=useState(''),[error,setError]=useState(''),[spend,setSpend]=useState<Row[]|null>(null);
- const showCosts=costs??!!settings.data?.show_costs;
+ const showCosts=costs??!!settings.data?.show_amounts;
  const q=(extra:Record<string,string>={})=>new URLSearchParams({...(range.from?{from:range.from}:{}),...(range.to?{to:range.to}:{}),...extra}).toString();
  const customerReport=async()=>{if(!who){setError('בחרו לקוח');return;}setError('');const win=window.open('','_blank');if(!win){setError('הדפדפן חסם חלון חדש. אפשרו חלונות קופצים לאתר.');return;}win.document.write('<p dir="rtl" style="font-family:Arial;padding:24px">מכין את הדוח…</p>');setBusy('customer');
-  try{const d=await api('agency/publications?'+q({customer:who}));const c=list.find(x=>x.id===who),logo=await logoData(settings.data?.logo_url);win.document.open();win.document.write(reportHtml({agency:settings.data?.report_name||'',color:settings.data?.report_color||'#1673e6',customer:c?.name||'',from:range.from,to:range.to,rows:d.publications||[],costs:showCosts,logo}));win.document.close();}
+  try{const d=await api(AP+'/publications?'+q({customer:who}));const c=list.find(x=>x.id===who),logo=await logoData(settings.data?.logo_url);win.document.open();win.document.write(reportHtml({agency:settings.data?.report_name||'',color:settings.data?.report_color||'#1673e6',customer:c?.name||'',from:range.from,to:range.to,rows:d.publications||[],costs:showCosts,logo}));win.document.close();}
   catch(e){win.close();setError((e as Error).message);}finally{setBusy('');}};
- const spendReport=async()=>{setBusy('spend');setError('');try{const d=await api('agency/publications?'+q());const by=new Map<string,Row>();for(const a of d.publications||[]){const key=a.customer_id||'';const r=by.get(key)||{name:a.customer_name||'ללא לקוח',count:0,published:0,spend:0};r.count++;if(a.status==='published')r.published++;r.spend+=a.spend;by.set(key,r);}setSpend([...by.values()].sort((x,y)=>y.spend-x.spend));}catch(e){setError((e as Error).message);}finally{setBusy('');}};
+ const spendReport=async()=>{setBusy('spend');setError('');try{const d=await api(AP+'/publications?'+q());const by=new Map<string,Row>();for(const a of d.publications||[]){const key=a.customer_id||'';const r=by.get(key)||{name:a.customer_name||'ללא לקוח',count:0,published:0,spend:0};r.count++;if(a.status==='published')r.published++;r.spend+=a.spend;by.set(key,r);}setSpend([...by.values()].sort((x,y)=>y.spend-x.spend));}catch(e){setError((e as Error).message);}finally{setBusy('');}};
  const spendCsv=()=>{if(!spend)return;const lines=[['לקוח','פרסומים','פורסמו','הוצאה לפני מע"מ'],...spend.map(r=>[r.name,r.count,r.published,(r.spend/100).toFixed(2)])];const blob=new Blob(['\ufeff'+lines.map(l=>l.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='spend-'+(range.from||'all')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),4000);};
  return <>
   <div className="ag-filters" role="group" aria-label="תקופת הדוח">{quick.map(r=><button key={r.label} type="button" className={'ag-pill'+(range.label===r.label?' on':'')} aria-pressed={range.label===r.label} onClick={()=>{setRange(r);setSpend(null);}}>{r.label}</button>)}</div>
@@ -380,19 +388,19 @@ function Reports({ctx}:{ctx:Ctx}){
 }
 // ---------- agency settings (spec 5.8) ----------
 function AgencySettings({ctx}:{ctx:Ctx}){
- const state=useData('agency/settings',ctx.revision);
+ const state=useData(AP+'/settings',ctx.revision);
  const [v,setV]=useState<Row|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState(''),[saved,setSaved]=useState(false);
  useEffect(()=>{if(state.data&&!v)setV(state.data);},[state.data,v]);
  if(state.error)return <p className="ag-alert" role="alert">{state.error}</p>;
  if(!v)return <div className="ag-skel" style={{height:120}}/>;
  const set=(k:string,value:unknown)=>{setV({...v,[k]:value});setSaved(false);};
- const save=async(e:React.FormEvent)=>{e.preventDefault();if(busy)return;setBusy(true);setError('');try{await ctx.run(()=>api('agency/settings','PATCH',v),'ההגדרות נשמרו');setSaved(true);}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
+ const save=async(e:React.FormEvent)=>{e.preventDefault();if(busy)return;setBusy(true);setError('');try{await ctx.run(()=>api(AP+'/settings','PATCH',v),'ההגדרות נשמרו');setSaved(true);}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
  // The report logo is saved right away: upload the image, then store it in the settings.
  const setLogo=async(file?:File|null)=>{if(!file||busy)return;setError('');setSaved(false);
   if(!['image/png','image/jpeg','image/webp'].includes(file.type)){setError('הלוגו צריך להיות תמונה מסוג PNG, JPG או WEBP.');return;}
   if(file.size>1024*1024){setError('הלוגו גדול מדי. אפשר עד 1MB.');return;}
-  setBusy(true);try{const form=new FormData();form.append('file',file);const up=await api('files','POST',form);const out=await ctx.run(()=>api('agency/settings','PATCH',{...v,logo_file_id:up.id}),'הלוגו נשמר');setV({...v,logo_file_id:out.logo_file_id,logo_url:out.logo_url});}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
- const dropLogo=async()=>{if(busy)return;setBusy(true);setError('');try{const out=await ctx.run(()=>api('agency/settings','PATCH',{...v,logo_file_id:''}),'הלוגו הוסר');setV({...v,logo_file_id:out.logo_file_id,logo_url:''});}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
+  setBusy(true);try{const form=new FormData();form.append('file',file);const up=await api('files','POST',form);const out=await ctx.run(()=>api(AP+'/settings','PATCH',{...v,logo_file_id:up.id}),'הלוגו נשמר');setV({...v,logo_file_id:out.logo_file_id,logo_url:out.logo_url});}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
+ const dropLogo=async()=>{if(busy)return;setBusy(true);setError('');try{const out=await ctx.run(()=>api(AP+'/settings','PATCH',{...v,logo_file_id:''}),'הלוגו הוסר');setV({...v,logo_file_id:out.logo_file_id,logo_url:''});}catch(err){setError((err as Error).message);}finally{setBusy(false);}};
  return <form onSubmit={save}><div className="ag-form">
   <label>השם שיופיע בדוחות<small>למשל שם הסוכנות</small><input value={v.report_name} maxLength={120} disabled={busy} onChange={e=>set('report_name',e.target.value)}/></label>
   <label>צבע הדוחות<small>הצבע של הכותרת בדוח ללקוח</small><input type="color" value={v.report_color} disabled={busy} onChange={e=>set('report_color',e.target.value)} style={{height:46,padding:4}}/></label>
@@ -400,7 +408,7 @@ function AgencySettings({ctx}:{ctx:Ctx}){
    <label className={'ag-btn ghost sm'+(busy?' off':'')}><Upload size={15} aria-hidden="true"/>{v.logo_url?'החלפה':'העלאת לוגו'}<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={e=>{setLogo(e.target.files?.[0]);e.target.value='';}} className="sr-only"/></label>
    {v.logo_url&&<button type="button" className="ag-btn ghost sm" disabled={busy} onClick={dropLogo}><Trash2 size={15} aria-hidden="true"/>הסרה</button>}</div>
   <fieldset className="wide ag-fieldset"><legend>אתרים שכבר שימשו, לכל לקוח חדש</legend><div className="ag-mode">{([['warn','להציג עם סימון "שומש עבור הלקוח"','מומלץ'],['hide','להסתיר מהמחירון','']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={v.used_mode===mode} className={'ag-opt'+(v.used_mode===mode?' on':'')} onClick={()=>set('used_mode',mode)}><span className="ag-radio"/><span><b>{title}</b>{sub&&<small>{sub}</small>}</span></button>)}</div><p className="ag-muted" style={{fontSize:13,margin:'8px 0 0'}}>אפשר לשנות לכל לקוח בלשונית "אתרים שכבר שימשו".</p></fieldset>
-  <label className="ag-check wide"><input type="checkbox" checked={!!v.show_costs} onChange={e=>set('show_costs',e.target.checked)}/>להציג עלויות בדוח ללקוח כברירת מחדל</label>
+  <label className="ag-check wide"><input type="checkbox" checked={!!v.show_amounts} onChange={e=>set('show_amounts',e.target.checked)}/>להציג עלויות בדוח ללקוח כברירת מחדל</label>
  </div>{error&&<p className="ag-alert" role="alert">{error}</p>}{saved&&<p className="ag-ok" role="status">ההגדרות נשמרו</p>}
  <div className="ag-actions"><button type="submit" className="ag-btn primary" disabled={busy}>{busy?<LoaderCircle size={17} className="animate-spin"/>:<Save size={17}/>}שמירת הגדרות</button></div></form>;
 }
@@ -409,7 +417,7 @@ function AgencySettings({ctx}:{ctx:Ctx}){
 const WEEKDAYS=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
 function Calendar({ctx}:{ctx:Ctx}){
  const today=israelToday(),[ym,setYm]=useState({y:today.y,m:today.m}),[who,setWho]=useState(''),[open,setOpen]=useState('');
- const month=`${ym.y}-${pad(ym.m)}`,state=useData('agency/calendar?month='+month,ctx.revision),customers=useData('agency/customers',ctx.revision);
+ const month=`${ym.y}-${pad(ym.m)}`,state=useData(AP+'/calendar?month='+month,ctx.revision),customers=useData(AP+'/customers',ctx.revision);
  // While another month loads, the previous month's items are not shown on this month's grid.
  const items:Row[]=(state.data?.month===month?state.data.items:[]).filter((i:Row)=>!who||(who==='none'?!i.customer_id:i.customer_id===who));
  const days=new Date(Date.UTC(ym.y,ym.m,0)).getUTCDate(),first=new Date(Date.UTC(ym.y,ym.m-1,1)).getUTCDay();

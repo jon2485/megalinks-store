@@ -298,6 +298,13 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
     if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND NOT "+fullyCancelledOrderSql()+" AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
+    // The admin views a customer's centre as that customer (owner's decision 4, 12.11.2026): read only, each opening logged.
+    if (p[0] === 'admin' && p[1] === 'agency-view' && p[2]) {
+        admin(u); assert(method === 'GET', 'צפייה בלבד: אי אפשר לשנות דבר מכאן', 403);
+        const target = await one('SELECT * FROM users WHERE id=?', p[2]); assert(target && hasAgencyCentre(target), 'לחשבון הזה אין ניהול לקוחות', 404);
+        if (!p[3]) { await audit(u, target.id, 'צפייה במרכז הלקוחות של החשבון (קריאה בלבד)', {}); return response({ user: { id: target.id, name: target.name || '', company: target.company || '', role: target.role } }); }
+        u = target; p.splice(0, 3, 'agency');
+    }
     if (p[0] === 'agency') {
         assertAgency(u);
         if (p[1] === 'customers' && !p[2] && method === 'GET') return response(await agencyCustomers(u));

@@ -35,6 +35,8 @@ export function isWorkspacePath(parts:string[]) {
     if(parts.length===1)return privateRoots.has(parts[0]);
     // The agency centre: /purchased/agency[/section] and /purchased/agency/customers/<id>[/tab] (design/agency-dashboard/spec.md).
     if(parts[0]==='purchased'&&parts[1]==='agency')return isAgencyPath(parts.slice(2));
+    // The admin's read-only view of a customer's centre: /admin-agency-view/<user>[/section...] (owner's decision 4).
+    if(parts[0]==='admin-agency-view'&&parts[1]&&parts[1].length<=200)return isAgencyPath(parts.slice(2));
     if(parts.length===3&&parts[1]&&parts[1].length<=200){
         if(['article','admin-article'].includes(parts[0]))return parts[2]==='ai';
         if(parts[0]==='admin-customer-account')return ['orders','payments','monthly','articles','profile','history','agency'].includes(parts[2]);

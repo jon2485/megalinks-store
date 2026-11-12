@@ -261,3 +261,11 @@ body:has(.agc-bar){padding-bottom:96px}
 .ag-logo-set label.ag-btn{cursor:pointer}.ag-logo-set label.ag-btn.off{opacity:.55;pointer-events:none}
 .ag-logo-set label.ag-btn:focus-within{outline:2px solid #0579d7;outline-offset:2px}
 .ag-form .ag-logo-set label.ag-btn,.ag-logo-set .ag-btn{display:inline-flex;flex-direction:row;align-items:center;gap:6px;font-size:13.5px;font-weight:700;color:#0b274d;margin:0}
+/* The admin's read-only view of a customer's centre (owner's decision 4). */
+.ag-viewas{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px;padding:12px 16px;border-radius:16px;background:#fff7e6;box-shadow:inset 0 0 0 1px #f3dfb3;color:#6b4700;font-size:14.5px;line-height:1.5}
+.ag-viewas>span{flex:1;min-width:220px}.ag-viewas b{font-weight:800}
+.ag-viewas a.ag-btn{text-decoration:none}
+.ag.readonly .ag-head-actions,.ag.readonly .ag-actions,.ag.readonly .ag-paste,.ag.readonly .ag-icon-btn,.ag.readonly .ag-list-top .ag-btn,.ag.readonly .ag-unused-item a.ag-btn,.ag.readonly .ag-art a.ag-btn,.ag.readonly .ag-task .ag-btn,.ag.readonly .ag-logo-set label,.ag.readonly .ag-logo-set button,.ag.readonly .ag-start,.ag.readonly td[data-label="פעולות"] button{display:none!important}
+.ag.readonly .ag-form,.ag.readonly .ag-mode,.ag.readonly form,.ag.readonly .ag-check{pointer-events:none}
+/* Admin screens give every table full width; the chart's screen-reader table must stay hidden there too. */
+.ag table.sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;min-width:0!important}
