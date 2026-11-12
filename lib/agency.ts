@@ -133,7 +133,9 @@ const usedId=(customerId:string)=>'used-sites:'+customerId;
 const USED_MAX=5000;
 async function usedRecord(u:Row,customerId:string){
  const r=await one("SELECT data FROM records WHERE id=? AND kind='customer_used_sites' AND user_id=?",usedId(customerId),u.id);
- const d=r?JSON.parse(r.data||'{}'):{};return {mode:d.mode==='warn'?'warn':'hide',entries:(Array.isArray(d.entries)?d.entries:[]) as UsedEntry[],exists:!!r};
+ const d=r?JSON.parse(r.data||'{}'):{};
+ const mode=d.mode==='warn'||d.mode==='hide'?d.mode:(await agencySettings(u)).used_mode;
+ return {mode,entries:(Array.isArray(d.entries)?d.entries:[]) as UsedEntry[],exists:!!r};
 }
 async function saveUsedRecord(u:Row,customerId:string,data:Row){
  const stamp=now();
@@ -264,4 +266,19 @@ export async function changeAgencyNote(u:Row,customerId:string,noteId:string,bod
  assert(text,'יש לכתוב את ההערה');assert(text.length<=NOTE_TEXT,'אפשר עד 4,000 תווים בהערה');
  await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND user_id=?',JSON.stringify({...d,text,pinned:body.pinned===undefined?!!d.pinned:body.pinned===true}),now(),noteId,u.id).run();
  return {ok:true};
+}
+
+// ---------- agency settings (spec 5.8) ----------
+const settingsId=(u:Row)=>'agency-settings:'+u.id;
+export async function agencySettings(u:Row){
+ assertAgency(u);
+ const r=await one("SELECT data FROM records WHERE id=? AND kind='agency_settings' AND user_id=?",settingsId(u),u.id),d=r?JSON.parse(r.data||'{}'):{};
+ return {report_name:d.report_name||u.company||u.name||'',report_color:/^#[0-9a-f]{6}$/i.test(d.report_color||'')?d.report_color:'#1673e6',used_mode:d.used_mode==='warn'?'warn':'hide',show_costs:!!d.show_costs};
+}
+export async function saveAgencySettings(u:Row,body:Row){
+ assertAgency(u);
+ const data={report_name:String(body.report_name??'').trim().slice(0,120),report_color:/^#[0-9a-f]{6}$/i.test(String(body.report_color||''))?String(body.report_color):'#1673e6',used_mode:body.used_mode==='warn'?'warn':'hide',show_costs:body.show_costs===true},stamp=now();
+ await stmt("INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated=excluded.updated WHERE records.user_id=excluded.user_id AND records.kind='agency_settings'",settingsId(u),'agency_settings',u.id,JSON.stringify(data),stamp,stamp).run();
+ await audit(u,settingsId(u),'הגדרות מרכז הסוכנות עודכנו',{});
+ return {ok:true,...data};
 }
