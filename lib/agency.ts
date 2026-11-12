@@ -33,6 +33,7 @@ function agencyCustomerErrors(values:Row){
 const parseRecord=(r:Row)=>({id:r.id,created:r.created,updated:r.updated,...JSON.parse(r.data||'{}')});
 
 export const WAITING_FOR_AGENCY=['draft','review','revisions'];
+export const isUnusedPurchase=(a:Row)=>a.status==='draft'&&!a.demo&&(a.paid||a.on_account);
 const israelMonth=(iso:string)=>iso?new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit'}).format(new Date(iso)):'';
 
 // All the agency's articles with what the centre needs. One query; numbers are summed here.
@@ -56,12 +57,14 @@ export async function agencyCustomers(u:Row){
  assertAgency(u);
  const [records,articles]=await Promise.all([all("SELECT * FROM records WHERE kind='customer' AND user_id=? ORDER BY json_extract(data,'$.name'),id",u.id),agencyArticles(u)]);
  const month=israelMonth(new Date().toISOString()),stats=new Map<string,Row>();
- for(const raw of articles){const a=agencyArticleRow(raw);const key=a.customer_id||'';const s=stats.get(key)||{published:0,waiting:0,month_spend:0,month_published:0,last:''};
+ for(const raw of articles){const a=agencyArticleRow(raw);const key=a.customer_id||'';const s=stats.get(key)||{published:0,waiting:0,unused:0,month_spend:0,month_published:0,last:''};
   if(a.status==='published'&&!a.demo){s.published++;if(israelMonth(a.published_at)===month)s.month_published++;}
   if(WAITING_FOR_AGENCY.includes(a.status))s.waiting++;
+  // Bought for the customer and not used yet: paid (or on the monthly account), still a draft with no content sent.
+  if(isUnusedPurchase(a))s.unused++;
   if(israelMonth(a.published_at||a.purchased_at)===month)s.month_spend+=a.spend;
   if(a.updated>s.last)s.last=a.updated;stats.set(key,s);}
- const empty={published:0,waiting:0,month_spend:0,month_published:0,last:''};
+ const empty={published:0,waiting:0,unused:0,month_spend:0,month_published:0,last:''};
  return {customers:records.map(r=>{const c=parseRecord(r);return {...c,status:c.status==='archived'?'archived':'active',domains:c.domains||[],tags:c.tags||[],stats:stats.get(c.id)||empty};}),unassigned:stats.get('')||empty};
 }
 
@@ -155,7 +158,11 @@ export async function agencyUsedSites(u:Row,customerId:string){
  const [rec,system,sites]=await Promise.all([usedRecord(u,customerId),systemUsed(u,customerId),catalogSites()]);
  const manual=rec.entries.map(e=>{const hits=sites.filter(s=>usedSiteMatches(e,s.url));return {...e,catalog:hits.map(s=>({id:s.id,name:s.name}))};});
  const hidden=new Set([...system.map(s=>s.website_id),...manual.flatMap(m=>m.catalog.map((c:Row)=>c.id))]);
- return {mode:rec.mode,system,manual,hidden_site_ids:[...hidden]};
+ // What the catalog shows on a used site's card while buying for this customer: the last publication, or the manual entry.
+ const used:Record<string,Row>={};
+ for(const m of manual)for(const c of m.catalog)used[c.id]={source:'manual',date:m.added_at||''};
+ for(const s of system)used[s.website_id]={source:'system',date:s.last,number:s.number};
+ return {mode:rec.mode,system,manual,hidden_site_ids:[...hidden],used};
 }
 export async function importUsedSites(u:Row,customerId:string,text:string){
  await agencyCustomer(u,customerId);
@@ -224,8 +231,8 @@ export async function agencyOverview(u:Row){
 export async function adminAgencyView(target:Row){
  assert(target?.role==='agency','החשבון אינו חשבון סוכנות',404);
  const [{customers,unassigned},used]=await Promise.all([agencyCustomers(target),all("SELECT id,data FROM records WHERE kind='customer_used_sites' AND user_id=?",target.id)]);
- const usedBy=new Map(used.map(r=>{const d=JSON.parse(r.data||'{}');return [String(r.id).slice('used-sites:'.length),{manual:(d.entries||[]).length,mode:d.mode==='warn'?'warn':'hide'}];}));
- return {customers:[...customers].sort((x,y)=>Number(x.status==='archived')-Number(y.status==='archived')).map(c=>({id:c.id,name:c.name,company:c.company||'',domains:c.domains,tags:c.tags,status:c.status,stats:c.stats,used_sites:usedBy.get(c.id)||{manual:0,mode:'hide'}})),unassigned};
+ const usedBy=new Map(used.map(r=>{const d=JSON.parse(r.data||'{}');return [String(r.id).slice('used-sites:'.length),{manual:(d.entries||[]).length,mode:d.mode==='hide'?'hide':'warn'}];}));
+ return {customers:[...customers].sort((x,y)=>Number(x.status==='archived')-Number(y.status==='archived')).map(c=>({id:c.id,name:c.name,company:c.company||'',domains:c.domains,tags:c.tags,status:c.status,stats:c.stats,used_sites:usedBy.get(c.id)||{manual:0,mode:'warn'}})),unassigned};
 }
 
 // ---------- links and anchors, notes (spec 5.2 tabs 6 and 7) ----------
@@ -273,11 +280,11 @@ const settingsId=(u:Row)=>'agency-settings:'+u.id;
 export async function agencySettings(u:Row){
  assertAgency(u);
  const r=await one("SELECT data FROM records WHERE id=? AND kind='agency_settings' AND user_id=?",settingsId(u),u.id),d=r?JSON.parse(r.data||'{}'):{};
- return {report_name:d.report_name||u.company||u.name||'',report_color:/^#[0-9a-f]{6}$/i.test(d.report_color||'')?d.report_color:'#1673e6',used_mode:d.used_mode==='warn'?'warn':'hide',show_costs:!!d.show_costs};
+ return {report_name:d.report_name||u.company||u.name||'',report_color:/^#[0-9a-f]{6}$/i.test(d.report_color||'')?d.report_color:'#1673e6',used_mode:d.used_mode==='hide'?'hide':'warn',show_costs:!!d.show_costs};
 }
 export async function saveAgencySettings(u:Row,body:Row){
  assertAgency(u);
- const data={report_name:String(body.report_name??'').trim().slice(0,120),report_color:/^#[0-9a-f]{6}$/i.test(String(body.report_color||''))?String(body.report_color):'#1673e6',used_mode:body.used_mode==='warn'?'warn':'hide',show_costs:body.show_costs===true},stamp=now();
+ const data={report_name:String(body.report_name??'').trim().slice(0,120),report_color:/^#[0-9a-f]{6}$/i.test(String(body.report_color||''))?String(body.report_color):'#1673e6',used_mode:body.used_mode==='hide'?'hide':'warn',show_costs:body.show_costs===true},stamp=now();
  await stmt("INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated=excluded.updated WHERE records.user_id=excluded.user_id AND records.kind='agency_settings'",settingsId(u),'agency_settings',u.id,JSON.stringify(data),stamp,stamp).run();
  await audit(u,settingsId(u),'הגדרות מרכז הסוכנות עודכנו',{});
  return {ok:true,...data};

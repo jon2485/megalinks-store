@@ -195,26 +195,41 @@
 @media(max-width:760px){.ag-mode{grid-template-columns:1fr}.ag-table td[data-label="פעולות"]{order:12;margin-inline-start:auto}.ag-table td[data-label="פעולות"]::before,.ag-table td[data-label="בקטלוג"]::before{display:none}}
 
 /* Buying for a customer: strip over the catalog and the used-site dialog (app/agency-buying.tsx). */
-.agc-bar,.agc-dialog{--ink:#0b1b2f;--blue:#1673e6;--blue-ink:#1460c4}
-.agc-dialog .used{display:flex;align-items:center;gap:8px}
-.agc-bar{position:fixed;z-index:70;left:50%;bottom:16px;transform:translateX(-50%);width:min(1100px,calc(100vw - 24px));display:flex;align-items:center;gap:12px;padding:12px 18px;border-radius:18px;background:#0b1b2f;color:#fff;font-family:Heebo,Arial,sans-serif;direction:rtl;box-shadow:0 18px 40px -14px #0b1b2fb0}
+/* Buying for a customer: a light floating strip over the regular catalog (Apple-like glass, the site's navy and cyan). */
+.agc-bar,.agc-dialog{--ink:#0b274d;--copy:#506982;--line:#d4e6ef;--blue:#0579d7;--blue-ink:#0466b8;--teal:#007f8c}
+.agc-bar{position:fixed;z-index:70;left:50%;bottom:16px;transform:translateX(-50%);width:min(1100px,calc(100vw - 24px));display:flex;align-items:center;gap:12px;padding:10px 12px 10px 14px;border-radius:20px;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(18px) saturate(1.6);backdrop-filter:blur(18px) saturate(1.6);border:1px solid var(--line);color:var(--ink);font-family:Heebo,Arial,sans-serif;direction:rtl;box-shadow:0 1px 0 #fff inset,0 20px 44px -18px rgba(7,31,75,.38)}
 body:has(.agc-bar){padding-bottom:96px}
-.agc-bar .ag-av{width:34px;height:34px}
-.agc-bar b{font-size:16px}.agc-bar small{display:block;font-size:12.5px;color:#b9c6d8}
+.agc-bar .ag-av{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#16c7d4,#0579d7);color:#fff;font-size:17px;font-weight:800}
+.agc-bar .who{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.agc-bar .who small{font-size:12.5px;font-weight:500;color:var(--copy)}
+.agc-bar .who b{font-size:16.5px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agc-bar .used-note{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 12px;border-radius:999px;background:#f1f4f8;color:#3c4d63;font-size:13.5px;font-weight:600}
+.agc-bar .used-note .dot{width:10px;height:10px;border-radius:4px;background:#b8c2ce}
+.agc-bar .used-note button{border:0;background:none;padding:0 2px;color:var(--blue);font:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .agc-bar .grow{flex:1}
-.agc-bar .hid{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:#ffffff1f;font-size:13.5px;font-weight:600}
-.agc-bar .hid u{color:#9cc8ff;text-underline-offset:3px}
-.agc-bar .ag-btn.ghost{background:#ffffff14;color:#fff;box-shadow:inset 0 0 0 1px #ffffff40}
-.agc-dim{position:fixed;inset:0;z-index:80;background:#0b1b2f73;backdrop-filter:blur(2px)}
-.agc-dialog{position:fixed;z-index:81;top:50%;left:50%;transform:translate(-50%,-50%);width:min(460px,calc(100vw - 32px));padding:24px;border-radius:24px;background:#fff;font-family:Heebo,Arial,sans-serif;direction:rtl;color:#0b1b2f;box-shadow:0 30px 80px -20px #0b1b2f80}
-.agc-dialog .ic{display:grid;place-items:center;width:48px;height:48px;border-radius:16px;background:#fff4e5;color:#b45309}
-.agc-dialog h2{margin:14px 0 6px;font-size:21px;font-weight:800;letter-spacing:-.01em}
-.agc-dialog p{margin:0;font-size:15px;line-height:1.65;color:#4a5869}
-.agc-dialog .used{margin:14px 0 18px;padding:12px 14px;border-radius:14px;background:#f4f8fe;font-size:14px}
-.agc-dialog .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-@media(max-width:760px){.agc-bar{bottom:10px;padding:10px 12px;flex-wrap:wrap;gap:8px 10px}body:has(.agc-bar){padding-bottom:120px}.agc-bar .hid{order:5;flex-basis:100%;justify-content:center}.agc-bar .ag-btn{min-width:40px;min-height:40px;padding:0 10px}.agc-bar .ag-btn .lbl{display:none}}
-.agc-bar .hid{border:0;color:#fff;font:inherit;font-size:13.5px;cursor:pointer}
 .agc-bar .ag-btn{font-family:Heebo,Arial,sans-serif}
+.agc-bar .ag-btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.agc-bar .ag-btn.ghost:hover{background:#f5fbff}
+/* Asking before a used site goes into the cart again. */
+.agc-dim{position:fixed;inset:0;z-index:80;background:rgba(11,39,77,.32);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.agc-dialog{position:fixed;z-index:81;top:50%;left:50%;transform:translate(-50%,-50%);width:min(440px,calc(100vw - 32px));padding:24px;border-radius:24px;background:#fff;font-family:Heebo,Arial,sans-serif;direction:rtl;color:var(--ink);box-shadow:0 30px 80px -24px rgba(7,31,75,.5)}
+.agc-dialog .ic{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:#eef3f8;color:#425574}
+.agc-dialog h2{margin:14px 0 12px;font-size:20px;font-weight:800;line-height:1.35;letter-spacing:-.01em}
+.agc-dialog .used{display:flex;align-items:center;gap:9px;margin:0 0 14px;padding:12px 14px;border-radius:14px;background:#f5fbff;border:1px solid var(--line);color:var(--ink);font-size:15px;font-weight:600}
+.agc-dialog .used svg{flex:none;color:var(--teal)}
+.agc-dialog p{margin:0 0 18px;font-size:15.5px;line-height:1.6;color:var(--copy)}
+.agc-dialog .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.agc-dialog .ag-btn{font-family:Heebo,Arial,sans-serif;cursor:pointer}
+.agc-dialog .ag-btn.primary{background:linear-gradient(180deg,#1a8ae8,#0569c9);color:#fff;box-shadow:0 8px 18px -10px #0569c9}
+.agc-dialog .ag-btn.ghost{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px #c7daea}
+@media(max-width:760px){.agc-bar{bottom:10px;padding:10px;flex-wrap:wrap;gap:8px 10px}body:has(.agc-bar){padding-bottom:132px}.agc-bar .used-note{order:5;flex-basis:100%;justify-content:center}.agc-bar .ag-btn{min-width:40px;min-height:40px;padding:0 10px}.agc-bar .ag-btn .lbl{display:none}}
+/* A catalog card of a site already used for the customer being bought for. */
+.publication-catalog-card.pc-apple.pc-used{background:#f3f5f8}
+.publication-catalog-card.pc-apple.pc-used .pc-logo{filter:grayscale(1);opacity:.7}
+.publication-catalog-card.pc-apple.pc-used .pc-name h2,.publication-catalog-card.pc-apple.pc-used .pc-metrics,.publication-catalog-card.pc-apple.pc-used .pc-price{opacity:.62}
+.publication-catalog-card.pc-apple.pc-used .pc-chips .pc-chip:not(.pc-chip-used){filter:grayscale(1);opacity:.7}
+.pc-chip.pc-chip-used{display:inline-flex;align-items:center;gap:5px;background:#e3e8ee!important;color:#2f3e52!important;font-weight:700!important;box-shadow:inset 0 0 0 1px #cfd7e1}
+.pc-chip.pc-chip-used bdi{font-weight:600;color:#4a5869}
 .ag-kpi{display:block;text-decoration:none;color:inherit;transition:transform .15s ease-out,box-shadow .15s ease-out}
 @media(hover:hover){.ag-kpi:hover{transform:translateY(-1px);box-shadow:0 1px 2px #0b285010,0 14px 32px -14px #0b28503a}}
 .ag-kpi em.warn{color:#b45309}
@@ -264,3 +279,24 @@ a.ag-task{text-decoration:none;color:inherit}
 .ag-cal-day .dots small{font-size:11px;color:var(--muted)}
 .ag-cal-list{margin-top:14px}
 @media(max-width:760px){.ag-cal{gap:3px}.ag-cal-day{min-height:52px;padding:5px;border-radius:9px}.ag-cal-day .dots i{width:7px;height:7px}}
+/* Articles bought for a customer and not used yet (customer screen). */
+.ag-unused{margin:0 0 18px;padding:18px;border-radius:20px;background:linear-gradient(180deg,#f5fbff,#fff);border:1px solid #cfe5ef}
+.ag-unused header{display:flex;gap:12px;align-items:flex-start}
+.ag-unused .ic{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:13px;background:#e0f4f6;color:#007f8c}
+.ag-unused h3{display:flex;align-items:center;gap:8px;margin:0;font-size:17px;font-weight:800;color:#0b274d}
+.ag-unused h3 span{display:grid;place-items:center;min-width:26px;height:26px;padding:0 8px;border-radius:999px;background:#007f8c;color:#fff;font-size:13px}
+.ag-unused header p{margin:3px 0 0;font-size:14px;line-height:1.55;color:#425574}
+.ag-unused-list{display:grid;gap:8px;margin-top:14px}
+.ag-unused-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px #e1ecf3}
+.ag-unused-item .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.ag-unused-item b{font-size:15px;font-weight:700;color:#0b274d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ag-unused-item small{font-size:13.5px;font-weight:500;color:#3c4d63}
+.ag-unused-item a.ag-btn{text-decoration:none}
+.ag-unused-banner{display:flex;align-items:center;gap:10px;width:100%;margin:0 0 12px;padding:12px 16px;border:1px solid #cfe5ef;border-radius:16px;background:#f5fbff;color:#0b274d;font:inherit;font-size:15px;text-align:right;cursor:pointer}
+.ag-unused-banner svg:first-child{color:#007f8c;flex:none}
+.ag-unused-banner b{font-weight:700}
+.ag-unused-banner .go{margin-inline-start:auto;display:inline-flex;align-items:center;gap:4px;color:#0579d7;font-weight:700;white-space:nowrap}
+@media(max-width:760px){.ag-unused{padding:14px}.ag-unused-item{flex-wrap:wrap}.ag-unused-item a.ag-btn{flex-basis:100%}}
+/* Article lines in the customer screen: easier to read. */
+.ag-art b{font-size:15px;font-weight:700}
+.ag-art small{font-size:13.5px;font-weight:500;color:#3c4d63}

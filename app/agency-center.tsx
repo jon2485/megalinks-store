@@ -3,7 +3,7 @@
 // header band, section tabs, and the customers page (list on the right, one customer's screen with tabs).
 // Every action uses the existing records and routes, so nothing here is a copy of "הכתבות שלי" or "ההזמנות שלי".
 import React,{useEffect,useMemo,useState} from 'react';
-import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff,Printer,Settings as SettingsIcon,FileSpreadsheet,CalendarDays,ChevronRight,ChevronLeft} from 'lucide-react';
+import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff,Printer,Settings as SettingsIcon,FileSpreadsheet,CalendarDays,ChevronRight,ChevronLeft,PackageOpen,ArrowLeft} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
 import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
@@ -94,6 +94,7 @@ function CustomerScreen({ctx,customer,tab}:{ctx:Ctx;customer:Row;tab:string}){
    </div>
    {customer.status!=='archived'&&<div className="ag-head-actions"><button type="button" className="ag-btn buy" onClick={()=>{setBuyingFor({id:customer.id,name:customer.name});ctx.go('catalog');}}><Plus size={17}/>רכישה עבור הלקוח</button></div>}
   </div>
+  {customer.stats?.unused>0&&current!=='articles'&&<button type="button" className="ag-unused-banner" onClick={()=>ctx.go(base+'/articles')}><PackageOpen size={18} aria-hidden="true"/><span><b><bdi>{customer.stats.unused}</bdi> {customer.stats.unused===1?'כתבה נרכשה':'כתבות נרכשו'} ללקוח ועוד לא {customer.stats.unused===1?'נוצלה':'נוצלו'}</b></span><span className="go">לצפייה<ArrowLeft size={15} aria-hidden="true"/></span></button>}
   <div className="ag-ctabs" role="tablist" aria-label={'הלקוח '+customer.name}>{CUSTOMER_TABS.map(([key,label,Icon])=><button key={key} type="button" role="tab" aria-selected={current===key} className={current===key?'on':''} onClick={()=>ctx.go(base+'/'+key)}><Icon size={16} aria-hidden="true"/>{label}{key==='articles'&&customer.stats?.waiting>0&&<span className="ag-pending">{customer.stats.waiting}</span>}</button>)}</div>
   <div role="tabpanel">
    {current==='details'?<CustomerDetails ctx={ctx} customer={customer}/>:current==='used-sites'?<UsedSites ctx={ctx} customer={customer}/>:current==='links'?<CustomerLinks ctx={ctx} customer={customer}/>:current==='notes'?<CustomerNotes ctx={ctx} customer={customer}/>:current==='articles'?<CustomerArticles ctx={ctx} customer={customer}/>:<Publications ctx={ctx} customer={customer.id}/>}
@@ -195,12 +196,18 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
 // ---------- articles of one customer ----------
 function CustomerArticles({ctx,customer}:{ctx:Ctx;customer:Row}){
  const state=useData('agency/customers/'+encodeURIComponent(customer.id)+'/articles',ctx.revision),rows:Row[]=(state.data?.articles||[]).filter((a:Row)=>a.status!=='cancelled'&&!a.demo);
- const groups=purchaseStages.map(s=>({...s,items:rows.filter(a=>purchaseStage(a)===s.key)})).filter(g=>g.items.length);
+ // Bought for the customer and not used yet (paid, no content sent): shown first, apart from the rest.
+ const unused=rows.filter(a=>a.status==='draft'&&(a.paid||a.on_account)),rest=rows.filter(a=>!unused.includes(a));
+ const groups=purchaseStages.map(s=>({...s,items:rest.filter(a=>purchaseStage(a)===s.key)})).filter(g=>g.items.length);
  const tone=(a:Row)=>a.status==='published'?'':['draft','review','revisions'].includes(a.status)?'wait':'way';
  if(state.loading&&!state.data)return <div className="ag-skel" style={{height:120}}/>;
  if(state.error)return <p className="ag-alert" role="alert">{state.error}</p>;
  if(!rows.length)return <div className="ag-empty"><FileText size={30}/><h3>אין כתבות משויכות ללקוח</h3><p>כתבה משויכת ללקוח כשרוכשים עבורו, או מהמסך "הכתבות שלי" בבחירת לקוח לכתבה.</p></div>;
- return <>{groups.map(g=><section key={g.key} aria-label={g.label}><h3 className="ag-stage">{g.label}<span>{g.items.length}</span></h3>
+ return <>{unused.length>0&&<section className="ag-unused" aria-labelledby="ag-unused-title">
+  <header><span className="ic" aria-hidden="true"><PackageOpen size={20}/></span><div><h3 id="ag-unused-title">נרכשו ועוד לא נוצלו<span>{unused.length}</span></h3><p>כתבות ששולמו עבור {customer.name} ועדיין מחכות לתוכן. פותחים כתבה וממלאים את התוכן, כמו ב"הכתבות שלי".</p></div></header>
+  <div className="ag-unused-list">{unused.map(a=><div key={a.id} className="ag-unused-item"><SiteLogo src={a.website_logo}/><span className="t"><b>{a.website_name}</b><small>נרכשה <bdi>{day(a.purchased_at)}</bdi> · הזמנה <bdi>{a.number}</bdi></small></span><Link ctx={ctx} to={'article/'+a.id} className="ag-btn primary sm">לשימוש בכתבה<ArrowLeft size={15} aria-hidden="true"/></Link></div>)}</div>
+ </section>}
+ {groups.map(g=><section key={g.key} aria-label={g.label}><h3 className="ag-stage">{g.label}<span>{g.items.length}</span></h3>
   {g.items.map(a=><div key={a.id} className="ag-art"><SiteLogo src={a.website_logo}/><span className="t"><b>{a.title||a.topic||'כתבה ללא כותרת'}</b><small>{a.website_name} · הזמנה <bdi>{a.number}</bdi>{a.published_at?<> · פורסם <bdi>{day(a.published_at)}</bdi></>:null}</small></span><span className={'ag-status '+tone(a)}>{stages[a.status]||a.status}</span>
    {a.published_url?<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>:<Link ctx={ctx} to={'article/'+a.id} className="ag-btn ghost sm">{['draft','review','revisions'].includes(a.status)?'לטיפול':'פתיחה'}</Link>}
   </div>)}</section>)}</>;
@@ -222,7 +229,7 @@ function UsedSites({ctx,customer}:{ctx:Ctx;customer:Row}){
  return <>
   <p className="ag-muted" style={{margin:'0 0 12px',fontSize:14.5}}>אתרים שהלקוח כבר קיבל בהם פרסום. מה שפורסם דרך המערכת נכנס לבד. אתרים מבחוץ מוסיפים כאן.</p>
   <div className="ag-mode" role="radiogroup" aria-label="מה קורה ברכישה עבור הלקוח">
-   {([['hide','להסתיר מהקטלוג','ברכישה עבור '+customer.name+' האתרים האלה לא יוצגו'],['warn','להציג עם התראה','האתרים יוצגו עם תווית "כבר שימש"']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={data?.mode===mode} className={'ag-opt'+(data?.mode===mode?' on':'')} disabled={!!busy} onClick={()=>data?.mode!==mode&&run('mode',()=>api(base,'PATCH',{mode}),'ההגדרה נשמרה')}><span className="ag-radio"/><span><b>{title}</b><small>{sub}</small></span></button>)}
+   {([['warn','להציג באפור','במחירון של '+customer.name+' האתרים יופיעו באפור עם הסימון "שומש כבר"'],['hide','להסתיר מהמחירון','במחירון של '+customer.name+' האתרים האלה לא יוצגו']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={data?.mode===mode} className={'ag-opt'+(data?.mode===mode?' on':'')} disabled={!!busy} onClick={()=>data?.mode!==mode&&run('mode',()=>api(base,'PATCH',{mode}),'ההגדרה נשמרה')}><span className="ag-radio"/><span><b>{title}</b><small>{sub}</small></span></button>)}
   </div>
   <div className="ag-paste">
    <label htmlFor="ag-used-text" style={{display:'flex',alignItems:'center',gap:7,fontSize:15,fontWeight:700}}><ClipboardPaste size={17}/>הוספת רשימה</label>
@@ -379,7 +386,7 @@ function AgencySettings({ctx}:{ctx:Ctx}){
  return <form onSubmit={save}><div className="ag-form">
   <label>השם שיופיע בדוחות<small>למשל שם הסוכנות</small><input value={v.report_name} maxLength={120} disabled={busy} onChange={e=>set('report_name',e.target.value)}/></label>
   <label>צבע הדוחות<small>הצבע של הכותרת בדוח ללקוח</small><input type="color" value={v.report_color} disabled={busy} onChange={e=>set('report_color',e.target.value)} style={{height:46,padding:4}}/></label>
-  <fieldset className="wide ag-fieldset"><legend>אתרים שכבר שימשו, לכל לקוח חדש</legend><div className="ag-mode">{([['hide','להסתיר מהקטלוג','מומלץ'],['warn','להציג עם התראה','']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={v.used_mode===mode} className={'ag-opt'+(v.used_mode===mode?' on':'')} onClick={()=>set('used_mode',mode)}><span className="ag-radio"/><span><b>{title}</b>{sub&&<small>{sub}</small>}</span></button>)}</div><p className="ag-muted" style={{fontSize:13,margin:'8px 0 0'}}>אפשר לשנות לכל לקוח בלשונית "אתרים שכבר שימשו".</p></fieldset>
+  <fieldset className="wide ag-fieldset"><legend>אתרים שכבר שימשו, לכל לקוח חדש</legend><div className="ag-mode">{([['warn','להציג באפור עם הסימון "שומש כבר"','מומלץ'],['hide','להסתיר מהמחירון','']] as const).map(([mode,title,sub])=><button key={mode} type="button" role="radio" aria-checked={v.used_mode===mode} className={'ag-opt'+(v.used_mode===mode?' on':'')} onClick={()=>set('used_mode',mode)}><span className="ag-radio"/><span><b>{title}</b>{sub&&<small>{sub}</small>}</span></button>)}</div><p className="ag-muted" style={{fontSize:13,margin:'8px 0 0'}}>אפשר לשנות לכל לקוח בלשונית "אתרים שכבר שימשו".</p></fieldset>
   <label className="ag-check wide"><input type="checkbox" checked={!!v.show_costs} onChange={e=>set('show_costs',e.target.checked)}/>להציג עלויות בדוח ללקוח כברירת מחדל</label>
  </div>{error&&<p className="ag-alert" role="alert">{error}</p>}{saved&&<p className="ag-ok" role="status">ההגדרות נשמרו</p>}
  <div className="ag-actions"><button type="submit" className="ag-btn primary" disabled={busy}>{busy?<LoaderCircle size={17} className="animate-spin"/>:<Save size={17}/>}שמירת הגדרות</button></div></form>;

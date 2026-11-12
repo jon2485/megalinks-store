@@ -4,7 +4,7 @@
 // sites already used for that customer, adds the customer to every item put in the cart, and asks before adding a site
 // that was already used. The server refuses such a site without the confirmation anyway.
 import React,{useEffect,useState} from 'react';
-import {TriangleAlert,X,EyeOff,Eye,CalendarCheck,Users} from 'lucide-react';
+import {X,EyeOff,CalendarCheck,Users,History} from 'lucide-react';
 import {api} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
@@ -19,15 +19,20 @@ export function useBuyingFor(enabled:boolean){
  useEffect(()=>{if(!enabled){setValue(null);return;}const read=()=>setValue(getBuyingFor());read();window.addEventListener(EVENT,read);return()=>window.removeEventListener(EVENT,read);},[enabled]);
  return enabled?value:null;
 }
-// The used-site list of the customer being bought for: which catalog sites to hide, and the customer's setting.
+// The used-site list of the customer being bought for: which catalog sites were used, when, and the customer's setting.
+type Used={mode:string;hidden:Set<string>;info:Record<string,Row>};
 export function useUsedSites(buying:Buying,revision=0){
- const [state,setState]=useState<{mode:string;hidden:Set<string>}|null>(null);
- useEffect(()=>{if(!buying){setState(null);return;}let live=true;api('agency/customers/'+encodeURIComponent(buying.id)+'/used-sites','GET',undefined,{background:true}).then(d=>{if(live)setState({mode:d.mode,hidden:new Set(d.hidden_site_ids||[])});}).catch(()=>{if(live)setState(null);});return()=>{live=false;};},[buying?.id,revision]);
+ const [state,setState]=useState<Used|null>(null);
+ useEffect(()=>{if(!buying){setState(null);return;}let live=true;api('agency/customers/'+encodeURIComponent(buying.id)+'/used-sites','GET',undefined,{background:true}).then(d=>{if(live)setState({mode:d.mode,hidden:new Set(d.hidden_site_ids||[]),info:d.used||{}});}).catch(()=>{if(live)setState(null);});return()=>{live=false;};},[buying?.id,revision]);
  return state;
 }
-export function catalogForBuying<T extends Row>(sites:T[],buying:Buying,used:{mode:string;hidden:Set<string>}|null){
- if(!buying||!used||used.mode!=='hide'||buying.show)return sites;
- return sites.filter(s=>!used.hidden.has(s.id));
+// "hide": used sites are left out. Otherwise they stay in the catalog, greyed and marked "שומש כבר", after the others.
+export function catalogForBuying<T extends Row>(sites:T[],buying:Buying,used:Used|null){
+ if(!buying||!used||!used.hidden.size)return sites;
+ if(used.mode==='hide'&&!buying.show)return sites.filter(s=>!used.hidden.has(s.id));
+ const fresh:T[]=[],old:T[]=[];
+ for(const s of sites)if(used.hidden.has(s.id))old.push({...s,used_for_customer:{...(used.info[s.id]||{}),customer:buying.name}});else fresh.push(s);
+ return [...fresh,...old];
 }
 type UsedInfo={site:string;customer:string;source:'system'|'manual';date?:string;number?:string};
 function confirmUsedSite(info:UsedInfo){return new Promise<boolean>(resolve=>{const detail={info,resolve,handled:false};window.dispatchEvent(new CustomEvent(CONFIRM,{detail}));if(!detail.handled)resolve(window.confirm('האתר '+info.site+' כבר שימש עבור '+info.customer+'. להוסיף בכל זאת?'));});}
@@ -49,28 +54,30 @@ export async function patchCartChecked(id:string,payload:Row){
 }
 const day=(iso?:string)=>iso?new Date(iso).toLocaleDateString('he-IL',{timeZone:'Asia/Jerusalem'}):'';
 
-export default function AgencyBuyingLayer({ctx,view,hiddenCount}:{ctx:Ctx;view:string;hiddenCount:number}){
+export default function AgencyBuyingLayer({ctx,view,hiddenCount,usedCount}:{ctx:Ctx;view:string;hiddenCount:number;usedCount:number}){
  const agency=ctx.user?.role==='agency',buying=useBuyingFor(agency);
  const [ask,setAsk]=useState<{info:UsedInfo;resolve:(v:boolean)=>void}|null>(null);
  useEffect(()=>{const on=(e:Event)=>{const d=(e as CustomEvent).detail;d.handled=true;setAsk({info:d.info,resolve:d.resolve});};window.addEventListener(CONFIRM,on);return()=>window.removeEventListener(CONFIRM,on);},[]);
  const answer=(v:boolean)=>{ask?.resolve(v);setAsk(null);};
  useEffect(()=>{if(!ask)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape')answer(false);};window.addEventListener('keydown',key);return()=>window.removeEventListener('keydown',key);});
  const catalogView=['catalog','offers'].includes(String(view||'catalog').split('/')[0]);
+ const hidden=hiddenCount>0;
  return <>
-  {buying&&catalogView&&<div className="agc-bar" role="region" aria-label="רכישה עבור לקוח">
-   <span className="ag-av" aria-hidden="true" style={{background:'#1673e6'}}>{buying.name.charAt(0)}</span>
-   <span><small>רוכשים עבור</small><b>{buying.name}</b></span>
-   {hiddenCount>0||buying.show?<button type="button" className="hid" onClick={()=>setBuyingFor({...buying,show:!buying.show})}>{buying.show?<Eye size={15}/>:<EyeOff size={15}/>}{buying.show?'מוצגים גם אתרים שכבר שימשו · ':'הוסתרו '+hiddenCount+' אתרים שכבר שימשו · '}<u>{buying.show?'הסתרה':'הצגה'}</u></button>:null}
+  {buying&&catalogView&&<div className="agc-bar" role="region" aria-label={'מחירון עבור '+buying.name}>
+   <span className="ag-av" aria-hidden="true">{buying.name.charAt(0)}</span>
+   <span className="who"><small>המחירון עבור הלקוח</small><b>{buying.name}</b></span>
+   {usedCount>0&&<span className="used-note">{hidden?<><EyeOff size={15} aria-hidden="true"/>הוסתרו <bdi>{usedCount}</bdi> אתרים שכבר שומשו ללקוח</>:<><span className="dot" aria-hidden="true"/><bdi>{usedCount}</bdi> אתרים שכבר שומשו ללקוח מסומנים באפור</>}
+    {(hidden||buying.show)&&<button type="button" onClick={()=>setBuyingFor({...buying,show:hidden})}>{hidden?'הצגה':'הסתרה'}</button>}</span>}
    <span className="grow"/>
-   <button type="button" className="ag-btn ghost sm" aria-label="החלפת לקוח" onClick={()=>ctx.go('purchased/agency/customers')}><Users size={15}/><span className="lbl">החלפת לקוח</span></button>
-   <button type="button" className="ag-btn ghost sm" aria-label="יציאה ממצב לקוח" onClick={()=>setBuyingFor(null)}><X size={15}/><span className="lbl">יציאה ממצב לקוח</span></button>
+   <button type="button" className="ag-btn ghost sm" aria-label="החלפת לקוח" onClick={()=>ctx.go('purchased/agency/customers')}><Users size={15} aria-hidden="true"/><span className="lbl">החלפת לקוח</span></button>
+   <button type="button" className="ag-btn ghost sm" aria-label="יציאה מהמחירון של הלקוח" onClick={()=>setBuyingFor(null)}><X size={15} aria-hidden="true"/><span className="lbl">יציאה</span></button>
   </div>}
   {ask&&<><div className="agc-dim" onClick={()=>answer(false)}/><div className="agc-dialog" role="alertdialog" aria-modal="true" aria-labelledby="agc-used-title" aria-describedby="agc-used-text" dir="rtl">
-   <span className="ic"><TriangleAlert size={24}/></span>
-   <h2 id="agc-used-title">האתר כבר שימש עבור {ask.info.customer}</h2>
-   <p id="agc-used-text">להוסיף בכל זאת את <b>{ask.info.site}</b> לסל עבור הלקוח?</p>
-   <div className="used"><CalendarCheck size={16}/><span>{ask.info.source==='system'?<>פורסם עבור הלקוח{ask.info.date?<> ב-<bdi>{day(ask.info.date)}</bdi></>:null}{ask.info.number?<> · הזמנה <bdi>{ask.info.number}</bdi></>:null}</>:<>ברשימת האתרים שכבר שימשו{ask.info.date?<> (נוסף <bdi>{day(ask.info.date)}</bdi>)</>:null}</>}</span></div>
-   <div className="acts"><button type="button" className="ag-btn primary" autoFocus onClick={()=>answer(false)}>לא, חזרה לקטלוג</button><button type="button" className="ag-btn ghost" onClick={()=>answer(true)}>להוסיף בכל זאת</button></div>
+   <span className="ic"><History size={22} aria-hidden="true"/></span>
+   <h2 id="agc-used-title"><bdi>{ask.info.site}</bdi> כבר שומש עבור {ask.info.customer}</h2>
+   <div className="used"><CalendarCheck size={17} aria-hidden="true"/><span>{ask.info.source==='system'?<>פורסם ללקוח{ask.info.date?<> ב־<bdi>{day(ask.info.date)}</bdi></>:null}{ask.info.number?<> · הזמנה <bdi>{ask.info.number}</bdi></>:null}</>:<>נמצא ברשימת האתרים שכבר שומשו ללקוח{ask.info.date?<> (נוסף ב־<bdi>{day(ask.info.date)}</bdi>)</>:null}</>}</span></div>
+   <p id="agc-used-text">להוסיף אותו שוב לסל עבור הלקוח?</p>
+   <div className="acts"><button type="button" className="ag-btn primary" autoFocus onClick={()=>answer(false)}>לא להוסיף</button><button type="button" className="ag-btn ghost" onClick={()=>answer(true)}>כן, להוסיף שוב</button></div>
   </div></>}
  </>;
 }
