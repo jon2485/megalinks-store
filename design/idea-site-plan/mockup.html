@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>תוכנית מהאתר שלכם</title>
+<!-- Idea mockup only (13.11.2026): "paste your website, get a ready publication plan". Not built.
+     States: ?s=read (the site is being read) and ?s=plan (the ready plan). Fictional customer; site names and
+     prices are from data/catalog.json. -->
+<style>
+@font-face{font-family:Heebo;src:url("../../public/brand/heebo-variable.ttf");font-weight:100 900}
+:root{--ink:#0b1b2f;--muted:#4f5d6e;--faint:#7b8796;--line:rgba(11,40,80,.1);--blue:#1673e6;--blue-ink:#1460c4;--green:#1d7d45;--soft:#f4f8fe}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{min-height:100vh;background:radial-gradient(900px 420px at 50% -8%,#d8eeff 0,transparent 70%),#f5f7fa;color:var(--ink);font-family:Heebo,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px 14px;border-radius:0 0 22px 22px;background:linear-gradient(180deg,#0b2550,#0a2f63);box-shadow:inset 0 -2px 0 #22d3ee}
+.top img{height:34px;width:auto}
+.top .cart{display:flex;align-items:center;gap:6px;height:40px;padding:0 12px;border-radius:14px;background:linear-gradient(180deg,#ff9a3c,#f26d1b);color:#fff;font-weight:800}
+.top .cart i{display:grid;place-items:center;width:22px;height:22px;border-radius:7px;background:#ffffff38;font-style:normal;font-size:13px}
+.top .menu{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;box-shadow:inset 0 0 0 1px #ffffff40;color:#fff}
+main{max-width:520px;margin:0 auto;padding:16px 14px 34px;display:grid;gap:14px}
+.card{background:#fff;border-radius:24px;box-shadow:0 0 0 1px var(--line),0 1px 2px #0b28500a,0 24px 48px -30px #0b285066;padding:22px 20px}
+.pill{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 11px;border-radius:999px;background:#eef5ff;color:var(--blue-ink);font-size:12.5px;font-weight:800}
+h1{margin:10px 0 0;font-size:25px;font-weight:850;letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
+.sub{margin:8px 0 0;font-size:15.5px;line-height:1.6;color:var(--muted);text-wrap:pretty}
+.url{display:flex;align-items:center;gap:10px;margin-top:18px;height:54px;padding:0 14px;border-radius:16px;background:#f3f6fa;box-shadow:inset 0 0 0 2px var(--blue)}
+.url svg{flex:none;color:var(--blue)}
+.url span{flex:1;font-size:17px;font-weight:600;direction:ltr;text-align:right}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:52px;border:0;border-radius:16px;font:inherit;font-size:16.5px;font-weight:800;cursor:pointer}
+.btn.primary{margin-top:12px;background:linear-gradient(180deg,#2b86f0,#1673e6);color:#fff;box-shadow:0 10px 22px -12px #1673e6}
+.btn.primary.busy{background:#dfe9f6;color:#4f6b8f;box-shadow:none}
+.steps{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:4px}
+.steps li{display:flex;align-items:center;gap:12px;padding:10px 4px;font-size:15.5px;line-height:1.45}
+.steps .dot{flex:none;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#e8f6ee;color:var(--green)}
+.steps b{font-weight:800}
+.steps li.now{color:var(--blue-ink);font-weight:700}
+.steps li.now .dot{background:#eef5ff;color:var(--blue)}
+.spin{width:14px;height:14px;border-radius:50%;border:2.5px solid #bcd6f6;border-top-color:var(--blue)}
+.note{margin:14px 0 0;display:flex;gap:8px;align-items:flex-start;padding:12px 14px;border-radius:14px;background:var(--soft);font-size:14px;line-height:1.55;color:#33445a}
+.note svg{flex:none;margin-top:2px;color:var(--blue)}
+/* plan */
+.back{display:inline-flex;align-items:center;gap:6px;font-size:14.5px;font-weight:700;color:var(--blue-ink);text-decoration:none}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:#f3f6fa;font-size:13.5px;font-weight:700;color:#33445a}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:16px;padding:4px;border-radius:16px;background:#eef2f7}
+.seg span{display:grid;justify-items:center;gap:1px;padding:8px 4px;border-radius:12px;font-size:14px;font-weight:700;color:#4f5d6e}
+.seg span small{font-size:12.5px;font-weight:600;color:var(--faint)}
+.seg span.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px #0b285014,0 6px 14px -8px #0b285040}
+.seg span.on small{color:var(--blue-ink)}
+.site{padding:16px 16px 14px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px var(--line),0 12px 28px -24px #0b285066}
+.site-head{display:flex;align-items:center;gap:12px}
+.logo{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:#fff;box-shadow:inset 0 0 0 1px #dfe7f0;font-size:11px;font-weight:800;color:#0b274d;text-align:center;line-height:1.05}
+.site-head .t{flex:1;min-width:0}.site-head b{display:block;font-size:17px;font-weight:800}.site-head small{display:block;font-size:13.5px;color:var(--muted)}
+.price{flex:none;font-size:18px;font-weight:850}
+.why{display:flex;align-items:center;gap:7px;margin:12px 0 0;padding:8px 12px;border-radius:12px;background:#effaf4;color:#14532d;font-size:14px;font-weight:600}
+.why svg{flex:none;color:#16a34a}
+.rows{margin:12px 0 0;display:grid;gap:8px}
+.row{display:grid;gap:2px}
+.row small{font-size:12.5px;font-weight:700;color:var(--faint)}
+.row span{font-size:15px;font-weight:600;line-height:1.45}
+.row .ltr{direction:ltr;text-align:right;color:var(--blue-ink)}
+.acts{display:flex;gap:8px;margin-top:12px}
+.ghost{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;min-height:40px;border:0;border-radius:12px;background:#f3f6fa;color:#33445a;font:inherit;font-size:14px;font-weight:700}
+.sum{display:grid;gap:8px;padding:16px;border-radius:20px;background:linear-gradient(180deg,#f4f9ff,#eef5ff);box-shadow:inset 0 0 0 1px #d6e6fb}
+.sum .total{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.sum .total b{font-size:17px}.sum .total strong{font-size:24px;font-weight:850}
+.sum .total small{font-size:13px;color:var(--muted);font-weight:600}
+.sum ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.sum li{display:flex;gap:8px;align-items:center;font-size:14.5px;color:#14532d;font-weight:600}
+.sum li svg{flex:none;color:#16a34a}
+.fine{margin:0;text-align:center;font-size:13.5px;line-height:1.55;color:var(--faint)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header class="top">
+ <span class="menu" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+ <img src="../../public/brand/megalinks-logo.png" alt="Mega Links">
+ <span class="cart"><i>0</i><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a2 2 0 0 0 2 1.6h8.2a2 2 0 0 0 2-1.5L22 7H6"/></svg></span>
+</header>
+
+<main id="read">
+ <section class="card">
+  <span class="pill">חדש</span>
+  <h1>תוכנית פרסום מהאתר שלכם</h1>
+  <p class="sub">מדביקים את כתובת האתר, ותוך דקה מקבלים תוכנית מוכנה: באילו אתרים לפרסם, על מה לכתוב, ולאיזה עמוד לקשר.</p>
+  <div class="url"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg><span>cafe-boker.co.il</span></div>
+  <button class="btn primary busy" type="button">מכינים את התוכנית…</button>
+  <ul class="steps">
+   <li><span class="dot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span><span>קראנו את האתר: <b><bdi>6</bdi> עמודים</b></span></li>
+   <li><span class="dot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span><span>העסק: <b>בית קפה ומאפייה</b></span></li>
+   <li><span class="dot"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 5 5 9-10"/></svg></span><span>האזור: <b>חיפה והקריות</b></span></li>
+   <li class="now"><span class="dot"><span class="spin"></span></span><span>בוחרים אתרים ונושאים לכתבות…</span></li>
+  </ul>
+  <p class="note"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span>קוראים רק עמודים ציבוריים באתר. שום דבר לא נקנה בלי שתאשרו.</span></p>
+ </section>
+</main>
+
+<main id="plan" hidden>
+ <a class="back" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>לכתובת אחרת</a>
+ <section class="card">
+  <h1>התוכנית של קפה הבוקר</h1>
+  <div class="chips"><span class="chip">בית קפה ומאפייה</span><span class="chip">חיפה והקריות</span><span class="chip">קהל: משפחות וסטודנטים</span></div>
+  <div class="seg" role="group" aria-label="גודל התוכנית"><span>חסכונית<small><bdi>₪400</bdi></small></span><span class="on">מאוזנת<small><bdi>₪850</bdi></small></span><span>חזקה<small><bdi>₪2,300</bdi></small></span></div>
+ </section>
+
+ <article class="site">
+  <div class="site-head"><span class="logo">מיינט</span><span class="t"><b>מיינט חיפה</b><small>חדשות מקומיות · חיפה</small></span><span class="price"><bdi>₪450</bdi></span></div>
+  <p class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>למה: הקוראים גרים ליד העסק</p>
+  <div class="rows">
+   <div class="row"><small>נושא לכתבה</small><span>5 בתי קפה בחיפה שכדאי להכיר החורף</span></div>
+   <div class="row"><small>קישור אל</small><span class="ltr">cafe-boker.co.il/menu</span></div>
+   <div class="row"><small>עוגן</small><span>בית קפה בחיפה</span></div>
+  </div>
+  <div class="acts"><button class="ghost" type="button">להחליף אתר</button><button class="ghost" type="button">לשנות נושא</button></div>
+ </article>
+
+ <article class="site">
+  <div class="site-head"><span class="logo">ארץ<br>הקפה</span><span class="t"><b>ארץ הקפה</b><small>אתר בתחום הקפה</small></span><span class="price"><bdi>₪250</bdi></span></div>
+  <p class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>למה: קוראים שמחפשים קפה טוב</p>
+  <div class="rows">
+   <div class="row"><small>נושא לכתבה</small><span>איך בוחרים פולי קפה טריים, ומה כדאי לשאול את הבריסטה</span></div>
+   <div class="row"><small>קישור אל</small><span class="ltr">cafe-boker.co.il</span></div>
+   <div class="row"><small>עוגן</small><span>קפה הבוקר</span></div>
+  </div>
+  <div class="acts"><button class="ghost" type="button">להחליף אתר</button><button class="ghost" type="button">לשנות נושא</button></div>
+ </article>
+
+ <article class="site">
+  <div class="site-head"><span class="logo">פורטל<br>הכרמל</span><span class="t"><b>פורטל הכרמל והצפון</b><small>חדשות מקומיות · הכרמל</small></span><span class="price"><bdi>₪150</bdi></span></div>
+  <p class="why"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>למה: מחיר נמוך, קהל באזור שלכם</p>
+  <div class="rows">
+   <div class="row"><small>נושא לכתבה</small><span>המאפייה השכונתית שהפכה למקום קבוע בכרמל</span></div>
+   <div class="row"><small>קישור אל</small><span class="ltr">cafe-boker.co.il/about</span></div>
+   <div class="row"><small>עוגן</small><span>מאפייה בכרמל</span></div>
+  </div>
+  <div class="acts"><button class="ghost" type="button">להחליף אתר</button><button class="ghost" type="button">לשנות נושא</button></div>
+ </article>
+
+ <section class="sum">
+  <div class="total"><b><bdi>3</bdi> כתבות</b><span><strong><bdi>₪850</bdi></strong> <small>לפני מע״מ</small></span></div>
+  <ul>
+   <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>כל כתבה מקשרת לעמוד אחר באתר שלכם</li>
+   <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>כל עוגן שונה</li>
+   <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>אף אתר כאן לא שימש אתכם קודם</li>
+  </ul>
+  <button class="btn primary" type="button">הוספת התוכנית לסל</button>
+ </section>
+ <p class="fine">זו הצעה. אפשר להחליף כל אתר, נושא או עוגן לפני שמוסיפים לסל.</p>
+</main>
+<script>
+const s=new URLSearchParams(location.search).get('s')||'read';
+document.getElementById('read').hidden=s!=='read';document.getElementById('plan').hidden=s!=='plan';
+</script>
+</body>
+</html>
