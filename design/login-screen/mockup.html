@@ -14,7 +14,7 @@ body{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align
 .logo{display:flex;justify-content:center;margin-bottom:22px}.logo img{height:40px;width:auto}
 h1{margin:0;text-align:center;font-size:27px;font-weight:850;letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
 .sub{margin:8px auto 0;max-width:340px;text-align:center;font-size:16px;line-height:1.6;color:var(--muted);text-wrap:pretty}
-.stack{display:grid;gap:12px;margin-top:24px}
+.stack{display:grid;gap:12px;margin-top:20px}
 .btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;padding:0 18px;border:0;border-radius:16px;font:inherit;font-size:17px;font-weight:700;cursor:pointer;transition:transform .12s ease-out,box-shadow .2s var(--ease),background-color .2s}
 .btn:active{transform:scale(.98)}
 .btn:focus-visible,.check input:focus-visible,a:focus-visible{outline:3px solid #7fb4f5;outline-offset:3px}
@@ -46,6 +46,13 @@ h1{margin:0;text-align:center;font-size:27px;font-weight:850;letter-spacing:-.02
 .go[disabled]{background:#dfe6ee;color:#8593a4;box-shadow:none;cursor:not-allowed}
 .hint{margin:10px 0 0;text-align:center;font-size:14px;color:#a8510a}.hint.ok{color:var(--green)}
 .note{margin:14px 0 0;text-align:center;font-size:13px;line-height:1.5;color:var(--faint)}
+.free{margin:18px 0 0;text-align:center;font-size:15px;font-weight:700;color:var(--green)}
+.why{list-style:none;margin:12px 0 0;padding:14px 16px;display:grid;gap:9px;border-radius:16px;background:#f6f9fc}
+.why li{display:flex;gap:9px;align-items:flex-start;font-size:15px;line-height:1.5;color:#33445a}
+.why svg{flex:none;margin-top:3px;color:var(--blue)}
+.peek{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;margin-top:10px;font-size:15px;font-weight:700;color:var(--blue-ink);text-decoration:none}
+.peek:hover{text-decoration:underline;text-underline-offset:3px}
+.help{margin:0;text-align:center;font-size:14.5px;color:var(--muted)}.help a{color:#0f7a55;font-weight:700;text-underline-offset:3px}
 [hidden]{display:none!important}
 @media(max-width:480px){body{justify-content:center;padding:24px 16px calc(24px + env(safe-area-inset-bottom));min-height:100svh}.card{padding:26px 20px 22px;border-radius:24px}h1{font-size:25px}}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -56,10 +63,17 @@ h1{margin:0;text-align:center;font-size:27px;font-weight:850;letter-spacing:-.02
  <div class="logo"><img src="../../public/brand/megalinks-logo-dark.png" alt="Mega Links"></div>
  <h1>כניסה לחשבון</h1>
  <p class="sub">נכנסים בלחיצה אחת. אם עוד אין לכם חשבון, הוא ייפתח בכניסה הראשונה.</p>
+ <p class="free">ההרשמה בחינם. משלמים רק על פרסום שמזמינים.</p>
+ <ul class="why">
+  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>מחירון של אתרים ישראליים, עם מחיר קבוע לכל אתר</span></li>
+  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>אנחנו כותבים את הכתבה, או שאתם שולחים כתבה מוכנה</span></li>
+  <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg><span>רואים כל פרסום, משלב ההזמנה ועד שהוא באוויר</span></li>
+ </ul>
  <div class="stack">
   <button class="btn google" type="button"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>כניסה עם <bdi>Google</bdi></span></button>
  </div>
  <p class="safe"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span>אנחנו מקבלים מ־<bdi>Google</bdi> רק את השם ואת כתובת המייל. את הסיסמה שלכם אנחנו לא רואים.</span></p>
+ <a class="peek" href="#">לצפייה במחירון בלי להירשם<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
 </main>
 
 <main class="card" id="terms" hidden>
@@ -74,8 +88,9 @@ h1{margin:0;text-align:center;font-size:27px;font-weight:850;letter-spacing:-.02
  </div>
  <button class="btn go" id="go" type="button" disabled>פתיחת החשבון</button>
  <p class="hint" id="hint">כדי להמשיך יש לסמן את אישור תנאי השימוש</p>
- <p class="note">נשמור את מועד האישור ואת גרסת התנאים שאישרתם.</p>
+ <p class="note">אחרי האישור תחזרו בדיוק למקום שבו הייתם. נשמור את מועד האישור ואת גרסת התנאים.</p>
 </main>
+<p class="help">לא מצליחים להיכנס? <a href="https://wa.me/972507508850" target="_blank" rel="noopener">כתבו לנו בוואטסאפ</a></p>
 <p class="legal"><a href="#">תנאי שימוש</a> · <a href="#">מדיניות פרטיות</a> · <a href="#">הצהרת נגישות</a></p>
 <script>
 const q=new URLSearchParams(location.search),s=q.get('s')||'login';
