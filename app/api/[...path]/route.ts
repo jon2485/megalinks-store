@@ -73,6 +73,7 @@ import { env } from 'cloudflare:workers';
 import { Row, websitePricing, calculateQuote, articleTransitions, httpUrl, plainText, textToHtml } from '@/lib/shared';
 import { ApiError, db, stmt, one, all, parse, actor, admin, owns, assert, setting, saveSetting, audit, ensureCatalog, publicWebsite, website, uid, now, hash, encrypt, connection, geminiServerKey, externalFetch, externalUrl, notify, syncOrder, basicAuth } from '@/lib/server';
 import {hasAgencyCentre} from '@/lib/agency-shared';
+import {sitePlan} from '@/lib/site-plan-read';
 export const dynamic = 'force-dynamic';
 const response = (data: any, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const json = async (r: Request): Promise<Row> => { assert(Number(r.headers.get('content-length') || 0) <= 500000, 'הבקשה גדולה מדי', 413); const raw = await r.text(); assert(raw.length <= 500000, 'הבקשה גדולה מדי', 413); try {
@@ -320,6 +321,8 @@ async function handle(r: Request,access:ResponseAccess) {
         { const section = [p[3], p[5]].filter(Boolean).join('/'), action = 'צפייה במרכז הלקוחות של החשבון: ' + maxText(section, 60); if (!await one('SELECT id FROM activity WHERE user_id=? AND resource=? AND action=? AND created>?', u.id, target.id, action, new Date(Date.now() - 600000).toISOString())) await audit(u, target.id, action, p[4] ? { customer_id: maxText(p[4], 100) } : {}); }
         u = target; p.splice(0, 3, 'agency');
     }
+    // A ready publication plan from the customer's own website (design/idea-site-plan, owner 14.11.2026).
+    if (p[0] === 'site-plan' && !p[1] && method === 'POST') return response(await sitePlan(u, await json(r)));
     if (p[0] === 'agency') {
         assertAgency(u);
         if (p[1] === 'customers' && !p[2] && method === 'GET') return response(await agencyCustomers(u));
