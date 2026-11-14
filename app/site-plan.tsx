@@ -64,20 +64,25 @@ export default function SitePlan({ctx}:{ctx:Ctx}){
  if(!allowed)return <section className="sp" dir="rtl"><div className="sp-card"><h1>תוכנית פרסום מהאתר שלכם</h1><p className="sp-sub">התוכנית זמינה לחשבונות לקוח. התחברו כדי להמשיך.</p></div></section>;
  const a=plan?.analysis;
  return <section className="sp" dir="rtl" aria-labelledby="sp-title">
-  <form className="sp-card" onSubmit={make} noValidate>
+  <form className="sp-card sp-start" onSubmit={make} noValidate>
+   <div className="sp-intro">
    <span className="sp-pill"><Sparkles size={14} aria-hidden="true"/>חדש</span>
    <h1 id="sp-title">{buying?<>תוכנית פרסום עבור <bdi>{buying.name}</bdi></>:'תוכנית פרסום מהאתר שלכם'}</h1>
    <p className="sp-sub">מדביקים את כתובת האתר, ותוך דקה מקבלים תוכנית מוכנה: באילו אתרים לפרסם, על מה לכתוב, ולאיזה עמוד לקשר.</p>
+   </div>
+   <div className="sp-go">
    <label className="sp-url"><Globe size={20} aria-hidden="true"/><span className="sr-only">כתובת האתר</span>
     <input ref={input} type="text" inputMode="url" dir="ltr" autoComplete="url" placeholder="example.co.il" value={url} maxLength={500} disabled={busy} onChange={e=>{setUrl(e.target.value);setError('');}} aria-describedby="sp-error"/></label>
    <button className={'sp-btn primary'+(busy?' busy':'')} type="submit" disabled={busy}>{busy?<><LoaderCircle size={18} className="sp-spin-icon" aria-hidden="true"/>מכינים את התוכנית…</>:plan?'הכנת תוכנית חדשה':'הכנת התוכנית'}</button>
    {error&&<p className="sp-error" id="sp-error" role="alert">{error}</p>}
    {busy&&<ul className="sp-steps" aria-live="polite">{STEPS.map((s,i)=><li key={s} className={i<step?'done':i===step?'now':''}><span className="dot">{i<step?<Check size={15} strokeWidth={3}/>:i===step?<span className="spin"/>:null}</span><span>{s}{i===step?'…':''}</span></li>)}</ul>}
    {!plan&&!busy&&<p className="sp-note"><ShieldCheck size={17} aria-hidden="true"/><span>קוראים רק עמודים ציבוריים באתר. שום דבר לא נקנה בלי שתאשרו.</span></p>}
+   </div>
   </form>
 
   {plan&&a&&<div className="sp-plan" id="sp-plan">
-   <section className="sp-card">
+   <section className="sp-card sp-head">
+    <div className="sp-head-text">
     <h2>{buying?<>התוכנית של <bdi>{buying.name}</bdi></>:<>התוכנית של <bdi>{a.name}</bdi></>}</h2>
     <div className="sp-chips">
      {a.field&&<span className="sp-chip">{a.field.term}</span>}
@@ -85,8 +90,10 @@ export default function SitePlan({ctx}:{ctx:Ctx}){
      <span className="sp-chip muted">קראנו <bdi>{a.pages_read}</bdi> עמודים</span>
     </div>
     {!a.city&&<p className="sp-hint">כדי לקבל גם אתרים מקומיים, כדאי שבאתר תופיע העיר שבה העסק נמצא.</p>}
+    </div>
     <div className="sp-seg" role="radiogroup" aria-label="גודל התוכנית">{(plan.sizes||[]).map((s:Row)=>{const sum=(items[s.key]||[]).reduce((n:number,i:Row)=>n+Number(i.price_cents||0),0);return <button key={s.key} type="button" role="radio" aria-checked={size===s.key} className={size===s.key?'on':''} onClick={()=>{setSize(s.key);setEditing('');}}>{s.label}<small><bdi>{money(sum)}</bdi></small></button>;})}</div>
    </section>
+   <div className="sp-sites">
    {current.map((it,index)=>{const key=size+':'+index,open=editing===key;return <article className="sp-site" key={key}>
     <div className="sp-site-head"><span className="sp-logo" aria-hidden="true">{tile(it.name)}</span><span className="t"><b>{it.name}</b><small dir="ltr">{short(it.url)}</small></span><span className="sp-price"><bdi>{money(it.price_cents)}</bdi></span></div>
     <p className="sp-why"><Check size={16} strokeWidth={2.6} aria-hidden="true"/>למה: {it.why}</p>
@@ -105,6 +112,7 @@ export default function SitePlan({ctx}:{ctx:Ctx}){
      <button type="button" className="sp-ghost icon" aria-label={'הסרת '+it.name+' מהתוכנית'} onClick={()=>drop(index)}><Trash2 size={16} aria-hidden="true"/></button>
     </div>
    </article>;})}
+   </div>
    {!current.length&&<p className="sp-empty">הסרתם את כל האתרים מהתוכנית הזאת. אפשר לבחור גודל אחר או להכין תוכנית חדשה.</p>}
    {current.length>0&&<section className="sp-sum">
     <div className="total"><b><bdi>{current.length}</bdi> {current.length===1?'כתבה':'כתבות'}</b><span><strong><bdi>{money(total)}</bdi></strong> <small>לפני מע״מ</small></span></div>
