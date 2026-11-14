@@ -163,13 +163,3 @@ html body .catalog-paste-dialog .catalog-paste-count{display:inline-grid;place-i
 @media(prefers-reduced-motion:reduce){html body .catalog-paste-dialog .catalog-paste-clip{transition:none}}
 /* Each pasted line keeps its own direction (URLs stay readable) but everything lines up on the right */
 html body .catalog-paste-dialog #catalog-list-input,html body .catalog-paste-dialog #catalog-list-input::placeholder{unicode-bidi:plaintext;text-align:right!important}
-
-/* Phone: "תוכנית מהאתר שלכם" gets its own full row right under categories and sorting; the three tools and
-   "הוספת אתר לקטלוג" move one row down (owner 14.11.2026). */
-@media(max-width:699px){
- html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-plan-trigger[data-slot=button]{grid-column:1/-1!important;grid-row:4!important;width:100%!important;height:52px!important;min-height:52px!important;padding:0 14px!important;flex-direction:row!important;gap:8px!important;font-size:15.5px!important}
- html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-list-trigger{grid-row:5!important}
- html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-export-trigger{grid-row:5!important}
- html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-bulk-trigger{grid-row:5!important}
- html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-add-site{grid-row:6!important}
-}

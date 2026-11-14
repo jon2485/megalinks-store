@@ -16,7 +16,7 @@ const privateRoots = new Set([
     ...adminAreas.flatMap(area=>area.pages.map(([page])=>page)),
     ...lobbyGroups.flatMap(group=>[group.page,...group.tabs.map(([page])=>page)]),
     'admin-approvals','admin-publication','admin-writing','admin-pricing','admin-pricebooks','offers','cart','checkout','bulk','purchased',
-    'orders','articles','links','dashboard','strategies','wallet','monthly','customers','site-plan',
+    'orders','articles','links','dashboard','strategies','wallet','monthly','customers',
     'profile','files','support','api','notifications','supplier-workspace','supplier-finance',
 ]);
 const nestedRoots = new Set(['article','admin-article','admin-supplier','admin-supplier-articles','admin-supplier-stock','admin-supplier-billing','admin-supplier-order','admin-supplier-package','supplier-invoice','admin-supplier-invoice','admin-seller-request','admin-pricebook','admin-customer-account','lobby-order','supplier','admin-knowledge','admin-order','admin-support','order-confirmed']);

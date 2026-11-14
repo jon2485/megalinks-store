@@ -207,9 +207,3 @@
 .client-hub.approved-account .purchase-action-row:has(.article-assign-chip) .purchase-action-buttons{width:100%!important;flex:1 1 auto!important}
 .client-hub.approved-account .purchase-action-row .article-customer-compact{flex:0 0 auto!important}
 .client-hub.approved-account .purchase-action-row .article-assign-chip{width:100%;justify-content:center}
-/* Entry to "תוכנית פרסום מהאתר שלכם" among the catalog tools (owner 14.11.2026): the same size as its neighbours,
-   with a light blue tint and the brand blue, so it reads as the guided way in without competing with the site cards. */
-.azure-catalog.catalog-approved-home .catalog-results-actions .catalog-action-button.catalog-plan-trigger[data-slot=button]{background:linear-gradient(180deg,#f3f8ff,#e6f0fd)!important;color:#1460c4!important;box-shadow:inset 0 0 0 1.5px #1673e655,0 8px 20px -14px #1673e6!important;font-weight:700!important}
-.azure-catalog.catalog-approved-home .catalog-results-actions .catalog-action-button.catalog-plan-trigger>svg{color:#1673e6}
-/* Wide screens: the five tools share one row; "הוספת אתר לקטלוג" stays on its own line below, as before. */
-@media(min-width:1180px){.azure-catalog.catalog-approved-home .catalog-results-actions[role=group] .catalog-action-button[data-slot=button]{flex:0 0 calc((100% - 48px)/5);width:calc((100% - 48px)/5)}}
