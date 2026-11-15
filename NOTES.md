@@ -961,3 +961,24 @@ Owner approved `docs/mockups/lobby-v1.html` and three decisions: the folding "ת
 - Not on Staging (older branches, not in this branch): `staging/editor-20261106` @ `766255b` (editor redesign), `design/orders-apex-20261102` @ `f65cc68`. They were not on Staging before either.
 - **Result:** deployment `299bd3b3` SUCCESS at 23:27 UTC (10.11), the previous one removed. `/healthz` 200, signed-out pages redirect to sign-in as before. The deploy log shows only 200 responses (lobby endpoints `control-center`, `pulse`, `updates`, orders, customer account), no errors. Pages behind sign-in were not opened by me (no password entry); the owner checks them.
 - To roll back: Railway keeps `d1a0a946` (`3a94ab9`) as a rollback point.
+
+## דף בית חדש בכתובת הראשית (15.11.2026, באישור הבעלים)
+- **ענף:** `feature/homepage-20261115`.
+- **מה הוחלט ולמה:**
+  - דף הבית החדש הוא המסך הראשון של האתר, בכתובת `/`. הבעלים בחר שהקטלוג יעבור לכתובת משלו, `/catalog`, בלי שינוי בתוכן שלו.
+  - דף הבית הוא מסמך עצמאי (HTML, CSS ו-JS משלו), ולכן הוא לא נוגע באף מסך קיים ולא מושפע מהעיצוב של המערכת.
+  - שלושת כרטיסי "ידע מקצועי בחינם" מוחלפים בשרת בשלושת המדריכים האחרונים שפורסמו. אם אין מדריכים, נשארים כרטיסי הדוגמה.
+- **קבצים:**
+  - `home/index.html`: המקור של דף הבית. אחרי כל עריכה להריץ `node scripts/build-home-page.mjs`, שמייצר את `lib/home-page-html.ts`.
+  - `app/route.ts`: מגיש את דף הבית ב-`/`. `app/page.tsx` נמחק.
+  - `app/[...page]/page.tsx`: `/catalog` מציג את הקטלוג (קודם הפנה ל-`/`).
+  - `lib/seo.ts`: `/catalog` נוסף לעמודים הציבוריים, והכתובת הקנונית של הקטלוג היא `/catalog`.
+  - קישורים לקטלוג עודכנו ב-`workspace.tsx`, `workspace-navigation.tsx`, `workspace-footer.tsx`, `admin-shell.tsx`, `knowledge-shell.tsx`, `knowledge-components.tsx`.
+  - `public/homepage/`: התמונות ומנוע הגלילה של דף הבית (scrollcraft, רישיון MIT).
+  - בדיקות: `tests/seo.mjs`, `tests/railway-staging-assets.mjs`, `tests/integration.mjs` עודכנו לכתובות החדשות.
+- **מקור העיצוב:** ההדמיה נמצאת מחוץ לפרויקט, ב-`C:/Users/User/megalinks-tools/scrollcraft/builds/megalinks-home/index.html`. הסקריפט `C:/Users/User/megalinks-tools/home-to-repo.py` מעתיק אותה לפרויקט ומחבר את הקישורים לעמודי האתר.
+- **לא גמור:**
+  - הכפתור "לכתבות יח״צ" עדיין לא מוביל לעמוד. הוא מציג הודעה "יעלה בקרוב" עד שייבנה עמוד יח״צ.
+  - `tests/integration.mjs` נעצרת בבדיקת מלאי ("unlimited site has continuous independent count", שורה 407), בקוד שלא שונה כאן. לא בדקתי אם היא נכשלה גם לפני השינוי.
+  - כתובות ישנות שמורות אצל משתמשים: מי ששמר את `/` כקטלוג יגיע עכשיו לדף הבית.
+- **לפני העלאה:** בדף הבית יש נתוני דוגמה מסומנים "דוגמה" (מרפאת שיניים), שני צילומי מסך עם נתוני הדגמה, ושלוש כותרות מדריכים לדוגמה שמוצגות רק אם אין מדריכים שפורסמו.

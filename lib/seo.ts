@@ -7,7 +7,7 @@ export const SOCIAL_IMAGE_PATH = '/brand/megalinks-social.png';
 export const SITE_NAME = 'MegaLinks';
 export const HOME_TITLE = 'MegaLinks — פרסום כתבות ותוכן באתרים';
 export const HOME_DESCRIPTION = 'בחרו אתרים לפרסום הכתבה הבאה שלכם עם MegaLinks. חפשו לפי תחום, השוו מחירים ונתוני אתרים, והזמינו פרסום כתבות ושירותי כתיבת תוכן במקום אחד.';
-export const INDEXABLE_PATHS = ['/', '/terms', '/knowledge'] as const;
+export const INDEXABLE_PATHS = ['/', '/catalog', '/terms', '/knowledge'] as const;
 const privateRoots = new Set([
     ...adminAreas.flatMap(area=>area.pages.map(([page])=>page)),
     ...lobbyGroups.flatMap(group=>[group.page,...group.tabs.map(([page])=>page)]),
@@ -29,15 +29,15 @@ export function isWorkspacePath(parts:string[]) {
 }
 export function isIndexablePath(path:string){return INDEXABLE_PATHS.some(p=>p===path)||/^\/knowledge\/[^/]+$/.test(path);}
 export function clientPageSeo(view:string) {
-    const path=view==='catalog'?'/':view==='terms'?'/terms':null;
+    const path=view==='catalog'?'/catalog':view==='terms'?'/terms':null;
     if(path){const metadata=publicMetadata(path);return {title:(metadata.title as {absolute:string}).absolute,description:metadata.description!,canonical:SITE_URL+path,robots:'index, follow'};}
     const adminTitle=view.startsWith('admin-seller-request/')?'בדיקת בקשת ספק':view.startsWith('admin-supplier-invoice/')?'בדיקת חשבונית ספק':/^admin-supplier(-articles|-stock|-billing|-order|-package)?\//.test(view)?'פרטי ספק ואתר':view.startsWith('admin-order/')?'פירוט ההזמנה':view.startsWith('admin-article/')?'טיפול בכתבה':view.startsWith('admin-support/')?'פרטי הפנייה':view.startsWith('admin-knowledge/')?'עורך מדריכים וידע':adminAreas.flatMap(a=>a.pages.map(([page,label])=>({page,label}))).find(item=>item.page===view)?.label;
     return {title:(adminTitle||(view.startsWith('admin')?'ניהול המערכת':'המרחב האישי'))+' | MegaLinks',description:'כניסה למרחב האישי ולניהול פרסומים ב־MegaLinks.',canonical:null,robots:'noindex, nofollow, noarchive'};
 }
 export const privateRobots = {index:false,follow:false,noarchive:true};
-export function publicMetadata(path:'/'|'/terms'):Metadata {
-    const title=path==='/'?HOME_TITLE:'תקנון ותנאי שימוש | MegaLinks';
-    const description=path==='/'?HOME_DESCRIPTION:'תקנון ותנאי השימוש בשירותי MegaLinks לפרסום כתבות, כתיבת תוכן וניהול הזמנות.';
+export function publicMetadata(path:'/'|'/catalog'|'/terms'):Metadata {
+    const title=path==='/terms'?'תקנון ותנאי שימוש | MegaLinks':HOME_TITLE;
+    const description=path!=='/terms'?HOME_DESCRIPTION:'תקנון ותנאי השימוש בשירותי MegaLinks לפרסום כתבות, כתיבת תוכן וניהול הזמנות.';
     const url=SITE_URL+path;
     const image={url:SITE_URL+SOCIAL_IMAGE_PATH,width:1200,height:630,alt:'MegaLinks — פרסום כתבות ותוכן באתרים'};
     return {title:{absolute:title},description,alternates:{canonical:url},robots:{index:true,follow:true},

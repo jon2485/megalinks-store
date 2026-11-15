@@ -8,7 +8,7 @@ await build({entryPoints:['lib/seo.ts'],outfile:'.sites-runtime/seo-policy.cjs',
 const {SITE_URL,isWorkspacePath,clientPageSeo}=require(realpathSync('.sites-runtime/seo-policy.cjs'));
 for(const route of ['cart','checkout','offers','bulk','purchased','purchased/orders','purchased/articles','admin','admin-websites','admin-pricebook/customer','admin-customer-account/customer/payments','article/example/ai','admin-article/example/ai','supplier/token','supplier-workspace','lobby-writing','lobby-prices','lobby-order/example'])assert(isWorkspacePath(route.split('/')),route);
 for(const route of ['unknown-seo-page','purchased/invalid','article/id/invalid','admin-customer-account/id/invalid'])assert(!isWorkspacePath(route.split('/')),route);
-assert.equal(clientPageSeo('catalog').canonical,SITE_URL+'/');
+assert.equal(clientPageSeo('catalog').canonical,SITE_URL+'/catalog');
 assert.equal(clientPageSeo('terms').canonical,SITE_URL+'/terms');
 assert.equal(clientPageSeo('purchased/orders').robots,'noindex, nofollow, noarchive');
 const mf=new Miniflare({modules:[{type:'ESModule',path:'dist/server/index.js'},...readdirSync('dist/server',{recursive:true}).filter(p=>/\.(m?js)$/.test(p)&&p!=='index.js').map(p=>({type:'ESModule',path:'dist/server/'+p}))],compatibilityDate:'2026-05-15',compatibilityFlags:['nodejs_compat'],d1Databases:['DB'],r2Buckets:['BUCKET'],bindings:{SETTINGS_ENCRYPTION_KEY:randomBytes(32).toString('base64'),POSTFLOW_OWNER_EMAIL:'owner@example.test'},assets:{directory:'dist/client',binding:'ASSETS',routerConfig:{has_user_worker:true,invoke_user_worker_ahead_of_assets:true}},cf:false,outboundService:async()=>new Response('fixture')});
@@ -24,22 +24,29 @@ try {
  await db.prepare("INSERT INTO settings(key,value) VALUES ('catalog_initialized','true')").run();
  await db.prepare('INSERT INTO websites(id,name,url,category,price,dr,active,data,updated) VALUES (?,?,?,?,?,?,?,?,?)').bind('seo-site','אתר ציבורי לבדיקת SEO','https://seo-public.example.test','tech',20000,88,1,JSON.stringify({ur:40,turnaround_days:3,features:['dofollow'],cost_cents:cost,supplier_id:canary,supplier_email:canary+'@example.test',supplier_name:canary,stock_total:canary,notes:canary,public_notes:canary,customer_notes:canary,publishing_restrictions:canary,opaque:{secret:canary}}),stamp).run();
  await db.prepare("INSERT INTO pricing_overrides(scope,owner_id,website_id,price,updated) VALUES ('user','private-person','seo-site',?,?)").bind(personal,stamp).run();
- const home=await get('/');
- check(home.response.status===200,'homepage HTTP 200');
+ const front=await get('/');
+ check(front.response.status===200&&front.response.headers.get('content-type')?.includes('text/html'),'new homepage HTTP 200 HTML');
+ check(!front.response.headers.get('x-robots-tag')?.includes('noindex')&&!/<meta[^>]*name="robots"[^>]*content="[^"]*noindex/.test(front.text),'new homepage indexable');
+ check(/<html[^>]*lang="he"[^>]*dir="rtl"/.test(front.text)&&/<title>[^<]*MegaLinks[^<]*<\/title>/.test(front.text),'new homepage Hebrew RTL with brand title');
+ check(front.text.includes('<link rel="canonical" href="'+SITE_URL+'/">')&&!front.text.includes('%%SITE_URL%%'),'new homepage canonical');
+ check(front.text.includes('כל מה שמקדמים צריכים')&&front.text.includes('href="/catalog"')&&front.text.includes('href="/terms"'),'new homepage heading and crawlable links to the catalog and terms');
+ check([...front.text.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1])).some(s=>s['@graph']?.some(n=>n['@type']==='WebSite'&&n.name==='MegaLinks')),'new homepage WebSite structured data');
+ check(!front.text.includes('<!--HOME:SCHEMA-->')&&front.text.includes('/brand/megalinks-social.png'),'new homepage placeholders resolved and share image');
+ for(const secret of [canary,String(cost),String(personal),'supplier_email','cost_cents','stock_total'])check(!front.text.includes(secret),'new homepage has no private data: '+secret);
+ const home=await get('/catalog');
+ check(home.response.status===200,'catalog HTTP 200');
  check(home.response.headers.get('content-type')?.includes('text/html'),'homepage HTML');
  check(!home.response.headers.get('x-robots-tag')?.includes('noindex'),'homepage HTTP indexing allowed');
  check(/<html[^>]*lang="he"[^>]*dir="rtl"/.test(home.text),'Hebrew RTL');
  check(/<title>[^<]*MegaLinks[^<]*<\/title>/.test(home.text),'real brand title in initial HTML');
  check(/<meta[^>]*name="description"[^>]*content="[^"]+"/.test(home.text),'description in initial HTML');
- check(home.text.includes('rel="canonical"')&&home.text.includes(SITE_URL+'/'),'canonical');
+ check(home.text.includes('rel="canonical"')&&home.text.includes(SITE_URL+'/catalog'),'canonical');
  check(!/<meta[^>]*name="robots"[^>]*content="[^"]*noindex/.test(home.text),'homepage meta indexing allowed');
  check(home.text.includes('איפה נפרסם')&&home.text.includes('את הכתבה הבאה שלך?'),'approved public heading before JavaScript');
  check(home.text.includes('אתר ציבורי לבדיקת SEO')&&home.text.includes('https://seo-public.example.test'),'database catalog row before JavaScript');
  check(!home.text.includes('catalog-title-letter'),'letter pulse fully reverted');
  check(!home.text.includes('catalog-illustration-shadow'),'added shadow remains removed');
  for(const secret of [canary,String(cost),String(personal),'supplier_email','cost_cents','stock_total'])check(!home.text.includes(secret),'no private SSR data: '+secret);
- const schemas=[...home.text.matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)].map(m=>JSON.parse(m[1]));
- check(schemas.some(s=>s['@graph']?.some(n=>n['@type']==='WebSite'&&n.name==='MegaLinks')),'valid WebSite structured data');
  check(home.text.includes('property="og:title"')&&home.text.includes('name="twitter:card"'),'share metadata');
  check(home.text.includes('/brand/megalinks-social.png')&&home.text.includes('summary_large_image'),'branded Open Graph image and large Twitter card');
  check(!home.text.includes('postflow-studio.elian-tetruashvili.chatgpt.site'),'no old-site canonical or schema URLs');
@@ -49,11 +56,10 @@ try {
  const share=await get('/brand/megalinks-social.png');check(share.response.status===200&&share.response.headers.get('content-type')?.includes('image/png'),'social image is served as PNG');
  check(home.text.includes('href="/terms"'),'crawlable legal link');
  const robots=await get('/robots.txt');check(robots.response.status===200,'robots HTTP 200');check(robots.text.includes('Sitemap: '+SITE_URL+'/sitemap.xml'),'robots sitemap');check(!robots.text.includes('Disallow: /\n'),'public crawling not blocked');check(robots.text.includes('Allow: /api/catalog$'),'catalog rendering endpoint crawlable');
- const sitemap=await get('/sitemap.xml');check(sitemap.response.status===200,'sitemap HTTP 200');check(sitemap.response.headers.get('content-type')?.includes('xml'),'XML content type');check((sitemap.text.match(/<loc>/g)||[]).length===3,'home, terms and knowledge hub are public; unpublished articles are omitted');check(!/admin|supplier|purchased|api\//.test(sitemap.text),'no private URLs in sitemap');
+ const sitemap=await get('/sitemap.xml');check(sitemap.response.status===200,'sitemap HTTP 200');check(sitemap.response.headers.get('content-type')?.includes('xml'),'XML content type');check((sitemap.text.match(/<loc>/g)||[]).length===4,'home, catalog, terms and knowledge hub are public; unpublished articles are omitted');check(!/admin|supplier|purchased|api\//.test(sitemap.text),'no private URLs in sitemap');
  const terms=await get('/terms');check(terms.response.status===200&&terms.text.includes(SITE_URL+'/terms'),'public legal canonical');check(!terms.response.headers.get('x-robots-tag')?.includes('noindex'),'legal page indexable');
  for(const path of ['/cart','/purchased/orders','/admin','/supplier/private-token']){const p=await get(path);check(p.response.headers.get('x-robots-tag')?.includes('noindex'),path+' HTTP noindex');check(p.response.headers.get('cache-control')?.includes('no-store'),path+' no private HTML caching');check(!p.text.includes(canary),path+' no supplier leakage');}
- const alias=await get('/catalog');check([301,308].includes(alias.response.status),'catalog alias permanent redirect');check(alias.response.headers.get('location')==='/'||alias.response.headers.get('location')===SITE_URL+'/','catalog redirect destination');
  const missing=await get('/unknown-seo-page-8841');check(missing.response.status===404,'unknown URL hard 404');
  const api=await get('/api/branding');check(api.response.headers.get('x-robots-tag')?.includes('noindex'),'API HTTP noindex');
- console.log('SEO PASSED:',checks,'checks. Actual built Worker/D1/R2 fixtures: initial HTML/catalog, metadata/canonical/schema, no private SSR fields or personal prices, robots/sitemap, private noindex/cache, alias redirect, hard 404 and preserved routes. No production data or writes.');
+ console.log('SEO PASSED:',checks,'checks. Actual built Worker/D1/R2 fixtures: initial HTML/catalog, metadata/canonical/schema, no private SSR fields or personal prices, robots/sitemap, private noindex/cache, homepage and catalog addresses, hard 404 and preserved routes. No production data or writes.');
 } finally {await mf.dispose();}
