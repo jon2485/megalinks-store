@@ -1270,3 +1270,7 @@ Owner's request: go over every outgoing email, make the supplier email orderly a
 
 ### לפני העלאה
 - Nothing temporary in the code.
+
+### Staging deploy (16.11.2026, by the owner's "תעלה הכל לריליי")
+- Deployment `871adc3d`, SUCCESS, commit `34911c1` on `feature/homepage-staging-20261115` (live before: `079f11b`). Only the commit changed, in the staging environment. Production and `main` not touched.
+- `/healthz` 200. Without signing in the wall still answers: homepage 303, `/api/mail-file/...` 401, logo 303 (as expected, the wall was not changed). Pages behind the login were not viewed.
