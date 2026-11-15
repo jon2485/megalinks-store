@@ -23,6 +23,15 @@ export function mailFilesHtml(files:MailFileLink[]){
     const linked=files.some(f=>f.url);
     return `<div dir="rtl" style="margin-top:18px;padding:14px 18px 8px;border-radius:16px;border:1px solid ${line};text-align:right;font-family:${font}"><div style="font-size:13px;color:${faint};font-weight:700">${files.length===1?'הקובץ שלכם':'הקבצים שלכם'} (${files.length})</div><table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">${rows}</table><div style="padding:6px 0 8px;font-size:12px;color:${faint};line-height:1.6">${linked?`לחיצה על "הורדה" שומרת את הקובץ. הקישורים תקפים ${MAIL_FILE_DAYS} יום.`:'הקבצים מצורפים למייל הזה.'}</div></div>`;
 }
+// For a message whose files arrive as real attachments (the article sent to a supplier): a plain list of
+// what is attached, without buttons, and one quiet line of direct addresses in case a file did not arrive.
+export function mailAttachedHtml(files:MailFileLink[]){
+    if(!files.length)return '';
+    const rows=files.map((f,i)=>`<tr><td dir="rtl" style="padding:10px 0;${i?`border-top:1px solid ${line};`:''}text-align:right"><div style="font-size:15px;font-weight:700;color:${ink};line-height:1.5">${esc(f.label)}</div><div style="font-size:12px;color:${faint};line-height:1.5"><span dir="ltr" style="unicode-bidi:isolate">${esc(f.name)}</span> · <span dir="ltr" style="unicode-bidi:isolate;white-space:nowrap">${fileSize(f.size)}</span></div></td></tr>`).join('');
+    const linked=files.filter(f=>f.url);
+    const backup=linked.length?`<div style="padding:8px 0;border-top:1px solid ${line};font-size:12px;color:${faint};line-height:1.7">קובץ לא הגיע? אפשר לפתוח אותו גם כאן: ${linked.map(f=>`<a href="${esc(f.url)}" style="color:${blue};text-decoration:none;white-space:nowrap">${esc(f.label.split(',')[0])}</a>`).join(' · ')}</div>`:'';
+    return `<div dir="rtl" style="margin-top:18px;padding:14px 18px 6px;border-radius:16px;border:1px solid ${line};text-align:right;font-family:${font}"><div style="font-size:13px;color:${faint};font-weight:700">מצורף למייל (${files.length})</div><table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">${rows}</table>${backup}</div>`;
+}
 export function mailFilesText(files:MailFileLink[]){
     return files.length?'קבצים להורדה:\n'+files.map(f=>f.label+': '+f.url).join('\n'):'';
 }

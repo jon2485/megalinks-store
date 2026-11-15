@@ -51,7 +51,7 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
   // Files: attached to the message and, in addition, each one gets a personal download link in the body.
   const files=await mailFiles(job);let links:MailFileLink[]=files.map(f=>({label:f.label,name:f.filename,size:f.bytes.length,url:''}));
   if(files.length){
-   if(origin){const token=await fileToken(id,job);links=links.map((l,i)=>({...l,url:origin+'/api/mail-file/'+token+'/'+i+'/'+encodeURIComponent(l.name)}));payload.attachment_urls=links.map(l=>l.url);payload.attachment_names=links.map(l=>l.name);}
+   if(origin){const token=await fileToken(id,job);links=links.map((l,i)=>({...l,url:origin+'/api/mail-file/'+token+'/'+i+'/'+encodeURIComponent(l.name)}));payload.attachment_urls=links.map(l=>l.url);payload.attachment_names=links.map(l=>l.name);links.forEach((l,i)=>{payload['attachment_'+(i+1)+'_url']=l.url;payload['attachment_'+(i+1)+'_name']=l.name;});}
    if(!origin||files.reduce((n,f)=>n+f.bytes.length,0)<=INLINE_FILES_LIMIT)payload.attachments=files.map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
   }
   // Rebuild supplier messages from publication fields on every send (also for retries of older jobs).
@@ -60,7 +60,7 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    const seq=Number(d.supplier_sequence)||0,total=Number(d.supplier_stock_total)||0,sentAt=String(d.supplier_sent_at||new Date().toISOString());
    let monthNumber=0;if(!(total&&seq)){const peers=await all("SELECT json_extract(data,'$.supplier_sent_at') AS s FROM articles WHERE website_id=? AND COALESCE(json_extract(data,'$.demo'),0)=? AND json_extract(data,'$.supplier_sent_at')>=? AND json_extract(data,'$.supplier_sent_at')<=?",a.website_id,d.demo?1:0,new Date(Date.parse(sentAt)-32*86400000).toISOString(),sentAt);monthNumber=peers.filter((x:Row)=>x.s&&israelMonth(x.s)===israelMonth(sentAt)).length;}
    const {counter,label:counterLabel}=supplierCounter(seq,total,monthNumber);
-   payload.subject=supplierEmailSubject(site,counter);payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links);}
+   payload.subject=supplierEmailSubject(site,counter);payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links);if(links[0]?.url)payload.word_file_url=links[0].url;}
   else{
    // Every other message goes out as a designed right-to-left page: its own design when it has one, the standard one otherwise.
    payload.html=job.html?withMailFiles(String(job.html),links):brandedEmailHtml({subject:String(job.subject||''),text:String(job.text||''),button:job.button,origin,files:links});
