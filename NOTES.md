@@ -1238,3 +1238,28 @@ Each agent worked in its own git worktree (note: the worktrees were created from
 - **Entry point built where the owner asked** ("על הפנים המיקום! תסדר אותו איפשהו איפה הקטגוריות וכו"): the hero button and the strip above the list were dropped. "תוכנית מהאתר שלכם" is now a button among the catalog tools (`app/catalog-view.tsx`, first in `.catalog-results-actions`, class `catalog-plan-trigger`, hidden for admin; not signed in → Google sign-in and back to `/site-plan`). Look: same size as the tools beside it, light blue tint and the brand blue (`app/account-navigation-refinements.css`). Phone: its own full row right under "בחירת קטגוריות" / "סינון ומיון"; the three tools and "הוספת אתר לקטלוג" moved one row down (`app/catalog-filter-apple.css`). From 1180px the five tools share one row (each a fifth), "הוספת אתר לקטלוג" stays alone below as before; 701-1179px three per row. Checked on phone, tablet and desktop: visible, at least 44px high, no horizontal scroll, opens `/site-plan`, admin has no button, no page errors. Repo tests catalog-home-actions, catalog-home-layout, bundle-feedback, seller-refinements-ui pass; catalog-controls-browser ("mobile category w unchanged"), azure-workspace-actions and pricing-redesign-actions (CSS asset "/brand/checkout-waves.webp" not resolved) fail the same way without this change.
 - **Not built yet:** "תוכנית לחודש הבא" in the agency customer screen (waiting for the owner).
 - **Parked (owner: "לא אהבתי. אל תכניס בינתיים, שמור את התוכנית הזאת כתובה ובהמשך נמצא לה כפתור"):** the whole feature is out of the site again: the catalog button, the `/site-plan` screen, the `POST /api/site-plan` route and its files are removed, and the touched files are back to their state before `a39b56d` (route.ts, workspace.tsx, lib/seo.ts, catalog-view.tsx, account-navigation-refinements.css, catalog-filter-apple.css). Nothing of it will reach Staging. The code stays in this branch's history: `a39b56d` (base) and `eaaa634` (desktop layout); restore with `git cherry-pick a39b56d eaaa634`, then `pnpm build` and `node tests/site-plan.mjs`. Status, what was built, tried buttons and how to restore are written in `design/idea-site-plan/idea.md`. The design files (mockup, walkthrough boards) stay.
+
+## דף בית חדש בכתובת הראשית (15.11.2026, באישור הבעלים)
+- **ענף:** `feature/homepage-staging-20261115`, שיוצא מ-`82004bc` (הגרסה שרצה ב-Staging מ-13.11, מהענף `claude/order-flow-qa-20261111`). גרסה קודמת של אותו שינוי, על בסיס ישן, נשארה ב-`feature/homepage-20261115` ונדחפה גם ל-`staging/all-20261108`. לא לפרוס אותה: חסרים בה 68 commits של מרכז הסוכנויות ומסך הכניסה.
+- **מה הוחלט ולמה:**
+  - דף הבית החדש הוא המסך הראשון של האתר, בכתובת `/`. הבעלים בחר שהקטלוג יעבור לכתובת משלו, `/catalog`, בלי שינוי בתוכן שלו.
+  - דף הבית הוא מסמך עצמאי (HTML, CSS ו-JS משלו), ולכן הוא לא נוגע באף מסך קיים ולא מושפע מהעיצוב של המערכת.
+  - שלושת כרטיסי "ידע מקצועי בחינם" מוחלפים בשרת בשלושת המדריכים האחרונים שפורסמו. אם אין מדריכים, נשארים כרטיסי הדוגמה.
+- **קבצים:**
+  - `home/index.html`: המקור של דף הבית. אחרי כל עריכה להריץ `node scripts/build-home-page.mjs`, שמייצר את `lib/home-page-html.ts`.
+  - `app/route.ts`: מגיש את דף הבית ב-`/`. `app/page.tsx` נמחק.
+  - `app/[...page]/page.tsx`: `/catalog` מציג את הקטלוג (קודם הפנה ל-`/`).
+  - `lib/seo.ts`: `/catalog` נוסף לעמודים הציבוריים, והכתובת הקנונית של הקטלוג היא `/catalog`.
+  - קישורים לקטלוג עודכנו ב-`workspace.tsx`, `workspace-navigation.tsx`, `workspace-footer.tsx`, `admin-shell.tsx`, `knowledge-shell.tsx`, `knowledge-components.tsx`.
+  - `public/homepage/`: התמונות ומנוע הגלילה של דף הבית (scrollcraft, רישיון MIT).
+  - בדיקות: `tests/seo.mjs`, `tests/railway-staging-assets.mjs`, `tests/integration.mjs` עודכנו לכתובות החדשות.
+- **מקור העיצוב:** ההדמיה נמצאת מחוץ לפרויקט, ב-`C:/Users/User/megalinks-tools/scrollcraft/builds/megalinks-home/index.html`. הסקריפט `C:/Users/User/megalinks-tools/home-to-repo.py` מעתיק אותה לפרויקט ומחבר את הקישורים לעמודי האתר.
+- **לא גמור:**
+  - הכפתור "לכתבות יח״צ" עדיין לא מוביל לעמוד. הוא מציג הודעה "יעלה בקרוב" עד שייבנה עמוד יח״צ.
+  - `tests/integration.mjs` נעצרת בבדיקת מלאי ("unlimited site has continuous independent count", שורה 407), בקוד שלא שונה כאן. לא בדקתי אם היא נכשלה גם לפני השינוי.
+  - כתובות ישנות שמורות אצל משתמשים: מי ששמר את `/` כקטלוג יגיע עכשיו לדף הבית.
+- **לפני העלאה:** בדף הבית יש נתוני דוגמה מסומנים "דוגמה" (מרפאת שיניים), שני צילומי מסך עם נתוני הדגמה, ושלוש כותרות מדריכים לדוגמה שמוצגות רק אם אין מדריכים שפורסמו.
+- **הועלה ל-Staging (15.11.2026, 20:38 UTC):** פריסה `c2574147` של `079f11b` הצליחה, והפריסה הקודמת (`82004bc`) הוסרה. `/healthz` מחזיר 200, ובלוג השרת `GET /` מחזיר 200.
+  - **נבדק מקומית על אותו קוד:** כל הקישורים בדף הבית מחזירים 200 (`/catalog`, `/purchased`, `/knowledge` ושלושת המדריכים האחרונים, `/offers`, `/support`, `/terms`), כל העוגנים קיימים, ומעבר לקטלוג מתוך האתר מגיע ל-`/catalog`. עברו: seo (67), railway-staging-assets, cart-checkout-actions, checkout-phone-actions, cart-add-feedback, knowledge, catalog-home-actions, customer-account-actions, ובדיקת טיפוסים.
+  - **לא נבדק ב-Staging עצמו:** העמודים שמאחורי הכניסה. הבעלים בודק אחרי התחברות.
+  - **חשוב לסשן בענן:** השירות ב-Staging מצביע עכשיו על הענף `feature/homepage-staging-20261115`. ה-commit של דף הבית עדיין לא נמצא ב-`claude/order-flow-qa-20261111`. פריסה מהענף ההוא בלי מיזוג תסיר את דף הבית ותחזיר את הקטלוג לכתובת `/`.

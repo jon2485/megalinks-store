@@ -9,7 +9,9 @@ try{
  for(const migration of readdirSync('drizzle').filter(p=>p.endsWith('.sql')).sort())for(const part of readFileSync('drizzle/'+migration,'utf8').split('--> statement-breakpoint').map(s=>s.trim()).filter(Boolean))await db.prepare(part).run();
  const startup=readFileSync('scripts/railway-staging-start.mjs','utf8');
  assert(startup.includes('config.assets.run_worker_first=false'),'gateway protects ingress; assets must precede dynamic Worker routing');
- const root=await mf.dispatchFetch('https://staging.test/');assert.equal(root.status,200);const html=await root.text();
+ const front=await mf.dispatchFetch('https://staging.test/');assert.equal(front.status,200);const frontHtml=await front.text();
+ for(const path of ['/homepage/scrollcraft.js','/homepage/scrollcraft.css','/homepage/city.webp']){assert(frontHtml.includes(path),'homepage references '+path);const r=await mf.dispatchFetch(new URL(path,'https://staging.test'));assert.equal(r.status,200,path);await r.arrayBuffer();}
+ const root=await mf.dispatchFetch('https://staging.test/catalog');assert.equal(root.status,200);const html=await root.text();
  const assets=[...new Set([...html.matchAll(/(?:src|href)="([^"\s]+\.(?:js|css)(?:\?[^"\s]*)?)"/g)].map(m=>m[1]).filter(p=>p.startsWith('/_next/')))];
  assert(assets.length>5,'SSR must reference real JS/CSS assets');
  for(const path of assets){const r=await mf.dispatchFetch(new URL(path,'https://staging.test'));assert.equal(r.status,200,path);const body=await r.text();assert(body.length>0&&!body.trimStart().startsWith('<'),path+' must be code, not fallback HTML');assert.match(r.headers.get('content-type')||'',path.includes('.css')?/text\/css/:/javascript/);}
