@@ -102,11 +102,11 @@ export async function sendOrderSummary(origin:string,key:string,actor:Row){
  await audit(actor,key,'נשלח לספק פירוט הזמנה',{month:d.order.month});return {sent:true};
 }
 
-export async function sendPackageStatus(siteId:string,number:number,actor:Row){
+export async function sendPackageStatus(siteId:string,number:number,actor:Row,origin=''){
  const d=await supplierPackage(siteId,number),w=parse(await one('SELECT * FROM websites WHERE id=?',siteId))!;
  const s=w.supplier_id?parse(await one("SELECT * FROM records WHERE id=? AND kind='supplier'",w.supplier_id)):null,to=String(w.supplier_email||s?.email||'');assert(to,'לספק אין מייל',409);
  const p=d.package;
- await queueMail('email:supplier-package:'+siteId+':'+number+':'+now(),actor.id,{to,subject:'מצב חבילת הפרסומים ב'+d.site.name,text:'חבילה '+p.number+' באתר '+d.site.name+': שומשו '+p.used+' מתוך '+p.quantity+', נותרו '+p.left+'.\nממתינות לפרסום: '+p.waiting+'.\n\n'+p.slots.map((x:Row)=>x.position+'. '+(x.title||'כתבה')+' · '+(x.status==='published'?'פורסמה':'ממתינה לפרסום')).join('\n')});
+ await queueMail('email:supplier-package:'+siteId+':'+number+':'+now(),actor.id,{to,subject:'מצב חבילת הפרסומים ב'+d.site.name,text:'חבילה '+p.number+' באתר '+d.site.name+'\nשומשו: '+p.used+' מתוך '+p.quantity+'\nנותרו: '+p.left+'\nממתינות לפרסום: '+p.waiting+'\n\n'+p.slots.map((x:Row)=>x.position+'. '+(x.title||'כתבה')+' · '+(x.status==='published'?'פורסמה':'ממתינה לפרסום')).join('\n'),origin});
  await audit(actor,siteId,'נשלח לספק מצב חבילה',{number});return {sent:true};
 }
 

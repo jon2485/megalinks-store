@@ -31,7 +31,7 @@ export async function closeSellerMonths(origin:string,at=new Date()){
  const id='seller-month:'+pair.user_id+':'+pair.month,net=rows.reduce((s,r)=>s+Number(r.unit_fee),0),due=new Date(Date.UTC(Number(pair.month.slice(0,4)),Number(pair.month.slice(5)),10,12)).toISOString().slice(0,10),stamp=now();
  const saved=await stmt('INSERT OR IGNORE INTO seller_statements(id,user_id,month,net,data,created,updated) VALUES(?,?,?,?,?,?,?)',id,pair.user_id,pair.month,net,JSON.stringify({publications:rows,due_date:due}),stamp,stamp).run();closed+=saved.meta.changes;
  const user=await one('SELECT email FROM users WHERE id=?',pair.user_id);
- await queueMail('email:seller-invoice:'+id,pair.user_id,{to:user?.email,subject:'בקשת חשבונית עבור פרסומים בחודש '+pair.month,text:'פורסמו '+rows.length+' כתבות. סכום לפני מע״מ: '+money(net)+'\nמועד תשלום מיועד: '+due+' לאחר אישור החשבונית.\n'+rows.map(r=>r.site_name+' · '+r.title+' · '+money(Number(r.unit_fee))).join('\n'),button:{label:'העלאת חשבונית וצפייה בפירוט',url:origin+'/purchased/selling'},seller_notice:true});
+ await queueMail('email:seller-invoice:'+id,pair.user_id,{to:user?.email,subject:'בקשת חשבונית עבור פרסומים בחודש '+pair.month,text:'פורסמו '+rows.length+' כתבות. סכום לפני מע״מ: '+money(net)+'\nמועד תשלום מיועד: '+due+' לאחר אישור החשבונית.\n\n'+rows.map((r,i)=>(i+1)+'. '+r.site_name+' · '+r.title+' · '+money(Number(r.unit_fee))).join('\n'),button:{label:'העלאת חשבונית וצפייה בפירוט',url:origin+'/purchased/selling'},seller_notice:true});
  }
  for(const j of await all("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:seller-invoice:%' AND status IN ('requested','blocked','failed') ORDER BY created LIMIT 10"))await sendQueuedMail(j.id);
  return {closed};
@@ -103,7 +103,7 @@ export async function customerSellerRoutes(r:Request,p:string[],u:Row){
  if(status==='paid'){const profile=await one('SELECT supplier_id FROM seller_profiles WHERE user_id=?',s.user_id),key=profile!.supplier_id+':'+s.month+':0';ops.push(stmt("INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) SELECT ?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM seller_statements WHERE id=? AND version=? AND json_extract(data,'$.payment_event')=?)",'supplier-pay:'+key,'supplier_payment',u.id,JSON.stringify({settlement_key:key,amount_paid:s.net,reference:data.reference,paid_at:data.paid_at,payment_method:data.payment_method,payment_note:data.payment_note,recorded_at:stamp}),stamp,stamp,s.id,s.version+1,data.payment_event));}
  const result=await db().batch(ops);assert(result[0].meta.changes,'ההתחשבנות השתנתה',409);
  await audit(u,s.id,'התחשבנות ספק עודכנה',{status});
- if(status==='paid'){const seller=await one('SELECT email FROM users WHERE id=?',s.user_id);if(seller?.email)await queueMail('email:seller-paid:'+s.id,s.user_id,supplierPaidMail({to:seller.email,month:s.month,amount:Number(data.total??s.net),paidOn:data.paid_on,method:data.payment_method,reference:data.reference,note:data.payment_note,count:(data.publications||[]).length}));}
+ if(status==='paid'){const seller=await one('SELECT email FROM users WHERE id=?',s.user_id);if(seller?.email)await queueMail('email:seller-paid:'+s.id,s.user_id,{...supplierPaidMail({to:seller.email,month:s.month,amount:Number(data.total??s.net),paidOn:data.paid_on,method:data.payment_method,reference:data.reference,note:data.payment_note,count:(data.publications||[]).length}),origin:new URL(r.url).origin});}
  return reply({ok:true});
  }
  assert(false,'הפעולה לא נמצאה',404);
