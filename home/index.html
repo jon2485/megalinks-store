@@ -20,7 +20,8 @@
 <meta name="twitter:description" content="מערכת אחת לפרסום כתבות, לקניית קישורים ולכתבות יח״צ באלפי אתרים.">
 <meta name="twitter:image" content="%%SITE_URL%%/brand/megalinks-social.png">
 <!--HOME:SCHEMA-->
-<link rel="preload" href="/homepage/city.webp" as="image">
+<link rel="preload" href="/homepage/city.webp" as="image" media="(min-width:761px)">
+<link rel="preload" href="/homepage/city-m.webp" as="image" media="(max-width:760px)">
 <link rel="stylesheet" href="/homepage/scrollcraft.css">
 <style>
 @font-face{font-family:"Rubik ML";src:url(/brand/rubik-bold.woff) format("woff");font-weight:700;font-display:swap}
@@ -973,6 +974,56 @@ html.sc-ready body .iv [data-sc-cue]{transition:opacity .22s linear,transform .2
   .close__trust li:hover{background:#ffffff47}
 }
 
+
+/* ===== hero 3: same screen and colours, lightly tuned buttons ===== */
+.hero .search{margin-top:30px}
+.hero .btn--white{height:58px;padding:0 30px;font-size:1.1rem}
+.hero .btn--ghost{height:58px;padding:0 26px;background:#ffffff24;color:#fff;box-shadow:inset 0 0 0 1.500px #ffffffa6}
+@media (hover:hover){.hero .btn--ghost:hover{background:#ffffff3d}}
+.search{background:#ffffff33;box-shadow:inset 0 0 0 1.500px #ffffff99}
+.hero__shade{display:none}
+/* phone only: the hero stays in place and recedes while the next screen rises over it like a sheet */
+@media (max-width:760px){
+  .hero--cover{position:sticky;top:0;z-index:0;height:calc(100svh - 20px)}
+  .hero--cover [data-sc-stage]{position:relative;height:100%;overflow:hidden;background:#3FA6E4}
+  .hero--cover .hero__copy{top:calc(50% + 26px);translate:0 -50%;transform-origin:50% 35%;transform:translateY(calc(var(--hp,0) * -54px)) scale(calc(1 - var(--hp,0) * .1));opacity:calc(1 - var(--hp,0) * 1.6)}
+  .hero--cover .hero__beat{display:none}
+  .hero--cover .hero__city{transform:scale(calc(1.12 + var(--hp,0) * .14))}
+  .hero--cover .hero__arcs--near{transform:translateY(calc(var(--hp,0) * -18%))}
+  .hero--cover .hero__arcs--far{transform:translateY(calc(var(--hp,0) * -7%))}
+  .hero--cover .hero__shade{display:block;position:absolute;inset:0;z-index:4;pointer-events:none;background:#031E4D;opacity:calc(var(--hp,0) * .5)}
+  .hero--cover.is-past{visibility:hidden}
+  main > section:not(.hero){position:relative;z-index:1}
+  .us.sheet{box-shadow:0 -30px 60px -30px #031e4d99}
+  .us.sheet{border-radius:50% 50% 0 0 / 38px 38px 0 0;margin-top:-38px}
+  .us__peek{position:absolute;z-index:2;top:-23px;left:50%;margin-left:-23px;width:46px;height:46px;border-radius:50%;background:#fff;color:#4660DC;display:grid;place-items:center;box-shadow:0 8px 20px -8px #031e4d80;transition:transform .16s var(--sc-ease-out),background-color .2s}
+  .us__peek::after{content:"";position:absolute;inset:-6px}
+  .us__peek svg{width:20px;height:20px;animation:peekbob 1.8s ease-in-out infinite}
+  .us__peek:active{transform:scale(.92);background:#EEF2FF}
+  .us__peek:focus-visible{outline:3px solid #4660DC;outline-offset:3px}
+  .hero .hero__ctas{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .hero .btn--white,.hero .btn--ghost{height:56px;padding:0 12px;font-size:1rem}
+}
+
+
+/* the search pill is a real link into the price list */
+a.search{text-decoration:none;cursor:pointer;transition:background-color .2s,box-shadow .2s,transform .16s var(--sc-ease-out)}
+a.search .search__q{flex:1;text-align:start}
+a.search .search__go{width:18px;height:18px;flex:none;opacity:.9;transition:transform .2s var(--sc-ease-out)}
+a.search:active{transform:scale(.98)}
+a.search:focus-visible{outline:3px solid #fff;outline-offset:3px}
+@media (hover:hover){a.search:hover{background:#ffffff4d;box-shadow:inset 0 0 0 1.500px #fff}a.search:hover .search__go{transform:translateX(-4px)}}
+@media (max-width:760px){
+  /* a lighter background picture for phones */
+  .hero__city{background-image:url(/homepage/city-m.webp)}
+  .close__bg{background-image:url(/homepage/city-m.webp)}
+}
+
+.us__peek{display:none}
+@media (max-width:760px){.us__peek{display:grid}}
+@keyframes peekbob{0%,100%{translate:0 0}50%{translate:0 4px}}
+@media (prefers-reduced-motion:reduce){.us__peek svg{animation:none}}
+
 /* ---------- reduced motion: fewer and gentler, never missing ---------- */
 @media (prefers-reduced-motion:reduce){
   .hero__arcs path,.hero__copy > *,.us__art .star,.orbit .site,.faq__q span,.c-conv path,.c-flow u::after,.iv-wave i,.iv-who span::before{animation:none}
@@ -1030,15 +1081,16 @@ html.sc-ready body .iv [data-sc-cue]{transition:opacity .22s linear,transform .2
       <circle class="glide" r="3.2"><animateMotion dur="9s" begin="-3s" repeatCount="indefinite" calcMode="spline" keyTimes="0;1" keySplines=".4 0 .2 1"><mpath href="#hC"/></animateMotion></circle>
     </svg>
     <div class="hero__scrim" aria-hidden="true"></div>
+    <div class="hero__shade" aria-hidden="true"></div>
     <div class="hero__copy" data-sc-cue="0 0.62 0">
       <h1 style="--n:0">כל מה שמקדמים צריכים<span>במקום אחד</span></h1>
-      <p class="hero__lede" style="--n:1">קישורים מאתרים איכותיים, כתבות יח״צ ותוכן לקידום. הכול במחירון אחד שקוף ובמערכת אחת פשוטה.</p>
-      <div class="search" style="--n:2" aria-hidden="true">
+      <a class="search" style="--n:1" href="/catalog" aria-label="חיפוש במחירון האתרים">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <span class="search__q" data-type>קניית קישורים איכותיים</span>
-      </div>
-      <div class="hero__ctas" style="--n:3">
-        <a class="btn btn--main" href="/catalog">למחירון האתרים<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a>
+        <svg class="search__go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>
+      </a>
+      <div class="hero__ctas" style="--n:2">
+        <a class="btn btn--white" href="/catalog">למחירון האתרים<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a>
         <a class="btn btn--ghost" href="#what">מה זה קישור בכלל?</a>
       </div>
     </div>
@@ -1048,6 +1100,7 @@ html.sc-ready body .iv [data-sc-cue]{transition:opacity .22s linear,transform .2
 
 <!-- 2 · INTIMACY: who we are and what we offer -->
 <section id="offerings" class="us sec sheet" data-sc-act="flow" aria-labelledby="us-h">
+  <a class="us__peek" href="#offerings" aria-label="למסך הבא"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></a>
   <div class="wrap">
     <div class="us__head" data-sc-in data-sc-stagger="70">
       <p class="kicker">מי אנחנו ומה אנחנו מציעים</p>
@@ -1488,7 +1541,7 @@ html.sc-ready body .iv [data-sc-cue]{transition:opacity .22s linear,transform .2
 </div>
 
 
-<script>if(matchMedia("(max-width:760px)").matches){var _h=document.getElementById("top");if(_h)_h.setAttribute("data-sc-span","1.2");}</script>
+<script>if(matchMedia("(max-width:760px)").matches){var _h=document.getElementById("top");if(_h){_h.setAttribute("data-sc-act","flow");_h.removeAttribute("data-sc-span");_h.classList.add("hero--cover");[].forEach.call(_h.querySelectorAll("[data-sc-cue]"),function(e){e.removeAttribute("data-sc-cue");});}}</script>
 <script src="/homepage/scrollcraft.js"></script>
 <script>ScrollCraft.mount(document.body);</script>
 <script>
@@ -1720,6 +1773,16 @@ html.sc-ready body .iv [data-sc-cue]{transition:opacity .22s linear,transform .2
     fx.forEach(function(o){var t=still?1:o.t;if(o.v<0)o.v=t;var d=t-o.v;if(Math.abs(d)>.002){o.v+=d*(still?1:.16);moving=true;}else o.v=t;o.el.style.setProperty('--e',o.v.toFixed(3));});
     if(moving)raf=requestAnimationFrame(tick);}
   addEventListener('scroll',aim,{passive:true});addEventListener('resize',aim);addEventListener('load',aim);aim();
+})();
+</script>
+<script>
+(function(){
+  /* phone: --hp runs 0 to 1 while the next screen covers the hero */
+  var hero=document.querySelector('.hero--cover'); if(!hero) return;
+  var reduce=matchMedia('(prefers-reduced-motion: reduce)').matches,cur=0,tgt=0,raf=0;
+  function aim(){var h=hero.offsetHeight||1;tgt=Math.max(0,Math.min(1,scrollY/(h*.86)));hero.classList.toggle('is-past',scrollY>h*1.25);if(!raf)raf=requestAnimationFrame(tick);}
+  function tick(){raf=0;var d=tgt-cur;if(Math.abs(d)>.002){cur+=d*(reduce?1:.22);raf=requestAnimationFrame(tick);}else cur=tgt;hero.style.setProperty('--hp',(reduce?0:cur).toFixed(3));}
+  addEventListener('scroll',aim,{passive:true});addEventListener('resize',aim);aim();
 })();
 </script>
 </body>
