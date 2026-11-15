@@ -1211,3 +1211,24 @@ Each agent worked in its own git worktree (note: the worktrees were created from
 - **Checks:** p17 63/63 (now also: only the three fields are stored, quick add fills business name and audience but not link or anchor, the brief lists the links with counts, a tap fills the link and marks it, no horizontal scroll, phone and desktop); all earlier scripts and repo tests pass again.
 - **Deploy to Staging approved by the owner** ("תעלה אחרי שתסיים את הבריף").
 - **Login mockup, additions approved by the owner after a signup-flow review (13.11.2026):** "ההרשמה בחינם. משלמים רק על פרסום שמזמינים." with three short points (a price list of Israeli sites with a fixed price per site; we write the article or you send a ready one; you follow every publication from order to live); a link "לצפייה במחירון בלי להירשם"; under the card "לא מצליחים להיכנס? כתבו לנו בוואטסאפ" (the site's existing WhatsApp number); on the terms step "אחרי האישור תחזרו בדיוק למקום שבו הייתם". **Build requirement:** after sign-in and the terms step the customer returns to where they were (the cart, the site they chose), not to the home page; the cart must survive the sign-in. Not added on purpose: more fields (phone and invoice name are already asked at checkout), testimonials (none real yet). To measure once built: login screen → Google return → terms approved → first order.
+
+## דף בית חדש בכתובת הראשית (15.11.2026, באישור הבעלים)
+- **ענף:** `feature/homepage-staging-20261115`, שיוצא מ-`82004bc` (הגרסה שרצה ב-Staging מ-13.11, מהענף `claude/order-flow-qa-20261111`). גרסה קודמת של אותו שינוי, על בסיס ישן, נשארה ב-`feature/homepage-20261115` ונדחפה גם ל-`staging/all-20261108`. לא לפרוס אותה: חסרים בה 68 commits של מרכז הסוכנויות ומסך הכניסה.
+- **מה הוחלט ולמה:**
+  - דף הבית החדש הוא המסך הראשון של האתר, בכתובת `/`. הבעלים בחר שהקטלוג יעבור לכתובת משלו, `/catalog`, בלי שינוי בתוכן שלו.
+  - דף הבית הוא מסמך עצמאי (HTML, CSS ו-JS משלו), ולכן הוא לא נוגע באף מסך קיים ולא מושפע מהעיצוב של המערכת.
+  - שלושת כרטיסי "ידע מקצועי בחינם" מוחלפים בשרת בשלושת המדריכים האחרונים שפורסמו. אם אין מדריכים, נשארים כרטיסי הדוגמה.
+- **קבצים:**
+  - `home/index.html`: המקור של דף הבית. אחרי כל עריכה להריץ `node scripts/build-home-page.mjs`, שמייצר את `lib/home-page-html.ts`.
+  - `app/route.ts`: מגיש את דף הבית ב-`/`. `app/page.tsx` נמחק.
+  - `app/[...page]/page.tsx`: `/catalog` מציג את הקטלוג (קודם הפנה ל-`/`).
+  - `lib/seo.ts`: `/catalog` נוסף לעמודים הציבוריים, והכתובת הקנונית של הקטלוג היא `/catalog`.
+  - קישורים לקטלוג עודכנו ב-`workspace.tsx`, `workspace-navigation.tsx`, `workspace-footer.tsx`, `admin-shell.tsx`, `knowledge-shell.tsx`, `knowledge-components.tsx`.
+  - `public/homepage/`: התמונות ומנוע הגלילה של דף הבית (scrollcraft, רישיון MIT).
+  - בדיקות: `tests/seo.mjs`, `tests/railway-staging-assets.mjs`, `tests/integration.mjs` עודכנו לכתובות החדשות.
+- **מקור העיצוב:** ההדמיה נמצאת מחוץ לפרויקט, ב-`C:/Users/User/megalinks-tools/scrollcraft/builds/megalinks-home/index.html`. הסקריפט `C:/Users/User/megalinks-tools/home-to-repo.py` מעתיק אותה לפרויקט ומחבר את הקישורים לעמודי האתר.
+- **לא גמור:**
+  - הכפתור "לכתבות יח״צ" עדיין לא מוביל לעמוד. הוא מציג הודעה "יעלה בקרוב" עד שייבנה עמוד יח״צ.
+  - `tests/integration.mjs` נעצרת בבדיקת מלאי ("unlimited site has continuous independent count", שורה 407), בקוד שלא שונה כאן. לא בדקתי אם היא נכשלה גם לפני השינוי.
+  - כתובות ישנות שמורות אצל משתמשים: מי ששמר את `/` כקטלוג יגיע עכשיו לדף הבית.
+- **לפני העלאה:** בדף הבית יש נתוני דוגמה מסומנים "דוגמה" (מרפאת שיניים), שני צילומי מסך עם נתוני הדגמה, ושלוש כותרות מדריכים לדוגמה שמוצגות רק אם אין מדריכים שפורסמו.

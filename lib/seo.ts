@@ -11,7 +11,7 @@ export const HOME_TITLE = 'MegaLinks — פרסום כתבות ותוכן באת
 export const HOME_DESCRIPTION = 'בחרו אתרים לפרסום הכתבה הבאה שלכם עם MegaLinks. חפשו לפי תחום, השוו מחירים ונתוני אתרים, והזמינו פרסום כתבות ושירותי כתיבת תוכן במקום אחד.';
 // A legal page is a draft until a lawyer approves its text; drafts stay out of search engines and of the sitemap.
 export const legalPublished=(id:string)=>!!LEGAL_CONTENT[id]&&!LEGAL_CONTENT[id].draft;
-export const INDEXABLE_PATHS:readonly string[] = ['/', '/knowledge', ...LEGAL_DOCS.filter(doc=>legalPublished(doc.id)).map(doc=>doc.path)];
+export const INDEXABLE_PATHS:readonly string[] = ['/', '/catalog', '/knowledge', ...LEGAL_DOCS.filter(doc=>legalPublished(doc.id)).map(doc=>doc.path)];
 const privateRoots = new Set([
     ...adminAreas.flatMap(area=>area.pages.map(([page])=>page)),
     ...lobbyGroups.flatMap(group=>[group.page,...group.tabs.map(([page])=>page)]),
@@ -50,7 +50,7 @@ export function isIndexablePath(path:string){return INDEXABLE_PATHS.some(p=>p===
 export function clientPageSeo(view:string) {
     const legal=legalDoc(view);
     if(legal){const metadata=legalMetadata(legal.id);return {title:(metadata.title as {absolute:string}).absolute,description:metadata.description!,canonical:SITE_URL+legal.path,robots:legalPublished(legal.id)?'index, follow':'noindex, nofollow, noarchive'};}
-    const path=view==='catalog'?'/':null;
+    const path=view==='catalog'?'/catalog':null;
     if(path){const metadata=publicMetadata(path);return {title:(metadata.title as {absolute:string}).absolute,description:metadata.description!,canonical:SITE_URL+path,robots:'index, follow'};}
     const adminTitle=view.startsWith('admin-seller-request/')?'בדיקת בקשת ספק':view.startsWith('admin-supplier-invoice/')?'בדיקת חשבונית ספק':/^admin-supplier(-articles|-stock|-billing|-order|-package)?\//.test(view)?'פרטי ספק ואתר':view.startsWith('admin-order/')?'פירוט ההזמנה':view.startsWith('admin-article/')?'טיפול בכתבה':view.startsWith('admin-support/')?'פרטי הפנייה':view.startsWith('admin-knowledge/')?'עורך מדריכים וידע':adminAreas.flatMap(a=>a.pages.map(([page,label])=>({page,label}))).find(item=>item.page===view)?.label;
     return {title:(adminTitle||(view.startsWith('admin')?'ניהול המערכת':'המרחב האישי'))+' | MegaLinks',description:'כניסה למרחב האישי ולניהול פרסומים ב־MegaLinks.',canonical:null,robots:'noindex, nofollow, noarchive'};
@@ -62,7 +62,7 @@ export function legalMetadata(id:string):Metadata {
     return {title:{absolute:title},description,alternates:{canonical:url},robots:published?{index:true,follow:true}:privateRobots,
         openGraph:{type:'website',locale:'he_IL',siteName:SITE_NAME,title,description,url}};
 }
-export function publicMetadata(path:'/'):Metadata {
+export function publicMetadata(path:'/'|'/catalog'):Metadata {
     const title=HOME_TITLE;
     const description=HOME_DESCRIPTION;
     const url=SITE_URL+path;
