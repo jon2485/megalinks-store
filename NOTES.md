@@ -1232,3 +1232,7 @@ Each agent worked in its own git worktree (note: the worktrees were created from
   - `tests/integration.mjs` נעצרת בבדיקת מלאי ("unlimited site has continuous independent count", שורה 407), בקוד שלא שונה כאן. לא בדקתי אם היא נכשלה גם לפני השינוי.
   - כתובות ישנות שמורות אצל משתמשים: מי ששמר את `/` כקטלוג יגיע עכשיו לדף הבית.
 - **לפני העלאה:** בדף הבית יש נתוני דוגמה מסומנים "דוגמה" (מרפאת שיניים), שני צילומי מסך עם נתוני הדגמה, ושלוש כותרות מדריכים לדוגמה שמוצגות רק אם אין מדריכים שפורסמו.
+- **הועלה ל-Staging (15.11.2026, 20:38 UTC):** פריסה `c2574147` של `079f11b` הצליחה, והפריסה הקודמת (`82004bc`) הוסרה. `/healthz` מחזיר 200, ובלוג השרת `GET /` מחזיר 200.
+  - **נבדק מקומית על אותו קוד:** כל הקישורים בדף הבית מחזירים 200 (`/catalog`, `/purchased`, `/knowledge` ושלושת המדריכים האחרונים, `/offers`, `/support`, `/terms`), כל העוגנים קיימים, ומעבר לקטלוג מתוך האתר מגיע ל-`/catalog`. עברו: seo (67), railway-staging-assets, cart-checkout-actions, checkout-phone-actions, cart-add-feedback, knowledge, catalog-home-actions, customer-account-actions, ובדיקת טיפוסים.
+  - **לא נבדק ב-Staging עצמו:** העמודים שמאחורי הכניסה. הבעלים בודק אחרי התחברות.
+  - **חשוב לסשן בענן:** השירות ב-Staging מצביע עכשיו על הענף `feature/homepage-staging-20261115`. ה-commit של דף הבית עדיין לא נמצא ב-`claude/order-flow-qa-20261111`. פריסה מהענף ההוא בלי מיזוג תסיר את דף הבית ותחזיר את הקטלוג לכתובת `/`.
