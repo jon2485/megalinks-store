@@ -1363,3 +1363,8 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Business details filled (owner confirmed from his invoice, email changed by him):** Mega Links (מגה לינקס), עוסק מורשה 201234879, ת"ד 592, נס ציונה, asher.megalinks@gmail.com, megalinks.co.il, 050-750-8850. No tokens left.
 - **Checked:** every page on desktop and phone (no draft badge, no `[חסר`, no lawyer mention, no horizontal scroll); `tests/seo.mjs` passed.
 - Staging deployment 314aecfe (8dd21b8: homepage link + Resend files) SUCCESS.
+
+## 16.11.2026 (27): Homepage arrow on iPhone (branch `claude/home-peek-20261116`)
+- Staging deployment be0e40de (173bf54, final legal pages) SUCCESS.
+- **Owner's screenshot (iPhone Safari):** the round arrow on the arc at the bottom of the first screen was half hidden. Cause: every section has `overflow-x:clip`; with the rounded top edge Safari clips the section in both directions, cutting the part of the arrow above the arc (Chrome draws it fine, so the local checks never showed it). Fix (`home/index.html`, phone block): `.us.sheet{overflow:visible}` and the arrow above the sheet; the page itself (`main`) still clips sideways. Checked on iPhone 13, iPhone SE and Pixel 7 sizes: arrow visible, no horizontal scroll anywhere on the page. WebKit is not installed here, so the owner confirms on his phone.
+- Remember: after editing `home/index.html` run `node scripts/build-home-page.mjs` before `pnpm build`.

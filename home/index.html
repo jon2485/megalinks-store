@@ -996,6 +996,10 @@ html.sc-ready body .iv [data-sc-cue]{transition:opacity .22s linear,transform .2
   main > section:not(.hero){position:relative;z-index:1}
   .us.sheet{box-shadow:0 -30px 60px -30px #031e4d99}
   .us.sheet{border-radius:50% 50% 0 0 / 38px 38px 0 0;margin-top:-38px}
+  /* Safari on iPhone clips this section in both directions with overflow-x:clip and a rounded edge, cutting the arrow
+     that sits on the arc. The page itself (main) still clips sideways, so nothing can scroll horizontally. */
+  .us.sheet{overflow:visible}
+  .us__peek{z-index:5}
   .us__peek{position:absolute;z-index:2;top:-23px;left:50%;margin-left:-23px;width:46px;height:46px;border-radius:50%;background:#fff;color:#4660DC;display:grid;place-items:center;box-shadow:0 8px 20px -8px #031e4d80;transition:transform .16s var(--sc-ease-out),background-color .2s}
   .us__peek::after{content:"";position:absolute;inset:-6px}
   .us__peek svg{width:20px;height:20px;animation:peekbob 1.8s ease-in-out infinite}
