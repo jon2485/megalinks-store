@@ -1344,3 +1344,8 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Trial limits to remember:** without a verified domain Resend sends only to the address the account was opened with, so the test inbox must be that address. Free plan about 3,000 mails a month, 100 a day (third-party sources). Before real use: verify the domain (DNS records), set the sender to the domain, empty the test inbox.
 - **Tests:** new `tests/resend-email.mjs` (26 checks, local stub, never calls Resend). Screen checked on desktop and phone.
 - **Deployed to Staging 16.11.2026 (owner: "תעלה"; the first approval prompt was declined, the second approved):** deployment 2435d3c5, SUCCESS, Staging follows `claude/resend-email-20261116` pinned to 290c77e. Before deploying, checked that no branch on GitHub had moved; `feature/homepage-20261115` holds the same homepage on an older base (adapted copy already included). Next deploy must start from 290c77e or later.
+
+## 16.11.2026 (24): Back to the homepage from inside the system (branch `claude/home-link-20261116`, from 290c77e+notes)
+- **Owner:** "כשאני נכנס לתוך המערכת הקטלוג וכו, אין משם שום דרך לחזור חזרה לעמוד הבית". Cause: the homepage moved to "/" on 15.11 but the logo still opened the catalog.
+- **Fix:** for customers and visitors the logo (desktop and phone) loads the homepage "/"; admins keep the lobby (`app/workspace-navigation.tsx`). Footer gets "דף הבית" first (`app/workspace-footer.tsx`). The catalog stays under "קטלוג אתרים".
+- **Checked locally (13 checks, desktop and phone):** logo from /catalog opens "/", footer link opens "/", footer catalog link still opens /catalog, admin header unchanged. Not pushed or deployed yet.
