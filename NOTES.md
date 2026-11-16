@@ -1274,3 +1274,11 @@ Owner's request: go over every outgoing email, make the supplier email orderly a
 ### Staging deploy (16.11.2026, by the owner's "תעלה הכל לריליי")
 - Deployment `871adc3d`, SUCCESS, commit `34911c1` on `feature/homepage-staging-20261115` (live before: `079f11b`). Only the commit changed, in the staging environment. Production and `main` not touched.
 - `/healthz` 200. Without signing in the wall still answers: homepage 303, `/api/mail-file/...` 401, logo 303 (as expected, the wall was not changed). Pages behind the login were not viewed.
+
+### 16.11.2026 (2): The supplier gets the article as a Word attachment, not a download button
+Owner: "כשנשלחת כתבה לספק, אני רוצה שהיא תגיע כקובץ וורד אליו ולא כפתור הורדה."
+- `lib/mail-template.ts` `mailAttachedHtml`: the supplier email lists what is attached ("מצורף למייל"), without buttons. One quiet grey line stays under the list ("קובץ לא הגיע? אפשר לפתוח אותו גם כאן") as a safety net, because whether a file is really attached is decided by the sending service, not by the site. The owner was told; remove the line if he asks.
+- `lib/supplier-mail-content.ts`: uses that list; the opening line says the Word file is attached.
+- `lib/mail.ts`: the payload also has one simple field per file (`attachment_1_url`, `attachment_1_name`, ...) and `word_file_url` for the supplier's Word file, so the Zap can attach it without handling a list.
+- Other emails (order summary, writing details) keep their download buttons; the owner asked only about the article sent to a supplier.
+- **Still needed for a real attachment:** in the owner's Zap, the Gmail step's "Attachments" must take `word_file_url` (or the numbered fields). On Staging the login wall also has to let the file address through; the owner has not answered that question, so the wall is unchanged.
