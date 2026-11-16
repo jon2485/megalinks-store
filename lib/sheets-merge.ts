@@ -1,4 +1,4 @@
-import {sheetCurrentValue,sheetFields} from './sheets-plan';
+import {sheetCurrentValue,sheetFields,sheetKey} from './sheets-plan';
 import type {Row} from './shared';
 export const sheetValue=(w:Row,key:string)=>sheetCurrentValue(w,key)??(['tags','features','example_articles','recommended_topics','content_tags'].includes(key)?[]:['active','is_on_sale','single_link_only','procurement_verified'].includes(key)?false:'');
 const equal=(a:any,b:any)=>JSON.stringify(a)===JSON.stringify(b);
@@ -18,9 +18,9 @@ export function mergeSheetPlan(plan:Row,baseline:Row,existing:Row[],resolutions:
 }
 export function sheetCell(value:any){if(Array.isArray(value))return value.join(', ');if(typeof value==='boolean')return value?'כן':'לא';return value??'';}
 // Ignore formula-only, display and unmapped columns: changing cost legitimately recalculates minimum.
-export function roundtripRows(rows:any[][]){const cols=rows[0].map((h,i)=>sheetFields[String(h).trim()]?i:-1).filter(i=>i>=0);return [cols.map(i=>String(rows[0][i]).trim()),...rows.slice(1).filter(row=>cols.some(i=>String(row[i]??'').trim())).map(row=>cols.map(i=>String(row[i]??'').trim()))];}
+export function roundtripRows(rows:any[][]){const cols=rows[0].map((h,i)=>sheetKey(h)?i:-1).filter(i=>i>=0);return [cols.map(i=>String(rows[0][i]).trim()),...rows.slice(1).filter(row=>cols.some(i=>String(row[i]??'').trim())).map(row=>cols.map(i=>String(row[i]??'').trim()))];}
 export function writebackPlan(rows:any[][],entries:Row[],websites:Row[]){
- const headers=rows[0].map(v=>String(v??'').trim()),keys=headers.map(h=>sheetFields[h]||''),known=new Map(websites.map(w=>[w.id,w])),represented=new Set(entries.map(e=>e.id)),cells:Row[]=[],append:any[][]=[],target=rows.map(row=>[...row]),baseline:Row={};
+ const headers=rows[0].map(v=>String(v??'').trim()),keys=headers.map(sheetKey),known=new Map(websites.map(w=>[w.id,w])),represented=new Set(entries.map(e=>e.id)),cells:Row[]=[],append:any[][]=[],target=rows.map(row=>[...row]),baseline:Row={};
  for(const entry of entries){const w=known.get(entry.id);if(!w)continue;baseline[w.id]={};for(let col=0;col<keys.length;col++){const field=keys[col];if(!field)continue;const v=field==='id'?w.id:sheetValue(w,field),after=sheetCell(v),before=rows[entry.row-1]?.[col]??'';if(field!=='id')baseline[w.id][field]=v;
    if(String(before)!==String(after)){cells.push({row:entry.row,column:col+1,field,id:w.id,name:w.name,before,after});target[entry.row-1][col]=after;}
  }}

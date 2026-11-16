@@ -1,9 +1,9 @@
-import {SHEET_ID,SHEET_TAB,sheetFields} from './sheets-plan';
+import {SHEET_ID,SHEET_TAB,sheetHeaderGroups} from './sheets-plan';
 export function sheetsScript(){return `/** @OnlyCurrentDoc — Mega Links two-way synchronization, protocol 2 */
 const MEGA_LINKS_ENDPOINT = 'https://postflow-studio.elian-tetruashvili.chatgpt.site/api/sheets-sync/push';
 const MEGA_LINKS_SHEET_ID = '${SHEET_ID}';
 const MEGA_LINKS_TAB = '${SHEET_TAB}';
-const MEGA_LINKS_HEADERS = ${JSON.stringify(Object.keys(sheetFields))};
+const MEGA_LINKS_HEADERS = ${JSON.stringify(sheetHeaderGroups())};
 function installMegaLinksSync() {
   const book = SpreadsheetApp.getActiveSpreadsheet();
   if (!book || book.getId() !== MEGA_LINKS_SHEET_ID) throw new Error('יש לפתוח את גיליון הקטלוג של מגה לינקס.');
@@ -89,7 +89,7 @@ function megaLinksSend_(force) {
     if (!book || book.getId() !== MEGA_LINKS_SHEET_ID) throw new Error('זה אינו גיליון הקטלוג המורשה.');
     const tab = book.getSheetByName(MEGA_LINKS_TAB);
     if (!tab) throw new Error('לשונית האתרים חסרה.');
-    const headers = tab.getRange(1,1,1,tab.getLastColumn()).getValues()[0].map(String), missing = MEGA_LINKS_HEADERS.filter(h=>headers.indexOf(h)<0);
+    const headers = tab.getRange(1,1,1,tab.getLastColumn()).getValues()[0].map(String), missing = MEGA_LINKS_HEADERS.filter(g=>!g.some(h=>headers.indexOf(h)>=0)).map(g=>g[0]);
     if (missing.length) {if(headers.length+missing.length>80)throw new Error('אין מקום לעמודות החיבור.');if(headers.length+missing.length>tab.getMaxColumns())tab.insertColumnsAfter(tab.getMaxColumns(),headers.length+missing.length-tab.getMaxColumns());tab.getRange(1,headers.length+1,1,missing.length).setValues([missing]);}
     const rows = megaLinksRead_(tab);
     let result = megaLinksRequest_(book,token,rows);

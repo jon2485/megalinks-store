@@ -6,7 +6,7 @@ const texts=['name','url','category','logo_url','language','website_type','sale_
 const flags=['active','is_on_sale','single_link_only','procurement_verified'];
 const numbers=['price_ils','cost_ils','sale_price_ils','dr','ur','turnaround_days'];
 const lists=['tags','features','example_articles','recommended_topics','content_tags'];
-const allowed=new Set([...texts,...flags,...numbers,...lists,'supplier_id','supplier_email','stock_total','sort_order','pixel_price_ils']);
+const allowed=new Set([...texts,...flags,...numbers,...lists,'supplier_id','supplier_email','supplier_name','stock_total','sort_order','pixel_price_ils']);
 export async function saveCatalogBatch(user:Row,input:Row){
  admin(user);assert(Array.isArray(input.rows)&&input.rows.length>0&&input.rows.length<=100,'יש לשלוח בין שורה אחת ל־100 שורות');
  const pausingOnly=input.rows.every((r:Row)=>r&&r.create!==true&&r.values&&Object.keys(r.values).length===1&&r.values.active===false);
@@ -30,7 +30,7 @@ export async function saveCatalogBatch(user:Row,input:Row){
    ids.push(id);continue;
   }
   const d:Row=prev?JSON.parse(prev.data):{active:true,procurement_verified:false,features:[],tags:[],language:'he',turnaround_days:3};
-  if(prev)Object.assign(d,{name:prev.name,url:prev.url,category:prev.category,active:!!prev.active,price_ils:prev.price/100});
+  if(prev)Object.assign(d,{name:prev.name,url:prev.url,category:prev.category,active:!!prev.active,price_ils:prev.price/100,...(d.dr===undefined&&prev.dr!=null?{dr:Number(prev.dr)}:{})}); // a DR kept only in the column must survive a save
   for(const k of texts)if(k in values){assert(typeof values[k]==='string'&&values[k].length<=(k.includes('notes')||k==='publishing_restrictions'?6000:1000),'טקסט לא תקין בשדה '+k);d[k]=values[k].trim();}
   for(const k of flags)if(k in values){assert(typeof values[k]==='boolean','ערך כן/לא לא תקין');d[k]=values[k];}
   for(const k of lists)if(k in values){assert(Array.isArray(values[k])&&values[k].length<=100&&values[k].every((v:unknown)=>typeof v==='string'&&v.length<=1000),'רשימה לא תקינה');d[k]=values[k];}
@@ -49,9 +49,14 @@ export async function saveCatalogBatch(user:Row,input:Row){
   if('supplier_email' in values){
    let email=String(values.supplier_email||'').trim().toLowerCase();if(!email&&values.supplier_id)email=String(suppliers.get(String(values.supplier_id))?.email||'').trim().toLowerCase();assert(!email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)&&email.length<=254,'מייל הספק אינו תקין');
    d.supplier_email=email;
-   if(email){let supplier=[...suppliers.values()].find(s=>String(s.email||'').trim().toLowerCase()===email);if(!supplier){const sid='supplier-email-'+(await hash(email)).slice(0,32);supplier={id:sid,name:email,email};suppliers.set(sid,supplier);statements.push(stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',sid,'supplier',user.id,JSON.stringify({name:email,email}),stamp,stamp));}d.supplier_id=supplier.id;d.supplier_name=supplier.name;
+   if(email){let supplier=[...suppliers.values()].find(s=>String(s.email||'').trim().toLowerCase()===email);if(!supplier){const sid='supplier-email-'+(await hash(email)).slice(0,32);const given=String(values.supplier_name||'').trim().slice(0,200)||email;supplier={id:sid,name:given,email};suppliers.set(sid,supplier);statements.push(stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',sid,'supplier',user.id,JSON.stringify({name:given,email}),stamp,stamp));}d.supplier_id=supplier.id;d.supplier_name=supplier.name;
    }else{d.supplier_id='';d.supplier_name='';}
   }else if('supplier_id' in values)d.supplier_email=suppliers.get(d.supplier_id)?.email||'';
+  // Owner decision (16.11.2026): a supplier name from the sheet names a supplier that has none yet (or only its e-mail).
+  // An existing different name is kept; the next sync writes it back to the sheet.
+  if('supplier_name' in values){const name=String(values.supplier_name??'').trim();assert(name.length<=200,'שם הספק ארוך מדי');const s=d.supplier_id?suppliers.get(d.supplier_id):undefined;const current=String(s?.name||'').trim();
+   if(name&&s&&(!current||current.toLowerCase()===String(s.email||'').trim().toLowerCase())&&current!==name){s.name=name;statements.push(stmt("UPDATE records SET data=json_set(data,'$.name',?),updated=? WHERE id=? AND kind='supplier'",name,stamp,s.id),stmt("UPDATE websites SET data=json_set(data,'$.supplier_name',?) WHERE json_extract(data,'$.supplier_id')=?",name,s.id));}}
+  if(d.supplier_id&&suppliers.has(d.supplier_id))d.supplier_name=suppliers.get(d.supplier_id)!.name||'';
   if('sort_order' in values){const n=Number(values.sort_order);assert(Number.isSafeInteger(n)&&n>=0&&n<=1000000,'סדר תצוגה לא תקין');d.sort_order=n;}
   if('pixel_price_ils' in values){d.pixel_price_cents=values.pixel_price_ils===''?undefined:amount(values.pixel_price_ils);d.pixel_price=d.pixel_price_cents===undefined?undefined:d.pixel_price_cents/100;}
   if('stock_total' in values){const n=values.stock_total===''||values.stock_total===null?null:Number(values.stock_total);assert(n===null||typeof values.stock_total!=='boolean'&&Number.isSafeInteger(n)&&n>=0&&n<=1000000,'מלאי חייב להיות מספר שלם לא שלילי, או ריק');assert(n===null||d.stock_total===null||d.stock_total===undefined||n>=Number(d.stock_total),'אפשר רק להוסיף מלאי. כדי להוסיף חבילה השתמשו ב"הוספת מלאי" בדף הספק.');d.stock_total=n;}

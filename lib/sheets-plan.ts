@@ -1,9 +1,16 @@
 import type {Row} from './shared';
 export const SHEET_ID='1_bo5ubja3sLePWSPEVIkc5ySOvhCxRICQBf2VnqNmtE';
 export const SHEET_TAB='אתרים';
+// Owner order (16.11.2026): name, URL, list price, DR, UR, supplier e-mail, supplier name, cost, stock, sale price, then the rest.
+// Columns are read by header name, so an existing sheet keeps working in any order; the old header names stay accepted.
 export const sheetFields:Record<string,string>={
- 'מזהה אתר':'id','שם האתר':'name','כתובת אתר':'url','קטגוריה':'category','מחיר מחירון ₪':'price_ils','עלות ₪':'cost_ils','פעיל':'active','DR':'dr','UR':'ur','מחיר מבצע ₪':'sale_price_ils','במבצע':'is_on_sale','הוראות פרסום':'publishing_restrictions','קישור לוגו':'logo_url','ספק':'supplier_id','מלאי':'stock_total','שפה':'language','סוג האתר':'website_type','תגיות (פסיקים)':'tags','סוגי קישור (פסיקים)':'features','ימי אספקה':'turnaround_days','קישור אחד בלבד':'single_link_only','הערות ללקוח':'customer_notes','הערות לאתר':'public_notes','שם המבצע':'sale_title','סיום מבצע':'sale_ends','הסכם פרסום מאומת':'procurement_verified','כתבות לדוגמה (פסיקים)':'example_articles','מייל הספק':'supplier_email','עיר':'city','תג רמה':'tier_badge','סדר תצוגה':'sort_order','אפשרות פיקסל':'pixel_option','מחיר פיקסל ₪':'pixel_price_ils','נושאים מומלצים (פסיקים)':'recommended_topics','תגיות תוכן (פסיקים)':'content_tags'
+ 'שם האתר':'name','URL':'url','מחיר לפני הנחה ₪':'price_ils','DR':'dr','UR':'ur','מייל ספק':'supplier_email','שם ספק':'supplier_name','עלות ₪':'cost_ils','מלאי':'stock_total','מחיר מבצע ₪':'sale_price_ils',
+ 'קטגוריה':'category','פעיל':'active','במבצע':'is_on_sale','שם המבצע':'sale_title','סיום מבצע':'sale_ends','הסכם פרסום מאומת':'procurement_verified','הוראות פרסום':'publishing_restrictions','עיר':'city','שפה':'language','סוג האתר':'website_type','תגיות (פסיקים)':'tags','סוגי קישור (פסיקים)':'features','ימי אספקה':'turnaround_days','קישור אחד בלבד':'single_link_only','הערות ללקוח':'customer_notes','הערות לאתר':'public_notes','כתבות לדוגמה (פסיקים)':'example_articles','קישור לוגו':'logo_url','תג רמה':'tier_badge','סדר תצוגה':'sort_order','אפשרות פיקסל':'pixel_option','מחיר פיקסל ₪':'pixel_price_ils','נושאים מומלצים (פסיקים)':'recommended_topics','תגיות תוכן (פסיקים)':'content_tags','מזהה ספק':'supplier_id','מזהה אתר':'id'
 };
+// Header names used before 16.11.2026. A sheet may hold either name, never both.
+export const sheetAliases:Record<string,string>={'כתובת אתר':'url','מחיר מחירון ₪':'price_ils','מייל הספק':'supplier_email','ספק':'supplier_id'};
+export const sheetKey=(header:unknown)=>{const h=String(header??'').trim();return sheetFields[h]||sheetAliases[h]||'';};
+export const sheetHeaderGroups=()=>Object.entries(sheetFields).map(([name,key])=>[name,...Object.entries(sheetAliases).filter(([,k])=>k===key).map(([a])=>a)]);
 const flags=new Set(['active','is_on_sale','single_link_only','procurement_verified']);
 const lists=new Set(['tags','features','example_articles','recommended_topics','content_tags']);
 const money=new Set(['price_ils','cost_ils','sale_price_ils','pixel_price_ils']);
@@ -22,8 +29,9 @@ export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='str
 export function planSheets(rows:any[][],existing:Row[]){
  const errors:string[]=[],operations:Row[]=[],entries:Row[]=[],seenIds=new Set<string>(),seenUrls=new Map<string,string>();
  if(!Array.isArray(rows)||rows.length<2||rows.length>5001)throw Error('נדרש גיליון עם 1 עד 5,000 אתרים');
- const heads=rows[0].map(x=>String(x??'').trim()),keys=heads.map(x=>sheetFields[x]||'');
+ const heads=rows[0].map(x=>String(x??'').trim()),keys=heads.map(sheetKey);
  if(new Set(heads.filter(Boolean)).size!==heads.filter(Boolean).length)throw Error('כותרות העמודות כפולות');
+ if(new Set(keys.filter(Boolean)).size!==keys.filter(Boolean).length)throw Error('אותה עמודה מופיעה פעמיים, בשם הישן ובשם החדש. יש למחוק אחת מהן');
  for(const key of ['id','name','url','category','price_ils'])if(!keys.includes(key))throw Error('עמודת חובה חסרה: '+key);
  const known=new Map(existing.map(w=>[w.id,w])),existingUrls=new Map<string,string[]>();
  for(const w of existing){try{const u=url(w.url);existingUrls.set(u,[...(existingUrls.get(u)||[]),w.id]);}catch{}}
@@ -63,6 +71,8 @@ export function planSheets(rows:any[][],existing:Row[]){
      values[key]=value;
     }
    }
+   // Owner decision (16.11.2026): typing a sale price turns the sale on; "במבצע" = לא still ends it.
+   if(Object.hasOwn(values,'sale_price_ils')&&values.sale_price_ils!==''&&!Object.hasOwn(values,'is_on_sale')&&!(before&&sheetCurrentValue(before,'is_on_sale')))values.is_on_sale=true;
    // Unchanged optional legacy fields are intentionally not rewritten.
    if(!before){Object.assign(values,{name:raw.name,url:siteUrl,category:cat,active:values.active!==false});values.features??=['dofollow'];values.language??='he';}
    const sale=Object.hasOwn(values,'is_on_sale')?values.is_on_sale:before&&sheetCurrentValue(before,'is_on_sale');
