@@ -35,6 +35,9 @@ const missing=planSheets([headings,row],[w,{...w,id:'b',name:'ב',url:'https://b
  own=planSheets([headings,['a','אתר א','לרוץ על החוף','כללי',200,'','לא','','']],[broken]);assert.deepEqual(own.errors,[],'an address stored on the site as it is passes');assert.equal(own.operations.length,0);
  own=planSheets([headings,['a','אתר א','גם לא כתובת','כללי',200,'','לא','','']],[broken]);assert(own.errors.length>0,'a changed address is still checked');
  own=planSheets([headings,['','אתר ב','לרוץ על החוף','כללי',200,'','כן','','']],[broken]);assert(own.errors.length>0,'a new row is always checked');}
+// The same address with or without www or a trailing slash matches the existing site (Staging 16.11.2026: "ynet.co.il" vs "https://www.ynet.co.il/").
+{const site={...w,url:'https://www.a.example/'};let m=planSheets([headings,['','אתר א','a.example','כללי',200,'','לא','','']],[site]);assert.deepEqual(m.errors,[]);assert.equal(m.additions,0,'not a new site');assert.equal(m.entries[0].id,'a','matched to the existing site');
+ m=planSheets([headings,['','אתר א','A.example/','כללי',200,'','לא',''],['','שוב','https://www.a.example','כללי',200,'','לא','']],[site]);assert(m.errors.some(e=>e.includes('כפול')),'two rows of the same address are a duplicate');}
 const newRow=['','חדש','https://new.example','general',300,100,'כן','',''];plan=planSheets([headings,newRow],[w]);assert.equal(plan.additions,1);assert.equal(plan.operations[0].create,true);
 const source=sheetsScript();assert(source.includes('everyMinutes(5)'));assert(!source.includes('token = \''),'No credential embedded in script');
 const triggers=[],properties=new Map(),calls=[];let prompts=0;

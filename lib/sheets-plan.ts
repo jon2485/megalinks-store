@@ -33,6 +33,9 @@ export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='str
 const siteChecked=new Set(['url','logo_url','example_articles','supplier_email','sale_ends']);
 // The sheet text of a site value, as the writeback puts it (same as sheetCell in sheets-merge).
 const asCell=(value:any)=>Array.isArray(value)?value.join(', '):typeof value==='boolean'?(value?'כן':'לא'):String(value??'');
+// Same address with or without www, a trailing slash or capitals is the same site, exactly as the catalog save compares it
+// (found on Staging 16.11.2026: "ynet.co.il" in the sheet was planned as a new site and the save refused it as a duplicate).
+const urlKey=(href:string)=>{try{const u=new URL(href);return u.hostname.toLowerCase().replace(/^www\./,'')+u.pathname.replace(/\/$/,'')+u.search;}catch{return href;}};
 export function planSheets(rows:any[][],existing:Row[]){
  const errors:string[]=[],operations:Row[]=[],entries:Row[]=[],seenIds=new Set<string>(),seenUrls=new Map<string,string>();
  if(!Array.isArray(rows)||rows.length<2||rows.length>5001)throw Error('נדרש גיליון עם 1 עד 5,000 אתרים');
@@ -41,7 +44,7 @@ export function planSheets(rows:any[][],existing:Row[]){
  if(new Set(keys.filter(Boolean)).size!==keys.filter(Boolean).length)throw Error('אותה עמודה מופיעה פעמיים, בשם הישן ובשם החדש. יש למחוק אחת מהן');
  for(const key of ['id','name','url','category','price_ils'])if(!keys.includes(key))throw Error('עמודת חובה חסרה: '+key);
  const known=new Map(existing.map(w=>[w.id,w])),existingUrls=new Map<string,string[]>();
- for(const w of existing){try{const u=url(w.url);existingUrls.set(u,[...(existingUrls.get(u)||[]),w.id]);}catch{}}
+ for(const w of existing){try{const u=urlKey(url(w.url));existingUrls.set(u,[...(existingUrls.get(u)||[]),w.id]);}catch{}}
  for(let i=1;i<rows.length;i++){
   const cells=rows[i];if(!Array.isArray(cells)){errors.push('שורה '+(i+1)+': מבנה שורה לא תקין');continue;}if(!cells.some(v=>String(v??'').trim()))continue;
   try{
@@ -49,11 +52,11 @@ export function planSheets(rows:any[][],existing:Row[]){
    let id=raw.id;const own=raw.id?known.get(raw.id):undefined;let siteUrl:string;
    // A known site whose address is stored on the site exactly like this is not blocked by its own old value.
    try{siteUrl=url(raw.url||'');}catch(e){if(own&&raw.url&&String(own.url??'').trim()===raw.url)siteUrl=raw.url;else throw e;}
-   if(!id){const matches=existingUrls.get(siteUrl)||[];if(matches.length>1)throw Error('כתובת קיימת בכמה רשומות; יש למלא מזהה');id=matches[0]||'sheet-'+crypto.randomUUID();}
+   if(!id){const matches=existingUrls.get(urlKey(siteUrl))||[];if(matches.length>1)throw Error('כתובת קיימת בכמה רשומות; יש למלא מזהה');id=matches[0]||'sheet-'+crypto.randomUUID();}
    if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id)||seenIds.has(id))throw Error('מזהה אתר לא תקין או כפול');seenIds.add(id);
    const before=known.get(id);if(raw.id&&!before)throw Error('המזהה אינו קיים באתר; לאתר חדש יש להשאיר אותו ריק');
-   const prevUrlId=seenUrls.get(siteUrl);if(prevUrlId&&(!before||!known.has(prevUrlId)))throw Error('כתובת אתר כפולה');seenUrls.set(siteUrl,id);
-   if(!before&&existingUrls.has(siteUrl))throw Error('כתובת האתר כבר קיימת');
+   const prevUrlId=seenUrls.get(urlKey(siteUrl));if(prevUrlId&&(!before||!known.has(prevUrlId)))throw Error('כתובת אתר כפולה');seenUrls.set(urlKey(siteUrl),id);
+   if(!before&&existingUrls.has(urlKey(siteUrl)))throw Error('כתובת האתר כבר קיימת');
    if(!raw.name||!raw.category||raw.price_ils==='')throw Error('שם אתר קטגוריה ומחיר הם חובה');
    const cat=categoryLabels[raw.category]?raw.category:Object.keys(categoryLabels).find(k=>categoryLabels[k]===raw.category);if(!cat)throw Error('קטגוריה לא מוכרת');
    const values:Row={},normalized:Row={};
