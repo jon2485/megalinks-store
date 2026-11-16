@@ -5,8 +5,8 @@ import {AdminAttentionBadge,useAdminAttention} from './admin-attention';
 import type {Ctx} from './workspace';
 import './supplier-v2.css';
 import './orders-v2.css';
-import {BookOpen,Building2,CalendarCheck,CalendarRange,CreditCard,FileText,LayoutDashboard,PenLine,Receipt,ShoppingCart,Wallet} from 'lucide-react';
-export const areaIcons:Record<string,React.ElementType>={'admin-orders':ShoppingCart,'admin-month-close':CalendarCheck,'admin-payment-reports':CreditCard,'admin-invoices':Receipt,'admin-topups':Wallet,'admin-monthly':CalendarRange,'admin-supplier-overview':LayoutDashboard,'admin-suppliers':Building2,'admin-seller-requests':FileText,'admin-supplier-finance':CreditCard,'admin-articles':FileText,'admin-instructions':PenLine,'admin-knowledge':BookOpen};
+import {BarChart3,BookOpen,Building2,CalendarCheck,CalendarRange,CreditCard,FileText,History,LayoutDashboard,Mail,PenLine,Plug,Receipt,ShoppingCart,Wallet,Zap} from 'lucide-react';
+export const areaIcons:Record<string,React.ElementType>={'admin-orders':ShoppingCart,'admin-month-close':CalendarCheck,'admin-payment-reports':CreditCard,'admin-invoices':Receipt,'admin-topups':Wallet,'admin-monthly':CalendarRange,'admin-supplier-overview':LayoutDashboard,'admin-suppliers':Building2,'admin-seller-requests':FileText,'admin-supplier-finance':CreditCard,'admin-articles':FileText,'admin-instructions':PenLine,'admin-knowledge':BookOpen,'admin-connections':Plug,'admin-reports':BarChart3,'admin-notifications':Mail,'admin-jobs':Zap,'admin-audit':History};
 
 
 // v2 page head for an admin area: the area's pages as pills (with attention

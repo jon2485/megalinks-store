@@ -1,0 +1,108 @@
+/* 16.11.2026 activity log (admin-audit) in the approved v2 look. Light only.
+   Builds on the "inner pages" block of orders-v2.css; everything here is scoped to .sys-audit. */
+
+/* refresh: same white pill as the other v2 head actions, with a busy state */
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sa-refresh{min-width:104px;justify-content:center}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sa-refresh[aria-busy=true]{opacity:1;color:#0066cc!important;cursor:progress}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin :is(.sa-refresh,.sa-retry,.sa-copy,.om-chips>button,.orders-reference-pagination button,.om-expand,.sa-raw>summary,.orders-reference-search button):focus-visible{outline:2px solid #0071e3!important;outline-offset:2px}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-retry{display:inline-flex;align-items:center;gap:6px;height:40px;margin-top:6px;padding:0 18px;border:0;border-radius:999px;background:rgba(0,113,227,.08);color:#0066cc;font:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:background-color .15s,transform .1s}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-retry:active{transform:scale(.97)}
+@media(hover:hover){.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-retry:hover{background:rgba(0,113,227,.14)}}
+
+/* chips: hover only on a fine pointer, pressed state stays */
+@media(hover:none){
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-chips>button:hover:not([aria-pressed=true]){color:#424245!important;box-shadow:0 0 0 1px rgba(0,0,0,.06)!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-list .om-order:hover:not(.is-open){box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05)!important}
+}
+
+/* day headings between the cards */
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-day{margin:10px 4px 0;font-size:13px;font-weight:700;color:#424245;letter-spacing:.01em}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-list>.sa-day:first-child{margin-top:0}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-list.is-busy{opacity:.6;transition:opacity .2s}
+
+/* row cells */
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row{cursor:pointer;transition:background-color .15s,transform .1s}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row:active{transform:scale(.995)}
+@media(hover:hover){.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row:hover{background:#fafbfd!important}}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>*{min-width:0;position:static!important;inset:auto!important;transform:none!important}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-what b{display:block;font-size:14.5px;font-weight:700;line-height:1.4;color:var(--fi);overflow-wrap:anywhere}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-what small{display:block;margin-top:1px;font-size:11.5px;color:var(--fm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-actor{font-size:13.5px;font-weight:600;color:#424245;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-sum{font-size:13px;color:#6e6e73;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-time{font-size:13px;font-weight:600;color:var(--fm);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* category pill: information, not a control. Calm tints, no red. */
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-pill.sa-pill{padding:3px 10px!important;font-size:12px!important;font-weight:600!important;background:#f2f2f7!important;color:#424245!important}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-pill.sa-pill::before{opacity:.7}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-pill.sa-pill.is-c-orders{background:#e6f0ff!important;color:#0058b0!important}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-pill.sa-pill.is-c-content{background:#e4f6fa!important;color:#06708a!important}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-pill.sa-pill.is-c-customers{background:#eef0fb!important;color:#3f4aa8!important}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-pill.sa-pill.is-c-suppliers{background:#f3eefb!important;color:#6a3fa8!important}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-pill.sa-pill.is-c-catalog{background:#eaf6ef!important;color:#1d6b3e!important}
+
+/* opened row */
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-panel{display:grid;gap:12px;padding:4px 22px 18px}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-card{margin:0;padding:14px 18px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.06);min-width:0}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-card h3{margin:0 0 8px;font-size:14px;font-weight:700;color:var(--fi)}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-facts{display:grid;margin:0}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-facts>div{display:grid;grid-template-columns:150px minmax(0,1fr);gap:12px;align-items:baseline;padding:7px 0;border-top:1px solid #f0f1f4}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-facts>div:first-child{border-top:0}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-facts dt{margin:0;font-size:13px;font-weight:600;color:var(--fm)}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-facts dd{margin:0;min-width:0;font-size:14px;line-height:1.55;color:var(--fi);overflow-wrap:anywhere;white-space:pre-wrap}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-rawcode{display:block;margin-top:2px;font-size:12px;color:var(--fm);white-space:normal}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-num{font-weight:700;font-variant-numeric:tabular-nums}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-ltr,.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-key{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;overflow-wrap:anywhere}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-code{display:block;max-width:100%;padding:6px 8px;border-radius:8px;background:#f5f5f7;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;color:#1d1d1f;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-link{color:#0066cc;font-weight:600;text-decoration:none;overflow-wrap:anywhere;border-radius:4px}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-link:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+@media(hover:hover){.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-link:hover{text-decoration:underline}}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-quiet{margin:0;font-size:13.5px;color:var(--fm)}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-pre{margin:8px 0 0;max-height:320px;overflow:auto;padding:12px 14px;border-radius:12px;background:#f5f5f7;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;line-height:1.55;color:#1d1d1f;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* full data as saved */
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-raw{padding:0 4px}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-raw>summary{display:inline-flex;align-items:center;min-height:44px;padding:0 4px;border-radius:8px;font-size:13.5px;font-weight:600;color:#0066cc;cursor:pointer;list-style-position:inside;transition:transform .1s}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-raw>summary:active{transform:scale(.98)}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-copy{display:inline-flex;align-items:center;gap:6px;height:40px;margin-top:10px;padding:0 16px;border:0;border-radius:999px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.1);color:var(--fi);font:inherit;font-size:13.5px;font-weight:600;cursor:pointer;transition:box-shadow .15s,color .15s,transform .1s}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-copy:active{transform:scale(.97)}
+.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-copy.is-done{color:#1a7f3c;box-shadow:0 0 0 1px rgba(26,127,60,.35)}
+@media(hover:hover){.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-copy:hover:not(.is-done){color:#0066cc;box-shadow:0 0 0 1px rgba(0,113,227,.45)}}
+
+/* desktop: one line per action */
+@media(min-width:761px){
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-head{display:grid!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-head,.sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row{grid-template-columns:minmax(0,1.7fr) minmax(0,.8fr) minmax(0,1.3fr) 136px 52px 32px!important;grid-template-areas:"what actor sum cat time exp"!important;gap:14px!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row{min-height:58px!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-what{grid-area:what}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-actor{grid-area:actor}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-sum{grid-area:sum}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-cat{grid-area:cat}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-time{grid-area:time;text-align:end}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.om-expand{grid-area:exp}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-head>span:nth-child(5){text-align:end}
+}
+
+/* phone: a small card per action, 44px touch targets */
+@media(max-width:760px){
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-head{display:none!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sa-refresh{height:44px!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .orders-reference-search{height:44px!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-chips>button{height:44px!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .orders-reference-pagination nav button{min-width:44px;height:44px!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"what time" "actor cat" "sum exp"!important;gap:4px 10px!important;padding:12px 14px 10px 10px!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-what{grid-area:what}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-time{grid-area:time;align-self:start;padding-top:2px}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-actor{grid-area:actor;align-self:center}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-cat{grid-area:cat;justify-self:end;align-self:center}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.sa-sum{grid-area:sum;align-self:center}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .om-row>.om-expand{grid-area:exp!important;display:grid!important;width:44px!important;height:44px!important;margin:-6px -6px -6px 0;justify-self:end!important;align-self:center!important}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-what b{font-size:14.5px}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-panel{padding:0}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-card{padding:12px 14px}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin .sa-facts>div{grid-template-columns:minmax(0,1fr);gap:2px}
+}
+
+@media(prefers-reduced-motion:reduce){
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin :is(.om-row,.sa-retry,.sa-copy,.sa-raw>summary,.om-list.is-busy){transition:none}
+ .sys-audit.sys-audit.sys-audit.sys-audit.sv2-orders.sv2-fin.sv2-fin :is(.om-row,.sa-retry,.sa-copy,.sa-raw>summary):active{transform:none}
+}
