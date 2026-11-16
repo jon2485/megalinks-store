@@ -55,7 +55,7 @@ function arrangeMegaLinksColumns() {
   if (!book || book.getId() !== MEGA_LINKS_SHEET_ID) throw new Error('יש לפתוח את גיליון הקטלוג של מגה לינקס.');
   const tab = book.getSheetByName(MEGA_LINKS_TAB);
   if (!tab) throw new Error('לשונית האתרים חסרה.');
-  const answer = ui.alert('סידור העמודות', 'העמודות יסודרו כך: שם האתר, URL, מחיר לפני הנחה, DR, UR, מייל ספק, שם ספק, עלות, מלאי, מחיר מבצע, ואחריהן שאר העמודות. מזהה ספק ומזהה אתר בסוף.'+'\\n\\n'+'הנתונים זזים יחד עם העמודה. שום עמודה לא נמחקת ושום שם לא משתנה. להמשיך?', ui.ButtonSet.OK_CANCEL);
+  const answer = ui.alert('סידור העמודות', 'העמודות יסודרו כך: שם האתר, URL, מחיר לפני הנחה, DR, UR, הערות, מייל ספק, שם ספק, עלות, מלאי, מחיר מבצע, ואחריהן שאר העמודות. מזהה ספק ומזהה אתר בסוף.'+'\\n\\n'+'הנתונים זזים יחד עם העמודה. שום עמודה לא נמחקת ושום שם לא משתנה. להמשיך?', ui.ButtonSet.OK_CANCEL);
   if (answer !== ui.Button.OK) return;
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(10000)) { ui.alert('סנכרון מתבצע כעת. נסו שוב בעוד דקה.'); return; }

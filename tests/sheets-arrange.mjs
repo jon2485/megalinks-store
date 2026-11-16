@@ -33,7 +33,8 @@ function fakeSheet(heads,data,{dialog='OK'}={}){
 const sheet=fakeSheet(oldHeads,rows);
 sheet.run.arrangeMegaLinksColumns();
 const [heads,...data]=sheet.grid();
-assert.deepEqual(heads.slice(0,10),['שם האתר','כתובת אתר','מחיר מחירון ₪','DR','UR','מייל הספק','שם ספק','עלות ₪','מלאי','מחיר מבצע ₪'],'the owner order, with the sheet\'s own (old) names kept');
+// Owner 16.11.2026: the one notes column comes right after DR and UR (added here, as this old sheet has none).
+assert.deepEqual(heads.slice(0,11),['שם האתר','כתובת אתר','מחיר מחירון ₪','DR','UR','הערות','מייל הספק','שם ספק','עלות ₪','מלאי','מחיר מבצע ₪'],'the owner order, with the sheet\'s own (old) names kept');
 assert.deepEqual(heads.slice(-2),['ספק','מזהה אתר'],'supplier id and site id last');
 assert(heads.indexOf('מינימום ₪')>heads.indexOf('במבצע')&&heads.indexOf('הערות שלי')>heads.indexOf('במבצע'),'the owner\'s own columns stay, after the known ones');
 for(const h of oldHeads)assert(heads.includes(h),'nothing deleted or renamed: '+h);

@@ -2,14 +2,16 @@ import type {Row} from './shared';
 export const SHEET_ID='1_bo5ubja3sLePWSPEVIkc5ySOvhCxRICQBf2VnqNmtE';
 export const SHEET_TAB='אתרים';
 export const MONTHLY='חודשי';
-// Owner order (16.11.2026): name, URL, list price, DR, UR, supplier e-mail, supplier name, cost, stock, sale price, then the rest.
+// Owner order (16.11.2026): name, URL, list price, DR, UR, notes, supplier e-mail, supplier name, cost, stock, sale price, then the rest.
+// Owner 16.11.2026: one notes column, "הערות", right after DR and UR, is the only source of the notes shown next to each site in the
+// price list. The extra notes and pixel columns that the sync had added to the sheet on its own are no longer read or written.
 // Columns are read by header name, so an existing sheet keeps working in any order; the old header names stay accepted.
 export const sheetFields:Record<string,string>={
- 'שם האתר':'name','URL':'url','מחיר לפני הנחה ₪':'price_ils','DR':'dr','UR':'ur','מייל ספק':'supplier_email','שם ספק':'supplier_name','עלות ₪':'cost_ils','מלאי':'stock_total','מחיר מבצע ₪':'sale_price_ils',
- 'קטגוריה':'category','פעיל':'active','במבצע':'is_on_sale','שם המבצע':'sale_title','סיום מבצע':'sale_ends','הסכם פרסום מאומת':'procurement_verified','הוראות פרסום':'publishing_restrictions','עיר':'city','שפה':'language','סוג האתר':'website_type','תגיות (פסיקים)':'tags','סוגי קישור (פסיקים)':'features','ימי אספקה':'turnaround_days','קישור אחד בלבד':'single_link_only','הערות ללקוח':'customer_notes','הערות לאתר':'public_notes','כתבות לדוגמה (פסיקים)':'example_articles','קישור לוגו':'logo_url','תג רמה':'tier_badge','סדר תצוגה':'sort_order','אפשרות פיקסל':'pixel_option','מחיר פיקסל ₪':'pixel_price_ils','נושאים מומלצים (פסיקים)':'recommended_topics','תגיות תוכן (פסיקים)':'content_tags','מזהה ספק':'supplier_id','מזהה אתר':'id'
+ 'שם האתר':'name','URL':'url','מחיר לפני הנחה ₪':'price_ils','DR':'dr','UR':'ur','הערות':'public_notes','מייל ספק':'supplier_email','שם ספק':'supplier_name','עלות ₪':'cost_ils','מלאי':'stock_total','מחיר מבצע ₪':'sale_price_ils',
+ 'קטגוריה':'category','פעיל':'active','במבצע':'is_on_sale','שם המבצע':'sale_title','סיום מבצע':'sale_ends','הסכם פרסום מאומת':'procurement_verified','עיר':'city','שפה':'language','סוג האתר':'website_type','תגיות (פסיקים)':'tags','סוגי קישור (פסיקים)':'features','ימי אספקה':'turnaround_days','קישור אחד בלבד':'single_link_only','כתבות לדוגמה (פסיקים)':'example_articles','קישור לוגו':'logo_url','תג רמה':'tier_badge','סדר תצוגה':'sort_order','נושאים מומלצים (פסיקים)':'recommended_topics','תגיות תוכן (פסיקים)':'content_tags','מזהה ספק':'supplier_id','מזהה אתר':'id'
 };
 // Header names used before 16.11.2026. A sheet may hold either name, never both.
-export const sheetAliases:Record<string,string>={'כתובת אתר':'url','מחיר מחירון ₪':'price_ils','מייל הספק':'supplier_email','ספק':'supplier_id'};
+export const sheetAliases:Record<string,string>={'כתובת אתר':'url','מחיר מחירון ₪':'price_ils','מייל הספק':'supplier_email','ספק':'supplier_id','הערות לאתר':'public_notes'};
 export const sheetKey=(header:unknown)=>{const h=String(header??'').trim();return sheetFields[h]||sheetAliases[h]||'';};
 export const sheetHeaderGroups=()=>Object.entries(sheetFields).map(([name,key])=>[name,...Object.entries(sheetAliases).filter(([,k])=>k===key).map(([a])=>a)]);
 const flags=new Set(['active','is_on_sale','single_link_only','procurement_verified']);

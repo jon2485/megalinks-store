@@ -79,7 +79,7 @@ export async function addStockPackage(actor:Row,websiteId:string,b:Row){
 // supplier card is linked to the card for its email (created when missing),
 // falling back to the system's default supplier email.
 export async function linkOrphanSites(actorId:string){
- const orphans=(await all("SELECT id,data FROM websites WHERE COALESCE(json_extract(data,'$.supplier_id'),'')=''")).map(w=>({id:w.id,data:JSON.parse(w.data||'{}')}));
+ const orphans=(await all("SELECT id,data FROM websites WHERE COALESCE(json_extract(data,'$.supplier_id'),'')='' AND json_extract(data,'$.archived_at') IS NULL")).map(w=>({id:w.id,data:JSON.parse(w.data||'{}')}));
  if(!orphans.length)return 0;
  const suppliers=(await all("SELECT id,data FROM records WHERE kind='supplier'")).map(r=>({id:r.id,...JSON.parse(r.data||'{}')}));
  const stamp=now(),ops:any[]=[];

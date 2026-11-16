@@ -50,7 +50,8 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
     const [logoFailed, setLogoFailed] = useState(false);
     const [notesOpen, setNotesOpen] = useState(false);
     const notesTitleId = useId();
-    const notes = [site.public_notes, typeof site.publishing_restrictions === 'string' ? site.publishing_restrictions : site.publishing_restrictions ? JSON.stringify(site.publishing_restrictions) : '', site.customer_notes].filter(Boolean);
+    // Owner 16.11.2026: only the sheet's "הערות" column (public_notes) is shown next to each site in the price list.
+    const notes = [site.public_notes].filter(Boolean);
     const hasDiscount = Number(site.regular_price_cents) > Number(site.price_cents) && Number(site.price_cents) >= 0;
     const discountPercent = hasDiscount ? Math.floor((site.regular_price_cents - site.price_cents) / site.regular_price_cents * 1000) / 10 : 0;
     const domain = site.url.replace(/^https?:\/\//, '').replace(/\/$/, '');

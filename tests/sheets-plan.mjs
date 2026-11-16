@@ -39,6 +39,15 @@ const missing=planSheets([headings,row],[w,{...w,id:'b',name:'ב',url:'https://b
 {const site={...w,url:'https://www.a.example/'};let m=planSheets([headings,['','אתר א','a.example','כללי',200,'','לא','','']],[site]);assert.deepEqual(m.errors,[]);assert.equal(m.additions,0,'not a new site');assert.equal(m.entries[0].id,'a','matched to the existing site');
  m=planSheets([headings,['','אתר א','A.example/','כללי',200,'','לא',''],['','שוב','https://www.a.example','כללי',200,'','לא','']],[site]);assert(m.errors.some(e=>e.includes('כפול')),'two rows of the same address are a duplicate');}
 const newRow=['','חדש','https://new.example','general',300,100,'כן','',''];plan=planSheets([headings,newRow],[w]);assert.equal(plan.additions,1);assert.equal(plan.operations[0].create,true);
+// Owner 16.11.2026: one notes column, "הערות", right after DR and UR, feeds the notes in the price list. The old name still works,
+// both names together are refused, and the notes and pixel columns the sync had added on its own are no longer read.
+{const {sheetFields}=await import(pathToFileURL(realpathSync('.sites-runtime/sheets-test/sheets-plan.js')));
+ assert.deepEqual(Object.keys(sheetFields).slice(0,6),['שם האתר','URL','מחיר לפני הנחה ₪','DR','UR','הערות'],'notes right after DR and UR');assert.equal(sheetFields['הערות'],'public_notes');
+ for(const gone of ['הוראות פרסום','הערות ללקוח','הערות לאתר','אפשרות פיקסל','מחיר פיקסל ₪'])assert(!(gone in sheetFields),gone+' is no longer a sheet column');
+ const heads=['מזהה אתר','שם האתר','כתובת אתר','קטגוריה','מחיר מחירון ₪','עלות ₪','פעיל','הערות','הוראות פרסום','הערות ללקוח','אפשרות פיקסל','מחיר פיקסל ₪'];
+ const m=planSheets([heads,['a','אתר א','a.example','כללי',200,'','לא','רק דרך קישור','ישן','ישן','free',50]],[w]);assert.deepEqual(m.errors,[]);assert.deepEqual(m.operations[0].values,{public_notes:'רק דרך קישור'},'only the notes column is read');
+ assert.throws(()=>planSheets([[...headings,'הערות'],[...row,'כפול']],[w]),/פעמיים/,'"הערות" and the old "הערות לאתר" together are refused');
+ const script=sheetsScript();assert(script.includes('DR, UR, הערות, מייל ספק'),'the column arrangement names the notes after DR and UR');}
 const source=sheetsScript();assert(source.includes('everyMinutes(5)'));assert(!source.includes('token = \''),'No credential embedded in script');
 const triggers=[],properties=new Map(),calls=[];let prompts=0;
 const fullHeads=JSON.parse(source.match(/const MEGA_LINKS_HEADERS = (.*);/)[1]).map(g=>g[0]);const book={getId:()=>SHEET_ID,getSheetByName:()=>({getLastRow:()=>2,getLastColumn:()=>fullHeads.length,getRange:(r,c,n)=>({getValues:()=>n===1?[fullHeads]:[fullHeads,row]})})};

@@ -154,6 +154,27 @@ try{
  // Another sheet starts like a first connection: the old sheet's synced values are dropped, so a difference waits for a choice.
  s=await req('admin/sheets/spreadsheet','POST',{spreadsheet_id:'Fictional-Other-Sheet-00000000003'});eq(s.has_snapshot,false,'a different sheet starts without the old snapshot');eq(s.connection_protocol,1,'and without the old receipt');
  await req('admin/sheets/spreadsheet','POST',{spreadsheet_id:COPY});await edit({price_ils:700});r=await pull();eq(r.result.status,'conflict','after a sheet change a site/sheet difference is not merged against old values');eq(sheetGet('a','מחיר מחירון ₪'),660,'the sheet value is kept until the owner chooses');
+ // Owner 16.11.2026, "the orders stay, but of the sites, only the new ones I add from now on": every current site goes to the archive.
+ // It leaves every list and the sync, stays in the database for old orders, and a sheet row with the same address becomes a new site.
+ {const data=async id=>JSON.parse((await db.prepare('SELECT data FROM websites WHERE id=?').bind(id).first()).data);
+  const customer=(await db.prepare("SELECT id FROM users WHERE email='customer@example.test'").first()).id;
+  await db.prepare("INSERT INTO favorites(id,user_id,website_id,kind) VALUES ('fav-a',?,'a','favorite')").bind(customer).run();
+  r=await req('admin/sheets/start-over','POST',{confirm:'התחלה מאפס'},'owner',409);ok(r.error.includes('להשהות'),'only with the automatic sync paused');
+  await req('admin/sheets/config','POST',{enabled:false});
+  r=await req('admin/sheets/start-over','POST',{confirm:'כן'},'owner',400);ok(r.error.includes('התחלה מאפס'),'only with the exact confirmation');
+  await req('admin/sheets/start-over','POST',{confirm:'התחלה מאפס'},'customer',403);
+  r=await req('admin/sheets/start-over','POST',{confirm:'התחלה מאפס'});eq(r.archived,2,'both sites go to the archive');eq(r.has_snapshot,false,'the sync starts like a first connection');
+  ok((await data('a')).archived_at&&(await data('b')).archived_at,'archived, not deleted: old orders still find them');
+  eq((await req('catalog?scope=admin')).websites.length,0,'the admin catalog lists no archived site');
+  eq((await req('catalog','GET',undefined,'customer')).websites.length,0,'nor does the price list');
+  eq((await db.prepare("SELECT COUNT(*) AS n FROM favorites WHERE website_id='a'").first()).n,0,'their favorites are removed');
+  r=await req('admin/sheets/start-over','POST',{confirm:'התחלה מאפס'});eq(r.archived,0,'running it again archives nothing more');
+  // A sheet row that still holds an archived site's id is refused, never brought back; with the id cleared it becomes a new site.
+  r=await pull();let p=await req('admin/sheets/preview','POST',{});ok(p.errors.some(e=>e.includes('המזהה אינו קיים')),'an archived id is not brought back');eq(p.missing,0,'archived sites are not counted as missing');
+  sheetSet('a','מזהה אתר','');r=await pull();p=await req('admin/sheets/preview','POST',{});eq(p.errors,[]);eq(p.additions,1,'the same address becomes a new site');
+  await req('admin/sheets/config','POST',{enabled:true});r=await pull();eq(r.result.status,'success');
+  const fresh=(await req('catalog?scope=admin')).websites;eq(fresh.length,1);ok(fresh[0].id!=='a'&&fresh[0].url==='https://a.example/','a new site with the same address');eq(sheetRows()[1][col('מזהה אתר')],fresh[0].id,'its new id is written to the sheet');
+  ok((await data('a')).archived_at,'the archived site stays archived');}
  // Deleting the key stops the direct sync.
  s=await req('admin/sheets/service-account','DELETE');eq(s.service_account.key_stored,false);eq(s.service_account.client_email,'');await req('admin/sheets/pull','POST',{},'owner',409);
  eq(fake.problems,[],'fake Google saw no problem');ok(fake.requests.every(q=>['oauth2.googleapis.com','sheets.googleapis.com'].includes(q.host)),'only the fake Google was called');

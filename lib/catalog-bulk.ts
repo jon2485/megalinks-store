@@ -2,6 +2,7 @@ import {catalogPricingMeta,pricingGuard,warnPricing} from './pricing';
 import {minimumWarning,customerPrice} from './pricing-rules';
 import {Row,httpUrl} from './shared';
 import {admin,all,db,stmt,assert,parse,now,uid,hash,ApiError} from './server';
+import {liveSites} from './site-archive';
 const texts=['name','url','category','logo_url','language','website_type','sale_title','sale_ends','public_notes','customer_notes','admin_notes','publishing_restrictions','city','tier_badge','pixel_option','wordpress_connection'];
 const flags=['active','is_on_sale','single_link_only','procurement_verified'];
 const numbers=['price_ils','cost_ils','sale_price_ils','dr','ur','turnaround_days'];
@@ -11,7 +12,8 @@ export async function saveCatalogBatch(user:Row,input:Row){
  admin(user);assert(Array.isArray(input.rows)&&input.rows.length>0&&input.rows.length<=100,'יש לשלוח בין שורה אחת ל־100 שורות');
  const pausingOnly=input.rows.every((r:Row)=>r&&r.create!==true&&r.values&&Object.keys(r.values).length===1&&r.values.active===false);
  const meta=await catalogPricingMeta(),warnings:string[]=[];if(!pausingOnly&&input.pricing_version!==undefined)assert(input.pricing_version===meta.pricing_version,'התמחור השתנה במקביל. רעננו לפני שמירה; הטיוטה נשמרה',409);const dynamicKeys=meta.pricing_tiers.map(t=>'tier_'+t.id+'_ils');
- const existing=new Map((await all('SELECT * FROM websites')).map(w=>[w.id,w]));
+ // Archived sites (lib/site-archive.ts) cannot be edited, and the address they held is free for a new site.
+ const existing=new Map((await all('SELECT * FROM websites WHERE '+liveSites)).map(w=>[w.id,w]));
  const suppliers=new Map((await all("SELECT * FROM records WHERE kind='supplier'")).map(w=>[w.id,parse(w)!]));
  const seen=new Set<string>(),seenUrls=new Set<string>(),stamp=now(),statements=[],ids:string[]=[];
  const url=(v:unknown,label:string)=>{try{return httpUrl(String(v||''));}catch{throw new ApiError(400,label+' אינה תקינה. יש להזין קישור מלא שמתחיל ב־https:// או http://' );}};
