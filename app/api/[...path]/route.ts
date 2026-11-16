@@ -58,7 +58,7 @@ import {saveCatalogBatch} from '@/lib/catalog-bulk';
 import {financeRoutes,isTopUp} from '@/lib/finance';
 import { workflowRoutes } from '@/lib/workflow-routes';
 import { articleChecks, checkLink, verifyPublishedArticle } from '@/lib/checks';
-import { writingRequestMail, articleMail, queueMail } from '@/lib/mail';
+import { writingRequestMail, articleMail, queueMail, mailFileByToken } from '@/lib/mail';
 import { articleDocx } from '@/lib/delivery-docx';
 import { closeMonth } from '@/lib/monthly';
 import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-content';
@@ -235,6 +235,8 @@ async function handle(r: Request,access:ResponseAccess) {
         await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
         return response({ ok: true });
     }
+    // A file from an email: the address carries the personal token of that message, so no sign-in is needed.
+    if (p[0] === 'mail-file' && p[1] && method === 'GET') { const file = await mailFileByToken(p[1], Number(p[2])); assert(file, 'הקובץ אינו זמין. ייתכן שתוקף הקישור פג.', 404); return new Response(file.bytes as BodyInit, { headers: { 'Content-Type': file.content_type || 'application/octet-stream', 'Content-Disposition': "attachment; filename*=UTF-8''" + encodeURIComponent(file.filename), 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'", 'X-Robots-Tag': 'noindex' } }); }
     if (p[0] === 'supplier-invoice' && p[1]) return response(await supplierInvoiceRoute(r, p[1], method));
     if (p[0] === 'supplier' && p[1]) {
         const token = await one('SELECT * FROM tokens WHERE hash=? AND kind=?', await hash(p[1]), 'supplier');
@@ -1002,7 +1004,7 @@ if (p[0] === 'cart') {
         if(p[1]==='supplier-stock'&&p[2]){const site=decodeURIComponent(p[2]);if(method==='GET')return response(await siteStock(site));assert(method==='POST','פעולה לא נתמכת',405);const result=await addStockPackage(u,site,await json(r));let resent=0;for(const id of result.retry){const a=parse(await one('SELECT * FROM articles WHERE id=?',id));if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;}catch{}}return response({...result,resent});}
         if(p[1]==='supplier-billing'&&p[2]&&method==='GET')return response(await supplierBilling(decodeURIComponent(p[2])));
         if(p[1]==='supplier-order'){if(method==='GET')return response(await supplierOrder(String(query.get('key')||'')));if(p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendOrderSummary(new URL(r.url).origin,String(b.key||''),u));}}
-        if(p[1]==='supplier-package'&&p[2]&&p[3]){const site=decodeURIComponent(p[2]),n=Number(p[3]);if(!p[4]&&method==='GET')return response(await supplierPackage(site,n));if(p[4]==='send'&&method==='POST')return response(await sendPackageStatus(site,n,u));if(p[4]==='payment'&&method==='POST')return response(await updatePackagePayment(u,site,n,await json(r)));}
+        if(p[1]==='supplier-package'&&p[2]&&p[3]){const site=decodeURIComponent(p[2]),n=Number(p[3]);if(!p[4]&&method==='GET')return response(await supplierPackage(site,n));if(p[4]==='send'&&method==='POST')return response(await sendPackageStatus(site,n,u,new URL(r.url).origin));if(p[4]==='payment'&&method==='POST')return response(await updatePackagePayment(u,site,n,await json(r)));}
         if(p[1]==='supplier-overview'&&method==='GET')return response(await supplierOverview());
         if(p[1]==='supplier-invoice-file'&&method==='GET')return await supplierInvoiceFile(String(query.get('key')||''));
         if(p[1]==='supplier-months'&&p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendSupplierMonth(new URL(r.url).origin,String(b.supplier_id||''),String(b.month||''),u.id,true));}

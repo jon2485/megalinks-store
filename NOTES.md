@@ -1264,6 +1264,61 @@ Each agent worked in its own git worktree (note: the worktrees were created from
   - **לא נבדק ב-Staging עצמו:** העמודים שמאחורי הכניסה. הבעלים בודק אחרי התחברות.
   - **חשוב לסשן בענן:** השירות ב-Staging מצביע עכשיו על הענף `feature/homepage-staging-20261115`. ה-commit של דף הבית עדיין לא נמצא ב-`claude/order-flow-qa-20261111`. פריסה מהענף ההוא בלי מיזוג תסיר את דף הבית ותחזיר את הקטלוג לכתובת `/`.
 
+## 16.11.2026: Outgoing emails in order, files that really arrive, updated first screen
+
+Owner's request: go over every outgoing email, make the supplier email orderly and with the files themselves (his test email arrived messy and without a file), use RTL, then deploy to Staging. Also: the first screen of the homepage as approved in the mockup.
+
+### What was found
+- Emails leave through a webhook. On Staging the webhook is a Zapier hook (seen in the service's DNS log, `hooks.zapier.com`). The Zap itself is the owner's and is not in the repo.
+- **No file:** files were sent only as base64 inside the JSON. Zapier's Gmail step cannot turn base64 into an attachment; it needs a file address.
+- **Messy:** only 3 of about 24 emails had HTML; the rest were plain text and their look depended on the Zap. The HTML ones set the direction only on `<html>`, which mail clients drop, and used font weight 800, which on Windows falls back to a font without Hebrew.
+- **Staging only:** the Staging login wall also blocks the logo image and any file address, so on Staging the logo is missing in emails and Zapier cannot fetch files. Not changed (see "Open").
+
+### What changed
+- `lib/mail-template.ts` (new): one right-to-left look for every email (white card, dark logo, headline = subject, text in order, files, one button). The text is split into paragraphs, "label: value" rows and numbered lists. Direction on every block, inline styles, addresses and amounts isolated as left-to-right, bold 700.
+- `lib/mail.ts`: every email now goes out with HTML (its own design when it has one, the standard one otherwise). `mailFiles(job)` builds the files of an email in one place. Each file is attached as before **and** gets a personal download address `/api/mail-file/<token>/<n>/<name>` (token stored on the mail job, 45 days, closed if the article was pulled back from the supplier). The payload has new fields `attachment_urls` and `attachment_names`. Above 6MB of files the base64 copies are left out (the service takes about 10MB) and only the addresses travel.
+- `app/api/[...path]/route.ts`: public route `mail-file/<token>/<n>/<name>` (GET, download headers, 404 for a wrong token or number); `sendPackageStatus` gets the site address.
+- `lib/supplier-mail-content.ts`: the supplier email lists the files with a "הורדה" button each, shows the link(s) the article must carry (anchor and address), direction on every block.
+- `lib/order-close-email.ts`, `lib/writing-mail.ts`: same designs, direction fixed, a place for the files block.
+- Wording so each detail gets its own row: monthly statement (`lib/monthly.ts`), new top-up request (`lib/finance.ts`), package status (`lib/supplier-orders.ts`), seller invoice request list (`lib/customer-sellers.ts`). Supplier-paid and published emails now carry the site address for the logo (`lib/workflow-routes.ts`, `lib/customer-sellers.ts`, `articleMail`).
+- Homepage first screen (`home/index.html`, `lib/home-page-html.ts`, `public/homepage/city-m.webp`): no explanation sentence, original colours, white main button, the search pill is a link to `/catalog`, lighter phone background, and on phones the next screen peeks as a soft arc with a round arrow button.
+- Tests: `tests/supplier-mail.mjs` (links, plain emails as RTL pages, escaping), `tests/writing-workflow.mjs` (the download address returns the real PDF without signing in; wrong number or token refused). README email contract updated.
+
+### Checked locally (fictional data, nothing was sent)
+- All 23 email kinds were built and rendered the way a mail client shows them, at 600 and 390 wide: no horizontal overflow, every one right-to-left. Supplier email: 4 files, each with its own address.
+- `tsc --noEmit` clean, build passes. Passing: supplier-mail, writing-workflow (130), seo (67), railway-staging-assets, payment-audit (120), security-audit (39), monthly-order-lifecycle (90), split-payment (123), pricing-integration (149).
+- Failing, not in email code and not checked against the previous build: `tests/orders-finance.mjs` ("combined orders view preserves final approval month") and `tests/customer-account.mjs` (cancel after a refund returns 409; the rule was added on 11.11, the test is from 28.10).
+- Run Miniflare tests with the local QA server stopped; otherwise they hang.
+
+### Open (needs the owner)
+- **The Zap:** in the Gmail step the body must be the `html` field with body type HTML, and "Attachments" must be `attachment_urls`. Until then the email shows the download buttons but Gmail attaches nothing.
+- **Staging wall:** the question whether to let the logo files and `/api/mail-file/` through the Staging login was dismissed without an answer, so the wall is unchanged. On Staging: no logo in emails, download buttons work only for someone signed in to Staging, and Zapier cannot attach. The live site has no such wall in this repo's gateway (it is the Staging gateway script).
+- The cloud branch `claude/order-flow-qa-20261111` does not have this work yet.
+
+### לפני העלאה
+- Nothing temporary in the code.
+
+### Staging deploy (16.11.2026, by the owner's "תעלה הכל לריליי")
+- Deployment `871adc3d`, SUCCESS, commit `34911c1` on `feature/homepage-staging-20261115` (live before: `079f11b`). Only the commit changed, in the staging environment. Production and `main` not touched.
+- `/healthz` 200. Without signing in the wall still answers: homepage 303, `/api/mail-file/...` 401, logo 303 (as expected, the wall was not changed). Pages behind the login were not viewed.
+
+### 16.11.2026 (2): The supplier gets the article as a Word attachment, not a download button
+Owner: "כשנשלחת כתבה לספק, אני רוצה שהיא תגיע כקובץ וורד אליו ולא כפתור הורדה."
+- `lib/mail-template.ts` `mailAttachedHtml`: the supplier email lists what is attached ("מצורף למייל"), without buttons. One quiet grey line stays under the list ("קובץ לא הגיע? אפשר לפתוח אותו גם כאן") as a safety net, because whether a file is really attached is decided by the sending service, not by the site. The owner was told; remove the line if he asks.
+- `lib/supplier-mail-content.ts`: uses that list; the opening line says the Word file is attached.
+- `lib/mail.ts`: the payload also has one simple field per file (`attachment_1_url`, `attachment_1_name`, ...) and `word_file_url` for the supplier's Word file, so the Zap can attach it without handling a list.
+- Other emails (order summary, writing details) keep their download buttons; the owner asked only about the article sent to a supplier.
+- **Still needed for a real attachment:** in the owner's Zap, the Gmail step's "Attachments" must take `word_file_url` (or the numbered fields). On Staging the login wall also has to let the file address through; the owner has not answered that question, so the wall is unchanged.
+- **Staging deploy (16.11.2026 morning, owner: "כן, להעלות"):** deployment `5fe847a2`, SUCCESS, commit `566a41a` on `feature/homepage-staging-20261115` (live before: `34911c1`). Only the commit changed, in the staging environment. `/healthz` 200. Production and `main` not touched. No real email was sent; pages behind the login were not viewed.
+
+### 16.11.2026 (3): Staging wall opened for the email logo and email files only
+Owner: "כן, לפתוח" (to the question whether to open, without signing in, only the logo files and the personal file addresses of emails).
+- `scripts/railway-staging-gateway.mjs` `publicMailPath`: without a session, only `GET`/`HEAD` with no query string to `/brand/megalinks-logo.png`, `/brand/megalinks-logo-dark.png` and `/api/mail-file/<48 hex>/<0-9>/<name>` pass. They reach the app with no identity headers and no cookies. Everything else answers as before (303 to the login, 401 for the API).
+- `tests/railway-staging-gateway.mjs`: 61 checks (the open addresses, anonymity, and 13 neighbouring addresses that stay locked, including other images, a query string, a wrong token shape and POST).
+- Why: emails sent from Staging showed no logo, and the owner's Zap could not fetch a file in order to attach it.
+- **Still needed for a real attachment:** the Zap's Gmail step must take `word_file_url` in "Attachments" (and `html` as the body, type HTML).
+- **Staging deploy (16.11.2026):** deployment `28db3ebd`, SUCCESS, commit `c85e38b` (live before: `566a41a`). Checked from outside without signing in: both logo images 200; a file address with a made-up token reaches the app and gets its 404 ("הקובץ אינו זמין"); `/`, `/catalog`, `/admin`, another brand image, a logo with a query string 303; `/api/me`, `/api/admin/mail`, a malformed file address 401; POST to a file address 403. A real email with a real file was not sent.
+
 ## 16.11.2026 (22): Email test path; Sheets columns in the owner's order (branch `claude/sheets-columns-20261116`)
 - **Email test (no code change):** the owner connected Zapier (Webhooks Catch Hook → Email by Zapier, To = his own Gmail, trial until 29.11, 5 mails a day) on Staging under "חיבורים והגדרות → דוא״ל" with "שמירה מוצפנת בשרת" (Staging passes only owner e-mail, encryption key, automation key and origin to the Worker, so `POSTFLOW_EMAIL_SECRET` cannot be used there). The system posts JSON (`to, subject, text, html?, button, attachments`) with `Authorization: Bearer`, needs a direct 2xx (redirects are refused, no query strings in the URL). Found: most mails are text + button only (looks bare); designed HTML exists only for supplier article, writing ready and order close. Proposed a shared mail template (not built, waiting). A supplier mail is sent only when the site's agreement is verified and the order is not demo; "שליחה חוזרת" reuses `email:supplier:<article>` and does not resend a mail that already succeeded.
 - **Sheets columns (owner approved):** order is now שם האתר, URL, מחיר לפני הנחה ₪ (= list price), DR, UR, מייל ספק, שם ספק, עלות ₪, מלאי, מחיר מבצע ₪, then the rest; `מזהה ספק` and `מזהה אתר` last (`lib/sheets-plan.ts`). The owner dropped the "מחיר אחרי הנחה" column. Columns are read by name; old names (כתובת אתר, מחיר מחירון ₪, מייל הספק, ספק) stay accepted, both names together is an error. The Apps Script adds only columns missing under any name (`sheetHeaderGroups`).
