@@ -1,10 +1,11 @@
 import { env } from 'cloudflare:workers';
-import { one, all, stmt, now, connection, externalFetch, parse } from './server';
+import { one, all, stmt, now, connection, externalFetch, parse, ApiError } from './server';
 import { articleDocx } from './delivery-docx';
 import { Row } from './shared';
 import {supplierPublicationNotes,supplierArticleEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
 import {brandedEmailHtml,withMailFiles,mailFilesText,MAIL_FILE_DAYS,type MailFileLink} from './mail-template';
 import {safeFailure} from './security';
+import {RESEND_URL,RESEND_TEST_FROM} from './integration-security';
 
 export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string};
 // The sending service takes at most about 10MB per message. Larger sets of files travel as download links only.
@@ -43,6 +44,12 @@ export async function mailFileByToken(token:string,index:number):Promise<MailFil
  return (await mailFiles(job))[index]||null;
 }
 
+// Resend's own format (owner, 16.11.2026). With a test inbox set, every message goes only there and the subject names
+// the real recipient, so a trial never reaches a customer or a supplier.
+export function resendMessage(payload:Row,c:Row){const test=String(c.test_to||'').trim();
+ return {from:String(c.from||RESEND_TEST_FROM),to:[test||String(payload.to||'')],subject:(test?'[בדיקה · אל: '+payload.to+'] ':'')+String(payload.subject||''),html:payload.html,text:payload.text,
+  ...(Array.isArray(payload.attachments)&&payload.attachments.length?{attachments:payload.attachments.map((a:Row)=>({filename:a.filename,content:a.content_base64}))}:{})};}
+const resendFailure=(status:number)=>status===401?'Resend דחה את המפתח. בדקו את מפתח ה-API בחיבור הדוא״ל.':status===403?'Resend חסם את השליחה: בלי דומיין מאומת אפשר לשלוח רק לכתובת שאיתה נרשמתם. מלאו "כתובת לבדיקה" או אמתו דומיין.':status===422?'Resend דחה את פרטי המייל (בדרך כלל כתובת השולח). בדקו את כתובת השולח בחיבור.':status===429?'Resend הגביל את קצב השליחה. נסו שוב בעוד דקה.':'Resend החזיר '+status;
 export async function sendQueuedMail(id:string){const job=parse(await one('SELECT * FROM jobs WHERE id=? AND kind=?',id,'email'));if(!job||['succeeded','demo','writing'].includes(job.status))return job;
  const c=await connection('email');if(job.demo){await stmt("UPDATE jobs SET status='demo',updated=? WHERE id=?",now(),id).run();return {status:'demo'};}
  if(!c.enabled||!c.url||!c.secret){await stmt("UPDATE jobs SET status='blocked',updated=? WHERE id=?",now(),id).run();return {status:'blocked'};}
@@ -66,7 +73,9 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    payload.html=job.html?withMailFiles(String(job.html),links):brandedEmailHtml({subject:String(job.subject||''),text:String(job.text||''),button:job.button,origin,files:links});
    const fileText=mailFilesText(links.filter(l=>l.url));if(fileText)payload.text=[payload.text,fileText].filter(Boolean).join('\n\n');
   }
-  const res=await externalFetch(c.url,{method:'POST',headers:{Authorization:'Bearer '+c.secret,'Content-Type':'application/json','Idempotency-Key':id},body:JSON.stringify(payload)});if(!res.ok)throw new Error('שירות הדיוור החזיר '+res.status);await stmt("UPDATE jobs SET status='succeeded',updated=? WHERE id=?",now(),id).run();return {status:'succeeded'};
+  const resend=c.provider==='resend';
+  const res=await externalFetch(resend?RESEND_URL:c.url,{method:'POST',headers:{Authorization:'Bearer '+c.secret,'Content-Type':'application/json','Idempotency-Key':id},body:JSON.stringify(resend?resendMessage(payload,c):payload)});
+  if(!res.ok)throw resend?new ApiError(502,resendFailure(res.status)):new Error('שירות הדיוור החזיר '+res.status);await stmt("UPDATE jobs SET status='succeeded',updated=? WHERE id=?",now(),id).run();return {status:'succeeded'};
  }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.delivery_error',?),updated=? WHERE id=?",safeFailure(e,'שליחת המייל נכשלה. בדקו את החיבור ונסו שוב.'),now(),id).run();return {status:'failed'};}}
 export async function queueMail(id:string,userId:string,data:Row){await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,userId,'email','requested',JSON.stringify(data),now(),now()).run();return sendQueuedMail(id);}
 export async function articleMail(a:Row,event:'submitted'|'revisions'|'published',origin:string,note=''){const o=parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;const customer=await one('SELECT * FROM users WHERE id=?',a.user_id);let recipients=event==='submitted'?(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email):[customer?.email];if(event==='submitted')recipients.push(String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(','));for(const email of new Set(recipients.filter(Boolean))){await queueMail('email:'+event+':'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:event==='submitted'?'מאמר חדש ממתין לאישור':event==='revisions'?'המאמר הוחזר לתיקון':'המאמר פורסם',text:a.title+'\n'+(note||a.published_url||''),button:{label:event==='published'?'לכתבה שפורסמה':'פתיחת המאמר',url:event==='published'?a.published_url:origin+'/article/'+a.id},demo:!!o.demo,article_id:a.id,origin});}}
