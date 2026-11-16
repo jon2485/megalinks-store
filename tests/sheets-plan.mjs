@@ -17,6 +17,24 @@ const zero=[...row];zero[4]=0;assert.equal(planSheets([headings,zero],[w]).opera
 const invalid=[...row];invalid[4]='oops';assert(planSheets([headings,invalid],[w]).errors.length>0);
 assert(planSheets([headings,row,row],[w]).errors.some(e=>e.includes('כפול')));
 const missing=planSheets([headings,row],[w,{...w,id:'b',name:'ב',url:'https://b.example'}]);assert.equal(missing.missing,1);assert(!missing.operations.some(o=>o.values.active===false),'Missing rows never delete/deactivate a site');
+// The site's own values written back to the sheet never block a sync (Staging 16.11.2026): a logo kept on the site as /api/selling/logo/...
+// and free text in example articles pass while unchanged; a changed value is still checked.
+{const heads=[...headings,'כתבות לדוגמה (פסיקים)'],site={...w,data:JSON.stringify({cost_cents:10000,public_notes:'הערה קיימת',logo_url:'/api/selling/logo/abc',example_articles:['טקסט חופשי, עם פסיק']})};
+ const same=['a','אתר א','a.example','כללי',200,'','לא','','/api/selling/logo/abc','טקסט חופשי, עם פסיק'];
+ let own=planSheets([heads,same],[site]);assert.deepEqual(own.errors,[],'the site values pass unchanged');assert.equal(own.operations.length,0,'and change nothing');
+ own=planSheets([heads,[...same.slice(0,8),'not a link',same[9]]],[site]);assert(own.errors.some(e=>e.includes('שורה 2')),'a changed logo is still checked');
+ own=planSheets([heads,[...same.slice(0,9),'עוד טקסט']],[site]);assert(own.errors.length>0,'changed example articles are still checked');}
+// A sale price equal to the list price that is already on the site, and an address stored on the site as it is, do not block the sync;
+// changing the price, the sale price or the address in that row is still checked.
+{const heads=[...headings,'מחיר מבצע ₪','במבצע'],site={...w,data:JSON.stringify({cost_cents:10000,public_notes:'הערה קיימת',logo_url:'https://a.example/logo.png',sale_price_cents:20000,is_on_sale:true})};
+ const same=['a','אתר א','a.example','כללי',200,'','לא','','',200,'כן'];
+ let own=planSheets([heads,same],[site]);assert.deepEqual(own.errors,[],'the site sale price passes while nothing about the sale changed');
+ own=planSheets([heads,[...same.slice(0,4),190,...same.slice(5)]],[site]);assert(own.errors.some(e=>e.includes('מחיר מבצע')),'changing the price checks the sale again');
+ own=planSheets([heads,[...same.slice(0,9),210,'כן']],[site]);assert(own.errors.some(e=>e.includes('מחיר מבצע')),'changing the sale price checks it');
+ const broken={...w,url:'לרוץ על החוף',data:JSON.stringify({cost_cents:10000})};
+ own=planSheets([headings,['a','אתר א','לרוץ על החוף','כללי',200,'','לא','','']],[broken]);assert.deepEqual(own.errors,[],'an address stored on the site as it is passes');assert.equal(own.operations.length,0);
+ own=planSheets([headings,['a','אתר א','גם לא כתובת','כללי',200,'','לא','','']],[broken]);assert(own.errors.length>0,'a changed address is still checked');
+ own=planSheets([headings,['','אתר ב','לרוץ על החוף','כללי',200,'','כן','','']],[broken]);assert(own.errors.length>0,'a new row is always checked');}
 const newRow=['','חדש','https://new.example','general',300,100,'כן','',''];plan=planSheets([headings,newRow],[w]);assert.equal(plan.additions,1);assert.equal(plan.operations[0].create,true);
 const source=sheetsScript();assert(source.includes('everyMinutes(5)'));assert(!source.includes('token = \''),'No credential embedded in script');
 const triggers=[],properties=new Map(),calls=[];let prompts=0;

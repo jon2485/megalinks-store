@@ -29,6 +29,10 @@ export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='str
  if(lists.has(key))return list(d[key]);
  return Object.hasOwn(w,key)&&key!=='data'?w[key]:d[key];
 }
+// Fields whose sheet check can be stricter than what the site itself stores.
+const siteChecked=new Set(['url','logo_url','example_articles','supplier_email','sale_ends']);
+// The sheet text of a site value, as the writeback puts it (same as sheetCell in sheets-merge).
+const asCell=(value:any)=>Array.isArray(value)?value.join(', '):typeof value==='boolean'?(value?'כן':'לא'):String(value??'');
 export function planSheets(rows:any[][],existing:Row[]){
  const errors:string[]=[],operations:Row[]=[],entries:Row[]=[],seenIds=new Set<string>(),seenUrls=new Map<string,string>();
  if(!Array.isArray(rows)||rows.length<2||rows.length>5001)throw Error('נדרש גיליון עם 1 עד 5,000 אתרים');
@@ -42,7 +46,9 @@ export function planSheets(rows:any[][],existing:Row[]){
   const cells=rows[i];if(!Array.isArray(cells)){errors.push('שורה '+(i+1)+': מבנה שורה לא תקין');continue;}if(!cells.some(v=>String(v??'').trim()))continue;
   try{
    const raw:Row=Object.fromEntries(keys.map((k,j)=>[k,String(cells[j]??'').trim()]));
-   let id=raw.id;const siteUrl=url(raw.url||'');
+   let id=raw.id;const own=raw.id?known.get(raw.id):undefined;let siteUrl:string;
+   // A known site whose address is stored on the site exactly like this is not blocked by its own old value.
+   try{siteUrl=url(raw.url||'');}catch(e){if(own&&raw.url&&String(own.url??'').trim()===raw.url)siteUrl=raw.url;else throw e;}
    if(!id){const matches=existingUrls.get(siteUrl)||[];if(matches.length>1)throw Error('כתובת קיימת בכמה רשומות; יש למלא מזהה');id=matches[0]||'sheet-'+crypto.randomUUID();}
    if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id)||seenIds.has(id))throw Error('מזהה אתר לא תקין או כפול');seenIds.add(id);
    const before=known.get(id);if(raw.id&&!before)throw Error('המזהה אינו קיים באתר; לאתר חדש יש להשאיר אותו ריק');
@@ -54,6 +60,10 @@ export function planSheets(rows:any[][],existing:Row[]){
    for(let j=0;j<keys.length;j++){
     const key=keys[j];if(!key||key==='id')continue;const text=String(cells[j]??'').trim();
     if(!text)continue; // Optional blanks preserve existing information, never turn missing costs into zero.
+    // Found on Staging 16.11.2026: the site writes its own values into the sheet (a logo kept on the site as /api/selling/logo/...,
+    // free text in example articles) and then rejected them when reading them back, which blocked the whole sync. A cell that
+    // still holds exactly the site's value changes nothing, so it is not checked again; only a value someone changed is validated.
+    if(before&&siteChecked.has(key)){const current=sheetCurrentValue(before,key);if(current!==undefined&&current!==null&&text===asCell(current).trim()){normalized[key]=current;continue;}}
     let value:any=text;
     if(text==='__CLEAR__'){if(['name','url','category','price_ils','active','dr','ur','turnaround_days','sort_order'].includes(key))throw Error('אין לרוקן שדה חובה');value=lists.has(key)?[]:flags.has(key)?false:'';}
     else if(flags.has(key)){if(/^(כן|true|1)$/i.test(text))value=true;else if(/^(לא|false|0)$/i.test(text))value=false;else throw Error('יש לכתוב כן או לא בשדה '+heads[j]);}
@@ -80,7 +90,9 @@ export function planSheets(rows:any[][],existing:Row[]){
    // Unchanged optional legacy fields are intentionally not rewritten.
    if(!before){Object.assign(values,{name:raw.name,url:siteUrl,category:cat,active:values.active!==false});values.features??=['dofollow'];values.language??='he';}
    const sale=Object.hasOwn(values,'is_on_sale')?values.is_on_sale:before&&sheetCurrentValue(before,'is_on_sale');
-   if(sale){if(values.sale_price_ils==='')throw Error('יש לבטל מבצע לפני מחיקת מחיר המבצע');const price=Number(values.price_ils??(before&&sheetCurrentValue(before,'price_ils'))),salePrice=Number(values.sale_price_ils??(before&&sheetCurrentValue(before,'sale_price_ils')));if(!Number.isFinite(salePrice)||salePrice>=price)throw Error('מחיר מבצע חייב להיות נמוך ממחיר המחירון');}
+   // Checked only when the price, the sale price or the sale switch changed here; the site's own existing values never block the sync.
+   const saleTouched=!before||['price_ils','sale_price_ils','is_on_sale'].some(k=>Object.hasOwn(values,k));
+   if(sale&&saleTouched){if(values.sale_price_ils==='')throw Error('יש לבטל מבצע לפני מחיקת מחיר המבצע');const price=Number(values.price_ils??(before&&sheetCurrentValue(before,'price_ils'))),salePrice=Number(values.sale_price_ils??(before&&sheetCurrentValue(before,'sale_price_ils')));if(!Number.isFinite(salePrice)||salePrice>=price)throw Error('מחיר מבצע חייב להיות נמוך ממחיר המחירון');}
    entries.push({id,row:i+1,values:normalized});
    if(Object.keys(values).length)operations.push({id,create:!before,expected_updated:before?.updated||'',values,name:raw.name,row:i+1});
   }catch(e){errors.push('שורה '+(i+1)+': '+(e as Error).message);}
