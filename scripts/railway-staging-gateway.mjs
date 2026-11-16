@@ -14,6 +14,11 @@ export function safeReturn(value='/') {
 function loginPage(returnTo,error='',email='') {
   return `<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>כניסה לסביבת הבדיקות | Mega Links</title><style>:root{--primary:#071f4b;--background:#f7f8fa;--foreground:#172b32;--card:#fff;--border:#c5d4df;--accent:#e8f8fb;--danger:#a02020}*{box-sizing:border-box}body{margin:0;background:var(--background);color:var(--foreground);font:16px Arial,Helvetica,sans-serif;min-height:100svh;display:grid;place-items:center;padding:24px}main{width:min(100%,440px);background:var(--card);padding:clamp(24px,6vw,40px);border:1px solid var(--border);border-radius:12px;border-top:5px solid var(--primary)}small{color:var(--primary)}h1{font-size:28px;line-height:1.3;margin:14px 0}p{line-height:1.6}label{display:block;margin:20px 0 8px}input,button{font:inherit;min-height:48px;border-radius:8px}input{width:100%;padding:12px;border:1px solid var(--border);background:white;color:var(--foreground)}button{cursor:pointer;border:1px solid var(--primary);padding:10px 16px;background:var(--primary);color:white}.password{display:flex;gap:8px}.password input{min-width:0}.password button{background:var(--accent);color:var(--primary);white-space:nowrap}.submit{width:100%;margin-top:24px;font-weight:bold}button:disabled{opacity:.7;cursor:wait}:focus-visible{outline:3px solid #087b9f;outline-offset:3px}.error{color:var(--danger)}[hidden]{display:none}</style><main><small lang="en" dir="ltr">MEGA LINKS · STAGING</small><h1>כניסה לסביבת הבדיקות</h1><p>הגישה זמינה למשתמשים שהוגדרו לבדיקת המערכת.</p><p id="error" role="alert" class="error" ${error?'':'hidden'}>${escape(error)}</p><form method="post" action="/__staging/login" novalidate><input type="hidden" name="return_to" value="${escape(safeReturn(returnTo))}"><label for="email">דוא״ל</label><input id="email" name="email" type="email" dir="ltr" autocomplete="username" maxlength="254" value="${escape(email)}" aria-describedby="error"><label for="password">סיסמה</label><div class="password"><input id="password" name="password" type="password" dir="ltr" autocomplete="current-password" maxlength="256" aria-describedby="error"><button type="button" id="show" aria-label="הצגת סיסמה" aria-pressed="false">הצגה</button></div><button class="submit" type="submit">כניסה</button></form></main><script>const form=document.querySelector('form'),password=document.querySelector('#password'),show=document.querySelector('#show');show.onclick=()=>{const visible=password.type==='password';password.type=visible?'text':'password';show.textContent=visible?'הסתרה':'הצגה';show.setAttribute('aria-label',visible?'הסתרת סיסמה':'הצגת סיסמה');show.setAttribute('aria-pressed',String(visible))};form.onsubmit=e=>{const email=document.querySelector('#email'),error=document.querySelector('#error');if(!email.value.trim()||!password.value){e.preventDefault();error.hidden=false;error.textContent='יש להזין דוא״ל וסיסמה כדי להיכנס.';const field=!email.value.trim()?email:password;field.setAttribute('aria-invalid','true');field.focus();return}const button=form.querySelector('.submit');button.disabled=true;button.textContent='מתחבר…';form.setAttribute('aria-busy','true')};</script></html>`;
 }
+// Owner decision (16.11.2026): emails sent from Staging must show the logo, and the mail service must be able
+// to fetch the files of an email in order to attach them. Only these exact addresses pass without signing in:
+// the two logo images and a file address that carries the personal token of one email. GET and HEAD only,
+// no query string, and the request reaches the app with no identity and no cookies. Everything else stays locked.
+export const publicMailPath=pathname=>/^\/(?:brand\/megalinks-logo(?:-dark)?\.png|api\/mail-file\/[0-9a-f]{48}\/\d\/[^\/]{1,200})$/.test(pathname);
 export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort=8787,stateDir}) {
   const publicOrigin=new URL(origin).origin;
   if(new URL(publicOrigin).protocol!=='https:'||Buffer.from(sessionSecret||'','base64').length!==32)throw new Error('Staging requires HTTPS and a 32-byte session secret');
@@ -58,16 +63,19 @@ export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort
         return finish(303,'',{'Set-Cookie':cookie(id+'.'+sign(id)),Location:returnTo});
       }
       if(['/signin-with-chatgpt','/callback'].includes(url.pathname))return finish(200,loginPage(url.searchParams.get('return_to')||'/'),{'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"});
-      if(!session){
+      const open=!session&&['GET','HEAD'].includes(req.method)&&!url.search&&publicMailPath(url.pathname);
+      if(!session&&!open){
         if(url.pathname.startsWith('/api/')||url.pathname==='/mcp')return finish(401,JSON.stringify({error:'יש להתחבר כדי להמשיך'}),{'Content-Type':'application/json'});
         return finish(303,'',{Location:'/signin-with-chatgpt?return_to='+encodeURIComponent(safeReturn(url.pathname+url.search))});
       }
       const headers={...req.headers};
       for(const key of Object.keys(headers))if(key.startsWith('oai-')||key.startsWith('x-forwarded-')||['forwarded','authorization','connection','host','upgrade','proxy-authorization','proxy-connection'].includes(key))delete headers[key];
       headers.host=new URL(publicOrigin).host;headers['x-forwarded-proto']='https';
-      headers['oai-authenticated-user-id']=session.account.id;headers['oai-authenticated-user-email']=session.account.email.toLowerCase();
-      headers['oai-authenticated-user-full-name']=encodeURIComponent(session.account.name||session.account.email);headers['oai-authenticated-user-full-name-encoding']='percent-encoded-utf-8';
-      headers.cookie=(headers.cookie||'').split(';').filter(s=>!s.trim().startsWith(COOKIE+'=')).join(';');
+      if(session){
+        headers['oai-authenticated-user-id']=session.account.id;headers['oai-authenticated-user-email']=session.account.email.toLowerCase();
+        headers['oai-authenticated-user-full-name']=encodeURIComponent(session.account.name||session.account.email);headers['oai-authenticated-user-full-name-encoding']='percent-encoded-utf-8';
+        headers.cookie=(headers.cookie||'').split(';').filter(s=>!s.trim().startsWith(COOKIE+'=')).join(';');
+      }else delete headers.cookie;
       const upstream=http.request({hostname:'127.0.0.1',port:upstreamPort,path:url.pathname+url.search,method:req.method,headers},response=>{
         const out={...response.headers,'cache-control':'private, no-store','x-robots-tag':'noindex, nofollow, noarchive','x-content-type-options':'nosniff','referrer-policy':'no-referrer','strict-transport-security':'max-age=31536000'};
         delete out.connection;res.writeHead(response.statusCode||502,out);response.pipe(res);

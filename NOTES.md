@@ -1283,3 +1283,10 @@ Owner: "כשנשלחת כתבה לספק, אני רוצה שהיא תגיע כק
 - Other emails (order summary, writing details) keep their download buttons; the owner asked only about the article sent to a supplier.
 - **Still needed for a real attachment:** in the owner's Zap, the Gmail step's "Attachments" must take `word_file_url` (or the numbered fields). On Staging the login wall also has to let the file address through; the owner has not answered that question, so the wall is unchanged.
 - **Staging deploy (16.11.2026 morning, owner: "כן, להעלות"):** deployment `5fe847a2`, SUCCESS, commit `566a41a` on `feature/homepage-staging-20261115` (live before: `34911c1`). Only the commit changed, in the staging environment. `/healthz` 200. Production and `main` not touched. No real email was sent; pages behind the login were not viewed.
+
+### 16.11.2026 (3): Staging wall opened for the email logo and email files only
+Owner: "כן, לפתוח" (to the question whether to open, without signing in, only the logo files and the personal file addresses of emails).
+- `scripts/railway-staging-gateway.mjs` `publicMailPath`: without a session, only `GET`/`HEAD` with no query string to `/brand/megalinks-logo.png`, `/brand/megalinks-logo-dark.png` and `/api/mail-file/<48 hex>/<0-9>/<name>` pass. They reach the app with no identity headers and no cookies. Everything else answers as before (303 to the login, 401 for the API).
+- `tests/railway-staging-gateway.mjs`: 61 checks (the open addresses, anonymity, and 13 neighbouring addresses that stay locked, including other images, a query string, a wrong token shape and POST).
+- Why: emails sent from Staging showed no logo, and the owner's Zap could not fetch a file in order to attach it.
+- **Still needed for a real attachment:** the Zap's Gmail step must take `word_file_url` in "Attachments" (and `html` as the body, type HTML).
