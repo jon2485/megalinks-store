@@ -34,7 +34,12 @@ export async function saveCatalogBatch(user:Row,input:Row){
   for(const k of texts)if(k in values){assert(typeof values[k]==='string'&&values[k].length<=(k.includes('notes')||k==='publishing_restrictions'?6000:1000),'טקסט לא תקין בשדה '+k);d[k]=values[k].trim();}
   for(const k of flags)if(k in values){assert(typeof values[k]==='boolean','ערך כן/לא לא תקין');d[k]=values[k];}
   for(const k of lists)if(k in values){assert(Array.isArray(values[k])&&values[k].length<=100&&values[k].every((v:unknown)=>typeof v==='string'&&v.length<=1000),'רשימה לא תקינה');d[k]=values[k];}
-  assert(d.name&&d.url&&d.category,`שורה ${i+1}: שם, כתובת וקטגוריה הם חובה`);d.url=url(d.url,'כתובת האתר');if(d.logo_url)d.logo_url=url(d.logo_url,'כתובת תמונת הלוגו');
+  assert(d.name&&d.url&&d.category,`שורה ${i+1}: שם, כתובת וקטגוריה הם חובה`);
+  // Like suspension (above): a stored address or logo that this save does not change is kept as it is and never blocks the save
+  // (found on Staging 16.11.2026, a legacy invalid address stopped a whole Sheets sync). A new site, a site being made visible again
+  // and a changed field are fully checked, as before.
+  const strict=!prev||(values.active===true&&!prev.active);
+  if(strict||'url' in values)d.url=url(d.url,'כתובת האתר');if(d.logo_url&&(strict||'logo_url' in values))d.logo_url=url(d.logo_url,'כתובת תמונת הלוגו');
   const canonical=(value:string)=>{try{const u=new URL(value);return u.hostname.toLowerCase().replace(/^www\./,'')+u.pathname.replace(/\/$/,'')+u.search;}catch{return '';}};const normalized=canonical(d.url);if(!prev||canonical(prev.url)!==normalized){assert(!seenUrls.has(normalized),'אותה כתובת אתר מופיעה פעמיים בקבוצה',409);seenUrls.add(normalized);assert(![...existing.values()].some(w=>w.id!==id&&canonical(w.url)===normalized),'כבר קיים אתר עם הכתובת הזו. ערכו את האתר הקיים במקום להוסיף כפילות',409);}
   if('example_articles' in values)d.example_articles=values.example_articles.map((value:string,index:number)=>url(value,'כתובת מאמר לדוגמה '+(index+1)));
   const amount=(v:unknown)=>{assert(v!==''&&v!==null&&typeof v!=='boolean','יש להזין מחיר');const n=Math.round(Number(v)*100);assert(Number.isSafeInteger(n)&&n>=0&&n<=100000000,'מחיר חייב להיות מספר לא שלילי');return n;};
@@ -42,7 +47,8 @@ export async function saveCatalogBatch(user:Row,input:Row){
   d.price_cents=price;delete d.price_ils;
   if('cost_ils' in values)d.cost_cents=values.cost_ils===''?undefined:amount(values.cost_ils);
   if('sale_price_ils' in values)d.sale_price_cents=values.sale_price_ils===''?undefined:amount(values.sale_price_ils);
-  if(d.is_on_sale)assert(Number.isSafeInteger(d.sale_price_cents)&&d.sale_price_cents<price,'מחיר מבצע חייב להיות נמוך מהמחיר הרגיל');
+  // The sale rule is checked when this save touches the price, the sale price or the sale switch, adds a site or makes one visible again.
+  if(d.is_on_sale&&(strict||['price_ils','sale_price_ils','is_on_sale'].some(k=>k in values)))assert(Number.isSafeInteger(d.sale_price_cents)&&d.sale_price_cents<price,'מחיר מבצע חייב להיות נמוך מהמחיר הרגיל');
   if(d.sale_ends)assert(Number.isFinite(Date.parse(d.sale_ends)),'תאריך סיום המבצע אינו תקין');
   for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);assert(values[k]!==''&&Number.isInteger(n)&&n>=0&&n<=(k==='turnaround_days'?365:100),'דירוג או זמן אספקה לא תקינים');d[k]=n;}
   if('supplier_id' in values){const supplierId=String(values.supplier_id||'');assert(!supplierId||suppliers.has(supplierId),'הספק לא נמצא');d.supplier_id=supplierId;d.supplier_name=suppliers.get(supplierId)?.name||'';}

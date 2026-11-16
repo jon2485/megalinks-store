@@ -24,5 +24,10 @@ try{
  assert.equal((await read()).active,0,'failed edits never reactivate');
  await f.db.prepare("UPDATE websites SET data=json_set(data,'$.logo_url','/legacy/logo.png') WHERE id='site'").run();
  const invalidActivation=await write({active:true},paused.updated,400);assert(invalidActivation.error.includes('תמונת הלוגו'),'activation retains its existing full validation');
+
+// 16.11.2026: an unrelated edit of a hidden site keeps its legacy address, logo and sale as they are (a Sheets sync of other fields
+// must not be blocked); changing one of them is still checked.
+{const before=await read();await write({public_notes:'הערה חדשה'},before.updated);const edited=await read();assert.equal(edited.url,before.url,'legacy address kept');assert.equal(JSON.parse(edited.data).logo_url,'/legacy/logo.png','legacy logo kept');assert.equal(JSON.parse(edited.data).public_notes,'הערה חדשה');
+ const changed=await write({url:'still not a url'},edited.updated,400);assert(changed.error.startsWith('כתובת האתר אינה תקינה'),'a changed address is checked');}
  console.log('PASS catalog suspension: invalid legacy URL/logo/sale fields and unrelated pricing changes do not block admin suspension; other fields, historical records, customer visibility, admin access, role guards, revision conflicts and field-specific errors verified.');
 }finally{await f.mf.dispose();}
