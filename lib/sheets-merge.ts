@@ -24,6 +24,7 @@ export function writebackPlan(rows:any[][],entries:Row[],websites:Row[]){
  for(const entry of entries){const w=known.get(entry.id);if(!w)continue;baseline[w.id]={};for(let col=0;col<keys.length;col++){const field=keys[col];if(!field)continue;const v=field==='id'?w.id:sheetValue(w,field),after=sheetCell(v),before=rows[entry.row-1]?.[col]??'';if(field!=='id')baseline[w.id][field]=v;
    if(String(before)!==String(after)){cells.push({row:entry.row,column:col+1,field,id:w.id,name:w.name,before,after});target[entry.row-1][col]=after;}
  }}
- for(const w of websites){if(represented.has(w.id))continue;const row=keys.map(field=>!field?'':field==='id'?w.id:sheetCell(sheetValue(w,field)));append.push(row);baseline[w.id]=Object.fromEntries(keys.filter(k=>k&&k!=='id').map(k=>[k,sheetValue(w,k)]));target.push(row);}
+ // Owner 16.11.2026: a hidden site that is not in the sheet stays out of it; an active one still comes back (protects a row deleted by mistake).
+ for(const w of websites){if(represented.has(w.id)||!w.active)continue;const row=keys.map(field=>!field?'':field==='id'?w.id:sheetCell(sheetValue(w,field)));append.push(row);baseline[w.id]=Object.fromEntries(keys.filter(k=>k&&k!=='id').map(k=>[k,sheetValue(w,k)]));target.push(row);}
  return {cells,append,baseline,target};
 }

@@ -98,5 +98,5 @@ export function planSheets(rows:any[][],existing:Row[]){
   }catch(e){errors.push('שורה '+(i+1)+': '+(e as Error).message);}
  }
  if(seenIds.size===0&&!errors.length)errors.push('הגיליון אינו מכיל אתרים');
- return {operations,entries,errors,scanned:seenIds.size,additions:operations.filter(r=>r.create).length,updates:operations.filter(r=>!r.create).length,unchanged:seenIds.size-operations.length,missing:existing.filter(w=>!seenIds.has(w.id)).length};
+ return {operations,entries,errors,scanned:seenIds.size,additions:operations.filter(r=>r.create).length,updates:operations.filter(r=>!r.create).length,unchanged:seenIds.size-operations.length,missing:existing.filter(w=>!seenIds.has(w.id)).length,missing_active:existing.filter(w=>!seenIds.has(w.id)&&w.active).length};
 }

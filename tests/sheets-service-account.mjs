@@ -134,6 +134,19 @@ try{
  await edit({price_ils:660});await age();await tick();for(let i=0;i<50&&!((s=await status()).pull.trigger==='scheduled'&&s.pull.finished_at&&!s.pull.running);i++)await wait(200);eq(s.pull.trigger,'scheduled');eq(s.pull.status,'success');eq(sheetGet('a','מחיר מחירון ₪'),660,'scheduled pull wrote the sheet');
  await req('admin/sheets/config','POST',{enabled:false});eq((await status()).spreadsheet_id,COPY,'pausing keeps the sheet id');await age();before=googleCalls();await tick();await wait(800);eq(googleCalls(),before,'paused: no scheduled pull');await req('admin/sheets/config','POST',{enabled:true});
 
+ // Owner 16.11.2026, "what is not in the sheet disappears from the site": a row deleted from the sheet comes back while its site is active;
+ // after hiding the sites that are not in the sheet, the site is hidden (not deleted) and stays out of the sheet.
+ {const active=async id=>Number((await db.prepare('SELECT active FROM websites WHERE id=?').bind(id).first()).active);
+  eq(await active('b'),1,'b starts active');sheetTab().grid.splice(rowOf('b'),1);eq(rowOf('b'),-1,'row b deleted from the sheet');
+  r=await pull();eq(r.result.status,'success');ok(rowOf('b')>0,'an active site deleted from the sheet comes back');
+  await req('admin/sheets/config','POST',{enabled:false});sheetTab().grid.splice(rowOf('b'),1);r=await pull();
+  let p=await req('admin/sheets/preview','POST',{});eq(p.missing_active,1,'one active site is not in the sheet');
+  r=await req('admin/sheets/hide-missing','POST',{digest:'stale'},'owner',409);ok(r.error.includes('השתנו'),'an old preview cannot hide');
+  await req('admin/sheets/hide-missing','POST',{digest:p.digest},'customer',403);
+  r=await req('admin/sheets/hide-missing','POST',{digest:p.digest});eq(r.hidden,1);eq(await active('b'),0,'b hidden on the site');eq(await active('a'),1,'a, which is in the sheet, untouched');
+  ok(await db.prepare('SELECT id FROM websites WHERE id=?').bind('b').first(),'b is hidden, not deleted');
+  await req('admin/sheets/config','POST',{enabled:true});r=await pull();eq(r.result.status,'success');eq(rowOf('b'),-1,'a hidden site stays out of the sheet');
+  p=await req('admin/sheets/preview','POST',{});eq(p.missing_active,0);eq(p.missing,1,'counted as a hidden site that is not in the sheet');}
  // A replaced key clears the token cache; a revoked key gets a plain Hebrew answer.
  const tokensBefore=fake.tokens.length;await req('admin/sheets/service-account','POST',{json:accountJson});fake.revoked=true;r=await req('admin/sheets/test','POST',{},'owner',502);ok(r.error.includes('Google דחתה את המפתח'),r.error);fake.revoked=false;await req('admin/sheets/test','POST',{});eq(fake.tokens.length,tokensBefore+1);
  // The Apps Script push still works against the configured sheet.
