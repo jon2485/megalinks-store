@@ -1,8 +1,8 @@
 import {env} from 'cloudflare:workers';
 import type {Row} from './shared';
 import {assert,encrypt,externalUrl} from './server';
+import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
-export const RESEND_URL='https://api.resend.com/emails',RESEND_TEST_FROM='Mega Links <onboarding@resend.dev>';
 export function integrationEnvironmentName(key:string,provider='openai') {
     if(key==='ai')return ({gemini:'GEMINI_API_KEY',openai:'OPENAI_API_KEY',groq:'GROQ_API_KEY',grok:'XAI_API_KEY'} as Row)[provider]||'';
     return ({email:'POSTFLOW_EMAIL_SECRET',wordpress:'POSTFLOW_WORDPRESS_PASSWORD',payments:'POSTFLOW_PAYMENTS_SECRET',whatsapp:'POSTFLOW_WHATSAPP_SECRET',images:'PEXELS_API_KEY'} as Row)[key]||'';

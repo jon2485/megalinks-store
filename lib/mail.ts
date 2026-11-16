@@ -5,7 +5,7 @@ import { Row } from './shared';
 import {supplierPublicationNotes,supplierArticleEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
 import {brandedEmailHtml,withMailFiles,mailFilesText,MAIL_FILE_DAYS,type MailFileLink} from './mail-template';
 import {safeFailure} from './security';
-import {RESEND_URL,RESEND_TEST_FROM} from './integration-security';
+import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
 export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string};
 // The sending service takes at most about 10MB per message. Larger sets of files travel as download links only.
