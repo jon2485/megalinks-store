@@ -8,8 +8,11 @@ import {safeFailure} from './security';
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
 export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string};
-// The sending service takes at most about 10MB per message. Larger sets of files travel as download links only.
-const INLINE_FILES_LIMIT=6*1024*1024;
+// A webhook service (Zapier and the like) takes about 10MB per message; Resend takes 40MB and Gmail receives 25MB,
+// so with Resend up to 15MB of files are attached (owner, 16.11.2026). Larger sets travel as download links only.
+const INLINE_FILES_LIMIT=6*1024*1024,RESEND_INLINE_LIMIT=15*1024*1024;
+// A single file up to this size is always offered, attached or as a link, so nothing is dropped without a word.
+const MAIL_FILE_MAX=25*1024*1024;
 const base64=(bytes:Uint8Array)=>{let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(binary);};
 const storedFile=async(id:unknown,max:number)=>{const f=id?await one('SELECT * FROM files WHERE id=?',id):null;if(!f||Number(f.size)>max)return null;const blob=await (env as any).BUCKET?.get(f.key);return blob?{file:f as Row,bytes:new Uint8Array(await blob.arrayBuffer())}:null;};
 // The site address the email belongs to (for the logo and the file links). A button may lead to an outside site, so a stored origin wins.
@@ -23,9 +26,9 @@ export async function mailFiles(job:Row):Promise<MailFile[]>{
  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(a){
   files.length=0;files.push({filename:'article.docx',content_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',bytes:await articleDocx(a),label:'קובץ Word של הכתבה, עם התמונות והקרדיטים'});
   if(job.attach_images){const d=JSON.parse(a.data||'{}');
-   for(const [fid,name,label] of [[d.image_id,'image','התמונה הראשית'],[d.secondary_image_id,'image-2','תמונה נוספת']]){const s=await storedFile(fid,6*1024*1024);if(s)files.push({filename:name+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label});}
+   for(const [fid,name,label] of [[d.image_id,'image','התמונה הראשית'],[d.secondary_image_id,'image-2','תמונה נוספת']]){const s=await storedFile(fid,MAIL_FILE_MAX);if(s)files.push({filename:name+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label});}
    // The page no longer shows the article, so the customer's original document travels with the email too.
-   const doc=await storedFile(d.document_id,8*1024*1024);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
+   const doc=await storedFile(d.document_id,MAIL_FILE_MAX);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
   }}}
  return files;
 }
@@ -59,7 +62,7 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
   const files=await mailFiles(job);let links:MailFileLink[]=files.map(f=>({label:f.label,name:f.filename,size:f.bytes.length,url:''}));
   if(files.length){
    if(origin){const token=await fileToken(id,job);links=links.map((l,i)=>({...l,url:origin+'/api/mail-file/'+token+'/'+i+'/'+encodeURIComponent(l.name)}));payload.attachment_urls=links.map(l=>l.url);payload.attachment_names=links.map(l=>l.name);links.forEach((l,i)=>{payload['attachment_'+(i+1)+'_url']=l.url;payload['attachment_'+(i+1)+'_name']=l.name;});}
-   if(!origin||files.reduce((n,f)=>n+f.bytes.length,0)<=INLINE_FILES_LIMIT)payload.attachments=files.map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
+   if(!origin||files.reduce((n,f)=>n+f.bytes.length,0)<=(c.provider==='resend'?RESEND_INLINE_LIMIT:INLINE_FILES_LIMIT))payload.attachments=files.map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
   }
   // Rebuild supplier messages from publication fields on every send (also for retries of older jobs).
   if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');

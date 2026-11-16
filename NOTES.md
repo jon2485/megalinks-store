@@ -1349,3 +1349,9 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Owner:** "כשאני נכנס לתוך המערכת הקטלוג וכו, אין משם שום דרך לחזור חזרה לעמוד הבית". Cause: the homepage moved to "/" on 15.11 but the logo still opened the catalog.
 - **Fix:** for customers and visitors the logo (desktop and phone) loads the homepage "/"; admins keep the lobby (`app/workspace-navigation.tsx`). Footer gets "דף הבית" first (`app/workspace-footer.tsx`). The catalog stays under "קטלוג אתרים".
 - **Checked locally (13 checks, desktop and phone):** logo from /catalog opens "/", footer link opens "/", footer catalog link still opens /catalog, admin header unchanged. Not pushed or deployed yet.
+
+## 16.11.2026 (25): Supplier mail files with Resend (owner: "הקובץ לא הגיע במייל עצמו... והתמונה לא הגיעה בנפרד")
+- **Cause:** files were attached only up to 6MB in total (set for webhook services, about 10MB a message); the owner's Word file was 8.5MB, so it went as a link. Images and the original document were read only up to 6MB/8MB and were dropped silently above that (no attachment, no link).
+- **Fix (`lib/mail.ts`):** with Resend up to 15MB of files are attached (Resend takes 40MB, Gmail receives 25MB); webhook keeps 6MB. Every single file up to 25MB is offered, attached or as a link, so nothing disappears. Download links build the file only when clicked, which costs next to nothing.
+- **Tests:** `tests/resend-email.mjs` now 32 checks: a 4MB image arrives attached next to the Word file; with a 12MB image nothing is attached but both files get links.
+- Seen, not changed: a broken image file makes the Word builder fail and the whole supplier mail fails (generic error). Real uploads are checked images, so left as is.
