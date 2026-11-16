@@ -44,7 +44,7 @@ export default function CatalogPricingWorkspace({ctx,initialTab='sites',customer
   <CatalogWebsiteForm key={editing?.id||'new'} expandedDetails ctx={ctx} site={editing} onBusyChange={setWebsiteBusy} onDirtyChange={dirty=>draft.mark('website',dirty)} close={()=>draft.confirm(closeWebsite)}/>
  </section>;
 
- const alerts=Number(state.data?.pricing_alert_count||0),active=all.filter(w=>w.active).length,syncOk=sync.data?.status==='success'&&sync.data?.connection_protocol===2,syncLabel=syncOk?'סנכרון תקין':sync.data?.status==='conflict'?'התנגשות לבדיקה':sync.data?.status==='awaiting_ack'?'ממתין לעדכון השיטס':sync.data?.last_success?'מצב סנכרון':'ממתין לחיבור';
+ const alerts=Number(state.data?.pricing_alert_count||0),active=all.filter(w=>w.active).length,syncOk=sync.data?.status==='success'&&sync.data?.connection_protocol===2,syncLabel=syncOk?'סנכרון תקין':sync.data?.status==='conflict'?'התנגשות לבדיקה':sync.data?.status==='awaiting_ack'?'ממתין לעדכון השיטס':sync.data?.has_snapshot&&!sync.data?.enabled?'מחובר, הסנכרון מושהה':sync.data?.last_success?'מצב סנכרון':'ממתין לחיבור';
  const tabPage:Record<string,string>={sites:'admin-websites',tiers:'admin-pricing',customers:'admin-pricebooks',sheets:'admin-websites'};
  const go=(page:string)=>(e:React.MouseEvent)=>{if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();ctx.go(page);};
  const siteText=(url:string)=>String(url||'').replace(/^https?:\/\//,'').replace(/\/$/,'');
