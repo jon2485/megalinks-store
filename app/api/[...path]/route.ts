@@ -41,6 +41,7 @@ import {framedWorkbook,monthReportWorkbook} from '@/lib/admin-report-workbook';
 import {adminOrderFilterLabels} from '@/lib/admin-order-buckets';
 import {adminLobbySearch} from '@/lib/admin-lobby-search';
 import {sheetsAdmin,receiveSheets} from '@/lib/sheets-sync';
+import {sheetsGoogleAdmin,scheduledSheetsPull} from '@/lib/sheets-google';
 import {paymentEvidenceRows,orderPaymentEvidence} from '@/lib/payment-evidence';
 import {canWorkOrder,isBankPayment,isCardPayment} from '@/lib/payment-state';
 import {walletAvailable,cardAmount,completeOrderPayment} from '@/lib/split-payment';
@@ -69,7 +70,7 @@ import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManu
 import { DEFAULT_SUPPLIER_EMAIL } from '@/lib/supplier-presentation';
 import { contentHtml, signature, matchingSignature } from '@/lib/integrations';
 import { aiArticleHtml } from '@/lib/ai-article-content';
-import { env } from 'cloudflare:workers';
+import { env, waitUntil } from 'cloudflare:workers';
 import { Row, websitePricing, calculateQuote, articleTransitions, httpUrl, plainText, textToHtml } from '@/lib/shared';
 import { ApiError, db, stmt, one, all, parse, actor, admin, owns, assert, setting, saveSetting, audit, ensureCatalog, publicWebsite, website, uid, now, hash, encrypt, connection, geminiServerKey, externalFetch, externalUrl, notify, syncOrder, basicAuth } from '@/lib/server';
 import {hasAgencyCentre} from '@/lib/agency-shared';
@@ -176,7 +177,7 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin)});}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin)});}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
@@ -1031,7 +1032,7 @@ if (p[0] === 'cart') {
 
         if(p[1]==='unapplied-payments'){if(method==='GET'&&!p[2])return response(await adminUnappliedPayments());assert(method==='POST'&&p[2]==='handle'&&!p[3],'פעולה לא נתמכת',405);return response(await handleUnappliedPayment(u,await json(r)));}
         if(p[1]==='control-center'){if(p[2]==='updates'&&method==='POST'){assert(p.length===3||(p.length===4&&p[3]==='reopen'),'כתובת לא נמצאה',404);const body=await json(r);return response(p[3]==='reopen'?await reopenAdminUpdate(u,body):await handleAdminUpdate(u,body));}if(method==='POST'&&p[2]==='prices'&&p[3])return response(await reviewPriceChange(p[3],u));assert(method==='GET','פעולה לא נתמכת',405);if(p[2]==='updates')return response(await adminUpdates(query));if(p[2]==='pulse')return response(await adminPulse());if(p[2]==='search')return response(await adminLobbySearch(query.get('q')||''));if(p[2]==='prices')return response({prices:(await all("SELECT a.*,w.name AS website_name,w.url AS website_url FROM activity a LEFT JOIN websites w ON w.id=a.resource WHERE json_type(a.data,'$.before_price') IS NOT NULL AND COALESCE(json_extract(a.data,'$.after_price'),json_extract(a.data,'$.price'))<>json_extract(a.data,'$.before_price') AND NOT EXISTS(SELECT 1 FROM records r WHERE r.id='price-reviewed:'||a.id) ORDER BY a.created DESC")).map(parse)});return response(await adminControlCenter());}
-        if(p[1]==='sheets')return response(await sheetsAdmin(r,p,u,json));
+        if(p[1]==='sheets')return response(await sheetsGoogleAdmin(r,p,u,json)??await sheetsAdmin(r,p,u,json));
         if (p[1] === 'users') {
             if (method === 'GET')
                 return response({ users: await all("SELECT u.*,COALESCE(m.tier_id,'regular') AS tier_id,COALESCE(c.balance,0) AS monthly_balance,COALESCE(c.credit_limit,0) AS credit_limit,COALESCE(c.enabled,0) AS monthly_enabled,(SELECT COUNT(*) FROM records r JOIN orders po ON po.id=json_extract(r.data,'$.order_id') WHERE r.user_id=u.id AND r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND po.paid=0 AND po.status<>'cancelled') AS pending_payment_reports,(SELECT name FROM pricing_tiers t WHERE t.id=COALESCE(m.tier_id,'regular')) AS tier_name,(SELECT supplier_id FROM seller_profiles s WHERE s.user_id=u.id) AS supplier_id,(SELECT COUNT(*) FROM orders o WHERE o.user_id=u.id AND COALESCE(json_extract(o.data,'$.demo'),0)=0) AS order_count,(SELECT MAX(o.created) FROM orders o WHERE o.user_id=u.id AND COALESCE(json_extract(o.data,'$.demo'),0)=0) AS last_order_at FROM users u LEFT JOIN pricing_members m ON m.user_id=u.id LEFT JOIN credit_accounts c ON c.user_id=u.id ORDER BY u.name") });

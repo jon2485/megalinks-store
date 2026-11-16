@@ -6,3 +6,32 @@
 .catalog-sync-setup .sheets-columns p{margin:6px 0 0}
 .catalog-sync-setup .sheets-columns ol{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:4px 18px;margin:10px 0 8px;line-height:1.7;color:#09234b;font-weight:750}
 .catalog-sync-setup .sheets-columns bdi{display:inline;background:none;padding:0;font-family:inherit}
+
+/* Direct Google connection through a service account (16.11.2026). Light only. */
+.catalog-sheets-panel .sheets-link-primary{background:#0071e3;color:#fff;box-shadow:none}
+.catalog-sheets-panel .sheets-link-primary:hover{color:#fff;background:#0077ed;box-shadow:none}
+.sheets-direct{display:grid;gap:16px;scroll-margin-top:90px}
+.sheets-direct h2{font-weight:850;font-size:1.3rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sheets-direct h2 span{font-size:.8rem;font-weight:750;color:#1a7f3c;background:#eaf7ee;border-radius:999px;padding:3px 10px}
+.sheets-direct header p{color:#426383;font-weight:600;line-height:1.7;margin-top:6px}
+.sheets-direct-steps{list-style:decimal;padding-inline-start:22px;display:grid;gap:6px;color:#335471;font-weight:600;line-height:1.7}
+.sheets-direct-account{display:grid;gap:6px;padding:14px 16px;border-radius:14px;background:#f3faf5}
+.sheets-direct-account>span{font-size:.85rem;font-weight:700;color:#426383}
+.sheets-direct-account>div{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.sheets-direct-account bdi{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.95rem;font-weight:700;color:#09234b;overflow-wrap:break-word;min-width:0;max-width:100%}
+.sheets-direct-account p{font-weight:750;color:#1a7f3c;margin:0}
+.sheets-direct-key,.sheets-direct-sheet{display:grid;gap:8px}
+.sheets-direct-key label,.sheets-direct-sheet label{font-weight:800;color:#09234b}
+.sheets-direct-key textarea{width:100%;min-height:120px;border:1px solid #c2dcec;border-radius:12px;padding:12px;background:#fff;color:#09234b;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.85rem;text-align:left;-webkit-text-security:disc;resize:vertical}
+.sheets-direct-key .catalog-sync-actions,.sheets-direct>.catalog-sync-actions{margin:4px 0 0}
+.sheets-direct small{color:#54718a;font-weight:600}
+.sheets-direct-sheet>div{display:flex;gap:10px}
+.sheets-direct-sheet input{flex:1;min-width:0;height:46px;border:1px solid #c2dcec;border-radius:10px;padding:0 12px;background:#fff;color:#09234b;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9rem;text-align:left}
+.sheets-direct-sheet button{min-height:46px;border-radius:10px;font-weight:800}
+.sheets-direct-feedback{margin:0;padding:10px 14px;border-radius:10px;font-weight:700;line-height:1.6}
+.sheets-direct-feedback.is-ok{background:#eaf7ee;color:#1a6b35}
+.sheets-direct-feedback.is-warn{background:#fff3e1;color:#8b530d}
+.sheets-direct-feedback.is-error{background:#fdecec;color:#a4262c}
+.sheets-direct-last{display:flex;align-items:center;gap:8px;margin:0;color:#426383;font-weight:600;font-size:.92rem}
+.sheets-direct-last svg{flex:none}
+@media(max-width:760px){.sheets-direct-sheet>div{flex-direction:column}.sheets-direct-account>div{align-items:stretch}.sheets-direct-account button{width:100%}}

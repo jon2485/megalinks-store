@@ -25,7 +25,47 @@ function installMegaLinksSync() {
   const result = megaLinksSend_(true);
   ui.alert('החיבור הותקן', result.message || 'בדקו את מצב הסנכרון באתר.', ui.ButtonSet.OK);
 }
-function megaLinksCatalogMenu() { SpreadsheetApp.getUi().createMenu('Mega Links').addItem('סנכרון עכשיו', 'syncMegaLinksNow').addItem('התקנה או עדכון החיבור', 'installMegaLinksSync').addItem('השהיית החיבור', 'removeMegaLinksSync').addToUi(); }
+function megaLinksCatalogMenu() { SpreadsheetApp.getUi().createMenu('Mega Links').addItem('סנכרון עכשיו', 'syncMegaLinksNow').addItem('סידור העמודות לפי הסדר החדש', 'arrangeMegaLinksColumns').addItem('התקנה או עדכון החיבור', 'installMegaLinksSync').addItem('השהיית החיבור', 'removeMegaLinksSync').addToUi(); }
+function onOpen() { megaLinksCatalogMenu(); }
+// Owner's order (16.11.2026): the known columns in MEGA_LINKS_HEADERS order, the sheet's own extra columns after them,
+// the two id columns last. Moves whole columns (values, formats and formulas travel with them); renames and deletes nothing.
+function megaLinksColumnOrder_(headers) {
+  const at = name => headers.indexOf(name), groups = MEGA_LINKS_HEADERS.map(g => g.map(at).filter(i => i >= 0)[0]);
+  const ids = groups.slice(-2).filter(i => i !== undefined), known = groups.slice(0, -2).filter(i => i !== undefined);
+  const extra = headers.map((h, i) => i).filter(i => groups.indexOf(i) < 0 && String(headers[i]).trim() !== '');
+  const empty = headers.map((h, i) => i).filter(i => groups.indexOf(i) < 0 && String(headers[i]).trim() === '');
+  return known.concat(extra, ids, empty);
+}
+function megaLinksArrange_(tab) {
+  let headers = tab.getRange(1, 1, 1, tab.getLastColumn()).getValues()[0].map(String);
+  const order = megaLinksColumnOrder_(headers);
+  let current = headers.map((h, i) => i), moved = 0;
+  for (let target = 0; target < order.length; target++) {
+    const from = current.indexOf(order[target]);
+    if (from === target) continue;
+    tab.moveColumns(tab.getRange(1, from + 1, tab.getMaxRows(), 1), target + 1);
+    current.splice(target, 0, current.splice(from, 1)[0]);
+    moved++;
+  }
+  SpreadsheetApp.flush();
+  return moved;
+}
+function arrangeMegaLinksColumns() {
+  const ui = SpreadsheetApp.getUi(), book = SpreadsheetApp.getActiveSpreadsheet();
+  if (!book || book.getId() !== MEGA_LINKS_SHEET_ID) throw new Error('יש לפתוח את גיליון הקטלוג של מגה לינקס.');
+  const tab = book.getSheetByName(MEGA_LINKS_TAB);
+  if (!tab) throw new Error('לשונית האתרים חסרה.');
+  const answer = ui.alert('סידור העמודות', 'העמודות יסודרו כך: שם האתר, URL, מחיר לפני הנחה, DR, UR, מייל ספק, שם ספק, עלות, מלאי, מחיר מבצע, ואחריהן שאר העמודות. מזהה ספק ומזהה אתר בסוף.'+'\\n\\n'+'הנתונים זזים יחד עם העמודה. שום עמודה לא נמחקת ושום שם לא משתנה. להמשיך?', ui.ButtonSet.OK_CANCEL);
+  if (answer !== ui.Button.OK) return;
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(10000)) { ui.alert('סנכרון מתבצע כעת. נסו שוב בעוד דקה.'); return; }
+  try {
+    const headers = tab.getRange(1,1,1,tab.getLastColumn()).getValues()[0].map(String), missing = MEGA_LINKS_HEADERS.filter(g=>!g.some(h=>headers.indexOf(h)>=0)).map(g=>g[0]);
+    if (missing.length) {if(headers.length+missing.length>80)throw new Error('אין מקום לעמודות החיבור.');if(headers.length+missing.length>tab.getMaxColumns())tab.insertColumnsAfter(tab.getMaxColumns(),headers.length+missing.length-tab.getMaxColumns());tab.getRange(1,headers.length+1,1,missing.length).setValues([missing]);}
+    const moved = megaLinksArrange_(tab);
+    ui.alert('העמודות סודרו', (moved ? 'הוזזו ' + moved + ' עמודות.' : 'העמודות כבר היו בסדר הנכון.') + (missing.length ? ' נוספו עמודות חסרות: ' + missing.join(', ') + '.' : ''), ui.ButtonSet.OK);
+  } finally { lock.releaseLock(); }
+}
 function syncMegaLinksNow() { const r = megaLinksSend_(true); SpreadsheetApp.getUi().alert(r.message || 'בדקו את מצב הסנכרון באתר.'); }
 function megaLinksSyncOnEdit(e) { if (e && e.range && e.range.getSheet().getName() === MEGA_LINKS_TAB) megaLinksSend_(false); }
 function megaLinksSyncOnChange(e) { megaLinksSend_(false); }
