@@ -123,7 +123,7 @@ export function SupplierHub({ctx,confirm}:{ctx:Ctx;confirm:(run:()=>void)=>void}
       <DropdownMenuItem className="is-first" onSelect={tab(s,'sites')}><Globe size={17}/>האתרים של הספק<small>{s.site_count}</small></DropdownMenuItem>
       <DropdownMenuItem onSelect={()=>go('admin-supplier-articles/'+s.id)}><FileText size={17}/>כתבות שנשלחו אליו</DropdownMenuItem>
       <DropdownMenuItem onSelect={()=>go('admin-supplier-billing/'+s.id)}><CreditCard size={17}/>התחשבנות והזמנות</DropdownMenuItem>
-      {s.billing==='stock'&&<DropdownMenuItem onSelect={()=>openAddStockFor(ctx,s)}><Boxes size={17}/>הוספת מלאי</DropdownMenuItem>}
+      {<DropdownMenuItem onSelect={()=>openAddStockFor(ctx,s)}><Boxes size={17}/>הוספת מלאי</DropdownMenuItem>}
       <DropdownMenuSeparator/>
       <DropdownMenuItem onSelect={tab(s,'details')}><UserRoundPen size={17}/>פרטים ואופן התנהלות</DropdownMenuItem>
       {s.account_user_id&&<DropdownMenuItem onSelect={tab(s,'details')}><Bell size={17}/>בקשות הספק{s.requests>0&&<small className="is-hot">{s.requests}</small>}</DropdownMenuItem>}

@@ -1,6 +1,7 @@
 import type {Row} from './shared';
 export const SHEET_ID='1_bo5ubja3sLePWSPEVIkc5ySOvhCxRICQBf2VnqNmtE';
 export const SHEET_TAB='אתרים';
+export const MONTHLY='חודשי';
 // Owner order (16.11.2026): name, URL, list price, DR, UR, supplier e-mail, supplier name, cost, stock, sale price, then the rest.
 // Columns are read by header name, so an existing sheet keeps working in any order; the old header names stay accepted.
 export const sheetFields:Record<string,string>={
@@ -22,6 +23,8 @@ export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='str
  if(key==='price_ils')return w.price/100;
  if(key==='cost_ils'||key==='sale_price_ils'||key==='pixel_price_ils'){const field=key.replace('_ils','_cents');return d[field]===undefined?(key==='sale_price_ils'?(d.sale_price||undefined):key==='pixel_price_ils'?(d.pixel_price??undefined):undefined):d[field]/100;}
  if(key==='active')return !!w.active;
+ // Per-site billing (16.11.2026): a site without stock is billed monthly, and the sheet says so in words.
+ if(key==='stock_total')return d.stock_total===null||d.stock_total===undefined||d.stock_total===''?MONTHLY:Number(d.stock_total);
  if(flags.has(key))return !!d[key];
  if(lists.has(key))return list(d[key]);
  return Object.hasOwn(w,key)&&key!=='data'?w[key]:d[key];
@@ -55,6 +58,7 @@ export function planSheets(rows:any[][],existing:Row[]){
     if(text==='__CLEAR__'){if(['name','url','category','price_ils','active','dr','ur','turnaround_days','sort_order'].includes(key))throw Error('אין לרוקן שדה חובה');value=lists.has(key)?[]:flags.has(key)?false:'';}
     else if(flags.has(key)){if(/^(כן|true|1)$/i.test(text))value=true;else if(/^(לא|false|0)$/i.test(text))value=false;else throw Error('יש לכתוב כן או לא בשדה '+heads[j]);}
     else if(lists.has(key))value=text.split(',').map(s=>s.trim()).filter(Boolean);
+    else if(key==='stock_total'&&text===MONTHLY)value=MONTHLY;
     else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);if(['dr','ur'].includes(key)&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key))value=Math.round(value*100)/100;}
     if(key==='url'||key==='logo_url')value=value?url(value):'';
     if(key==='category')value=cat;

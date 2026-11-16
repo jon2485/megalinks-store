@@ -31,6 +31,10 @@ const onSale={...w,data:JSON.stringify({cost_cents:10000,ur:5,is_on_sale:true,sa
 plan=planSheets([[...fresh,'במבצע'],['אתר א','a.example',200,10,5,'','',100,'','140','general','a','לא']],[onSale]);
 ok(plan.operations[0].values.is_on_sale===false&&plan.operations[0].values.sale_price_ils===140,'changing במבצע from כן to לא ends the sale');
 ok(planSheets([fresh,['אתר א','a.example',200,10,5,'','',100,'','250','general','a']],[w]).errors.some(e=>e.includes('מבצע')),'a sale price above the list price is refused');
+const stocked={...w,data:JSON.stringify({cost_cents:10000,ur:5,stock_total:4})};
+plan=planSheets([fresh,['אתר א','a.example',200,10,5,'','',100,'חודשי','','general','a']],[stocked]);
+ok(plan.errors.length===0&&plan.operations[0].values.stock_total==='חודשי','"חודשי" in the stock column asks to return the site to monthly billing');
+ok(planSheets([fresh,['אתר א','a.example',200,10,5,'','',100,'חודשי','','general','a']],[w]).operations.length===0,'a monthly site already reads as "חודשי"');
 const source=sheetsScript(),groups=JSON.parse(source.match(/const MEGA_LINKS_HEADERS = (.*);/)[1]);
 ok(groups.find(g=>g[0]==='URL').includes('כתובת אתר')&&groups.find(g=>g[0]==='מחיר לפני הנחה ₪').includes('מחיר מחירון ₪'),'the script knows the old names');
 const missingFor=headers=>groups.filter(g=>!g.some(h=>headers.includes(h))).map(g=>g[0]);

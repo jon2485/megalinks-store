@@ -38,7 +38,7 @@ const avatarColors=['#0071e3','#30a46c','#bf5af2','#ff9f0a','#ff375f','#0a84ff',
 const avatarColor=(s:string)=>avatarColors[[...String(s||'')].reduce((n,c)=>n+c.charCodeAt(0),0)%avatarColors.length];
 export function Av({name,size}:{name?:string;size?:'lg'}){return <span className={'sv2-av'+(size?' is-lg':'')} style={{background:avatarColor(name||'')}} aria-hidden="true">{String(name||'?').trim().slice(0,1)}</span>;}
 function Stock({used,total,tone}:{used:number;total:number;tone?:string}){return <span className={'sv2-stock'+(tone?' is-'+tone:'')}><span>{used}</span><i>/</i><b>{total}</b></span>;}
-export const billingPill=(b:string)=>b==='stock'?<span className="sv2-pill p-stock"><i/>מלאי · חבילה מראש</span>:b==='monthly'?<span className="sv2-pill p-month"><i/>התחשבנות חודשית</span>:<span className="sv2-muted">אין אתרים</span>;
+export const billingPill=(b:string)=>b==='stock'?<span className="sv2-pill p-stock"><i/>מלאי · חבילה מראש</span>:b==='monthly'?<span className="sv2-pill p-month"><i/>התחשבנות חודשית</span>:b==='mixed'?<span className="sv2-pill p-month"><i/>חודשי + מלאי לפי אתר</span>:<span className="sv2-muted">אין אתרים</span>;
 export const kindPill=(k:string)=><span className={'sv2-pill '+(k==='account'?'p-acc':k==='partial'?'p-part':'p-man')}>{supplierKinds[k]||'ספק ידני'}</span>;
 const orderPill:Record<string,[string,string]>={open:['p-open','הזמנה פתוחה'],awaiting:['p-wait','ממתינה לחשבונית'],invoice:['p-inv','התקבלה חשבונית'],paid:['p-paid','שולמה']};
 const packPill=(p:Row)=>p.status==='done'?<span className="sv2-pill p-paid"><i/>נוצלה במלואה</span>:p.status==='queued'?<span className="sv2-pill p-man"><i/>ממתינה לשימוש</span>:p.status==='low'?<span className="sv2-pill p-inv"><i/>עומדת להיגמר · {p.left}</span>:<span className="sv2-pill p-open"><i/>בשימוש{p.paid?' · שולמה':''}</span>;
@@ -53,7 +53,7 @@ export function SupplierV2({ctx,id,tab,guard,kit}:{ctx:Ctx;id:string;tab:Supplie
  const toTab=(t:SupplierTab)=>t==='articles'?go('admin-supplier-articles/'+id):t==='billing'?go('admin-supplier-billing/'+id):go('admin-supplier/'+id,()=>saveAdminViewState('supplier-editor:'+id,{site:'',tab:t,all:false}));
  if(state.error&&!s)return <div className="sv2"><div className="sv2-empty"><h3>הספק לא נטען</h3><p>{state.error}</p><button type="button" className="sv2-btn quiet" onClick={()=>ctx.go('admin-suppliers')}>חזרה לכל הספקים</button></div></div>;
  if(!s)return <div className="sv2"><p className="sv2-loading" role="status">טוען את הספק…</p></div>;
- const month=new Date().toISOString().slice(0,7),sentMonth=articles.filter(a=>String(a.supplier_sent_at||'').startsWith(month)).length,orders=b?(s.billing==='stock'?b.stock.packages.length:b.orders.length):0,billing=s.billing;
+ const month=new Date().toISOString().slice(0,7),sentMonth=articles.filter(a=>String(a.supplier_sent_at||'').startsWith(month)).length,orders=b?(s.billing==='stock'?b.stock.packages.length:s.billing==='mixed'?b.stock.packages.length+b.orders.length:b.orders.length):0,billing=s.billing;
  const tabTitle:Record<SupplierTab,string>={sites:'',articles:'כתבות שנשלחו',billing:'התחשבנות',details:'פרטים'};
  return <div className="sv2" dir="rtl">
   <nav className="sv2-crumb" aria-label="מיקום"><a href="/admin-suppliers" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-suppliers');}}>כל הספקים</a><ChevronLeft size={14} aria-hidden="true"/>{tab==='sites'?<span>{s.name}</span>:<><a href={'/admin-supplier/'+s.id} onClick={e=>{if(!plain(e))return;e.preventDefault();toTab('sites');}}>{s.name}</a><ChevronLeft size={14} aria-hidden="true"/><span>{tabTitle[tab]}</span></>}</nav>
@@ -92,8 +92,8 @@ function SitesTab({ctx,supplier:s,guard,kit}:{ctx:Ctx;supplier:Row;guard:Guard;k
     <span className="sv2-rowact"><button type="button" className="sv2-btn tint sm" onClick={()=>quick(w)}><Pencil size={14} aria-hidden="true"/>עריכה</button><DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="sv2-dots" aria-label={'עוד פעולות עבור '+w.name}><MoreHorizontal size={16}/></button></DropdownMenuTrigger><DropdownMenuContent className="sv2-menu" align="end">
      <DropdownMenuItem onSelect={()=>edit(w.id)}><Pencil size={15}/>עריכה מלאה של האתר</DropdownMenuItem>
      <DropdownMenuItem onSelect={()=>go('admin-supplier-articles/'+s.id,()=>saveAdminViewState('supplier-articles:'+s.id,{site:w.id}))}><FileText size={15}/>כתבות באתר הזה</DropdownMenuItem>
-     {s.billing==='stock'&&<DropdownMenuItem onSelect={()=>go('admin-supplier-stock/'+w.id)}><Box size={15}/>{w.stock_total==null?'ניהול מלאי · אין עדיין חבילה':'ניהול מלאי · נותרו '+w.stock_remaining}</DropdownMenuItem>}
-     {s.billing==='stock'&&<DropdownMenuItem onSelect={()=>openAddStock(ctx,{...w,total:w.stock_total,used:w.stock_sent},ctx.refresh)}><Plus size={15}/>הוספת מלאי</DropdownMenuItem>}
+     {<DropdownMenuItem onSelect={()=>go('admin-supplier-stock/'+w.id)}><Box size={15}/>{w.stock_total==null?'ניהול מלאי · אין עדיין חבילה':'ניהול מלאי · נותרו '+w.stock_remaining}</DropdownMenuItem>}
+     {<DropdownMenuItem onSelect={()=>openAddStock(ctx,{...w,total:w.stock_total,used:w.stock_sent},ctx.refresh)}><Plus size={15}/>הוספת מלאי</DropdownMenuItem>}
      <DropdownMenuItem onSelect={()=>window.open(contentUrl(w.url),'_blank','noopener')}><ExternalLink size={15}/>פתיחת האתר</DropdownMenuItem>
      <DropdownMenuSeparator/>
      <DropdownMenuItem className="sv2-danger" onSelect={()=>ctx.open({kind:'admin-finance',title:'הסרת אתר מהספק',description:w.name+' · '+s.name,render:(c:()=>void)=><kit.SiteDetach ctx={ctx} site={w} supplier={s} close={c}/>})}><X size={15}/>הסרה מהספק</DropdownMenuItem>
@@ -159,7 +159,8 @@ function BillingTab({ctx,supplier:s,state}:{ctx:Ctx;supplier:Row;state:Row}){
  if(!b)return <section className="sv2-card"><p className="sv2-loading" role="status">טוען התחשבנות…</p></section>;
  const openOrder=(key:string)=>ctx.go('admin-supplier-order/'+encodeURIComponent(key));
  const openPack=(p:Row)=>ctx.go('admin-supplier-package/'+encodeURIComponent(p.site_id+'~'+p.number));
- const monthly=s.billing!=='stock',stock=b.stock.packages.length>0;
+ // Per-site billing: monthly orders and stock packages can both exist for one supplier.
+ const monthly=s.billing!=='stock'||b.orders.length>0,stocked=s.billing!=='monthly'||b.stock.packages.length>0,stock=b.stock.packages.length>0;
  const cols={gridTemplateColumns:'minmax(170px,1.3fr) 130px 140px 200px minmax(150px,1fr) 170px'},pcols={gridTemplateColumns:'minmax(200px,1.4fr) 150px 140px 150px 190px 160px'};
  return <>
   {monthly&&<>
@@ -183,7 +184,7 @@ function BillingTab({ctx,supplier:s,state}:{ctx:Ctx;supplier:Row;state:Row}){
     </>}
    </section>
   </>}
-  {!monthly&&<>
+  {stocked&&<>
    <div className="sv2-card sv2-pad sv2-stockbar"><div><span className="lbl">מלאי פעיל בכל האתרים</span><div className="row">{b.stock.total?<Stock used={b.stock.used} total={b.stock.total}/>:<b className="big">אין מלאי</b>}<span>נותרו <b>{b.stock.left}</b> פרסומים · כל אתר עם חבילות משלו</span></div></div><button type="button" className="sv2-btn primary lg" onClick={()=>openAddStockFor(ctx,s)}><Box size={17} aria-hidden="true"/>הוספת מלאי (הזמנה חדשה)</button></div>
    <section className="sv2-card">
     {!stock?<div className="sv2-empty"><h3>עדיין אין חבילות מלאי</h3><p>כשמוסיפים מלאי לאתר, החבילה נרשמת כאן כהזמנה.</p></div>:<>
