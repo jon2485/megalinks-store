@@ -74,6 +74,7 @@ import { env, waitUntil } from 'cloudflare:workers';
 import { Row, websitePricing, calculateQuote, articleTransitions, httpUrl, plainText, textToHtml } from '@/lib/shared';
 import { ApiError, db, stmt, one, all, parse, actor, admin, owns, assert, setting, saveSetting, audit, ensureCatalog, publicWebsite, website, uid, now, hash, encrypt, connection, geminiServerKey, externalFetch, externalUrl, notify, syncOrder, basicAuth } from '@/lib/server';
 import {hasAgencyCentre} from '@/lib/agency-shared';
+import {PR_CONTENT_TYPE,PR_INTERVIEW_CENTS,PR_MAX_SITES,prSites,validInterview} from '@/lib/pr';
 export const dynamic = 'force-dynamic';
 const response = (data: any, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const json = async (r: Request): Promise<Row> => { assert(Number(r.headers.get('content-length') || 0) <= 500000, 'הבקשה גדולה מדי', 413); const raw = await r.text(); assert(raw.length <= 500000, 'הבקשה גדולה מדי', 413); try {
@@ -115,7 +116,7 @@ async function aiJson(c: Row, prompt: string) {
 }
 async function coupon(code: string, u: Row, subtotal: number) { if (!code)
     return null; const c = await one('SELECT * FROM coupons WHERE code=?', code.trim().toUpperCase()); assert(c && c.active, 'הקופון אינו זמין'); assert(!c.expires || new Date(c.expires).getTime() > Date.now(), 'תוקף הקופון הסתיים'); assert(!c.max_uses || c.uses < c.max_uses, 'הקופון נוצל במלואו'); assert(!c.user_email || c.user_email.toLowerCase() === u.email, 'הקופון אישי ללקוח אחר'); assert(subtotal >= c.min_total, 'סכום ההזמנה נמוך מהמינימום לקופון'); return c; }
-async function cartItems(u: Row) { const pricing=await pricingContext(u.id); const items = (await all('SELECT c.*,w.name,w.url,w.price,w.active,w.data AS website_data FROM cart c JOIN websites w ON c.website_id=w.id WHERE c.user_id=? ORDER BY c.created', u.id)).map(r => { const site = JSON.parse(r.website_data); const item = parse(r)!; const publicationPrice = pricedSite({...r,id:r.website_id,data:r.website_data},pricing,true).price_cents; const editorialPrice = item.editorial ? Number(item.editorial_words || 400) * 15 : 0; delete item.website_data; return { ...item, dr: site.dr ?? null, ur: site.ur ?? null, website: { id: r.website_id, name: r.name, url: r.url, procurement_verified: !!site.procurement_verified }, logo_url: site.logo_url || '', regular_price: Number(r.price), sale_price: publicationPrice, publication_price: publicationPrice, editorial_price: editorialPrice, price: publicationPrice + editorialPrice, price_cents: publicationPrice + editorialPrice }; });
+async function cartItems(u: Row) { const pricing=await pricingContext(u.id); const items = (await all('SELECT c.*,w.name,w.url,w.price,w.active,w.data AS website_data FROM cart c JOIN websites w ON c.website_id=w.id WHERE c.user_id=? ORDER BY c.created', u.id)).map(r => { const site = JSON.parse(r.website_data); const item = parse(r)!; const publicationPrice = pricedSite({...r,id:r.website_id,data:r.website_data},pricing,true).price_cents; const editorialPrice = item.content_type === PR_CONTENT_TYPE ? PR_INTERVIEW_CENTS : item.editorial ? Number(item.editorial_words || 400) * 15 : 0; delete item.website_data; return { ...item, dr: site.dr ?? null, ur: site.ur ?? null, website: { id: r.website_id, name: r.name, url: r.url, procurement_verified: !!site.procurement_verified }, logo_url: site.logo_url || '', regular_price: Number(r.price), sale_price: publicationPrice, publication_price: publicationPrice, editorial_price: editorialPrice, price: publicationPrice + editorialPrice, price_cents: publicationPrice + editorialPrice }; });
     const groups = new Map<string, Row[]>();
     for (const item of items) if (item.bundle_group) groups.set(item.bundle_group, [...(groups.get(item.bundle_group) || []), item]);
     for (const group of groups.values()) {
@@ -156,7 +157,11 @@ async function normalizeBundle(input: Row, prior: Row = {}) {
     b.active = b.active !== false;
     return b;
 }
-async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: input.editorial === true, editorial_words: Math.max(100,Math.min(5000,Math.floor(Number(input.editorial_words)||400))), topic: maxText(input.topic, 500), brand: maxText(input.brand, 200), audience: maxText(input.audience, 500), style: maxText(input.style, 100), keywords: maxText(input.keywords, 300), target_url: httpUrl(input.target_url || ''), anchor: maxText(input.anchor, 200), target_url_2: httpUrl(input.target_url_2 || ''), anchor_2: maxText(input.anchor_2, 200), notes: maxText(input.notes, 6000), words: Math.max(300, Math.min(2500, Number(input.words) || 500)), content_type: input.content_type === 'upload' ? 'upload' : 'ai', scheduled: input.scheduled || '', customer_id: input.customer_id || '', image_id: input.image_id || '', document_id: input.document_id || '', pixel: !!input.pixel, shared: !!input.shared }; assert(d.topic, 'יש להזין נושא לכתבה'); if (w.single_link_only)
+async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: input.editorial === true, editorial_words: Math.max(100,Math.min(5000,Math.floor(Number(input.editorial_words)||400))), topic: maxText(input.topic, 500), brand: maxText(input.brand, 200), audience: maxText(input.audience, 500), style: maxText(input.style, 100), keywords: maxText(input.keywords, 300), target_url: httpUrl(input.target_url || ''), anchor: maxText(input.anchor, 200), target_url_2: httpUrl(input.target_url_2 || ''), anchor_2: maxText(input.anchor_2, 200), notes: maxText(input.notes, 6000), words: Math.max(300, Math.min(2500, Number(input.words) || 500)), content_type: input.content_type === PR_CONTENT_TYPE ? PR_CONTENT_TYPE : input.content_type === 'upload' ? 'upload' : 'ai', scheduled: input.scheduled || '', customer_id: input.customer_id || '', image_id: input.image_id || '', document_id: input.document_id || '', pixel: !!input.pixel, shared: !!input.shared }; assert(d.topic, 'יש להזין נושא לכתבה'); if (d.content_type === PR_CONTENT_TYPE) {
+    // A PR article (owner, 17.11.2026): written by our interviewer after a phone call, so the writing service is always on.
+    const group = String(input.interview_group || ''); assert(/^[0-9a-f-]{36}$/.test(group), 'חסר מזהה ראיון');
+    Object.assign(d, { editorial: true, interview: validInterview(input.interview), interview_group: group });
+} if (w.single_link_only)
     assert(!d.target_url_2, 'באתר זה מותר קישור אחד בלבד'); if (d.scheduled) {
     try { d.scheduled=normalizeRequestedPublication(d.scheduled); } catch(e) { throw new ApiError(400,(e as Error).message); }
 } if (d.customer_id) {
@@ -384,6 +389,21 @@ async function handle(r: Request,access:ResponseAccess) {
         for (const id of bundle.website_ids) { const w = await website(id); assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); const brief = await validBrief({ ...b, topic: b.topic || 'כתבה עבור ' + w.name, words: b.words || 500 }, w, u); statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, id, 1, JSON.stringify({ ...brief, bundle_id: bundle.id, bundle_group: group }), now())); }
         await db().batch(statements); return response({ added: statements.length, coupon: bundle.coupon || '' }, 201);
     }
+if (p[0] === 'pr' && p[1] === 'cart' && method === 'POST') {
+        // PR page (owner, 17.11.2026): one interview for one or more sites. Every site becomes its own cart line, all lines
+        // share one interview id, and each article is written differently from the same call.
+        const b = await json(r); const ids = [...new Set((Array.isArray(b.sites) ? b.sites : []).map(String))];
+        assert(ids.length >= 1 && ids.length <= PR_MAX_SITES, 'יש לבחור בין אתר אחד ל-' + PR_MAX_SITES + ' אתרים');
+        // Only the sites the PR page offers (live, active, not archived; the owner's chosen ones once marked).
+        const offered = new Set((await prSites()).map(s => s.id)); assert(ids.every(id => offered.has(id)), 'אחד האתרים אינו זמין לכתבות יח״צ', 404);
+        const interview = validInterview(b.interview), group = uid(), statements = [];
+        for (const id of ids) {
+            const w = await website(id); assert(w.active, 'אחד האתרים אינו זמין כרגע');
+            const brief = await validBrief({ topic: 'כתבת יח״צ: ' + interview.business_name, brand: interview.business_name, target_url: interview.link, notes: interview.topic, content_type: PR_CONTENT_TYPE, interview, interview_group: group, editorial: true }, w, u);
+            statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, w.id, 1, JSON.stringify(brief), now()));
+        }
+        await db().batch(statements); return response({ added: statements.length, interview_group: group }, 201);
+    }
 if (p[0] === 'cart') {
         if (method === 'GET')
             return response({ items: await cartItems(u) });
@@ -573,6 +593,26 @@ if (p[0] === 'cart') {
         }
         if(method==='PATCH'||method==='POST'&&['status','writing-request','writing-complete','writing-revisions'].includes(p[2]))assert((await articleGenerationStatus(a.id))?.status!=='writing','המאמר בהכנה. אפשר לערוך או לשלוח אותו לאחר שהכתיבה תסתיים.',409);
         if(['writing-complete','writing-revisions'].includes(p[2])&&method==='POST')return response(await writingAction(a,u,await json(r),new URL(r.url).origin,p[2]));
+        if(p[2]==='interview-done'&&method==='POST'){
+            // PR article (owner, 17.11.2026): the admin had the phone interview. Every article of the same interview moves to
+            // writing together and continues in the normal professional-writing flow (one revision round is included).
+            assert(u.role==='admin','רק מנהל יכול לסמן ראיון שבוצע',403);
+            const data=JSON.parse(a.data);
+            assert(data.content_type===PR_CONTENT_TYPE&&data.interview_group,'זו אינה כתבת יח״צ עם ראיון');
+            const order=parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;
+            assert(canWorkOrder(order),'ההזמנה עוד לא שולמה. אפשר לתאם ראיון אחרי התשלום');
+            const stamp=now(),moved:string[]=[],ops=[];
+            for(const x of await all("SELECT * FROM articles WHERE order_id=? AND json_extract(data,'$.interview_group')=?",a.order_id,data.interview_group)){
+                const d=JSON.parse(x.data);if(x.status!=='draft'||d.writing_requested_at)continue;
+                d.interview_done_at=stamp;d.writing_requested_at=stamp;d.writing_first_requested_at||=stamp;d.words=Number(d.editorial_words)||400;
+                d.writing_brief_snapshot={topic:d.topic||'',brand:d.brand||'',notes:d.notes||'',target_url:d.target_url||'',interview:d.interview||null,editorial_words:d.editorial_words||'',writing_requested_at:stamp};
+                ops.push(stmt("UPDATE articles SET data=?,status='writing',version=version+1,updated=? WHERE id=? AND status='draft'",JSON.stringify(d),stamp,x.id));moved.push(x.id);
+            }
+            assert(moved.length,'הכתבות של הראיון הזה כבר בכתיבה',409);
+            await db().batch(ops);
+            for(const id of moved)await audit(u,id,'הראיון הטלפוני בוצע, הכתבה עברה לכתיבה',{articles:moved.length});
+            return response({moved:moved.length});
+        }
         if(p[2]==='writing-request'&&method==='POST'){
             const b=await json(r),data=JSON.parse(a.data);
             assert(data.editorial,'לכתבה הזו לא נרכש שירות כתיבה',403);

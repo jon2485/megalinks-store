@@ -6,6 +6,7 @@ export function contentUrl(value?:string){try{const u=new URL(value||'');return 
 export const contentStages:Record<string,{label:string;tone:string;note?:string}>={
  admin_review:{label:'לאישור מנהל',tone:'report',note:'הלקוח שלח לבדיקה'},
  dispatch_scheduled:{label:'אושרה, תישלח בתאריך',tone:'ok',note:'לספק ב־7:00 ביום שנבחר'},
+ awaiting_interview:{label:'ראיון לתיאום',tone:'work',note:'להתקשר ללקוח בזמנים שבחר'},
  writing_new:{label:'בקשת כתיבה',tone:'work',note:'ממתינה לכותב'},
  writing_fix:{label:'תיקונים לכותב',tone:'report',note:'הלקוח ביקש תיקונים'},
  customer_review:{label:'אצל הלקוח לבדיקה',tone:'unreported',note:'המאמר הוחזר ללקוח'},

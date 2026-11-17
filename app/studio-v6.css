@@ -213,3 +213,10 @@ html body .studio-v2 .sv-after small{display:block;margin-top:2px;font:500 12.5p
 html body .sv-ai-dialog .sv-ai-head{padding-left:66px!important}
 html body .sv-ai-dialog .sv-words{grid-template-columns:repeat(4,minmax(0,1fr))!important}
 html body .sv-ai-dialog .sv-words .sv-words-input{grid-column:1/-1}
+
+/* PR article (PR page, 17.11.2026): the interview notice instead of the writing brief */
+html body .studio-v2 .pr-notice .pr-notice-when{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0 0}
+html body .studio-v2 .pr-notice .pr-notice-when div{padding:10px 12px;border-radius:14px;background:#F4F7FC}
+html body .studio-v2 .pr-notice dt{font:600 12.5px Heebo,Arial,sans-serif;color:#5b6b82}
+html body .studio-v2 .pr-notice dd{margin:2px 0 0;font:700 14.5px Heebo,Arial,sans-serif;color:#0b1b2f}
+@media(max-width:640px){html body .studio-v2 .pr-notice .pr-notice-when{grid-template-columns:1fr}}

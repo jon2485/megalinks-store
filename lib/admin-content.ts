@@ -19,7 +19,8 @@ export const contentSource=`WITH history AS (
  h.approved AS approved_at,json_extract(a.data,'$.published_at') AS published_at,json_extract(a.data,'$.scheduled') AS scheduled_for,
  COALESCE(json_extract(a.data,'$.cancel_pending'),0) AS cancel_pending,json_extract(a.data,'$.cancel_reason') AS cancel_reason,
  COALESCE(json_extract(a.data,'$.publication_refunded'),0) AS refunded,json_extract(a.data,'$.refund_reason') AS refund_reason,
- COALESCE(json_extract(a.data,'$.editorial'),0) AS editorial,COALESCE(json_extract(a.data,'$.publish_without_review'),0) AS publish_without_review,
+ COALESCE(json_extract(a.data,'$.editorial'),0) AS editorial,COALESCE(json_extract(a.data,'$.content_type'),'') AS content_type,json_extract(a.data,'$.interview') AS interview,json_extract(a.data,'$.interview_group') AS interview_group,
+ CASE WHEN json_extract(a.data,'$.interview_group') IS NOT NULL THEN (SELECT COUNT(*) FROM articles x WHERE x.order_id=a.order_id AND json_extract(x.data,'$.interview_group')=json_extract(a.data,'$.interview_group')) END AS interview_count,COALESCE(json_extract(a.data,'$.publish_without_review'),0) AS publish_without_review,
  json_extract(a.data,'$.writing_requested_at') AS writing_requested_at,json_extract(a.data,'$.writing_returned_at') AS writing_returned_at,json_extract(a.data,'$.writing_completed_at') AS writing_completed_at,
  json_extract(a.data,'$.writing_revision_requested_at') AS writing_revision_requested_at,json_extract(a.data,'$.writing_revision_note') AS writing_revision_note,
  COALESCE(NULLIF(json_extract(a.data,'$.topic'),''),'') AS topic,json_extract(a.data,'$.editorial_words') AS editorial_words,json_extract(a.data,'$.keywords') AS keywords,json_extract(a.data,'$.brand') AS brand,json_extract(a.data,'$.audience') AS audience,json_extract(a.data,'$.style') AS style,json_extract(a.data,'$.target_url') AS target_url,json_extract(a.data,'$.anchor') AS anchor,json_extract(a.data,'$.target_url_2') AS target_url_2,json_extract(a.data,'$.anchor_2') AS anchor_2,json_extract(a.data,'$.notes') AS notes,
@@ -43,6 +44,7 @@ export const contentSource=`WITH history AS (
   WHEN status='admin_review' THEN 'admin_review'
   WHEN status='scheduled' THEN 'scheduled'
   WHEN editorial=1 AND writing_requested_at IS NOT NULL AND (status='writing' OR (status='revisions' AND writing_returned_at IS NULL)) THEN CASE WHEN status='revisions' OR writing_revision_requested_at IS NOT NULL THEN 'writing_fix' ELSE 'writing_new' END
+  WHEN editorial=1 AND writing_requested_at IS NULL AND content_type='pr_interview' THEN 'awaiting_interview'
   WHEN editorial=1 AND writing_requested_at IS NULL THEN 'awaiting_brief'
   WHEN editorial=1 THEN 'customer_review'
   WHEN status='revisions' THEN 'customer_fix'
@@ -52,7 +54,7 @@ export const contentSource=`WITH history AS (
 ), rated AS (
  SELECT *,CASE
   WHEN stage='cancel_pending' THEN 1
-  WHEN workable=1 AND stage IN ('admin_review','writing_new','writing_fix','delivery_failed') THEN 1
+  WHEN workable=1 AND stage IN ('admin_review','writing_new','writing_fix','delivery_failed','awaiting_interview') THEN 1
   WHEN workable=1 AND stage='with_supplier' AND supplier_late=1 THEN 1
   ELSE 0 END AS needs_action,
   CASE stage
@@ -67,8 +69,8 @@ export const contentSource=`WITH history AS (
 ), visible AS (SELECT * FROM rated WHERE stage<>'awaiting_brief' AND (workable=1 OR submitted_at IS NOT NULL OR status IN ('admin_review','approved','sent','published','revisions','demo_completed')))`;
 
 const publicationStages="stage IN ('delivery_failed','dispatch_scheduled','with_supplier')";
-const writingStages="stage IN ('writing_new','writing_fix','customer_review')";
-const stages=['cancel_pending','delivery_failed','dispatch_scheduled','with_supplier','admin_review','writing_new','writing_fix','customer_review','awaiting_brief','with_customer','customer_fix','scheduled','published','cancelled','demo_completed'];
+const writingStages="stage IN ('awaiting_interview','writing_new','writing_fix','customer_review')";
+const stages=['cancel_pending','delivery_failed','dispatch_scheduled','with_supplier','admin_review','awaiting_interview','writing_new','writing_fix','customer_review','awaiting_brief','with_customer','customer_fix','scheduled','published','cancelled','demo_completed'];
 
 export async function adminContent(query:URLSearchParams,exported=false){
  const view=['approvals','publication','writing'].includes(query.get('view')||'')?query.get('view')!:'articles';

@@ -195,3 +195,8 @@
 .cart-customer-assignment select{width:100%;min-height:44px;padding:10px;border:1px solid #c6dfed;border-radius:10px;background:#fff;color:#09294a;font:inherit;}
 .cart-customer-assignment small{color:#486383;font-size:13px;line-height:1.7;}
 @media(max-width:767px){.workspace-page-shell .cart-checkout-refresh>.purchase-waves{height:280px;}}
+
+/* PR article line (PR page, 17.11.2026): the interview and writing are part of the line, shown instead of the writing add-on. */
+.cart-pr-line{display:grid;gap:3px;margin:0 16px 16px;padding:12px 14px;border-radius:14px;background:linear-gradient(90deg,#E4FBF8,#EAF0FF);color:#0B1B3A;font-size:.92rem}
+.cart-pr-line b{font-weight:800}
+.cart-pr-line small{color:#4A5E7D;font-size:.82rem;line-height:1.45}

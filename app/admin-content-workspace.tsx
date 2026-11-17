@@ -20,7 +20,7 @@ const tabs:[string,string,string,string][]=[['admin-articles','articles','כל �
 const statusOptions:Record<string,Record<string,string>>={
  'admin-articles':{all:'כל המצבים',needs:'דורשות טיפול',admin_review:'לאישור מנהל',writing_new:'בקשת כתיבה',writing_fix:'תיקונים לכותב',customer_review:'אצל הלקוח לבדיקה',with_customer:'אצל הלקוח',customer_fix:'הוחזרה ללקוח לתיקון',scheduled:'מתוזמנת',delivery_failed:'השליחה לספק נכשלה',dispatch_scheduled:'אושרה, תישלח בתאריך',with_supplier:'אצל הספק',published:'פורסמה',cancel_pending:'בקשת ביטול',cancelled:'בוטלה'},
  'admin-publication':{all:'כל המצבים',needs:'דורשות טיפול',delivery_failed:'השליחה לספק נכשלה',dispatch_scheduled:'אושרה, תישלח בתאריך',with_supplier:'אצל הספק'},
- 'admin-writing':{open:'בטיפול',writing_new:'בקשה חדשה לכתיבה',writing_fix:'תיקונים מהלקוח',customer_review:'אצל הלקוח לבדיקה',done:'יצאה מהכתיבה'},
+ 'admin-writing':{open:'בטיפול',awaiting_interview:'ראיון לתיאום',writing_new:'בקשה חדשה לכתיבה',writing_fix:'תיקונים מהלקוח',customer_review:'אצל הלקוח לבדיקה',done:'יצאה מהכתיבה'},
 };
 const routeLabel=(a:Row)=>a.publish_without_review?'פרסום ישיר':'חוזר ללקוח לצפייה';
 const siteText=(url:string)=>url.replace(/^https?:\/\//,'').replace(/\/$/,'');
@@ -32,7 +32,7 @@ function routeSteps(a:Row){
  const past=(...list:string[])=>!list.includes(a.stage);
  steps.push(['done','נרכשה',a.order_created]);
  if(a.editorial){
-  steps.push([a.writing_requested_at?'done':'now','הנחיות לכותב',a.writing_requested_at||'']);
+  steps.push([a.writing_requested_at?'done':'now',a.content_type==='pr_interview'?'ראיון טלפוני':'הנחיות לכותב',a.writing_requested_at||'']);
   steps.push([current(inWriting(a),!!a.writing_completed_at&&!inWriting(a)),a.stage==='writing_fix'?'תיקונים אצל הכותב':'כתיבת המאמר',a.stage==='writing_fix'?a.writing_revision_requested_at:a.writing_completed_at||'']);
   if(!a.publish_without_review)steps.push([current(a.stage==='customer_review',!!a.writing_returned_at&&past('customer_review','writing_fix','writing_new')),'בדיקת הלקוח',a.writing_returned_at||'']);
  }else steps.push([a.stage==='cancelled'?'todo':current(['with_customer','customer_fix'].includes(a.stage),past('with_customer','customer_fix')),a.stage==='customer_fix'?'תיקון אצל הלקוח':'כתיבה אצל הלקוח',a.submitted_at||'']);
@@ -51,6 +51,22 @@ function ArticleBrief({a}:{a:Row}){
   {a.notes&&<div className="is-wide"><dt>הערות למאמר</dt><dd>{a.notes}</dd></div>}
  </dl></section>;
 }
+// PR article (PR page, 17.11.2026): the interview details the customer left, one call for every article of the same interview.
+const interviewOf=(a:Row)=>{try{return typeof a.interview==='string'?JSON.parse(a.interview):a.interview||null;}catch{return null;}};
+const hourLabels:Record<string,string>={morning:'בוקר 9-12',noon:'צהריים 12-15',afternoon:'אחה״צ 15-18',evening:'ערב 18-20'};
+function InterviewCard({ctx,a}:{ctx:Ctx;a:Row}){
+ const iv=interviewOf(a),[busy,setBusy]=useState(false),[error,setError]=useState('');if(!iv)return null;
+ const count=Number(a.interview_count)||1,tel=String(iv.phone||'').replace(/[^\d+]/g,'');
+ const done=async()=>{if(busy)return;setBusy(true);setError('');try{await ctx.run(()=>api('articles/'+a.id+'/interview-done','POST',{}),count>1?'הראיון סומן כבוצע. '+count+' הכתבות עברו לכתיבה':'הראיון סומן כבוצע. הכתבה עברה לכתיבה');}catch(e){setError((e as Error).message);}finally{setBusy(false);}};
+ return <section className="om-wide om-brief om-interview"><h3>ראיון טלפוני{count>1?` · ראיון אחד ל-${count} כתבות`:''}</h3><dl>
+  <div><dt>העסק</dt><dd>{iv.business_name}</dd></div><div><dt>איש קשר</dt><dd>{iv.contact_name}</dd></div>
+  <div><dt>טלפון</dt><dd>{tel?<a href={'tel:'+tel}><bdi dir="ltr">{iv.phone}</bdi></a>:'לא צוין'}</dd></div>
+  <div><dt>קישור</dt><dd>{contentUrl(iv.link)?<a href={contentUrl(iv.link)} target="_blank" rel="noreferrer"><bdi>{siteText(String(iv.link))}</bdi></a>:'לא צוין'}</dd></div>
+  <div><dt>ימים נוחים</dt><dd>{(iv.days||[]).join(' · ')||'לא צוינו'}</dd></div><div><dt>שעות נוחות</dt><dd>{(iv.hours||[]).map((h:string)=>hourLabels[h]||h).join(' · ')||'לא צוינו'}</dd></div>
+  {iv.topic&&<div className="is-wide"><dt>על מה חשוב להם לדבר</dt><dd>{iv.topic}</dd></div>}
+  {count>1&&<div className="is-wide"><dt>מהראיון הזה</dt><dd>{count} כתבות, כל אחת לאתר אחר ובזווית שונה. סבב תיקונים אחד כלול.</dd></div>}
+ </dl>{a.stage==='awaiting_interview'&&<div className="om-interview-act"><button type="button" className="om-btn is-primary" disabled={busy} onClick={done}><PenLine size={17} aria-hidden="true"/>{busy?'מעדכן…':'הראיון בוצע, עוברים לכתיבה'}</button>{error&&<p className="om-panel-message is-error" role="alert">{error}</p>}</div>}</section>;
+}
 function PublicationReport({ctx,article:a}:{ctx:Ctx;article:Row}){const demo=a.delivery_status==='demo',[url,setUrl]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState('');const lock=useRef(false);return <form noValidate className="om-report-url" onSubmit={async e=>{e.preventDefault();if(lock.current)return;if(!demo&&!url.trim()){setError('יש להזין את הקישור לכתבה שפורסמה.');return;}lock.current=true;setBusy(true);setError('');try{await ctx.run(()=>api('supplier-inbox/'+encodeURIComponent('publication:'+a.id),'POST',{url:url.trim()}),demo?'הדגמת הפרסום הושלמה':'קישור הפרסום נשמר');}catch(e){setError((e as Error).message);}finally{lock.current=false;setBusy(false);}}}>{!demo&&<Input type="url" dir="ltr" aria-label="קישור לכתבה שפורסמה" maxLength={2000} placeholder="https://" value={url} disabled={busy} aria-invalid={!!error} onChange={e=>setUrl(e.target.value)}/>}<button type="submit" className="om-btn is-primary" disabled={busy}><Link2 size={17} aria-hidden="true"/>{busy?'שומר…':demo?'סיום הדגמת פרסום':'דיווח על פרסום'}</button>{error&&<p role="alert">{error}</p>}</form>;}
 function WritingAttach({a}:{a:Row}){return <section className="om-wide om-attach"><h3>צירוף המאמר המוכן</h3><p>{a.publish_without_review?'הלקוח ביקש פרסום ישיר. אחרי שתצרף את המאמר תוכל לפרסם אותו מיד, והוא יישלח לספק.':'הלקוח ביקש לראות את המאמר לפני הפרסום. אחרי שתצרף אותו הוא יחזור ללקוח לצפייה ולאישור.'}</p><p className="om-attach-code">מזהה הקובץ: <bdi>{a.article_code}</bdi>. אפשר לחפש אותו כאן כשהמאמר חוזר מהכותב.</p></section>;}
 function ArticlePanel({ctx,a,open,busy,dispatch,remind,message}:{ctx:Ctx;a:Row;open:()=>void;busy:string;dispatch:()=>void;remind:()=>void;message:Row|null}){
@@ -67,7 +83,8 @@ function ArticlePanel({ctx,a,open,busy,dispatch,remind,message}:{ctx:Ctx;a:Row;o
    <a className="om-link" href={'/admin-order/'+a.order_id} onClick={go('admin-order/'+a.order_id)}><ShoppingCart size={16} aria-hidden="true"/><span>הזמנה <bdi>{orderNumber(a)}</bdi></span><ChevronLeft size={15} aria-hidden="true"/></a>
    {a.supplier_id&&<a className="om-link" href={'/admin-supplier/'+a.supplier_id} onClick={go('admin-supplier/'+a.supplier_id)}><Settings size={16} aria-hidden="true"/><span>פרטי הספק</span><ChevronLeft size={15} aria-hidden="true"/></a>}
   </section>
-  {!!a.editorial&&!!a.writing_requested_at&&<ArticleBrief a={a}/>}
+  {a.interview&&<InterviewCard ctx={ctx} a={a}/>}
+  {!!a.editorial&&!!a.writing_requested_at&&a.content_type!=='pr_interview'&&<ArticleBrief a={a}/>}
   {inWriting(a)&&<WritingAttach a={a}/>}
   {message&&<p className={'om-panel-message'+(message.error?' is-error':'')} role={message.error?'alert':'status'}>{message.text}</p>}
   <footer className="om-panel-foot">
