@@ -1517,7 +1517,7 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Admin** (`lib/admin-content.ts`, `lib/content-presentation.ts`, `app/admin-content-workspace.tsx`): stage `awaiting_interview` "ראיון לתיאום" (needs action, in the writing list and its filter); interview card with tel link, days, hours, topic, "ראיון אחד ל-N כתבות", button "הראיון בוצע, עוברים לכתיבה". Then the normal writing flow (writing-complete, one revision round).
 - **Customer**: cart line shows "כתבת יח״צ עם ראיון טלפוני · 499" instead of the writing add-on (`app/purchase-flow.tsx`); article page shows "המראיין שלנו יתקשר אליכם" with phone, days and hours instead of the writing brief (`app/article-studio.tsx`); `lib/customer-privacy.ts` exposes the customer's own `interview`.
 - **Links**: homepage PR button (was the "יעלה בקרוב" toast), service card and footer → `/pr`; system menu "אתרים ומבצעים" → "כתבות יח״צ" (full page load); `/pr` in `INDEXABLE_PATHS` (sitemap).
-- **Tests**: `tests/pr-page.mjs` (59 checks). Local QA: desktop and phone, pick → form → cart (2 lines × 499) → checkout by credits → admin card → customer notice.
+- **Tests**: `tests/pr-page.mjs` (59 checks); `tests/seo.mjs` expects /pr in the sitemap. Full run: 144 files, the same 60 older failures as the base (58 + `sheets-columns` + `catalog-mobile-layout` from d966cfd), no new one. Local QA: desktop and phone, pick → form → cart (2 lines × 499) → checkout by credits → admin card → customer notice.
 - **Open, later:** admin fields to choose PR sites, description, picture and sample link (data keys already read); real sample articles; mail to admins on a new paid interview; writer cost in the month report counts 400 words for a PR article (`lib/admin-month-report.ts`).
 
 ### לפני העלאה
