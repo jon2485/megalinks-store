@@ -1,0 +1,106 @@
+<header class="bar">
+  <a href="/" aria-label="מגה לינקס, לעמוד הבית"><img class="bar__logo" src="/brand/megalinks-logo.png" width="2048" height="449" alt="מגה לינקס"></a>
+  <nav aria-label="ניווט"><a href="/pr#sites">האתרים</a><a href="/pr#process">איך זה עובד</a><a href="/pr#faq">שאלות</a></nav>
+  <div class="bar__acts"><a class="btn btn--login" href="/purchased" aria-label="כניסה למערכת"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>כניסה למערכת</span></a></div>
+</header>
+<main id="main" class="st">
+  <div class="wrap">
+    <a class="st__back" href="/pr#sites"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>חזרה לבחירת האתרים</a>
+    <ol class="st__steps" aria-label="שלבים"><li class="done"><b>✓</b>אתרים</li><li class="on" aria-current="step"><b>2</b>פרטים לראיון</li><li><b>3</b>תשלום</li></ol>
+    <div class="st__grid">
+      <form class="card" id="st-form" novalidate aria-labelledby="st-h">
+        <h1 id="st-h">פרטים לראיון</h1>
+        <p class="lede">כדי שהמראיין יוכל להתקשר אליכם בזמן שנוח לכם.</p>
+        <div class="f">
+          <label><span>שם העסק <span class="req" aria-hidden="true">*</span></span><input name="business_name" required maxlength="120" autocomplete="organization"></label>
+          <label><span>שם איש הקשר <span class="req" aria-hidden="true">*</span></span><input name="contact_name" required maxlength="120" autocomplete="name"></label>
+          <label><span>טלפון <span class="req" aria-hidden="true">*</span></span><input name="phone" required dir="ltr" inputmode="tel" autocomplete="tel" maxlength="20" aria-describedby="phone-hint"><small id="phone-hint">המראיין יתקשר למספר הזה</small></label>
+          <label><span>קישור לאתר או לדף העסק <span class="req" aria-hidden="true">*</span></span><input name="link" required dir="ltr" inputmode="url" maxlength="500" placeholder="www.example.co.il" aria-describedby="link-hint"><small id="link-hint">גם הקישור בכתבה, באתרים שמאפשרים</small></label>
+          <div class="full grp" role="group" aria-labelledby="g-days" data-group="days"><span class="grp__l" id="g-days">ימים נוחים לשיחה <span class="req" aria-hidden="true">*</span></span><div class="chips"><!--PR:DAYS--></div></div>
+          <div class="full grp" role="group" aria-labelledby="g-hours" data-group="hours"><span class="grp__l" id="g-hours">שעות נוחות <span class="req" aria-hidden="true">*</span></span><div class="chips"><!--PR:HOURS--></div></div>
+          <label class="full"><span>על מה חשוב לכם לדבר? <small style="display:inline">(רשות)</small></span><textarea name="topic" maxlength="600"></textarea></label>
+        </div>
+        <p class="st__err" id="st-err" role="alert" hidden></p>
+        <div class="st__go">
+          <button class="btn btn--navy btn--xl" type="submit" id="st-submit">המשך לרכישה</button>
+          <p class="st__busy" id="st-busy" role="status" hidden>מכינים את הסל…</p>
+          <p>נשתמש בפרטים כדי לתאם את הראיון ולכתוב את הכתבה. <a href="/privacy" target="_blank" rel="noopener">מדיניות הפרטיות</a></p>
+        </div>
+      </form>
+      <aside class="card sum" aria-labelledby="sum-h">
+        <h2 id="sum-h">ההזמנה שלכם</h2>
+        <div id="sum-rows"></div>
+        <a class="sum__add" href="/pr#sites"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>הוספת אתר</a>
+        <p class="sum__note" id="sum-note" hidden></p>
+        <dl id="sum-totals"></dl>
+        <small class="sum__fine">המחיר הסופי, כולל הנחות של החשבון שלכם, מוצג בסל לפני התשלום.</small>
+      </aside>
+    </div>
+  </div>
+</main>
+<script id="pr-data" type="application/json"><!--PR:DATA--></script>
+<script>
+(function(){
+  /* /pr/start: interview details, then the normal purchase. The form is kept in this tab, so a sign-in on the way does not lose it. */
+  var data={sites:[],interview_cents:49900};try{data=JSON.parse(document.getElementById('pr-data').textContent||'{}');}catch(e){}
+  var byId={};(data.sites||[]).forEach(function(s){byId[s.id]=s;});
+  var params=new URLSearchParams(location.search),DRAFT='pr-interview',SITES='pr-sites';
+  var ids=(params.get('sites')||'').split(',').filter(function(id){return byId[id];});
+  if(!ids.length){try{ids=JSON.parse(sessionStorage.getItem(SITES)||'[]').filter(function(id){return byId[id];});}catch(e){}}
+  ids=ids.filter(function(id,i){return ids.indexOf(id)===i;});
+  try{sessionStorage.setItem(SITES,JSON.stringify(ids));}catch(e){}
+  var form=document.getElementById('st-form'),err=document.getElementById('st-err'),busy=document.getElementById('st-busy'),submit=document.getElementById('st-submit');
+  function money(c){return '₪'+Math.round(c/100).toLocaleString('en-US');}
+  function esc(s){var d=document.createElement('div');d.textContent=String(s);return d.innerHTML;}
+  /* order summary */
+  var rows=document.getElementById('sum-rows'),totals=document.getElementById('sum-totals'),note=document.getElementById('sum-note');
+  if(!ids.length){rows.innerHTML='<p class="sum__empty">עדיין לא נבחר אתר. <a href="/pr#sites">לבחירת אתר</a></p>';}
+  else{
+    rows.innerHTML=ids.map(function(id){var s=byId[id];return '<div class="sum__row"><span class="ps__logo" style="--h:'+esc(s.hue)+'" aria-hidden="true">'+esc(s.letter)+'</span><div><b dir="auto">'+esc(s.name)+'</b><small>כתבת יח״צ עם ראיון</small></div><bdi dir="ltr">'+money(s.total_cents)+'</bdi></div>';}).join('');
+    var pub=ids.reduce(function(n,id){return n+byId[id].publication_cents;},0),iv=ids.length*data.interview_cents;
+    totals.innerHTML='<div><dt>פרסום ב-'+(ids.length===1?'אתר אחד':ids.length+' אתרים')+'</dt><dd><bdi dir="ltr">'+money(pub)+'</bdi></dd></div><div><dt>ראיון וכתיבה · '+(ids.length===1?'כתבה אחת':ids.length+' כתבות')+'</dt><dd><bdi dir="ltr">'+money(iv)+'</bdi></dd></div><div><dt>סה״כ לפני מע״מ</dt><dd><bdi dir="ltr">'+money(pub+iv)+'</bdi></dd></div>';
+    if(ids.length>1){note.hidden=false;note.innerHTML='<span>ראיון אחד, '+ids.length+' כתבות שונות. המראיין יכתוב לכל אתר כתבה בזווית אחרת.</span>';}
+  }
+  /* chips */
+  form.querySelectorAll('.chips button').forEach(function(b){b.addEventListener('click',function(){b.setAttribute('aria-pressed',b.getAttribute('aria-pressed')==='true'?'false':'true');b.closest('.grp').removeAttribute('data-invalid');});});
+  function values(){
+    var v={};['business_name','contact_name','phone','link','topic'].forEach(function(k){v[k]=form.elements[k].value.trim();});
+    v.days=[].slice.call(form.querySelectorAll('[data-group=days] button[aria-pressed=true]')).map(function(b){return b.getAttribute('data-value');});
+    v.hours=[].slice.call(form.querySelectorAll('[data-group=hours] button[aria-pressed=true]')).map(function(b){return b.getAttribute('data-value');});
+    return v;
+  }
+  function fill(v){if(!v)return;['business_name','contact_name','phone','link','topic'].forEach(function(k){if(v[k]&&!form.elements[k].value)form.elements[k].value=v[k];});
+    ['days','hours'].forEach(function(g){(v[g]||[]).forEach(function(x){var b=form.querySelector('[data-group='+g+'] button[data-value="'+x+'"]');if(b)b.setAttribute('aria-pressed','true');});});}
+  var draft=null;try{draft=JSON.parse(sessionStorage.getItem(DRAFT)||'null');}catch(e){}
+  fill(draft);
+  function problem(v){
+    form.querySelectorAll('[aria-invalid]').forEach(function(x){x.removeAttribute('aria-invalid');});form.querySelectorAll('[data-invalid]').forEach(function(x){x.removeAttribute('data-invalid');});
+    var bad=function(name,msg){var el=form.elements[name];el.setAttribute('aria-invalid','true');el.focus();return msg;};
+    if(!ids.length)return 'יש לבחור לפחות אתר אחד';
+    if(!v.business_name)return bad('business_name','יש להזין את שם העסק');
+    if(!v.contact_name)return bad('contact_name','יש להזין את שם איש הקשר');
+    var digits=v.phone.replace(/[\s\-()]/g,'');if(!/^(0\d{8,9}|\+972\d{8,9})$/.test(digits))return bad('phone','יש להזין מספר טלפון תקין, למשל 050-1234567');
+    if(!/^\S+\.\S+/.test(v.link.replace(/^https?:\/\//i,'')))return bad('link','יש להזין קישור לאתר או לדף העסק');
+    if(!v.days.length){form.querySelector('[data-group=days]').setAttribute('data-invalid','true');return 'יש לבחור לפחות יום אחד שנוח לשיחה';}
+    if(!v.hours.length){form.querySelector('[data-group=hours]').setAttribute('data-invalid','true');return 'יש לבחור לפחות טווח שעות אחד';}
+    return '';
+  }
+  function show(msg){err.textContent=msg;err.hidden=!msg;}
+  function working(on){busy.hidden=!on;submit.disabled=on;}
+  async function send(v){
+    working(true);show('');
+    try{
+      var me=await fetch('/api/me',{credentials:'same-origin'});
+      if(me.status===401){location.href='/signin-with-chatgpt?return_to='+encodeURIComponent('/pr/start?sites='+ids.join(',')+'&resume=1');return;}
+      var res=await fetch('/api/pr/cart',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({sites:ids,interview:v})});
+      var out={};try{out=await res.json();}catch(e){}
+      if(!res.ok)throw new Error(out.error||'לא הצלחנו להוסיף לסל. נסו שוב');
+      try{sessionStorage.removeItem(DRAFT);sessionStorage.removeItem(SITES);}catch(e){}
+      location.href='/cart';
+    }catch(e){working(false);show(e.message||'לא הצלחנו להוסיף לסל. נסו שוב');}
+  }
+  form.addEventListener('submit',function(e){e.preventDefault();var v=values(),p=problem(v);try{sessionStorage.setItem(DRAFT,JSON.stringify(v));}catch(x){}if(p){show(p);return;}send(v);});
+  /* back from the sign-in page: continue where the customer stopped */
+  if(params.get('resume')==='1'&&draft&&ids.length){var v=values();if(!problem(v))send(v);}
+})();
+</script>

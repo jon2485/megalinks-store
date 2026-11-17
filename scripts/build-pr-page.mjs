@@ -1,0 +1,54 @@
+// Builds the PR articles page (/pr) and its interview form (/pr/start) into lib/pr-page-html.ts.
+// The pages reuse the homepage's head styles, interview section, footer, floating buttons and scripts (home/index.html),
+// so a design change on the homepage reaches them too. Their own parts live in home/pr/.
+// Run after editing home/index.html or anything in home/pr/:  node scripts/build-pr-page.mjs
+import {readFileSync,writeFileSync} from 'node:fs';
+
+const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
+const home=read('home/index.html'),page=read('home/pr/page.html'),start=read('home/pr/start.html'),css=read('home/pr/pr.css'),startCss=read('home/pr/start.css');
+const need=(text,marker,where)=>{if(!text.includes(marker))throw new Error(where+' is missing '+marker);};
+for(const marker of ['</head>','<section id="interview"','<footer class="ft">','</footer>','<div class="fab">'])need(home,marker,'home/index.html');
+for(const marker of ['<!--PR:SITES-->','<!--PR:DATA-->','<!--PR:INTERVIEW-->','<!--PR:FAQ-->'])need(page,marker,'home/pr/page.html');
+for(const marker of ['<!--PR:DATA-->','<!--PR:DAYS-->','<!--PR:HOURS-->'])need(start,marker,'home/pr/start.html');
+
+function head(title,description,path,robots){
+ return home.slice(0,home.indexOf('</head>'))
+  .replace(/<title>[^<]*<\/title>/,`<title>${title}</title>`)
+  .replace(/<meta name="description" content="[^"]*">/,`<meta name="description" content="${description}">`)
+  .replace(/<meta name="robots" content="[^"]*">/,`<meta name="robots" content="${robots}">`)
+  .replace('<link rel="canonical" href="%%SITE_URL%%/">',`<link rel="canonical" href="%%SITE_URL%%${path}">`)
+  .replace('<meta property="og:url" content="%%SITE_URL%%/">',`<meta property="og:url" content="%%SITE_URL%%${path}">`)
+  .replace(/(<meta (?:property="og:title"|name="twitter:title") content=")[^"]*(">)/g,`$1${title}$2`)
+  .replace(/(<meta (?:property="og:description"|name="twitter:description") content=")[^"]*(">)/g,`$1${description}$2`)
+  .replace('<!--HOME:SCHEMA-->','')
+  .replace(/<link rel="preload" href="\/homepage\/city[^>]*>\n?/g,'');
+}
+const footer=home.slice(home.indexOf('<footer class="ft">'),home.indexOf('</footer>')+9);
+// The homepage's main script drives its own sections (snake, offer rail, ranking card) and stops on a page without them.
+const tail=home.slice(home.indexOf('<div class="fab">')).replace(/<script>\s*\(function\(\)\{\s*var reduce[\s\S]*?<\/script>\n?/,'');
+if(tail.includes('the snake'))throw new Error('the homepage main script was not left out of the PR page');
+const ivStart=home.indexOf('<section id="interview"'),iv=home.slice(ivStart,home.indexOf('</section>',ivStart)+10)
+ .replace('<p class="kicker">כתיבת ראיון</p>','<p class="kicker">הראיון</p>')
+ .replace(/<h2 id="iv-h">[\s\S]*?<\/h2>/,'<h2 id="iv-h">לא צריך לכתוב מילה. <br>מספיקה שיחה.</h2>');
+
+const faq=[
+ ['כמה זה עולה?','מחיר הפרסום באתר שבחרתם, ועוד 499 ₪ לראיון טלפוני וכתיבת הכתבה. המחיר כולל סבב תיקונים אחד. כל המחירים לפני מע״מ.'],
+ ['אפשר להזמין כמה כתבות?','כן. ראיון אחד מספיק. המראיין מוציא ממנו את כל הכתבות שהזמנתם, עם כל הפרטים מהשיחה, וכל כתבה שונה ומיוחדת בפני עצמה. 499 ₪ לכל כתבה, ועוד מחיר הפרסום בכל אתר.'],
+ ['מתי המראיין מתקשר?','בימים ובשעות שבחרתם בטופס.'],
+ ['מה אם לא אהבתי את הכתבה?','סבב תיקונים אחד כלול במחיר. כותבים לנו מה לשנות, והמראיין מתקן לפני הפרסום.'],
+ ['האם הכתבה מסומנת כתוכן שיווקי?','כן. כל אתר מסמן אותה לפי הכללים שלו, כפי שכתוב בתקנון.'],
+ ['אפשר קישור לאתר שלי?','באתרים שמאפשרים קישור, הכתבה כוללת קישור לאתר שלכם. זה כתוב בכרטיס של כל אתר.'],
+ ['כמה זמן הכתבה באוויר?','לפחות שנה מיום הפרסום.'],
+ ['ומה אם האתר לא יפרסם בסוף?','נעדכן אתכם, ותבחרו בין זיכוי לבין אתר אחר שווה ערך.'],
+];
+const plus='<i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></i>';
+const faqHtml=faq.map(([q,a],i)=>`      <div class="qa${i===0?' is-open':''}"><h3><button class="qa__q" type="button" aria-expanded="${i===0}" aria-controls="pq${i}">${q}${plus}</button></h3><div class="qa__a" id="pq${i}"><div><p>${a}</p></div></div></div>`).join('\n');
+
+const prHtml=head('כתבות יח״צ באתרי החדשות הגדולים | MegaLinks','כתבה על העסק שלכם באתרי החדשות הגדולים בישראל. המראיין שלנו מתקשר, אתם מספרים, ואנחנו כותבים ומפרסמים.','/pr','index, follow')
+ +`<style id="pr-page">\n${css}</style>\n</head>\n<body>\n<a class="skip" href="#main">דילוג לתוכן</a>\n`
+ +page.replace('<!--PR:INTERVIEW-->',()=>iv).replace('<!--PR:FAQ-->',()=>faqHtml)+'\n'+footer+'\n'+tail;
+const startHtml=head('פרטים לראיון | כתבות יח״צ | MegaLinks','פרטים לראיון הטלפוני לכתבת היח״צ שלכם.','/pr/start','noindex, nofollow')
+ +`<style id="pr-page">\n${css}</style>\n<style id="pr-start">\n${startCss}</style>\n</head>\n<body>\n<a class="skip" href="#main">דילוג לתוכן</a>\n`
+ +start+'\n'+tail;
+writeFileSync(new URL('../lib/pr-page-html.ts',import.meta.url),'// Generated by scripts/build-pr-page.mjs from home/index.html and home/pr/. Do not edit by hand.\nexport const PR_HTML='+JSON.stringify(prHtml)+';\nexport const PR_START_HTML='+JSON.stringify(startHtml)+';\n');
+console.log('lib/pr-page-html.ts written,',prHtml.length,'+',startHtml.length,'chars');
