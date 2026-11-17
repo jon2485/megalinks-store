@@ -1,7 +1,7 @@
 'use client';
 
 import React,{useEffect,useRef,useState} from 'react';
-import {Globe,FileText,Wallet,LayoutDashboard,Settings,ShoppingCart,LifeBuoy,Code2,Building2,ShieldCheck,Menu,X,ChevronLeft,BookOpen,Home,Users,FolderOpen,Bell,MessageCircle} from 'lucide-react';
+import {Globe,FileText,Wallet,LayoutDashboard,Settings,ShoppingCart,LifeBuoy,Code2,Building2,ShieldCheck,Menu,X,ChevronLeft,BookOpen,Home,Users,FolderOpen,Bell,MessageCircle,Newspaper} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Sheet,SheetTrigger,SheetContent,SheetTitle,SheetDescription,SheetClose} from '@/components/ui/sheet';
 import {NavigationMenu,NavigationMenuList,NavigationMenuItem,NavigationMenuTrigger,NavigationMenuContent,NavigationMenuLink} from '@/components/ui/navigation-menu';
@@ -25,7 +25,7 @@ import {type Row} from '@/lib/shared';
 import {adminAreas,adminArea} from '@/lib/admin-navigation';
 
 type Entry=readonly [string,string,React.ElementType];
-const mobileDescriptions:Record<string,string>={catalog:'כל האתרים לפרסום במקום אחד',offers:'חבילות פרסום במחירים משתלמים',purchased:'הכתבות, ההזמנות והעדכונים שלך'};
+const mobileDescriptions:Record<string,string>={catalog:'כל האתרים לפרסום במקום אחד',offers:'חבילות פרסום במחירים משתלמים',pr:'כתבה עליכם באתרי החדשות הגדולים',purchased:'הכתבות, ההזמנות והעדכונים שלך'};
 type Group={id:string;label:string;icon:React.ElementType;items:Entry[]};
 export function navigationGroups(ctx:Ctx):Group[]{
  if(ctx.adminMode&&ctx.user?.role==='admin')return [
@@ -37,7 +37,7 @@ export function navigationGroups(ctx:Ctx):Group[]{
  if(ctx.user?.role==='admin')account.push(['admin','מעבר לניהול המערכת',ShieldCheck]);
  const work:Entry[]=navClient.filter(([page])=>page==='purchased').map(([page,label,Icon])=>[page,label,Icon]);
  if(ctx.user?.role==='supplier')work.push(['supplier-workspace','פורטל ספקים',Building2]);
- return [{id:'sites',label:'אתרים ומבצעים',icon:Globe,items:[...navClient.slice(0,2)]},{id:'knowledge',label:'מדריכים וידע',icon:BookOpen,items:[['knowledge','מדריכים וידע',BookOpen]]},{id:'work',label:'אזור אישי',icon:FileText,items:work},...(account.length?[{id:'account',label:'ניהול',icon:ShieldCheck,items:account}]:[])];
+ return [{id:'sites',label:'אתרים ומבצעים',icon:Globe,items:[...navClient.slice(0,2),['pr','כתבות יח״צ',Newspaper] as Entry]},{id:'knowledge',label:'מדריכים וידע',icon:BookOpen,items:[['knowledge','מדריכים וידע',BookOpen]]},{id:'work',label:'אזור אישי',icon:FileText,items:work},...(account.length?[{id:'account',label:'ניהול',icon:ShieldCheck,items:account}]:[])];
 }
 export function activeNavigation(page:string,view:string){
  if(page===view)return true;

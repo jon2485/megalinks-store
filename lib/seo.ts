@@ -11,7 +11,7 @@ export const HOME_TITLE = 'MegaLinks — פרסום כתבות ותוכן באת
 export const HOME_DESCRIPTION = 'בחרו אתרים לפרסום הכתבה הבאה שלכם עם MegaLinks. חפשו לפי תחום, השוו מחירים ונתוני אתרים, והזמינו פרסום כתבות ושירותי כתיבת תוכן במקום אחד.';
 // A legal page is a draft until a lawyer approves its text; drafts stay out of search engines and of the sitemap.
 export const legalPublished=(id:string)=>!!LEGAL_CONTENT[id]&&!LEGAL_CONTENT[id].draft;
-export const INDEXABLE_PATHS:readonly string[] = ['/', '/catalog', '/knowledge', ...LEGAL_DOCS.filter(doc=>legalPublished(doc.id)).map(doc=>doc.path)];
+export const INDEXABLE_PATHS:readonly string[] = ['/', '/catalog', '/pr', '/knowledge', ...LEGAL_DOCS.filter(doc=>legalPublished(doc.id)).map(doc=>doc.path)];
 const privateRoots = new Set([
     ...adminAreas.flatMap(area=>area.pages.map(([page])=>page)),
     ...lobbyGroups.flatMap(group=>[group.page,...group.tabs.map(([page])=>page)]),
