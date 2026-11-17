@@ -184,6 +184,21 @@ html.sc-ready body :is(.hero,.why,.close) [data-sc-cue]{transition:opacity .22s 
 html.a11y-still .diagram .run{display:none}
 .diagram .note{font:700 18px var(--sc-font-display);fill:#4762DC}
 @media (max-width:860px){.diagram{aspect-ratio:1/1.78;max-width:400px}.what__grid{grid-template-columns:1fr}.gloss div{grid-template-columns:110px 1fr}}
+/* Phone (owner, 17.11.2026): the same tilted cards and curved arrow as on a computer, right after the explanation and
+   before the glossary, sized for the screen and never cut at the edges (the reveal clip cut the tilted card and the
+   shadows). The arrow script already follows the card positions. */
+@media (max-width:760px){
+ .what__grid{gap:24px}
+ .what__grid>div:first-child{display:contents}
+ .what__grid>div:first-child>div[data-sc-in]{order:1}
+ .what__grid>.diagram{order:2}
+ .what__grid>div:first-child>.gloss{order:3;margin-top:0}
+ .diagram{aspect-ratio:auto;max-width:none;display:grid;padding:12px 6px 16px}
+ .diagram[data-sc-reveal]{clip-path:none!important}
+ .diagram .page{position:relative;inset:auto}
+ .diagram .page--src{width:82%;justify-self:start}
+ .diagram .page--dst{width:72%;justify-self:end;margin-top:108px}
+}
 
 /* ---------- 4 WHY (light, pinned) ---------- */
 .why .sc-stage{background:linear-gradient(140deg,#EAF8FF 0%,#EEF1FF 100%);display:grid;grid-template-columns:1fr 1fr;align-items:center;padding-inline:clamp(16px,6vw,96px);gap:4vw}
