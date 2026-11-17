@@ -155,3 +155,26 @@ html body .header-apple-sheet .workspace-guest-text{display:grid;gap:2px;margin:
 html body .header-apple-sheet .workspace-guest-text strong{font:800 22px/1.2 Heebo,Arial,sans-serif;letter-spacing:-.01em;color:#0b1b2f}
 html body .header-apple-sheet .workspace-guest-text small{font:500 14px/1.4 Heebo,Arial,sans-serif;color:#5b6b82}
 html body .header-apple-sheet .workspace-guest-welcome .workspace-signin{justify-self:stretch;display:flex!important;justify-content:center;align-items:center;min-height:48px;margin:0!important}
+
+/* "דף הבית" link (owner, 17.11.2026): first in the desktop menu and in the phone menu, for customers only. It is a real
+   link to the homepage, so it gets the look of the buttons around it. */
+.workspace-site-header a.workspace-home-link{text-decoration:none}
+html body .header-apple-sheet .workspace-mobile-drawer-links>a.workspace-home-link{border-radius:16px!important;text-decoration:none;margin-top:6px!important}
+/* Owner, 17.11.2026: on a computer a menu label never breaks onto two lines, and the items get calm, even spacing.
+   Each item takes the width of its own label (four equal columns made "אתרים ומבצעים" wrap), with 12px between items,
+   16px from 1280px, so the gap between two buttons stays modest. */
+@media(min-width:1024px){
+ .workspace-site-header .workspace-top-navigation-trigger>span{white-space:nowrap}
+ .workspace-page-shell .workspace-top-navigation-list:has(>li>a.workspace-home-link){grid-auto-columns:auto;gap:12px!important}
+}
+@media(min-width:1280px){.workspace-page-shell .workspace-top-navigation-list:has(>li>a.workspace-home-link){gap:16px!important}}
+/* 1024-1279px: the header is narrower, so the labels get a little smaller instead of breaking (five items for an admin
+   in the customer view need the smaller size up to 1279px, four items for a customer up to 1099px). */
+@media(min-width:1024px) and (max-width:1279px){
+ html body .workspace-site-header:has(a.workspace-home-link):has(.workspace-top-navigation-list>li:nth-child(5)) .workspace-top-navigation-trigger{font-size:15px!important;padding-inline:9px!important;gap:6px!important}
+ .workspace-page-shell .workspace-top-navigation-list:has(>li>a.workspace-home-link):has(>li:nth-child(5)){gap:6px!important}
+}
+@media(min-width:1024px) and (max-width:1099px){
+ html body .workspace-site-header:has(a.workspace-home-link) .workspace-top-navigation-trigger{font-size:15px!important;padding-inline:9px!important;gap:6px!important}
+ .workspace-page-shell .workspace-top-navigation-list:has(>li>a.workspace-home-link){gap:8px!important}
+}
