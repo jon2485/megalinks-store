@@ -1519,6 +1519,7 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Links**: homepage PR button (was the "יעלה בקרוב" toast), service card and footer → `/pr`; system menu "אתרים ומבצעים" → "כתבות יח״צ" (full page load); `/pr` in `INDEXABLE_PATHS` (sitemap).
 - **Tests**: `tests/pr-page.mjs` (59 checks); `tests/seo.mjs` expects /pr in the sitemap. Full run: 144 files, the same 60 older failures as the base (58 + `sheets-columns` + `catalog-mobile-layout` from d966cfd), no new one. Local QA: desktop and phone, pick → form → cart (2 lines × 499) → checkout by credits → admin card → customer notice.
 - **Open, later:** admin fields to choose PR sites, description, picture and sample link (data keys already read); real sample articles; mail to admins on a new paid interview; writer cost in the month report counts 400 words for a PR article (`lib/admin-month-report.ts`).
+- **Staging deployment `919235fa` (33bf388) SUCCESS 17.11.2026**, approved by the owner in the Railway dashboard. Staging follows `claude/pr-page-20261117`; the next deploy must start from 33bf388 or later.
 
 ### לפני העלאה
 - Nothing temporary in the code.
