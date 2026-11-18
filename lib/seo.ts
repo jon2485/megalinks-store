@@ -14,7 +14,7 @@ export const HOME_TITLE = 'קניית קישורים וכתבות יח״צ בא�
 export const HOME_DESCRIPTION = 'מחירון של מאות אתרים בישראל לפרסום כתבות וקניית קישורים, כתבות יח״צ באתרי חדשות עם ראיון טלפוני וכתיבת תוכן. מחירים גלויים, הזמנה ומעקב במקום אחד.';
 export const CATALOG_TITLE = 'מחירון אתרים לפרסום כתבות וקניית קישורים | MegaLinks';
 export const CATALOG_DESCRIPTION = 'מחירון אתרים בישראל לפרסום כתבות ממומנות וקישורים: תחום, DR, UR, זמן פרסום ומחיר לכל אתר. מזמינים אונליין, עם כתיבת תוכן לבחירה.';
-export const BUSINESS = {legalName:'Mega Links',name:'MegaLinks',hebrewName:'מגה לינקס',vatId:'201234879',telephone:'+972-50-750-8850',whatsapp:'https://wa.me/972507508850',postOfficeBox:'ת"ד 592',locality:'נס ציונה',country:'IL'} as const;
+export const BUSINESS = {legalName:'Mega Links',name:'MegaLinks',hebrewName:'מגה לינקס',vatId:'201234879',telephone:'+972-50-750-8850',email:'asher.megalinks@gmail.com',whatsapp:'https://wa.me/972507508850',postOfficeBox:'ת"ד 592',locality:'נס ציונה',country:'IL'} as const;
 // A legal page is a draft until a lawyer approves its text; drafts stay out of search engines and of the sitemap.
 export const legalPublished=(id:string)=>!!LEGAL_CONTENT[id]&&!LEGAL_CONTENT[id].draft;
 export const INDEXABLE_PATHS:readonly string[] = ['/', '/catalog', '/pr', '/knowledge', ...LEGAL_DOCS.filter(doc=>legalPublished(doc.id)).map(doc=>doc.path)];
@@ -79,9 +79,9 @@ export function publicMetadata(path:'/'|'/catalog'):Metadata {
         twitter:{card:'summary_large_image',title,description,images:[image.url]}};
 }
 const organization={'@type':'Organization','@id':SITE_URL+'/#organization',name:SITE_NAME,alternateName:[BUSINESS.hebrewName,BUSINESS.legalName],legalName:BUSINESS.legalName,url:SITE_URL+'/',
-    logo:{'@type':'ImageObject',url:SITE_URL+'/brand/megalinks-logo.png'},image:SITE_URL+SOCIAL_IMAGE_PATH,telephone:BUSINESS.telephone,vatID:BUSINESS.vatId,
+    logo:{'@type':'ImageObject',url:SITE_URL+'/brand/megalinks-logo.png'},image:SITE_URL+SOCIAL_IMAGE_PATH,telephone:BUSINESS.telephone,email:BUSINESS.email,vatID:BUSINESS.vatId,
     address:{'@type':'PostalAddress',postOfficeBoxNumber:BUSINESS.postOfficeBox,addressLocality:BUSINESS.locality,addressCountry:BUSINESS.country},areaServed:{'@type':'Country',name:'Israel'},
-    contactPoint:[{'@type':'ContactPoint',contactType:'customer service',telephone:BUSINESS.telephone,areaServed:'IL',availableLanguage:['he']}],
+    contactPoint:[{'@type':'ContactPoint',contactType:'customer service',telephone:BUSINESS.telephone,email:BUSINESS.email,areaServed:'IL',availableLanguage:['he']}],
     description:'מערכת לפרסום כתבות, לקניית קישורים ולכתבות יח״צ באתרים בישראל, עם כתיבת תוכן ומעקב אחרי כל פרסום.',
     knowsAbout:['קניית קישורים','בניית קישורים','כתבות יח״צ','כתבות ממומנות','קידום אתרים בגוגל','כתיבת תוכן שיווקי']};
 export const websiteSchema = {'@context':'https://schema.org','@graph':[

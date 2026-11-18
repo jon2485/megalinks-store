@@ -1527,14 +1527,14 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 
 ## 18.11.2026 (41): SEO audit and technical fixes (branch `claude/seo-20261118`, from the deployed pr-page branch)
 - **Why:** owner asked for a full SEO / Google / AI-readability audit and to do the fixes. Report: `docs/seo/audit-2026-11-18.md` (Hebrew), with the keyword clusters, a 24-article plan, cadence and internal links.
-- **`lib/seo.ts`:** `SITE_URL='https://megalinks.co.il'` (was the Staging address, so canonicals, sitemap, robots and schema would have pointed at Staging after launch). New `HOME_TITLE`/`HOME_DESCRIPTION`, `CATALOG_TITLE`/`CATALOG_DESCRIPTION`; `BUSINESS` (name, VAT id, phone, PO box; no e-mail on purpose); richer Organization + WebSite; helpers `breadcrumbSchema`, `faqSchema`, `ldJson` (escapes `<`).
+- **`lib/seo.ts`:** `SITE_URL='https://megalinks.co.il'` (was the Staging address, so canonicals, sitemap, robots and schema would have pointed at Staging after launch). New `HOME_TITLE`/`HOME_DESCRIPTION`, `CATALOG_TITLE`/`CATALOG_DESCRIPTION`; `BUSINESS` (name, VAT id, phone, PO box, the public e-mail the owner chose 18.11.2026); richer Organization + WebSite; helpers `breadcrumbSchema`, `faqSchema`, `ldJson` (escapes `<`).
 - **Structured data:** homepage (`app/route.ts`: WebSite + Organization + OfferCatalog of 3 services + FAQPage parsed from the homepage questions); `/pr` (`app/pr/route.ts`: Service with an offer per site, BreadcrumbList, FAQPage); catalog (`app/[...page]/page.tsx`: CollectionPage + ItemList of public regular prices + BreadcrumbList).
 - **Titles:** homepage `<title>`/og/twitter in `home/index.html` (visible H1 unchanged); catalog own title; knowledge hub title and description (`lib/knowledge-seo.ts`, canonical on `SITE_URL`); `app/knowledge/[slug]/page.tsx` schema on `SITE_URL`.
 - **New routes:** `/llms.txt` (`app/llms.txt/route.ts`, public facts, pages, PR sites "החל מ-", guides, policies; no private data); `/favicon.ico` → 301 `/brand/loader-m.png`.
 - **Sitemap** (`app/sitemap.xml/route.ts`): on `SITE_URL`, `lastmod` for guides and the hub.
 - **Footer** (`app/workspace-footer.tsx`): "כתבות יח״צ" link. PR page description ends "499 ₪ לראיון וכתיבה." (`scripts/build-pr-page.mjs`).
 - **Tests:** new `tests/seo-audit.mjs` (13 checks) passes; seo.mjs, pr-page.mjs, knowledge pass. Full run: same 60 older failures, no new one.
-- **Owner decisions open:** megalinks.co.il vs www (set: no www); one public e-mail (homepage footer differs from legal pages); "Dofollow / מעביר סמכות" wording (Google paid-links policy); "פרסומת" label wording; AI training bots (currently all allowed).
+- **Owner decisions 18.11.2026:** megalinks.co.il without www (approved); homepage footer e-mail changed to the one in the legal pages (owner chose it). **Still open:** "Dofollow / מעביר סמכות" wording (Google paid-links policy); "פרסומת" label wording; AI training bots (currently all allowed).
 - **Later:** catalog JS chunk ~1.6MB (split per screen, INP); Search Console, Bing Webmaster + IndexNow, Google Business Profile; internal links from guides to hubs and services.
 
 ### לפני העלאה
