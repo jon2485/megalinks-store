@@ -1534,7 +1534,7 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Sitemap** (`app/sitemap.xml/route.ts`): on `SITE_URL`, `lastmod` for guides and the hub.
 - **Footer** (`app/workspace-footer.tsx`): "כתבות יח״צ" link. PR page description ends "499 ₪ לראיון וכתיבה." (`scripts/build-pr-page.mjs`).
 - **Tests:** new `tests/seo-audit.mjs` (13 checks) passes; seo.mjs, pr-page.mjs, knowledge pass. Full run: same 60 older failures, no new one.
-- **Owner decisions 18.11.2026:** megalinks.co.il without www (approved); homepage footer e-mail changed to the one in the legal pages (owner chose it). **Still open:** "Dofollow / מעביר סמכות" wording (Google paid-links policy); "פרסומת" label wording; AI training bots (currently all allowed).
+- **Owner decisions 18.11.2026:** megalinks.co.il without www (approved); homepage footer e-mail changed to the one in the legal pages (owner chose it). **"Dofollow" wording removed (owner: "להסיר", then "תגיד לי אתה"):** homepage glossary row "Dofollow: קישור שמעביר סמכות" removed (`home/index.html`); catalog chip "קישור Dofollow" → "קישור לאתר שלכם" (`app/catalog-view.tsx`, any dofollow/nofollow feature, like the PR card) and "קישור לאתר" (`app/workspace.tsx`); terms 6.1 example tag → "מבצע" (`design/legal/drafts/terms.md`, rebuilt `lib/legal-content.generated.ts`). Admin catalog grid still uses the internal `features` values. Full run: same 60 older failures. **Still open:** "פרסומת" label wording; AI training bots (currently all allowed).
 - **Later:** catalog JS chunk ~1.6MB (split per screen, INP); Search Console, Bing Webmaster + IndexNow, Google Business Profile; internal links from guides to hubs and services.
 
 ### לפני העלאה
