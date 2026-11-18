@@ -74,12 +74,14 @@ export async function prSites():Promise<PrSite[]>{
  const chosen=(featured.length?featured:sites).slice(0,PR_MAX_SITES);
  return chosen.map(({row,data})=>{
   const priced=pricedSite(row,{tier,overrides} as any),host=prHost(String(row.url)),publication=Number(priced.price_cents)||0;
+  // The default lines describe a whole site, so only its main address gets them (a section such as ynet.co.il/laisha does not).
+  const main=(()=>{try{return ['','/'].includes(new URL(String(row.url)).pathname);}catch{return false;}})(),known=main?host:'';
   const features=Array.isArray(data.features)?data.features.map(String):[];
   const example=Array.isArray(data.example_articles)?data.example_articles.map((x:any)=>typeof x==='string'?x:x?.url).map(safeUrl).find(Boolean):'';
   const sample=safeUrl(data.pr_sample_url)||example||'';
   return {id:String(row.id),name:String(row.name),url:safeUrl(row.url)||'https://'+host,host,
-   kind:text(data.pr_kind,40)||DEFAULT_KINDS[host]||KINDS[String(row.category)]||'',
-   description:text(data.pr_description,400)||DEFAULT_DESCRIPTIONS[host]||'',
+   kind:text(data.pr_kind,40)||DEFAULT_KINDS[known]||KINDS[String(row.category)]||'',
+   description:text(data.pr_description,400)||DEFAULT_DESCRIPTIONS[known]||'',
    dr:row.dr==null?null:Number(row.dr),ur:data.ur==null||data.ur===''?null:Number(data.ur),
    link:features.some(f=>/follow/i.test(f)),days:Number(data.turnaround_days)>0?Number(data.turnaround_days):null,
    note:text(data.public_notes,300),logo:safeUrl(data.logo_url),image:safeUrl(data.pr_image_url),

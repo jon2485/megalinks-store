@@ -44,7 +44,7 @@ const faq=[
 const plus='<i aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></i>';
 const faqHtml=faq.map(([q,a],i)=>`      <div class="qa${i===0?' is-open':''}"><h3><button class="qa__q" type="button" aria-expanded="${i===0}" aria-controls="pq${i}">${q}${plus}</button></h3><div class="qa__a" id="pq${i}"><div><p>${a}</p></div></div></div>`).join('\n');
 
-const prHtml=head('כתבות יח״צ באתרי החדשות הגדולים | MegaLinks','כתבה על העסק שלכם באתרי החדשות הגדולים בישראל. המראיין שלנו מתקשר, אתם מספרים, ואנחנו כותבים ומפרסמים.','/pr','index, follow')
+const prHtml=head('כתבות יח״צ באתרי החדשות הגדולים | MegaLinks','כתבה על העסק שלכם באתרי החדשות הגדולים בישראל. המראיין שלנו מתקשר, אתם מספרים, ואנחנו כותבים ומפרסמים. 499 ₪ לראיון וכתיבה.','/pr','index, follow')
  +`<style id="pr-page">\n${css}</style>\n</head>\n<body>\n<a class="skip" href="#main">דילוג לתוכן</a>\n`
  +page.replace('<!--PR:INTERVIEW-->',()=>iv).replace('<!--PR:FAQ-->',()=>faqHtml)+'\n'+footer+'\n'+tail;
 const startHtml=head('פרטים לראיון | כתבות יח״צ | MegaLinks','פרטים לראיון הטלפוני לכתבת היח״צ שלכם.','/pr/start','noindex, nofollow')

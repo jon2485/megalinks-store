@@ -4,11 +4,17 @@ import {lobbyGroups} from './admin-lobby-config';
 import {LEGAL_DOCS,legalDoc} from './legal-docs';
 import {LEGAL_CONTENT} from './legal-content.generated';
 
-export const SITE_URL = 'https://megalinks-staging-v172.up.railway.app';
+// The public address search engines and AI assistants should know (owner's business details: megalinks.co.il). Canonical
+// links, the sitemap, robots.txt, structured data and llms.txt all use it, also on Staging, which is private (sign-in only)
+// and never indexed, so a copy of the site can never compete with the real one (SEO audit 18.11.2026).
+export const SITE_URL = 'https://megalinks.co.il';
 export const SOCIAL_IMAGE_PATH = '/brand/megalinks-social.png';
 export const SITE_NAME = 'MegaLinks';
-export const HOME_TITLE = 'MegaLinks — פרסום כתבות ותוכן באתרים';
-export const HOME_DESCRIPTION = 'בחרו אתרים לפרסום הכתבה הבאה שלכם עם MegaLinks. חפשו לפי תחום, השוו מחירים ונתוני אתרים, והזמינו פרסום כתבות ושירותי כתיבת תוכן במקום אחד.';
+export const HOME_TITLE = 'קניית קישורים וכתבות יח״צ באתרים מובילים | MegaLinks';
+export const HOME_DESCRIPTION = 'מחירון של מאות אתרים בישראל לפרסום כתבות וקניית קישורים, כתבות יח״צ באתרי חדשות עם ראיון טלפוני וכתיבת תוכן. מחירים גלויים, הזמנה ומעקב במקום אחד.';
+export const CATALOG_TITLE = 'מחירון אתרים לפרסום כתבות וקניית קישורים | MegaLinks';
+export const CATALOG_DESCRIPTION = 'מחירון אתרים בישראל לפרסום כתבות ממומנות וקישורים: תחום, DR, UR, זמן פרסום ומחיר לכל אתר. מזמינים אונליין, עם כתיבת תוכן לבחירה.';
+export const BUSINESS = {legalName:'Mega Links',name:'MegaLinks',hebrewName:'מגה לינקס',vatId:'201234879',telephone:'+972-50-750-8850',whatsapp:'https://wa.me/972507508850',postOfficeBox:'ת"ד 592',locality:'נס ציונה',country:'IL'} as const;
 // A legal page is a draft until a lawyer approves its text; drafts stay out of search engines and of the sitemap.
 export const legalPublished=(id:string)=>!!LEGAL_CONTENT[id]&&!LEGAL_CONTENT[id].draft;
 export const INDEXABLE_PATHS:readonly string[] = ['/', '/catalog', '/pr', '/knowledge', ...LEGAL_DOCS.filter(doc=>legalPublished(doc.id)).map(doc=>doc.path)];
@@ -60,21 +66,33 @@ export const privateRobots = {index:false,follow:false,noarchive:true};
 export function legalMetadata(id:string):Metadata {
     const doc=legalDoc(id)!,title=doc.title+' | MegaLinks',description=doc.summary,url=SITE_URL+doc.path,published=legalPublished(id);
     return {title:{absolute:title},description,alternates:{canonical:url},robots:published?{index:true,follow:true}:privateRobots,
-        openGraph:{type:'website',locale:'he_IL',siteName:SITE_NAME,title,description,url}};
+        openGraph:{type:'website',locale:'he_IL',siteName:SITE_NAME,title,description,url,images:[{url:SITE_URL+SOCIAL_IMAGE_PATH,width:1200,height:630,alt:'MegaLinks'}]}};
 }
 export function publicMetadata(path:'/'|'/catalog'):Metadata {
-    const title=HOME_TITLE;
-    const description=HOME_DESCRIPTION;
+    // Each public page has its own title and description: the catalog used to repeat the homepage's (SEO audit 18.11.2026).
+    const title=path==='/catalog'?CATALOG_TITLE:HOME_TITLE;
+    const description=path==='/catalog'?CATALOG_DESCRIPTION:HOME_DESCRIPTION;
     const url=SITE_URL+path;
     const image={url:SITE_URL+SOCIAL_IMAGE_PATH,width:1200,height:630,alt:'MegaLinks — פרסום כתבות ותוכן באתרים'};
     return {title:{absolute:title},description,alternates:{canonical:url},robots:{index:true,follow:true},
         openGraph:{type:'website',locale:'he_IL',siteName:SITE_NAME,title,description,url,images:[image]},
         twitter:{card:'summary_large_image',title,description,images:[image.url]}};
 }
+const organization={'@type':'Organization','@id':SITE_URL+'/#organization',name:SITE_NAME,alternateName:[BUSINESS.hebrewName,BUSINESS.legalName],legalName:BUSINESS.legalName,url:SITE_URL+'/',
+    logo:{'@type':'ImageObject',url:SITE_URL+'/brand/megalinks-logo.png'},image:SITE_URL+SOCIAL_IMAGE_PATH,telephone:BUSINESS.telephone,vatID:BUSINESS.vatId,
+    address:{'@type':'PostalAddress',postOfficeBoxNumber:BUSINESS.postOfficeBox,addressLocality:BUSINESS.locality,addressCountry:BUSINESS.country},areaServed:{'@type':'Country',name:'Israel'},
+    contactPoint:[{'@type':'ContactPoint',contactType:'customer service',telephone:BUSINESS.telephone,areaServed:'IL',availableLanguage:['he']}],
+    description:'מערכת לפרסום כתבות, לקניית קישורים ולכתבות יח״צ באתרים בישראל, עם כתיבת תוכן ומעקב אחרי כל פרסום.',
+    knowsAbout:['קניית קישורים','בניית קישורים','כתבות יח״צ','כתבות ממומנות','קידום אתרים בגוגל','כתיבת תוכן שיווקי']};
 export const websiteSchema = {'@context':'https://schema.org','@graph':[
-    {'@type':'Organization','@id':SITE_URL+'/#organization',name:SITE_NAME,url:SITE_URL+'/',logo:SITE_URL+'/brand/loader-m.png'},
+    organization,
     {'@type':'WebSite','@id':SITE_URL+'/#website',name:SITE_NAME,alternateName:'מגה לינקס',url:SITE_URL+'/',inLanguage:'he-IL',publisher:{'@id':SITE_URL+'/#organization'}},
 ]};
+/** Breadcrumbs for a public page, e.g. [['כתבות יח״צ','/pr']] under the homepage. */
+export const breadcrumbSchema=(items:[string,string][])=>({'@type':'BreadcrumbList',itemListElement:[['MegaLinks','/'],...items].map(([name,path],i)=>({'@type':'ListItem',position:i+1,name,item:SITE_URL+path}))});
+/** Questions and answers that are visible on the page, in schema.org form. */
+export const faqSchema=(items:[string,string][])=>({'@type':'FAQPage',mainEntity:items.map(([q,a])=>({'@type':'Question',name:q,acceptedAnswer:{'@type':'Answer',text:a}}))});
+export const ldJson=(graph:object[])=>'<script type="application/ld+json">'+JSON.stringify({'@context':'https://schema.org','@graph':graph}).replace(/</g,'\\u003c')+'</script>';
 
 /** Also cover non-HTML files and private routes; robots.txt is not access control. */
 export function applySeoHeaders(response:Response,pathname:string) {

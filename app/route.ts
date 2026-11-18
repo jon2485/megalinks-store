@@ -1,5 +1,6 @@
 import {HOME_HTML} from '@/lib/home-page-html';
-import {SITE_URL,websiteSchema} from '@/lib/seo';
+import {SITE_URL,websiteSchema,faqSchema,ldJson} from '@/lib/seo';
+import {PR_INTERVIEW_CENTS} from '@/lib/pr';
 import {publicKnowledgeList} from '@/lib/knowledge-server';
 import {knowledgePath} from '@/lib/knowledge';
 
@@ -19,9 +20,19 @@ async function latestGuides(){
     }catch{return '';}
 }
 
+// Structured data for the homepage (SEO audit 18.11.2026): the organisation and site, the three services, and the
+// questions that are visible on the page, read from the page itself so the two never disagree.
+const strip=(html:string)=>html.replace(/<[^>]+>/g,' ').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+const homeFaq=[...HOME_HTML.matchAll(/<button class="qa__q"[^>]*>([^<]+)<i[\s\S]*?<div class="qa__a"[^>]*><div>([\s\S]*?)<\/div><\/div>/g)].map(m=>[strip(m[1]),strip(m[2])] as [string,string]).filter(([q,a])=>q&&a);
+const services={'@type':'OfferCatalog','@id':SITE_URL+'/#services',name:'שירותי MegaLinks',itemListElement:[
+    {'@type':'Offer',itemOffered:{'@type':'Service',name:'פרסום כתבות וקניית קישורים',serviceType:'Sponsored articles and backlinks',url:SITE_URL+'/catalog',provider:{'@id':SITE_URL+'/#organization'},areaServed:'IL'}},
+    {'@type':'Offer',itemOffered:{'@type':'Service',name:'כתבות יח״צ באתרי חדשות עם ראיון טלפוני',serviceType:'PR articles',url:SITE_URL+'/pr',provider:{'@id':SITE_URL+'/#organization'},areaServed:'IL'},priceSpecification:{'@type':'UnitPriceSpecification',price:PR_INTERVIEW_CENTS/100,priceCurrency:'ILS',valueAddedTaxIncluded:false,description:'ראיון טלפוני וכתיבת הכתבה, בנוסף למחיר הפרסום באתר'}},
+    {'@type':'Offer',itemOffered:{'@type':'Service',name:'כתיבת תוכן לכתבות',serviceType:'Article writing',url:SITE_URL+'/catalog',provider:{'@id':SITE_URL+'/#organization'},areaServed:'IL'}},
+]};
+const homeSchema=ldJson([...websiteSchema['@graph'],services,...(homeFaq.length?[faqSchema(homeFaq)]:[])]);
 export async function GET(){
     const guides=await latestGuides();
-    let html=HOME_HTML.replaceAll('%%SITE_URL%%',SITE_URL).replace('<!--HOME:SCHEMA-->','<script type="application/ld+json">'+JSON.stringify(websiteSchema).replace(/</g,'\u003c')+'</script>');
+    let html=HOME_HTML.replaceAll('%%SITE_URL%%',SITE_URL).replace('<!--HOME:SCHEMA-->',()=>homeSchema);
     if(guides)html=html.replace(/<!--HOME:POSTS-->[\s\S]*?<!--\/HOME:POSTS-->/,()=>guides);
     return new Response(html,{headers:{'content-type':'text/html; charset=utf-8','cache-control':'public, max-age=0, must-revalidate'}});
 }
