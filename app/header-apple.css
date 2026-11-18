@@ -178,3 +178,14 @@ html body .header-apple-sheet .workspace-mobile-drawer-links>a.workspace-home-li
  html body .workspace-site-header:has(a.workspace-home-link) .workspace-top-navigation-trigger{font-size:15px!important;padding-inline:9px!important;gap:6px!important}
  .workspace-page-shell .workspace-top-navigation-list:has(>li>a.workspace-home-link){gap:8px!important}
 }
+/* Owner, 18.11.2026: "כתבות יח״צ" got its own menu item, so a customer has five items and an admin in the customer view six.
+   Up to 1199px the labels are 14px with tighter padding; six items keep the 15px size up to 1365px with smaller gaps.
+   No label breaks or is cut (checked at 1024, 1060, 1100, 1180, 1280, 1366 and 1440). */
+@media(min-width:1024px) and (max-width:1199px){
+ html body .workspace-site-header:has(a.workspace-home-link):has(.workspace-top-navigation-list>li:nth-child(5)) .workspace-top-navigation-trigger{font-size:14px!important;padding-inline:6px!important;gap:5px!important}
+ .workspace-page-shell .workspace-top-navigation-list:has(>li>a.workspace-home-link):has(>li:nth-child(5)){gap:4px!important}
+}
+@media(min-width:1200px) and (max-width:1365px){
+ html body .workspace-site-header:has(a.workspace-home-link):has(.workspace-top-navigation-list>li:nth-child(6)) .workspace-top-navigation-trigger{font-size:15px!important;padding-inline:9px!important;gap:6px!important}
+ .workspace-page-shell .workspace-top-navigation-list:has(>li>a.workspace-home-link):has(>li:nth-child(6)){gap:6px!important}
+}

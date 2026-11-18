@@ -1541,3 +1541,10 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 
 ### לפני העלאה
 - `SITE_URL` is the production domain. Staging pages will show canonicals to megalinks.co.il; that is intended (Staging stays gated). Confirm the domain (with/without www) before production.
+
+## 18.11.2026 (42): Login to catalog, accessibility menu in the system, PR as its own menu item (branch `claude/seo-20261118`)
+- **Homepage "כניסה למערכת"** (header and agencies section, `home/index.html`): goes to `/catalog`. Signed-in visitors (`/api/me` 200) go straight there; others get `/signin-with-chatgpt?return_to=%2Fcatalog`, like the system's own sign-in button (owner: "כן לקטלוג"). Footer "אזור אישי" still links `/purchased`.
+- **Accessibility menu in the system** (owner chose "להוסיף גם למערכת"): `app/accessibility-menu.tsx` + `.css`, mounted in `app/layout.tsx` next to the WhatsApp button (so every system, knowledge and legal page; hidden in the admin area like WhatsApp). Same three options as the homepage; larger text uses `zoom:1.15` on body (much of the system is in px); contrast darkens muted text; stop animations. The choice is stored in `localStorage` `ml-a11y`, which the homepage menu now reads and writes too, so it carries over. Statement (`design/legal/drafts/accessibility.md` section 3) now describes the menu instead of "אין תפריט נגישות נפרד". Not legally required (IS 5568 AA + a statement are); added for consistency.
+- **Menu:** "כתבות יח״צ" moved out of "אתרים ומבצעים" to its own top item (owner kept the name over "יחסי ציבור"). Customer: 5 items, admin in the customer view: 6. `app/header-apple.css`: 14px labels up to 1199px, six items 15px with 6px gaps up to 1365px; measured no overlap or cut label at 1024-1440. Phone drawer gets its own "כתבות יח״צ" section.
+- **Full run:** same 60 older failures, no new one.
+- **Open:** homepage button "למחירון האתרים" rename (suggested "לכל האתרים והמחירים", waiting for the owner).

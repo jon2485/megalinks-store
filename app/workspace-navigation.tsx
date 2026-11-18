@@ -37,7 +37,7 @@ export function navigationGroups(ctx:Ctx):Group[]{
  if(ctx.user?.role==='admin')account.push(['admin','מעבר לניהול המערכת',ShieldCheck]);
  const work:Entry[]=navClient.filter(([page])=>page==='purchased').map(([page,label,Icon])=>[page,label,Icon]);
  if(ctx.user?.role==='supplier')work.push(['supplier-workspace','פורטל ספקים',Building2]);
- return [{id:'sites',label:'אתרים ומבצעים',icon:Globe,items:[...navClient.slice(0,2),['pr','כתבות יח״צ',Newspaper] as Entry]},{id:'knowledge',label:'מדריכים וידע',icon:BookOpen,items:[['knowledge','מדריכים וידע',BookOpen]]},{id:'work',label:'אזור אישי',icon:FileText,items:work},...(account.length?[{id:'account',label:'ניהול',icon:ShieldCheck,items:account}]:[])];
+ return [{id:'sites',label:'אתרים ומבצעים',icon:Globe,items:navClient.slice(0,2)},{id:'pr',label:'כתבות יח״צ',icon:Newspaper,items:[['pr','כתבות יח״צ',Newspaper] as Entry]},{id:'knowledge',label:'מדריכים וידע',icon:BookOpen,items:[['knowledge','מדריכים וידע',BookOpen]]},{id:'work',label:'אזור אישי',icon:FileText,items:work},...(account.length?[{id:'account',label:'ניהול',icon:ShieldCheck,items:account}]:[])];
 }
 export function activeNavigation(page:string,view:string){
  if(page===view)return true;
