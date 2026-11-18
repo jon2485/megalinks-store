@@ -1,0 +1,85 @@
+/* Accessibility menu in the system (owner, 18.11.2026). Same look as the homepage menu (home/index.html .fab__a11y / .a11y),
+   sitting above the floating WhatsApp button. */
+.ml-a11y-fab {
+ position: fixed;
+ right: max(27px, calc(env(safe-area-inset-right) + 7px));
+ bottom: calc(96px + env(safe-area-inset-bottom));
+ z-index: 35;
+ display: grid;
+ place-items: center;
+ width: 46px;
+ height: 46px;
+ padding: 0;
+ border: 0;
+ border-radius: 50%;
+ background: #1D4ED8;
+ color: #fff;
+ box-shadow: 0 12px 24px -12px #1d4ed8;
+ cursor: pointer;
+ transition: transform 200ms cubic-bezier(.23,1,.32,1);
+}
+.ml-a11y-fab:active { transform: scale(.93); }
+.ml-a11y-fab:focus-visible { outline: 3px solid #0876bf; outline-offset: 4px; }
+@media (hover: hover) { .ml-a11y-fab:hover { transform: translateY(-3px); } }
+
+.ml-a11y-panel {
+ position: fixed;
+ right: max(20px, env(safe-area-inset-right));
+ bottom: calc(154px + env(safe-area-inset-bottom));
+ z-index: 46;
+ width: 240px;
+ padding: 16px;
+ border-radius: 20px;
+ background: #fff;
+ color: #0B1B3A;
+ box-shadow: 0 2px 4px #0b1b3a1a, 0 30px 60px -24px #0b1b3ab3;
+ display: grid;
+ gap: 8px;
+ font-family: Heebo, Arial, sans-serif;
+ transform-origin: 100% 100%;
+ animation: ml-a11y-pop 220ms cubic-bezier(.23,1,.32,1);
+}
+.ml-a11y-panel[hidden] { display: none; }
+@keyframes ml-a11y-pop { from { opacity: 0; transform: scale(.92) translateY(8px); } }
+.ml-a11y-panel h2 { font-size: 1.05rem; font-weight: 700; margin: 0 0 4px; }
+.ml-a11y-panel button {
+ all: unset;
+ box-sizing: border-box;
+ cursor: pointer;
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ width: 100%;
+ padding: 11px 14px;
+ border-radius: 12px;
+ background: #F2F6FC;
+ font-weight: 600;
+ font-size: 15px;
+ transition: background-color 150ms;
+}
+.ml-a11y-panel button::after { content: ""; width: 18px; height: 18px; border-radius: 50%; box-shadow: inset 0 0 0 2px #A9B8D6; }
+.ml-a11y-panel button[aria-pressed="true"] { background: #E3EBFF; color: #2B49C6; }
+.ml-a11y-panel button[aria-pressed="true"]::after { background: #2B49C6; box-shadow: inset 0 0 0 4px #E3EBFF, 0 0 0 2px #2B49C6; }
+.ml-a11y-panel button.reset::after { display: none; }
+.ml-a11y-panel button:focus-visible, .ml-a11y-panel a:focus-visible { outline: 3px solid #2B49C6; outline-offset: 2px; }
+.ml-a11y-panel a { color: #2B49C6; font-size: 14px; font-weight: 600; text-align: center; padding-top: 4px; text-decoration: underline; text-underline-offset: 3px; }
+
+/* The options. Larger text zooms the page, since much of the system is sized in pixels. */
+html.a11y-big body { zoom: 1.15; }
+html.a11y-big .ml-a11y-fab, html.a11y-big .ml-a11y-panel, html.a11y-big .floating-whatsapp { zoom: calc(1 / 1.15); }
+html.a11y-contrast { --muted-foreground: #1B2A47; }
+html.a11y-contrast body :is(.text-slate-300, .text-slate-400, .text-slate-500, .text-slate-600, .text-muted-foreground) { color: #1B2A47 !important; }
+html.a11y-contrast body a:not([class*="btn"]):not([class*="button"]):not([role="button"]) { text-decoration: underline; }
+html.a11y-still *, html.a11y-still *::before, html.a11y-still *::after { animation: none !important; transition: none !important; }
+
+/* Same places as the WhatsApp button: hidden in the admin area, moved up above the phone checkout bar. */
+body:has(.admin-unified-shell) .ml-a11y-fab, body:has(.admin-unified-shell) .ml-a11y-panel { display: none; }
+@media (max-width: 767px) {
+ .ml-a11y-fab { right: max(19px, calc(env(safe-area-inset-right) + 3px)); bottom: calc(82px + env(safe-area-inset-bottom)); }
+ .ml-a11y-panel { right: max(16px, env(safe-area-inset-right)); bottom: calc(138px + env(safe-area-inset-bottom)); }
+ body:has(.checkout-action-bar) .ml-a11y-fab { bottom: calc(168px + env(safe-area-inset-bottom)); }
+ body:has(.checkout-action-bar) .ml-a11y-panel { bottom: calc(224px + env(safe-area-inset-bottom)); }
+}
+@media (prefers-reduced-motion: reduce) { .ml-a11y-fab, .ml-a11y-panel { transition: none; animation: none; } .ml-a11y-fab:hover, .ml-a11y-fab:active { transform: none; } }
+@media (forced-colors: active) { .ml-a11y-fab { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; box-shadow: none; } }
+@media print { .ml-a11y-fab, .ml-a11y-panel { display: none; } }
