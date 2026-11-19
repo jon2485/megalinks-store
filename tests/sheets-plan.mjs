@@ -52,6 +52,13 @@ const newRow=['','חדש','https://new.example','general',300,100,'כן','',''];
 {const heads=[...headings,'DR','UR'];let m=planSheets([heads,[...row,'',1.8]],[w]);assert.deepEqual(m.errors,[]);assert.equal(m.operations[0].values.ur,1.8,'UR 1.8 accepted');
  m=planSheets([heads,[...row,1.5,'']],[w]);assert(m.errors.some(e=>e.includes('DR')),'DR 1.5 refused');
  m=planSheets([headings,['a','אתר א','a.example','חדשות מקומיות',200,'','לא','','']],[{...w,category:'news_local'}]);assert.equal(m.operations.length,0,'the Hebrew category name is the same category');}
+// Owner 19.11.2026: several categories per site, comma separated; the first is the main one. No "כללי" in the list.
+{const {categoryLabels}=await import(pathToFileURL(realpathSync('.sites-runtime/sheets-test/sheets-plan.js')));assert(!Object.values(categoryLabels).includes('כללי'),'no general category offered');
+ let m=planSheets([headings,['','חדש','https://multi.example','מגזינים, לייף סטייל, בריאות',300,100,'כן','','']],[w]);assert.deepEqual(m.errors,[]);assert.deepEqual(m.operations[0].values.category,['magazines','lifestyle','health'],'all categories kept, main first');
+ m=planSheets([headings,['','חדש','https://multi.example','מגזינים, משהו לא קיים',300,100,'כן','','']],[w]);assert(m.errors.some(e=>e.includes('משהו לא קיים')),'an unknown category is named');
+ const site={...w,category:'magazines',data:JSON.stringify({cost_cents:10000,public_notes:'הערה קיימת',logo_url:'https://a.example/logo.png',categories:['magazines','health']})};
+ m=planSheets([headings,['a','אתר א','a.example','מגזינים, בריאות',200,'','לא','','']],[site]);assert.equal(m.operations.length,0,'the same list is no change');
+ m=planSheets([headings,['a','אתר א','a.example','בריאות',200,'','לא','','']],[site]);assert.deepEqual(m.operations[0].values.category,['health'],'a changed list is saved');}
 const source=sheetsScript();assert(source.includes('everyMinutes(5)'));assert(!source.includes('token = \''),'No credential embedded in script');
 const triggers=[],properties=new Map(),calls=[];let prompts=0;
 const fullHeads=JSON.parse(source.match(/const MEGA_LINKS_HEADERS = (.*);/)[1]).map(g=>g[0]);const book={getId:()=>SHEET_ID,getSheetByName:()=>({getLastRow:()=>2,getLastColumn:()=>fullHeads.length,getRange:(r,c,n)=>({getValues:()=>n===1?[fullHeads]:[fullHeads,row]})})};

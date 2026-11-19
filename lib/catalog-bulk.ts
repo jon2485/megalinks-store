@@ -33,6 +33,9 @@ export async function saveCatalogBatch(user:Row,input:Row){
   }
   const d:Row=prev?JSON.parse(prev.data):{active:true,procurement_verified:false,features:[],tags:[],language:'he',turnaround_days:3};
   if(prev)Object.assign(d,{name:prev.name,url:prev.url,category:prev.category,active:!!prev.active,price_ils:prev.price/100,...(d.dr===undefined&&prev.dr!=null?{dr:Number(prev.dr)}:{})}); // a DR kept only in the column must survive a save
+  // Owner 19.11.2026: a list of categories; the first is the main one (the column), all of them are kept in data.categories.
+  if(Array.isArray(values.category)){const list=[...new Set(values.category.map((x:unknown)=>String(x).trim()).filter(Boolean))] as string[];assert(list.length>=1&&list.length<=8&&list.every(x=>x.length<=60),'קטגוריות לא תקינות');d.categories=list;values.category=list[0];}
+  else if(typeof values.category==='string'&&Array.isArray(d.categories)&&d.categories.length){const main=values.category.trim();d.categories=[main,...d.categories.filter((x:string)=>x!==main)];}
   for(const k of texts)if(k in values){assert(typeof values[k]==='string'&&values[k].length<=(k.includes('notes')||k==='publishing_restrictions'?6000:1000),'טקסט לא תקין בשדה '+k);d[k]=values[k].trim();}
   for(const k of flags)if(k in values){assert(typeof values[k]==='boolean','ערך כן/לא לא תקין');d[k]=values[k];}
   for(const k of lists)if(k in values){assert(Array.isArray(values[k])&&values[k].length<=100&&values[k].every((v:unknown)=>typeof v==='string'&&v.length<=1000),'רשימה לא תקינה');d[k]=values[k];}

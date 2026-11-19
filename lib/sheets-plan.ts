@@ -19,13 +19,17 @@ const lists=new Set(['tags','features','example_articles','recommended_topics','
 const money=new Set(['price_ils','cost_ils','sale_price_ils','pixel_price_ils']);
 const numbers=new Set([...money,'dr','ur','turnaround_days','stock_total','sort_order']);
 // Owner 19.11.2026: the sheet shows the category in Hebrew (the writeback writes the label; both the label and the key are read).
-export const categoryLabels:Record<string,string>={news_national:'חדשות ארציות',news_local:'חדשות מקומיות',tech:'טכנולוגיה',finance:'כלכלה ופיננסים',business:'עסקים',lifestyle:'לייף סטייל',magazines:'מגזינים',real_estate:'נדל״ן',health:'בריאות',legal:'משפטים',education:'חינוך',tourism:'תיירות',food:'אוכל',sports:'ספורט',entertainment:'בידור',religion:'דת ומסורת',israeli_foreign_lang:'שפות זרות',general:'כללי'};
+// Owner 19.11.2026: several categories per site (comma separated, the first is the main one), a wider list, no "כללי".
+// "general" stays readable only for old rows; it is not offered anywhere.
+export const categoryLabels:Record<string,string>={news_national:'חדשות ארציות',news_local:'חדשות מקומיות',finance:'כלכלה ופיננסים',business:'עסקים',tech:'טכנולוגיה',marketing:'שיווק ודיגיטל',lifestyle:'לייף סטייל',magazines:'מגזינים',fashion_beauty:'אופנה ויופי',parenting:'הורות ומשפחה',home_design:'עיצוב הבית ושיפוצים',real_estate:'נדל״ן',health:'בריאות',food:'אוכל',pets:'חיות מחמד',cars:'רכב',tourism:'תיירות',sports:'ספורט',entertainment:'בידור',education:'חינוך',legal:'משפטים',religion:'דת ומסורת',israeli_foreign_lang:'שפות זרות'};
+const categoryKey=(text:string)=>categoryLabels[text]||text==='general'?text:text==='כללי'?'general':Object.keys(categoryLabels).find(k=>categoryLabels[k]===text);
 function url(v:string){const u=new URL(/^https?:\/\//i.test(v)?v:'https://'+v);if(!['https:','http:'].includes(u.protocol)||!u.hostname.includes('.')||u.username||u.password)throw Error('כתובת לא תקינה');return u.href;}
 const list=(v:any)=>Array.isArray(v)?v.map(x=>typeof x==='object'?x.url||'':String(x)):[];
 export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='string'?JSON.parse(w.data):w.data||{};
  if(key==='price_ils')return w.price/100;
  if(key==='cost_ils'||key==='sale_price_ils'||key==='pixel_price_ils'){const field=key.replace('_ils','_cents');return d[field]===undefined?(key==='sale_price_ils'?(d.sale_price||undefined):key==='pixel_price_ils'?(d.pixel_price??undefined):undefined):d[field]/100;}
  if(key==='active')return !!w.active;
+ if(key==='category'){const extra=Array.isArray(d.categories)?d.categories:[];return extra.length?extra:w.category?[w.category]:[];}
  // Per-site billing (16.11.2026): a site without stock is billed monthly, and the sheet says so in words.
  if(key==='stock_total')return d.stock_total===null||d.stock_total===undefined||d.stock_total===''?MONTHLY:Number(d.stock_total);
  if(flags.has(key))return !!d[key];
@@ -61,7 +65,7 @@ export function planSheets(rows:any[][],existing:Row[]){
    const prevUrlId=seenUrls.get(urlKey(siteUrl));if(prevUrlId&&(!before||!known.has(prevUrlId)))throw Error('כתובת אתר כפולה');seenUrls.set(urlKey(siteUrl),id);
    if(!before&&existingUrls.has(urlKey(siteUrl)))throw Error('כתובת האתר כבר קיימת');
    if(!raw.name||!raw.category||raw.price_ils==='')throw Error('שם אתר קטגוריה ומחיר הם חובה');
-   const cat=categoryLabels[raw.category]?raw.category:Object.keys(categoryLabels).find(k=>categoryLabels[k]===raw.category);if(!cat)throw Error('קטגוריה לא מוכרת');
+   const cats:string[]=[];for(const part of raw.category.split(',').map((x:string)=>x.trim()).filter(Boolean)){const k=categoryKey(part);if(!k)throw Error('קטגוריה לא מוכרת: '+part);if(!cats.includes(k))cats.push(k);}if(!cats.length||cats.length>8)throw Error('יש לבחור בין קטגוריה אחת ל-8 קטגוריות');const cat=cats[0];
    const values:Row={},normalized:Row={};
    for(let j=0;j<keys.length;j++){
     const key=keys[j];if(!key||key==='id')continue;const text=String(cells[j]??'').trim();
@@ -77,7 +81,7 @@ export function planSheets(rows:any[][],existing:Row[]){
     else if(key==='stock_total'&&text===MONTHLY)value=MONTHLY;
     else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&key!=='ur'&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);if(['dr','ur'].includes(key)&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key)||key==='ur')value=Math.round(value*100)/100;}
     if(key==='url'||key==='logo_url')value=value?url(value):'';
-    if(key==='category')value=cat;
+    if(key==='category')value=cats;
     if(key==='sale_ends'&&value&&!Number.isFinite(Date.parse(value)))throw Error('תאריך סיום מבצע לא תקין');
     if(key==='supplier_email'&&value&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))throw Error('מייל ספק לא תקין');
     if(key==='example_articles')value=value.map((s:string)=>url(s));
@@ -94,7 +98,7 @@ export function planSheets(rows:any[][],existing:Row[]){
    // Owner decision (16.11.2026): typing a sale price turns the sale on; "במבצע" = לא still ends it.
    if(Object.hasOwn(values,'sale_price_ils')&&values.sale_price_ils!==''&&!Object.hasOwn(values,'is_on_sale')&&!(before&&sheetCurrentValue(before,'is_on_sale')))values.is_on_sale=true;
    // Unchanged optional legacy fields are intentionally not rewritten.
-   if(!before){Object.assign(values,{name:raw.name,url:siteUrl,category:cat,active:values.active!==false});values.features??=['dofollow'];values.language??='he';}
+   if(!before){Object.assign(values,{name:raw.name,url:siteUrl,category:cats,active:values.active!==false});values.features??=['dofollow'];values.language??='he';}
    const sale=Object.hasOwn(values,'is_on_sale')?values.is_on_sale:before&&sheetCurrentValue(before,'is_on_sale');
    // Checked only when the price, the sale price or the sale switch changed here; the site's own existing values never block the sync.
    const saleTouched=!before||['price_ils','sale_price_ils','is_on_sale'].some(k=>Object.hasOwn(values,k));

@@ -17,7 +17,7 @@ export function mergeSheetPlan(plan:Row,baseline:Row,existing:Row[],resolutions:
  return {...plan,operations,conflicts,outbound,additions:operations.filter(r=>r.create).length,updates:operations.filter(r=>!r.create).length,unchanged:plan.scanned-operations.length};
 }
 // The category is written in Hebrew (owner 19.11.2026); planSheets reads the label back as the same key.
-const writtenCell=(field:string,value:any)=>field==='category'&&categoryLabels[value]?categoryLabels[value]:sheetCell(value);
+const writtenCell=(field:string,value:any)=>field==='category'?(Array.isArray(value)?value:[value]).map((k:string)=>categoryLabels[k]||k).join(', '):sheetCell(value);
 export function sheetCell(value:any){if(Array.isArray(value))return value.join(', ');if(typeof value==='boolean')return value?'כן':'לא';return value??'';}
 // Ignore formula-only, display and unmapped columns: changing cost legitimately recalculates minimum.
 export function roundtripRows(rows:any[][]){const cols=rows[0].map((h,i)=>sheetKey(h)?i:-1).filter(i=>i>=0);return [cols.map(i=>String(rows[0][i]).trim()),...rows.slice(1).filter(row=>cols.some(i=>String(row[i]??'').trim())).map(row=>cols.map(i=>String(row[i]??'').trim()))];}

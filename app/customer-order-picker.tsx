@@ -19,7 +19,7 @@ export function CreateCustomerOrder({ctx,id,data,close}:{ctx:Ctx;id:string;data:
  const sites:Row[]=data.websites||[],byId=useMemo(()=>new Map(sites.map(w=>[w.id,w])),[sites]);
  const [search,setSearch]=useState(''),[category,setCategory]=useState(''),[sort,setSort]=useState('name'),[items,setItems]=useState<Row[]>([]),[q,setQ]=useState<Row|null>(null),[quoting,setQuoting]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[phone,setPhone]=useState(data.customer.phone||''),request=useRef(crypto.randomUUID()),quoteFor=useRef('');
  const term=search.trim().toLocaleLowerCase();
- const found=useMemo(()=>{const list=sites.filter(w=>(!category||w.category===category)&&(!term||String(w.name).toLocaleLowerCase().includes(term)||siteText(w.url).toLocaleLowerCase().includes(term)));
+ const found=useMemo(()=>{const list=sites.filter(w=>(!category||w.category===category||(Array.isArray(w.categories)&&w.categories.includes(category)))&&(!term||String(w.name).toLocaleLowerCase().includes(term)||siteText(w.url).toLocaleLowerCase().includes(term)));
   if(sort==='low')list.sort((a,b)=>Number(a.price_cents)-Number(b.price_cents));else if(sort==='high')list.sort((a,b)=>Number(b.price_cents)-Number(a.price_cents));else if(sort==='dr')list.sort((a,b)=>Number(b.dr||0)-Number(a.dr||0));return list;},[sites,category,term,sort]);
  const shown=found.slice(0,60),chosen=new Set(items.map(x=>x.website_id));
  const usedCategories=useMemo(()=>[...new Set(sites.map(w=>w.category).filter(Boolean))].sort((a,b)=>String(categories[a]||a).localeCompare(String(categories[b]||b),'he')),[sites]);
