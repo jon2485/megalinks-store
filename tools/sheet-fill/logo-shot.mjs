@@ -3,7 +3,9 @@ import {spawn} from 'node:child_process';import {writeFileSync,readFileSync,mkdt
 const [list,out]=process.argv.slice(2);mkdirSync(out,{recursive:true});
 const items=readFileSync(list,'utf8').split('\n').filter(Boolean).map(l=>l.split('\t'));
 const port=9800+Math.floor(Math.random()*190);
-const chrome=spawn('C:/Program Files/Google/Chrome/Application/chrome.exe',['--headless=new','--remote-debugging-port='+port,'--user-data-dir='+mkdtempSync(join(tmpdir(),'cdp-')),'--hide-scrollbars','--window-size=1366,900','--lang=he-IL','about:blank'],{stdio:'ignore'});
+// CHROME_PATH picks the browser outside Windows (cloud: /opt/pw-browsers/chromium, which runs as root and needs --no-sandbox).
+const chromePath=process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe';
+const chrome=spawn(chromePath,[...(process.platform==='linux'?['--no-sandbox','--disable-dev-shm-usage']:[]),'--headless=new','--remote-debugging-port='+port,'--user-data-dir='+mkdtempSync(join(tmpdir(),'cdp-')),'--hide-scrollbars','--window-size=1366,900','--lang=he-IL','about:blank'],{stdio:'ignore'});
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));let tabs;for(let i=0;i<60;i++){try{tabs=await (await fetch(`http://127.0.0.1:${port}/json`)).json();if(tabs.length)break;}catch{}await sleep(250);}
 const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);await new Promise(r=>ws.onopen=r);let id=0;const pend={};let loaded=null;
 ws.onmessage=e=>{const m=JSON.parse(e.data);if(pend[m.id]){pend[m.id](m.result||{error:m.error});delete pend[m.id];}if(m.method==='Page.loadEventFired'&&loaded)loaded();};
@@ -28,6 +30,9 @@ for(const [row,url] of items){
     const p=new Promise(r=>loaded=r);const nav=await send('Page.navigate',{url},15000);
     if(nav.timeout||nav.errorText){res.err='nav '+(nav.errorText||'timeout');}
     else{await Promise.race([p,sleep(14000)]);await sleep(2500);
+      // Security check pages ("רק רגע...", "Just a moment") clear by themselves after a few seconds.
+      for(let k=0;k<8;k++){const t=await ev('document.title');if(!/רק רגע|just a moment|attention required|checking your browser|one moment/i.test(t||''))break;await sleep(3000);}
+      
       res.meta=await ev(`(()=>{const m=n=>(document.querySelector('meta[name="'+n+'"],meta[property="'+n+'"]')||{}).content||'';return [document.title,m('description')||m('og:description'),[...document.querySelectorAll('h1,h2,h3')].slice(0,6).map(x=>x.innerText.trim()).join(' / '),[...new Set([...document.querySelectorAll('nav a,header a,[class*=menu] a')].map(x=>x.innerText.trim()).filter(t=>t&&t.length<30))].slice(0,25).join(' · ')].map(x=>(x||'').replace(/\s+/g,' ').slice(0,300))})()`);const cs=await ev(FIND)||[];res.c=cs.map(x=>[Math.round(x.s*10)/10,x.tag,Math.round(x.w),Math.round(x.h),Math.round(x.y),x.t]);const b=cs[0]&&cs[0].s>2?cs[0]:null;if(b&&b.tag==='img'){await sleep(1500);}
       if(!b){res.err='nologo';const v=await send('Page.captureScreenshot',{format:'jpeg',quality:40,clip:{x:0,y:0,width:1366,height:300,scale:0.4}});if(v.data)writeFileSync(join(out,row+'-view.jpg'),Buffer.from(v.data,'base64'));res.title=await ev('document.title+" | "+document.querySelectorAll("img,svg").length');}else{
         let done=false;
