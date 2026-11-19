@@ -52,7 +52,8 @@ export async function saveCatalogBatch(user:Row,input:Row){
   // The sale rule is checked when this save touches the price, the sale price or the sale switch, adds a site or makes one visible again.
   if(d.is_on_sale&&(strict||['price_ils','sale_price_ils','is_on_sale'].some(k=>k in values)))assert(Number.isSafeInteger(d.sale_price_cents)&&d.sale_price_cents<price,'מחיר מבצע חייב להיות נמוך מהמחיר הרגיל');
   if(d.sale_ends)assert(Number.isFinite(Date.parse(d.sale_ends)),'תאריך סיום המבצע אינו תקין');
-  for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);assert(values[k]!==''&&Number.isInteger(n)&&n>=0&&n<=(k==='turnaround_days'?365:100),'דירוג או זמן אספקה לא תקינים');d[k]=n;}
+  for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);// Owner 19.11.2026: UR may have decimals (for example 1.8); DR and delivery days stay whole numbers.
+  assert(values[k]!==''&&Number.isFinite(n)&&(k==='ur'||Number.isInteger(n))&&n>=0&&n<=(k==='turnaround_days'?365:100),'דירוג או זמן אספקה לא תקינים');d[k]=n;}
   if('supplier_id' in values){const supplierId=String(values.supplier_id||'');assert(!supplierId||suppliers.has(supplierId),'הספק לא נמצא');d.supplier_id=supplierId;d.supplier_name=suppliers.get(supplierId)?.name||'';}
   if('supplier_email' in values){
    let email=String(values.supplier_email||'').trim().toLowerCase();if(!email&&values.supplier_id)email=String(suppliers.get(String(values.supplier_id))?.email||'').trim().toLowerCase();assert(!email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)&&email.length<=254,'מייל הספק אינו תקין');
