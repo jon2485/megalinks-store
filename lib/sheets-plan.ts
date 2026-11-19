@@ -18,7 +18,8 @@ const flags=new Set(['active','is_on_sale','single_link_only','procurement_verif
 const lists=new Set(['tags','features','example_articles','recommended_topics','content_tags']);
 const money=new Set(['price_ils','cost_ils','sale_price_ils','pixel_price_ils']);
 const numbers=new Set([...money,'dr','ur','turnaround_days','stock_total','sort_order']);
-const categoryLabels:Record<string,string>={news_national:'חדשות ארציות',news_local:'חדשות מקומיות',tech:'טכנולוגיה',finance:'כלכלה ופיננסים',business:'עסקים',lifestyle:'לייף סטייל',magazines:'מגזינים',real_estate:'נדל״ן',health:'בריאות',legal:'משפטים',education:'חינוך',tourism:'תיירות',food:'אוכל',sports:'ספורט',entertainment:'בידור',religion:'דת ומסורת',israeli_foreign_lang:'שפות זרות',general:'כללי'};
+// Owner 19.11.2026: the sheet shows the category in Hebrew (the writeback writes the label; both the label and the key are read).
+export const categoryLabels:Record<string,string>={news_national:'חדשות ארציות',news_local:'חדשות מקומיות',tech:'טכנולוגיה',finance:'כלכלה ופיננסים',business:'עסקים',lifestyle:'לייף סטייל',magazines:'מגזינים',real_estate:'נדל״ן',health:'בריאות',legal:'משפטים',education:'חינוך',tourism:'תיירות',food:'אוכל',sports:'ספורט',entertainment:'בידור',religion:'דת ומסורת',israeli_foreign_lang:'שפות זרות',general:'כללי'};
 function url(v:string){const u=new URL(/^https?:\/\//i.test(v)?v:'https://'+v);if(!['https:','http:'].includes(u.protocol)||!u.hostname.includes('.')||u.username||u.password)throw Error('כתובת לא תקינה');return u.href;}
 const list=(v:any)=>Array.isArray(v)?v.map(x=>typeof x==='object'?x.url||'':String(x)):[];
 export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='string'?JSON.parse(w.data):w.data||{};
@@ -74,7 +75,7 @@ export function planSheets(rows:any[][],existing:Row[]){
     else if(flags.has(key)){if(/^(כן|true|1)$/i.test(text))value=true;else if(/^(לא|false|0)$/i.test(text))value=false;else throw Error('יש לכתוב כן או לא בשדה '+heads[j]);}
     else if(lists.has(key))value=text.split(',').map(s=>s.trim()).filter(Boolean);
     else if(key==='stock_total'&&text===MONTHLY)value=MONTHLY;
-    else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);if(['dr','ur'].includes(key)&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key))value=Math.round(value*100)/100;}
+    else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&key!=='ur'&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);if(['dr','ur'].includes(key)&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key)||key==='ur')value=Math.round(value*100)/100;}
     if(key==='url'||key==='logo_url')value=value?url(value):'';
     if(key==='category')value=cat;
     if(key==='sale_ends'&&value&&!Number.isFinite(Date.parse(value)))throw Error('תאריך סיום מבצע לא תקין');
