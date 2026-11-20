@@ -72,7 +72,7 @@ import { contentHtml, signature, matchingSignature } from '@/lib/integrations';
 import { aiArticleHtml } from '@/lib/ai-article-content';
 import { env, waitUntil } from 'cloudflare:workers';
 import { Row, websitePricing, calculateQuote, articleTransitions, httpUrl, plainText, textToHtml } from '@/lib/shared';
-import { ApiError, db, stmt, one, all, parse, actor, admin, owns, assert, setting, saveSetting, audit, ensureCatalog, publicWebsite, website, uid, now, hash, encrypt, connection, geminiServerKey, externalFetch, externalUrl, notify, syncOrder, basicAuth } from '@/lib/server';
+import { ApiError, db, stmt, one, all, parse, actor, admin, owns, assert, setting, saveSetting, audit, ensureCatalog, publicWebsite, website, websitesById, mapIn, settingsByKey, uid, now, hash, encrypt, connection, geminiServerKey, externalFetch, externalUrl, notify, syncOrder, basicAuth } from '@/lib/server';
 import {hasAgencyCentre} from '@/lib/agency-shared';
 import {PR_CONTENT_TYPE,PR_INTERVIEW_CENTS,PR_MAX_SITES,prSites,validInterview} from '@/lib/pr';
 export const dynamic = 'force-dynamic';
@@ -119,8 +119,10 @@ async function coupon(code: string, u: Row, subtotal: number) { if (!code)
 async function cartItems(u: Row) { const pricing=await pricingContext(u.id); const items = (await all('SELECT c.*,w.name,w.url,w.price,w.active,w.data AS website_data FROM cart c JOIN websites w ON c.website_id=w.id WHERE c.user_id=? ORDER BY c.created', u.id)).map(r => { const site = JSON.parse(r.website_data); const item = parse(r)!; const publicationPrice = pricedSite({...r,id:r.website_id,data:r.website_data},pricing,true).price_cents; const editorialPrice = item.content_type === PR_CONTENT_TYPE ? PR_INTERVIEW_CENTS : item.editorial ? Number(item.editorial_words || 400) * 15 : 0; delete item.website_data; return { ...item, dr: site.dr ?? null, ur: site.ur ?? null, website: { id: r.website_id, name: r.name, url: r.url, procurement_verified: !!site.procurement_verified }, logo_url: site.logo_url || '', regular_price: Number(r.price), sale_price: publicationPrice, publication_price: publicationPrice, editorial_price: editorialPrice, price: publicationPrice + editorialPrice, price_cents: publicationPrice + editorialPrice }; });
     const groups = new Map<string, Row[]>();
     for (const item of items) if (item.bundle_group) groups.set(item.bundle_group, [...(groups.get(item.bundle_group) || []), item]);
+    // All the cart's bundles in one query, not one query per bundle group.
+    const bundles = await mapIn('records', 'id', [...groups.values()].map(group => group[0].bundle_id), 'kind=?', 'bundle');
     for (const group of groups.values()) {
-        const bundle = parse(await one('SELECT * FROM records WHERE id=? AND kind=?', group[0].bundle_id, 'bundle'));
+        const bundle = parse(bundles.get(String(group[0].bundle_id)) || null);
         const ids = bundle?.website_ids;
         const complete = bundle && bundle.active !== false && Number.isSafeInteger(bundle.price_cents) && Array.isArray(ids) && ids.length === group.length && ids.every((id: string) => group.filter(item => item.website_id === id).length === 1) && group.every(item => item.quantity === group[0].quantity && item.active);
         for (const item of group) { item.bundle_name = bundle?.name || 'חבילת פרסום'; item.bundle_applied = !!complete; }
@@ -146,7 +148,7 @@ async function normalizeBundle(input: Row, prior: Row = {}) {
     assert(Array.isArray(b.website_ids) && b.website_ids.length > 0 && b.website_ids.length <= 30, 'בחרו בין אתר אחד ל־30 אתרים');
     assert(new Set(b.website_ids).size === b.website_ids.length, 'אין לבחור אותו אתר פעמיים בחבילה');
     const sites = [];
-    for (const id of b.website_ids) { assert(typeof id === 'string', 'מזהה אתר אינו תקין'); const w = await website(id); assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); sites.push(w); }
+    for (const id of b.website_ids) assert(typeof id === 'string', 'מזהה אתר אינו תקין'); for (const w of await websitesById(b.website_ids)) { assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); sites.push(w); }
     if (input.price_ils !== undefined) b.price_cents = Math.round(Number(input.price_ils) * 100);
     if (b.price_cents != null) {
         assert(b.website_ids.length >= 2, 'חבילת מחיר משותף דורשת לפחות שני אתרים');
@@ -169,8 +171,9 @@ async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: i
     assert(c.kind === 'customer', 'לקוח לא תקין');
     // Agency centre: a site already used for this customer needs an explicit confirmation (spec section 7).
     if (hasAgencyCentre(u)) { const hit = await usedSiteHit(u, c.id, w); if (hit) { assert(input.confirm_used_site === true || input.used_site_confirmed === true, 'USED_SITE:' + JSON.stringify({ site: w.name, customer: JSON.parse(c.data || '{}').name || '', ...hit }), 409); (d as Row).used_site_confirmed = true; } }
-} for (const file of [d.image_id, d.document_id].filter(Boolean))
-    owns(u, await one('SELECT * FROM files WHERE id=?', file)); return d; }
+} const attached = [d.image_id, d.document_id].filter(Boolean), attachedFiles = await mapIn('files', 'id', attached);
+    for (const file of attached)
+    owns(u, attachedFiles.get(String(file)) || null); return d; }
 type ResponseAccess={privileged:boolean};
 async function handle(r: Request,access:ResponseAccess) {
     const p = new URL(r.url).pathname.replace(/^\/api\//, '').split('/');
@@ -386,7 +389,7 @@ async function handle(r: Request,access:ResponseAccess) {
         assert(bundle && bundle.active !== false, 'החבילה אינה זמינה', 404);
         assert(Array.isArray(bundle.website_ids) && bundle.website_ids.length, 'לחבילה לא הוגדרו אתרים');
         const group = uid(), statements = [];
-        for (const id of bundle.website_ids) { const w = await website(id); assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); const brief = await validBrief({ ...b, topic: b.topic || 'כתבה עבור ' + w.name, words: b.words || 500 }, w, u); statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, id, 1, JSON.stringify({ ...brief, bundle_id: bundle.id, bundle_group: group }), now())); }
+        for (const w of await websitesById(bundle.website_ids)) { const id = w.id; assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); const brief = await validBrief({ ...b, topic: b.topic || 'כתבה עבור ' + w.name, words: b.words || 500 }, w, u); statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, id, 1, JSON.stringify({ ...brief, bundle_id: bundle.id, bundle_group: group }), now())); }
         await db().batch(statements); return response({ added: statements.length, coupon: bundle.coupon || '' }, 201);
     }
 if (p[0] === 'pr' && p[1] === 'cart' && method === 'POST') {
@@ -397,8 +400,8 @@ if (p[0] === 'pr' && p[1] === 'cart' && method === 'POST') {
         // Only the sites the PR page offers (live, active, not archived; the owner's chosen ones once marked).
         const offered = new Set((await prSites()).map(s => s.id)); assert(ids.every(id => offered.has(id)), 'אחד האתרים אינו זמין לכתבות יח״צ', 404);
         const interview = validInterview(b.interview), group = uid(), statements = [];
-        for (const id of ids) {
-            const w = await website(id); assert(w.active, 'אחד האתרים אינו זמין כרגע');
+        for (const w of await websitesById(ids)) {
+            assert(w.active, 'אחד האתרים אינו זמין כרגע');
             const brief = await validBrief({ topic: 'כתבת יח״צ: ' + interview.business_name, brand: interview.business_name, target_url: interview.link, notes: interview.topic, content_type: PR_CONTENT_TYPE, interview, interview_group: group, editorial: true }, w, u);
             statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, w.id, 1, JSON.stringify(brief), now()));
         }
@@ -643,7 +646,7 @@ if (p[0] === 'cart') {
             assert(Number(b.version) === a.version, 'הכתבה עודכנה במקביל. טענו מחדש לפני שמירה', 409);
             const content = b.content_format === 'html' ? await sanitizeRichHtml(maxText(b.content,150000)) : contentHtml(maxText(b.content, 150000), JSON.parse(a.data));
             const embedded=await inlineImages(content);assert(embedded.length<=10,'אפשר לצרף עד 10 תמונות בתוך המאמר');
-            for(const image of embedded){assert(image.id&&image.credit,'לכל תמונה בתוך המאמר נדרש קרדיט');const file=owns(u,await one('SELECT * FROM files WHERE id=?',image.id));assert(file.type.startsWith('image/'),'יש לצרף קובץ תמונה תקין');}
+            for(const image of embedded)assert(image.id&&image.credit,'לכל תמונה בתוך המאמר נדרש קרדיט');const embeddedFiles=await mapIn('files','id',embedded.map(image=>image.id));for(const image of embedded){const file=owns(u,embeddedFiles.get(String(image.id))||null);assert(file.type.startsWith('image/'),'יש לצרף קובץ תמונה תקין');}
             const title = maxText(b.title, 300);
             // Drafts may be incomplete. articleChecks requires a title before submission.
             const priorData = JSON.parse(a.data);
@@ -1042,7 +1045,7 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
-        if(p[1]==='supplier-stock'&&p[2]){const site=decodeURIComponent(p[2]);if(method==='GET')return response(await siteStock(site));assert(method==='POST','פעולה לא נתמכת',405);const result=await addStockPackage(u,site,await json(r));let resent=0;for(const id of result.retry){const a=parse(await one('SELECT * FROM articles WHERE id=?',id));if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;}catch{}}return response({...result,resent});}
+        if(p[1]==='supplier-stock'&&p[2]){const site=decodeURIComponent(p[2]);if(method==='GET')return response(await siteStock(site));assert(method==='POST','פעולה לא נתמכת',405);const result=await addStockPackage(u,site,await json(r));let resent=0;const retryRows=await mapIn('articles','id',result.retry);for(const id of result.retry){const a=parse(retryRows.get(String(id))||null);if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;}catch{}}return response({...result,resent});}
         if(p[1]==='supplier-billing'&&p[2]&&method==='GET')return response(await supplierBilling(decodeURIComponent(p[2])));
         if(p[1]==='supplier-order'){if(method==='GET')return response(await supplierOrder(String(query.get('key')||'')));if(p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendOrderSummary(new URL(r.url).origin,String(b.key||''),u));}}
         if(p[1]==='supplier-package'&&p[2]&&p[3]){const site=decodeURIComponent(p[2]),n=Number(p[3]);if(!p[4]&&method==='GET')return response(await supplierPackage(site,n));if(p[4]==='send'&&method==='POST')return response(await sendPackageStatus(site,n,u,new URL(r.url).origin));if(p[4]==='payment'&&method==='POST')return response(await updatePackagePayment(u,site,n,await json(r)));}
@@ -1148,13 +1151,14 @@ if (p[0] === 'cart') {
             if (method === 'GET') {
                 const keys = ['ai', 'wordpress', 'payments', 'email', 'whatsapp', 'images'];
                 const connections: Row = {};
+                const stored = await settingsByKey([...keys.map(k => 'integration_' + k), 'vat', 'brand'], { ...Object.fromEntries(keys.map(k => ['integration_' + k, {}])), vat: 18, brand: 'פוסטפלואו' });
                 for (const k of keys) {
-                    const c = await setting('integration_' + k, {});
+                    const c = stored['integration_' + k];
                     const gemini=k==='ai'&&c.provider==='gemini',runtime=gemini?geminiEnvironmentConfigured():!!integrationEnvironmentSecret(k,c.provider);
                     const storage=c.secret_storage||(gemini?'environment':runtime?'environment':'encrypted_server');
                     connections[k] = { ...integrationMetadata(k,c),secret_storage:storage,has_secret:storage==='environment'?!!runtime:!!c.secret,has_environment_secret:!!runtime,has_stored_secret:!!c.secret,environment_key:integrationEnvironmentName(k,c.provider) };
                 }
-                return response({ vat: await setting('vat', 18), brand: await setting('brand', 'פוסטפלואו'), connections });
+                return response({ vat: stored.vat, brand: stored.brand, connections });
             }
             if (method === 'PATCH') {
                 const b = await json(r);

@@ -1,4 +1,4 @@
-import {one,all,stmt,db,parse,now,uid,assert,audit,hash} from './server';
+import {one,all,stmt,db,parse,now,uid,assert,audit,hash,mapIn} from './server';
 import type {Row} from './shared';
 import {DEFAULT_SUPPLIER_EMAIL,supplierPaymentMethods} from './supplier-presentation';
 
@@ -24,7 +24,6 @@ export function releaseSlotStatements(articleId:string,actorId:string,reason:str
  ];
 }
 
-const packageRows=async(websiteId:string)=>(await all("SELECT * FROM records WHERE kind='stock_package' AND json_extract(data,'$.website_id')=? ORDER BY created,id",websiteId)).map(r=>({...parse(r)!,id:r.id}));
 
 // Packages as consecutive slot ranges. Capacity set before packages existed is
 // shown as one opening package so every slot still belongs to a package.
@@ -35,16 +34,28 @@ export function packageRanges(total:number|null,packages:Row[]){
 }
 export function slotPlace(slot:number,ranges:Row[]){const p=ranges.find(r=>slot>=r.start&&slot<=r.end);return p?{package:p.number,position:slot-p.start+1,size:p.end-p.start+1}:null;}
 
-export async function siteStock(websiteId:string){
- const w=parse(await one('SELECT * FROM websites WHERE id=?',websiteId));assert(w,'האתר לא נמצא',404);
- const total=w.stock_total===null||w.stock_total===undefined?null:Number(w.stock_total);
- const counter=await one('SELECT sent_count FROM supplier_dispatch_counters WHERE website_id=? AND demo=0',websiteId),used=Number(counter?.sent_count||0);
- const packages=await packageRows(websiteId),ranges=packageRanges(total,packages);
- const slots=(await all(`SELECT d.sequence,d.created,d.stock_total,a.id AS article_id,a.title,a.status,a.published_url,o.number AS order_number,o.id AS order_id,json_extract(a.data,'$.published_at') AS published_at FROM supplier_dispatch_allocations d JOIN articles a ON a.id=d.article_id LEFT JOIN orders o ON o.id=a.order_id WHERE d.website_id=? AND d.demo=0 ORDER BY d.sequence DESC`,websiteId)).map(s=>({...s,place:slotPlace(Number(s.sequence),ranges)}));
- const releases=(await all("SELECT r.data,a.title FROM records r LEFT JOIN articles a ON a.id=json_extract(r.data,'$.article_id') WHERE r.kind='stock_release' AND json_extract(r.data,'$.website_id')=? AND COALESCE(json_extract(r.data,'$.demo'),0)=0 ORDER BY r.created DESC LIMIT 50",websiteId)).map(r=>({...JSON.parse(r.data),title:r.title}));
- const waiting=(await all(`SELECT a.id,a.title,j.updated FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') WHERE j.kind='supplier_publication' AND j.status='blocked' AND a.website_id=? AND a.status='approved' ORDER BY j.updated`,websiteId));
- const supplier=w.supplier_id?parse(await one("SELECT * FROM records WHERE id=? AND kind='supplier'",w.supplier_id)):null;
- return {site:{id:w.id,name:w.name,url:w.url,active:w.active!==0,logo_id:w.logo_id||w.seller_logo_id||'',supplier_id:w.supplier_id||'',supplier_name:supplier?.name||w.supplier_name||'',cost_cents:w.cost_cents??null},total,used,left:total===null?null:Math.max(0,total-used),state:stockState(total,used),packages:ranges,slots,releases,waiting,methods:supplierPaymentMethods};
+export async function siteStock(websiteId:string){return (await siteStocks([websiteId]))[0];}
+
+// Stock of many sites with one query per relation (sites, counters, packages, slots, releases, waiting, suppliers),
+// never a set of queries per site. Each site's result is the same as before.
+export async function siteStocks(websiteIds:string[]){
+ const ids=websiteIds.map(String),list=JSON.stringify([...new Set(ids)]),bySite=(rows:Row[])=>{const m=new Map<string,Row[]>();for(const {stock_site,...row} of rows)m.set(String(stock_site),[...(m.get(String(stock_site))||[]),row]);return m;};
+ if(!ids.length)return [];
+ const sites=await mapIn('websites','id',ids);
+ const counters=new Map((await all('SELECT website_id,sent_count FROM supplier_dispatch_counters WHERE demo=0 AND website_id IN (SELECT value FROM json_each(?))',list)).map(c=>[String(c.website_id),c]));
+ const packages=bySite((await all("SELECT *,json_extract(data,'$.website_id') AS stock_site FROM records WHERE kind='stock_package' AND json_extract(data,'$.website_id') IN (SELECT value FROM json_each(?)) ORDER BY created,id",list)).map(r=>{const {stock_site,...row}=r;return {...parse(row)!,id:r.id,stock_site};}));
+ const slots=bySite(await all(`SELECT d.website_id AS stock_site,d.sequence,d.created,d.stock_total,a.id AS article_id,a.title,a.status,a.published_url,o.number AS order_number,o.id AS order_id,json_extract(a.data,'$.published_at') AS published_at FROM supplier_dispatch_allocations d JOIN articles a ON a.id=d.article_id LEFT JOIN orders o ON o.id=a.order_id WHERE d.website_id IN (SELECT value FROM json_each(?)) AND d.demo=0 ORDER BY d.sequence DESC`,list));
+ // The latest 50 releases of each site, in one query.
+ const releases=bySite(await all("SELECT stock_site,data,title FROM (SELECT json_extract(r.data,'$.website_id') AS stock_site,r.data,a.title,r.created,ROW_NUMBER() OVER (PARTITION BY json_extract(r.data,'$.website_id') ORDER BY r.created DESC) AS n FROM records r LEFT JOIN articles a ON a.id=json_extract(r.data,'$.article_id') WHERE r.kind='stock_release' AND json_extract(r.data,'$.website_id') IN (SELECT value FROM json_each(?)) AND COALESCE(json_extract(r.data,'$.demo'),0)=0) WHERE n<=50 ORDER BY created DESC",list));
+ const waiting=bySite(await all(`SELECT a.website_id AS stock_site,a.id,a.title,j.updated FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') WHERE j.kind='supplier_publication' AND j.status='blocked' AND a.website_id IN (SELECT value FROM json_each(?)) AND a.status='approved' ORDER BY j.updated`,list));
+ const parsed=ids.map(id=>{const w=parse(sites.get(id)||null);assert(w,'האתר לא נמצא',404);return w;});
+ const suppliers=await mapIn('records','id',parsed.map(w=>w.supplier_id),"kind='supplier'");
+ return parsed.map(w=>{
+  const id=String(w.id),total=w.stock_total===null||w.stock_total===undefined?null:Number(w.stock_total),used=Number(counters.get(id)?.sent_count||0);
+  const ranges=packageRanges(total,packages.get(id)||[]);
+  const supplier=w.supplier_id?parse(suppliers.get(String(w.supplier_id))||null):null;
+  return {site:{id:w.id,name:w.name,url:w.url,active:w.active!==0,logo_id:w.logo_id||w.seller_logo_id||'',supplier_id:w.supplier_id||'',supplier_name:supplier?.name||w.supplier_name||'',cost_cents:w.cost_cents??null},total,used,left:total===null?null:Math.max(0,total-used),state:stockState(total,used),packages:ranges,slots:(slots.get(id)||[]).map(s=>({...s,place:slotPlace(Number(s.sequence),ranges)})),releases:(releases.get(id)||[]).map(r=>({...JSON.parse(r.data),title:r.title})),waiting:waiting.get(id)||[],methods:supplierPaymentMethods};
+ });
 }
 
 const cents=(v:any)=>{if(v===''||v===null||v===undefined)return null;const n=Math.round(Number(v)*100);assert(Number.isSafeInteger(n)&&n>=0&&n<=100000000,'סכום לא תקין');return n;};

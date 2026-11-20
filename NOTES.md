@@ -1555,3 +1555,22 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Owner's sheet, rows 5-11** (owner: "first 10 rows", no proposal table): category (אייס, כלכליסט: finance; NWS, מודיעין בשבילך, חדשות חיפה והקריות, פתח תקווה ניוז, זהר הצפון: news_local) and "פעיל" = כן. Rows 2-4 were done earlier.
 - **Logos prepared, not uploaded** (need the owner signed in to Staging): nws, modiin4u, hkn, ptnews, zhk (square 256px, scratchpad `logos10/final`), plus mako and globes from before. ice and calcalist: no usable logo (sites block automated reading). Ynet: no logo (owner).
 - **Sync still saves nothing** while the sheet has errors: about 700 rows without a category, hkn.co.il duplicated (rows 9 and about 259), other duplicates the owner will handle later.
+
+## 20.11.2026 (44): No N+1 queries (branch `claude/n-plus-one-20261120`, from the deployed 0f9c50a)
+- **Why:** the owner's scheduled instruction for 05:00: "When fetching relations or linked data, you must absolutely avoid the N+1 problem. Never use iterative requests. Use JOINs or Eager Loading." Every place that read D1 inside a loop (one query per row) now reads each relation once, with a JOIN or `IN (SELECT value FROM json_each(?))` (one JSON parameter, so no limit on the number of ids). Behaviour is meant to stay exactly the same.
+- **Helpers (`lib/server.ts`):** `allIn(table,column,values,where?,...args)` and `mapIn(...)` (one query, a Map by that column; table and column names are checked against `^[a-z_]+$`), `websitesById(ids,allowInactive?)` (same checks and pricing as `website()`, in the same order as the ids), `settingsByKey(keys,fallbacks)`.
+- **Places fixed:**
+  - `app/api/[...path]/route.ts`: bundle save, adding a bundle to the cart, PR cart, embedded images in an article, files attached to a brief, bundles in the cart, supplier-stock retry, integrations screen settings.
+  - `lib/order-create.ts`: the order's sites and their suppliers.
+  - `lib/checks.ts`: image files of an article check. `lib/knowledge-server.ts`: guide images.
+  - `lib/marketing-consent.ts`: users by e-mail in one query. `lib/monthly.ts`: month close reads all the month's charges once.
+  - `lib/pricing.ts`: sites and earlier overrides of a pricing change. `lib/account-management.ts`: sites of an admin quote.
+  - `lib/scheduled-dispatch.ts`, `lib/scheduled-approval.ts`: orders of the due articles (the article after the claim is built from the claimed row: same version guard, so it is the same row).
+  - `lib/admin-updates.ts`: the updates feed read in one query. `lib/payment-reports.ts` + `lib/payment-reference.ts` (`referenceUsesMany`): duplicate bank references for all pending reports in two queries.
+  - `lib/admin-control-center.ts`: the queue counts of the control centre in one `UNION ALL` query (two in total, was about 20).
+  - `lib/customer-sellers.ts`: monthly seller statements (`publicationsMany`: profiles and articles in two queries; seller e-mail joined into the pairs query).
+  - `lib/supplier-stock.ts` (`siteStocks(ids)`, `siteStock` now calls it) and `lib/supplier-orders.ts`: a supplier's stock packages read 7 queries in total instead of 7 per site. The latest 50 releases per site use `ROW_NUMBER() OVER (PARTITION BY ...)`.
+  - `lib/admin-content.ts`: stock packages of a supplier's sites in one query.
+- **Left as is, on purpose:** writes inside loops (each needs its own guard and result, for example `INSERT OR IGNORE` with `meta.changes`), loops whose list itself comes from one query, and sending mails one by one.
+- **Checks:** `pnpm exec tsc --noEmit` OK, `pnpm build` OK, the 3 Railway tests OK. Full run: the same 60 older failures, no new one. A first run found that D1 refuses a `UNION ALL` of more than a few terms ("too many terms in compound SELECT"), so the control-centre counts use the existing `adminUnionCtes` (CTEs of 3).
+- **Next:** the owner decides whether to add the N+1 rule to CLAUDE.md. Nothing pushed or deployed.

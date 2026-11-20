@@ -53,6 +53,29 @@ export async function ensureCatalog() { if (await one('SELECT value FROM setting
     await db().batch(statements.slice(i, i + 20)); await saveSetting('catalog_initialized', true); }
 export function publicWebsite(w: Row) { const raw=typeof w.data==='string'?JSON.parse(w.data):w.data||{},d=customerWebsiteData(raw);return { ...d, id: w.id, name: w.name, url: w.url, category: w.category, dr: w.dr, active: w.active, ...websitePricing({ ...d, price: w.price }) }; }
 export async function website(id: string, allowInactive = false) { const w = parse(await one('SELECT * FROM websites WHERE id=?', id)); assert(w && (allowInactive || w.active), 'האתר אינו זמין להזמנה', 404); return { ...w, ...websitePricing(w) }; }
+/** Rows whose `column` is one of `values`, fetched in ONE query (no N+1): the whole list travels as a single JSON
+ *  parameter, so its length is not limited by D1's bound-parameter cap. `table`, `column` and `where` are fixed text
+ *  from the code, never request input (checked below for the two names). */
+export async function allIn(table: string, column: string, values: unknown[], where = '', ...args: any[]) {
+    assert(/^[a-z_]+$/.test(table) && /^[a-z_]+$/.test(column), 'שם טבלה או עמודה לא תקין', 500);
+    const list = [...new Set(values.map(v => v === null || v === undefined ? '' : String(v)))].filter(Boolean);
+    if (!list.length) return [] as Row[];
+    return await all(`SELECT * FROM ${table} WHERE ${column} IN (SELECT value FROM json_each(?))${where ? ' AND (' + where + ')' : ''}`, JSON.stringify(list), ...args);
+}
+/** The same rows keyed by `column`. */
+export async function mapIn(table: string, column: string, values: unknown[], where = '', ...args: any[]) {
+    return new Map((await allIn(table, column, values, where, ...args)).map(row => [String(row[column]), row]));
+}
+/** website() for many ids in one query, in the given order and with the same checks and pricing. */
+export async function websitesById(ids: unknown[], allowInactive = false) {
+    const rows = await mapIn('websites', 'id', ids);
+    return ids.map(id => { const w = parse(rows.get(String(id)) || null); assert(w && (allowInactive || w.active), 'האתר אינו זמין להזמנה', 404); return { ...w, ...websitePricing(w) }; });
+}
+/** setting() for several keys in one query. */
+export async function settingsByKey(keys: string[], fallbacks: Record<string, any> = {}) {
+    const rows = await mapIn('settings', 'key', keys);
+    return Object.fromEntries(keys.map(k => [k, rows.has(k) ? JSON.parse(rows.get(k)!.value) : (k in fallbacks ? fallbacks[k] : null)]));
+}
 export async function hash(value: string) { return [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)))].map(x => x.toString(16).padStart(2, '0')).join(''); }
 function keyValue() {
     const s = (env as any).SETTINGS_ENCRYPTION_KEY;

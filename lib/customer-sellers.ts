@@ -3,7 +3,7 @@ import {catalogPricingMeta,warnPricing} from './pricing';
 import {minimumWarning} from './pricing-rules';
 import {publicationPeriod} from './publication-period';
 import {env} from 'cloudflare:workers';
-import {all,one,stmt,db,parse,now,uid,assert,admin,audit,encrypt,decrypt,externalUrl} from './server';
+import {all,one,stmt,db,parse,now,uid,assert,admin,audit,encrypt,decrypt,externalUrl,mapIn} from './server';
 import {queueMail,sendQueuedMail} from './mail';
 import {type Row,money} from './shared';
 import {normalizeSiteUrl} from './site-application';
@@ -17,21 +17,27 @@ export async function sellerProfile(user:Row){
 }
 async function ownedFile(id:string,user:Row,types:string[]){const f=await one('SELECT * FROM files WHERE id=? AND user_id=?',id,user.id);assert(f&&types.includes(f.type),'קובץ חסר או שאינו שייך לך',403);return f;}
 function siteInput(b:Row){let url='',example_url='';try{url=normalizeSiteUrl(text(b.url,1000));example_url=normalizeSiteUrl(text(b.example_url,1500));}catch{assert(false,'יש להזין כתובת אתר תקינה, למשל example.co.il.');}assert(url&&example_url,'יש להזין אתר וכתבה לדוגמה');for(const address of [url,example_url]){const publicAddress=new URL(address);publicAddress.protocol='https:';externalUrl(publicAddress.href);}const domain=new URL(url).hostname.toLowerCase().replace(/^www\./,'');assert(domain.includes('.'),'דומיין לא תקין');const unit_fee=Math.round(Number(b.price_ils)*100);assert(b.price_ils!==''&&Number.isSafeInteger(unit_fee)&&unit_fee>=0&&unit_fee<=100000000,'מחיר לא תקין');const name=text(b.name,160),email=text(b.delivery_email,254).toLowerCase();assert(name&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),'שם האתר ומייל תקין נדרשים');return {name,url,domain,example_url,unit_fee,delivery_email:email,logo_id:text(b.logo_id,100),instructions:text(b.instructions,3000)};}
-async function publications(userId:string,month:string){const profile=await one('SELECT * FROM seller_profiles WHERE user_id=?',userId);if(!profile)return [];
- const rows=(await all(`SELECT a.* FROM articles a JOIN orders o ON o.id=a.order_id WHERE ${monthlySupplierArticle} AND ${supplierPayableArticle} AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND json_extract(a.data,'$.supplier_id')=? AND COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))=? ORDER BY a.updated,a.id`,profile.supplier_id,month)).map(a=>parse(a)!);
- return rows.map(a=>({id:a.id,title:a.title,site_name:a.website_name||'',url:a.published_url,date:a.updated,unit_fee:typeof a.cost_cents==='number'&&Number.isSafeInteger(a.cost_cents)&&a.cost_cents>=0?a.cost_cents:null}));
+// Publications for many (seller, month) pairs in two queries in total: one for the seller profiles, one for the articles.
+async function publicationsMany(pairs:{userId:string,month:string}[]){
+ if(!pairs.length)return [] as ReturnType<typeof publicationView>[][];
+ const profiles=await mapIn('seller_profiles','user_id',pairs.map(x=>x.userId)),keys=[...new Map(pairs.flatMap(x=>{const profile=profiles.get(String(x.userId));return profile?[[profile.supplier_id+'\u0000'+x.month,[profile.supplier_id,x.month]]]:[];})).values()];
+ const grouped=new Map<string,Row[]>();
+ if(keys.length)for(const a of await all(`SELECT a.*,json_extract(a.data,'$.supplier_id') AS seller_key_supplier,COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7)) AS seller_key_month FROM articles a JOIN orders o ON o.id=a.order_id WHERE ${monthlySupplierArticle} AND ${supplierPayableArticle} AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND EXISTS(SELECT 1 FROM json_each(?) k WHERE json_extract(k.value,'$[0]')=json_extract(a.data,'$.supplier_id') AND json_extract(k.value,'$[1]')=COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7))) ORDER BY a.updated,a.id`,JSON.stringify(keys))){const key=a.seller_key_supplier+'\u0000'+a.seller_key_month,{seller_key_supplier:_s,seller_key_month:_m,...row}=a;grouped.set(key,[...(grouped.get(key)||[]),row]);}
+ return pairs.map(x=>{const profile=profiles.get(String(x.userId));return profile?(grouped.get(profile.supplier_id+'\u0000'+x.month)||[]).map(a=>publicationView(parse(a)!)):[];});
 }
+function publicationView(a:Row){return {id:a.id,title:a.title,site_name:a.website_name||'',url:a.published_url,date:a.updated,unit_fee:typeof a.cost_cents==='number'&&Number.isSafeInteger(a.cost_cents)&&a.cost_cents>=0?a.cost_cents:null};}
+async function publications(userId:string,month:string){return (await publicationsMany([{userId,month}]))[0];}
 const parseStatement=(r:Row)=>({...r,...JSON.parse(r.data),data:undefined});
 export async function closeSellerMonths(origin:string,at=new Date()){
  // Run just after local month end, with catch-up after downtime. Closing the full
  // previous period includes publications through the last second of its last day.
  const current=publicationPeriod(at).month;let closed=0;
- const pairs=await all("SELECT DISTINCT p.user_id,COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7)) AS month FROM seller_profiles p JOIN articles a ON json_extract(a.data,'$.supplier_id')=p.supplier_id WHERE a.status='published' AND NOT EXISTS(SELECT 1 FROM seller_statements s WHERE s.user_id=p.user_id AND s.month=COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7)))");
- for(const pair of pairs){if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(pair.month)||pair.month>=current)continue;const rows=await publications(pair.user_id,pair.month);if(!rows.length||rows.some(r=>r.unit_fee===null))continue;
+ const pairs=await all("SELECT DISTINCT p.user_id,(SELECT email FROM users WHERE id=p.user_id) AS user_email,COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7)) AS month FROM seller_profiles p JOIN articles a ON json_extract(a.data,'$.supplier_id')=p.supplier_id WHERE a.status='published' AND NOT EXISTS(SELECT 1 FROM seller_statements s WHERE s.user_id=p.user_id AND s.month=COALESCE(json_extract(a.data,'$.published_month'),substr(a.updated,1,7)))");
+ const due_pairs=pairs.filter(pair=>/^\d{4}-(0[1-9]|1[0-2])$/.test(pair.month)&&pair.month<current),allRows=await publicationsMany(due_pairs.map(pair=>({userId:pair.user_id,month:pair.month})));
+ for(const [index,pair] of due_pairs.entries()){const rows=allRows[index];if(!rows.length||rows.some(r=>r.unit_fee===null))continue;
  const id='seller-month:'+pair.user_id+':'+pair.month,net=rows.reduce((s,r)=>s+Number(r.unit_fee),0),due=new Date(Date.UTC(Number(pair.month.slice(0,4)),Number(pair.month.slice(5)),10,12)).toISOString().slice(0,10),stamp=now();
  const saved=await stmt('INSERT OR IGNORE INTO seller_statements(id,user_id,month,net,data,created,updated) VALUES(?,?,?,?,?,?,?)',id,pair.user_id,pair.month,net,JSON.stringify({publications:rows,due_date:due}),stamp,stamp).run();closed+=saved.meta.changes;
- const user=await one('SELECT email FROM users WHERE id=?',pair.user_id);
- await queueMail('email:seller-invoice:'+id,pair.user_id,{to:user?.email,subject:'בקשת חשבונית עבור פרסומים בחודש '+pair.month,text:'פורסמו '+rows.length+' כתבות. סכום לפני מע״מ: '+money(net)+'\nמועד תשלום מיועד: '+due+' לאחר אישור החשבונית.\n\n'+rows.map((r,i)=>(i+1)+'. '+r.site_name+' · '+r.title+' · '+money(Number(r.unit_fee))).join('\n'),button:{label:'העלאת חשבונית וצפייה בפירוט',url:origin+'/purchased/selling'},seller_notice:true});
+ await queueMail('email:seller-invoice:'+id,pair.user_id,{to:pair.user_email,subject:'בקשת חשבונית עבור פרסומים בחודש '+pair.month,text:'פורסמו '+rows.length+' כתבות. סכום לפני מע״מ: '+money(net)+'\nמועד תשלום מיועד: '+due+' לאחר אישור החשבונית.\n\n'+rows.map((r,i)=>(i+1)+'. '+r.site_name+' · '+r.title+' · '+money(Number(r.unit_fee))).join('\n'),button:{label:'העלאת חשבונית וצפייה בפירוט',url:origin+'/purchased/selling'},seller_notice:true});
  }
  for(const j of await all("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:seller-invoice:%' AND status IN ('requested','blocked','failed') ORDER BY created LIMIT 10"))await sendQueuedMail(j.id);
  return {closed};

@@ -1,6 +1,6 @@
 import {publicationDay,validPublicationDay,israelDayStart} from './publication-date';
 import {env} from 'cloudflare:workers';
-import {all,one,stmt,admin,actor,assert,ApiError,uid,now} from './server';
+import {all,one,stmt,admin,actor,assert,ApiError,uid,now,mapIn} from './server';
 import {editorialTags,blockedEditorialTags,safeEditorialStyle,editorialUrl} from './editor-html';
 import {knowledgeSummary,knowledgeText,type KnowledgeArticle} from './knowledge';
 import type {Row} from './shared';
@@ -42,7 +42,7 @@ async function fields(b:Row,publish:boolean){
  assert(!cover||imageId(cover)||staticImage(cover),'בחרו תמונת שער מהעלאה למדריכים');
  const publicationDate=b.publicationDate===undefined?'':String(b.publicationDate);assert(!publicationDate||validPublicationDay(publicationDate),'מועד הפרסום אינו תקין');
  const safe=await sanitizeKnowledgeContent(raw);const images=[...safe.images,...(imageId(cover)?[imageId(cover)]:[])];
- for(const id of images)assert(await one('SELECT id FROM knowledge_media WHERE id=?',id),'אחת התמונות אינה זמינה');
+ {const found=await mapIn('knowledge_media','id',[...images]);for(const id of images)assert(found.has(String(id)),'אחת התמונות אינה זמינה');}
  if(publish){assert(excerpt,'יש להזין תקציר לפני הפרסום');assert(knowledgeText(safe.content).length>=50,'יש לכתוב את תוכן המאמר לפני הפרסום');assert(categories.length,'בחרו לפחות קטגוריה אחת');assert(cover&&coverAlt,'בחרו תמונת שער והוסיפו תיאור תמונה');}
  return {title,slug,excerpt,publicationDate,content:safe.content,cover,coverAlt,author:author||'צוות MegaLinks',seoTitle,seoDescription,categories,tags:[...new Set((b.tags as string[]).map(x=>x.trim()).filter(Boolean))],featured:b.featured===true,updated:now()};
 }

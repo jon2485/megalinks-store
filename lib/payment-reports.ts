@@ -3,7 +3,7 @@ import {sendQueuedMail} from './mail';
 import {one,all,parse,stmt,db,assert,admin,owns,now,uid,audit} from './server';
 import {financialGuard,orderGuard} from './monthly-order';
 import {completeOrderPayment} from './split-payment';
-import {referenceUses,requireUnusedReference} from './payment-reference';
+import {referenceUses,referenceUsesMany,requireUnusedReference} from './payment-reference';
 import {orderSummarySql} from './order-summary';
 import type {Row} from './shared';
 export async function paymentReportStatus(order:Row){const report=parse(await one('SELECT * FROM records WHERE id=?','payment-report:'+order.id));return report?{...report,data:undefined}:null;}
@@ -13,7 +13,9 @@ export async function paymentReports(r:Request,p:string[],u:Row,body:(r:Request)
  if(manager)admin(u);
  if(manager&&r.method==='GET'){
   const status=new URL(r.url).searchParams.get('status')||'pending';assert(['all','pending','approved','rejected'].includes(status),'סטטוס דיווח אינו תקין');
-  return {reports:await Promise.all((await all("SELECT r.*,o.number,o.paid,o.payment AS order_payment,json_extract(o.data,'$.on_account') AS order_on_account,o.status AS order_status,u.name AS user_name,u.email,"+orderSummarySql()+" FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=r.user_id WHERE r.kind='customer_payment_report' AND (?='all' OR json_extract(r.data,'$.status')=?) AND json_extract(r.data,'$.payment_method')='bank_transfer' AND o.payment NOT IN ('card','credits_card') AND (json_extract(r.data,'$.status')<>'pending' OR (o.paid=0 AND o.status<>'cancelled')) ORDER BY r.created DESC LIMIT 1000",status,status)).map(parse).map(async report=>report?.status==='pending'?{...report,duplicate_reference_uses:await referenceUses(report.reference,report.order_id)}:report))};
+  // Duplicate bank references for all pending reports in two queries (no queries per report).
+  const reportRows=(await all("SELECT r.*,o.number,o.paid,o.payment AS order_payment,json_extract(o.data,'$.on_account') AS order_on_account,o.status AS order_status,u.name AS user_name,u.email,"+orderSummarySql()+" FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=r.user_id WHERE r.kind='customer_payment_report' AND (?='all' OR json_extract(r.data,'$.status')=?) AND json_extract(r.data,'$.payment_method')='bank_transfer' AND o.payment NOT IN ('card','credits_card') AND (json_extract(r.data,'$.status')<>'pending' OR (o.paid=0 AND o.status<>'cancelled')) ORDER BY r.created DESC LIMIT 1000",status,status)).map(parse);const pending=reportRows.filter(report=>report?.status==='pending'),uses=await referenceUsesMany(pending.map(report=>({reference:report!.reference,orderId:String(report!.order_id)})));
+  return {reports:reportRows.map(report=>report?.status==='pending'?{...report,duplicate_reference_uses:uses[pending.indexOf(report)]}:report)};
  }
  const raw=await one('SELECT * FROM orders WHERE id=?',customer?p[1]:p[2]);assert(raw,'ההזמנה לא נמצאה',404);if(customer)owns(u,raw);const order=parse(raw)!,prior=await paymentReportStatus(order);
  if(customer&&r.method==='GET')return {report:u.role==='admin'&&prior?.status==='pending'?{...prior,duplicate_reference_uses:await referenceUses(prior.reference,order.id)}:prior};

@@ -1,7 +1,7 @@
 import {walletAvailable} from './split-payment';
 import {LEGAL_CONTENT} from './legal-content.generated';
 import {writingCost} from './admin-month-report';
-import {db,stmt,one,parse,assert,uid,now,hash,website,connection} from './server';
+import {db,stmt,one,parse,assert,uid,now,hash,website,websitesById,mapIn,connection} from './server';
 import {businessMonth} from './monthly';
 import {openMonthlyOrder,monthlyOrderClosedSql,financialGuard,orderGuard} from './monthly-order';
 import type {Row} from './shared';
@@ -35,7 +35,9 @@ export async function createOrder(user:Row,actor:Row,q:Row,b:Row){
  if(b.payment==='credits'&&!split)ops.push(stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),user.id,-q.total,'תשלום הזמנה','order:'+id,stamp),stmt('UPDATE users SET credits=credits-? WHERE id=?',q.total,user.id));
  if(q.coupon&&!demo)ops.push(stmt('UPDATE coupons SET uses=uses+1 WHERE id=?',q.coupon.id));
  const flat=q.items.flatMap((x:Row)=>Array.from({length:x.quantity},()=>x));let grossAllocated=0,discountAllocated=0,eligibleAllocated=0,netAllocated=0;const eligible=flat.reduce((n:number,x:Row)=>n+(x.bundle_applied?0:x.price_cents),0);
- for(let index=0;index<flat.length;index++){const x=flat[index],site=await website(x.website_id),supplier=site.supplier_id?parse(await one("SELECT * FROM records WHERE id=? AND kind='supplier'",site.supplier_id)):null;
+ // Sites and suppliers for all the order's lines in two queries (no query per line).
+ const flatSites=await websitesById(flat.map((x:Row)=>x.website_id)),flatSuppliers=await mapIn('records','id',flatSites.map(w=>w.supplier_id),"kind='supplier'");
+ for(let index=0;index<flat.length;index++){const x=flat[index],site=flatSites[index],supplier=site.supplier_id?parse(flatSuppliers.get(String(site.supplier_id))||null):null;
   if(!x.bundle_applied)eligibleAllocated+=x.price_cents;const discount=x.bundle_applied?0:Math.round(eligible?q.discount*eligibleAllocated/eligible:0)-discountAllocated;discountAllocated+=discount;const net=x.price_cents-discount;netAllocated+=net;const gross=Math.round(netAllocated*(1+q.vatPercent/100))-grossAllocated;grossAllocated+=gross;
   const writingNet=Math.round(x.price_cents?net*x.editorial_price/x.price_cents:0),writingGross=Math.round(x.price_cents?gross*x.editorial_price/x.price_cents:0);
   const data={...x.data,cost_cents:Number(site.cost_cents||0),cost_recorded:site.cost_cents!=null&&Number.isSafeInteger(site.cost_cents)&&site.cost_cents>=0,supplier_id:site.supplier_id||'',supplier_name:supplier?.name||'',supplier_email:String(site.supplier_email||supplier?.email||'').toLowerCase(),demo,on_account:monthly,workflow:'editorial_v2',editorial_price:x.editorial_price,publication_price:x.publication_price,website_name:x.name,website_url:site.url,purchased_at:stamp,unit_price:x.price_cents,paid_amount:gross,paid_net_amount:net,writing_net_amount:writingNet,writing_gross_amount:writingGross,vat_percent:q.vatPercent,...(x.editorial_price>0?{writing_cost_cents:writingCost({editorial_words:x.data?.editorial_words,editorial_price:x.editorial_price})}:{}),...(actor.id!==user.id?{created_by_admin:actor.id}: {})};

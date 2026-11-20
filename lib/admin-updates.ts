@@ -111,6 +111,11 @@ export async function adminUpdates(query:URLSearchParams){
   one(`WITH ${source},available AS (${open}) SELECT COUNT(*) AS total,COALESCE(SUM(needs_action),0) AS action,COALESCE(SUM(CASE WHEN needs_action=0 THEN 1 ELSE 0 END),0) AS info FROM available`),
   one("SELECT COUNT(*) AS n FROM records WHERE kind='admin_update_handled'")
  ]);
- const updates=await Promise.all(rows.map(async row=>({...await withVersion(row),...(state==='handled'?{can_reopen:!!await one(`WITH ${source} SELECT 1 FROM feed WHERE id=? AND happened_at=? AND status=? AND detail=? AND amount IS ?`,row.id,row.happened_at,row.status,row.detail,row.amount)}:{})})));
+ // Which handled rows can be reopened, for the whole page in one query (no query per row): the event must still be in
+ // the feed exactly as it was handled. The comparison keeps SQL's rules (= never matches NULL, amount uses IS).
+ const live=state==='handled'&&rows.length?await all(`WITH ${source} SELECT id,happened_at,status,detail,amount FROM feed WHERE id IN (SELECT value FROM json_each(?))`,JSON.stringify(rows.map(row=>String(row.id)))):[];
+ const same=(a:unknown,b:unknown)=>a!==null&&a!==undefined&&b!==null&&b!==undefined&&a===b;
+ const reopenable=(row:Row)=>live.some(f=>same(f.id,row.id)&&same(f.happened_at,row.happened_at)&&same(f.status,row.status)&&same(f.detail,row.detail)&&((f.amount??null)===(row.amount??null)));
+ const updates=await Promise.all(rows.map(async row=>({...await withVersion(row),...(state==='handled'?{can_reopen:reopenable(row)}:{})})));
  return {updates,total:Number(total?.total||0),page,page_size:size,state,filters:{q,filter},requested_page:requested,counts:{...counts,open:Number(counts?.total||0),handled:Number(handled?.n||0)}};
 }

@@ -1,6 +1,6 @@
 import type {Row} from './shared';
 import {customerPrice,minimumWarning} from './pricing-rules';
-import {all,one,stmt,db,admin,assert,ApiError,parse,now,uid,publicWebsite} from './server';
+import {all,one,stmt,db,admin,assert,ApiError,parse,now,uid,publicWebsite,mapIn} from './server';
 export async function pricingSetup(){await db().batch([stmt("INSERT OR IGNORE INTO pricing_tiers(id,name,discount_bps) VALUES ('regular','לקוחות רגילים',0),('vip','לקוחות VIP',0)"),stmt('INSERT OR IGNORE INTO pricing_state(id,version) VALUES (1,0)')]);}
 export async function pricingContext(userId?:string){await pricingSetup();const tier=await one('SELECT * FROM pricing_tiers WHERE id=COALESCE((SELECT tier_id FROM pricing_members WHERE user_id=?),?)',userId||'','regular');const rows=await all("SELECT * FROM pricing_overrides WHERE (scope='tier' AND owner_id=?) OR (scope='user' AND owner_id=?)",tier!.id,userId||'');return {tier:tier!,overrides:rows};}
 export function pricedSite(w:Row,context:Awaited<ReturnType<typeof pricingContext>>,internal=false){const site=parse(w)!;const personal=context.overrides.find(x=>x.scope==='user'&&x.website_id===w.id),fixed=context.overrides.find(x=>x.scope==='tier'&&x.website_id===w.id);return {...(internal?site:publicWebsite(w)),...customerPrice(site,context.tier,personal?.price,fixed?.price)};}
@@ -36,7 +36,9 @@ export async function pricingRoutes(r:Request,p:string[],user:Row,json:(r:Reques
  }
  if(p[2]==='overrides'){
   assert(['tier','user'].includes(b.scope),'סוג מחירון לא תקין');assert(b.scope==='tier'?tierRows.some(t=>t.id===b.owner_id):await one('SELECT id FROM users WHERE id=?',b.owner_id),'בעל המחירון לא נמצא');assert(Array.isArray(b.rows)&&b.rows.length>0&&b.rows.length<=100,'עד 100 שורות בכל שמירה');const seen=new Set(),statements=[],warnings=[],history=[];
-  for(const item of b.rows){assert(!seen.has(item.website_id),'מזהה אתר כפול');seen.add(item.website_id);const w=parse(await one('SELECT * FROM websites WHERE id=?',item.website_id));assert(w,'האתר לא נמצא');const prior=await one('SELECT * FROM pricing_overrides WHERE scope=? AND owner_id=? AND website_id=?',b.scope,b.owner_id,w.id);
+  // The sites and their current overrides for all rows in two queries (no query per row).
+  const rowSites=await mapIn('websites','id',b.rows.map((item:Row)=>item.website_id)),rowPriors=await mapIn('pricing_overrides','website_id',b.rows.map((item:Row)=>item.website_id),'scope=? AND owner_id=?',b.scope,b.owner_id);
+  for(const item of b.rows){assert(!seen.has(item.website_id),'מזהה אתר כפול');seen.add(item.website_id);const w=parse(rowSites.get(String(item.website_id))||null);assert(w,'האתר לא נמצא');const prior=rowPriors.get(String(w.id))||null;
    // Blank imports preserve prices; removing is an explicit operation.
    if(item.action==='remove'){statements.push(stmt('DELETE FROM pricing_overrides WHERE scope=? AND owner_id=? AND website_id=?',b.scope,b.owner_id,w.id));history.push({website_id:w.id,website_name:w.name,before:prior?.price,after:null});continue;}
    if(item.action==='review'){assert(prior,'אין מחיר קבוע לבדיקה');warnings.push(minimumWarning(w.name,prior.price,w.cost_cents));statements.push(stmt('UPDATE pricing_overrides SET checked_cost=?,updated=? WHERE scope=? AND owner_id=? AND website_id=?',w.cost_cents??null,now(),b.scope,b.owner_id,w.id));history.push({website_id:w.id,website_name:w.name,reviewed_cost:w.cost_cents});continue;}

@@ -5,7 +5,7 @@ import {closeOrderForStatement,orderStatementId,prepareOrderStatement,refreshOrd
 import {paymentEvidenceRows,orderPaymentEvidence} from './payment-evidence';
 import {orderSummarySql} from './order-summary';
 import type {Row} from './shared';
-import {db,stmt,one,all,parse,admin,assert,now,uid,hash,setting,website,ApiError} from './server';
+import {db,stmt,one,all,parse,admin,assert,now,uid,hash,setting,website,ApiError,mapIn} from './server';
 import {pricingContext,pricedSite,pricingVersion,warnPricing} from './pricing';
 import {minimumWarning} from './pricing-rules';
 import {businessMonth} from './monthly';
@@ -18,7 +18,8 @@ import {approveOrderCancel} from './cancel-request';
 async function refreshClosedMonth(userId:string,month:string,demo:boolean){const id=statementId(userId,month,demo),saved=parse(await one('SELECT * FROM records WHERE id=?',id));if(!saved?.summary)return;const summary=await statementData(userId,month,demo);await stmt("UPDATE records SET data=json_set(data,'$.summary',json(?)),updated=? WHERE id=?",JSON.stringify({...summary,closed_at:saved.summary.closed_at}),now(),id).run();}
 const res=(v:any)=>Response.json(v,{headers:{'Cache-Control':'no-store'}});
 async function managerQuote(target:Row,b:Row){assert(Array.isArray(b.items)&&b.items.length&&b.items.length<=50,'יש לבחור בין אתר אחד ל־50 אתרים');const context=await pricingContext(target.id),version=await pricingVersion(),items=[];
- for(const [i,x] of b.items.entries()){const w=await one('SELECT * FROM websites WHERE id=? AND active=1',x.website_id);assert(w,'האתר אינו זמין');const site=pricedSite(w,context,true),quantity=Number(x.quantity||1);assert(Number.isSafeInteger(quantity)&&quantity>=1&&quantity<=20,'כמות אינה תקינה');const words=Number(x.editorial_words||400);assert(Number.isSafeInteger(words)&&words>=100&&words<=5000,'כמות מילים אינה תקינה');const editorial=x.editorial===true,editorialPrice=editorial?words*15:0;const brief={editorial,editorial_words:words,topic:String(x.topic||'כתבה עבור '+w.name).slice(0,500),customer_id:''};items.push({id:'admin:'+i,website_id:w.id,name:w.name,quantity,topic:brief.topic,editorial,data:brief,website:site,publication_price:site.price_cents,editorial_price:editorialPrice,price_cents:site.price_cents+editorialPrice});}
+ const sites=await mapIn('websites','id',b.items.map((x:Row)=>x?.website_id),'active=1');
+ for(const [i,x] of b.items.entries()){const w=sites.get(String(x.website_id))||null;assert(w,'האתר אינו זמין');const site=pricedSite(w,context,true),quantity=Number(x.quantity||1);assert(Number.isSafeInteger(quantity)&&quantity>=1&&quantity<=20,'כמות אינה תקינה');const words=Number(x.editorial_words||400);assert(Number.isSafeInteger(words)&&words>=100&&words<=5000,'כמות מילים אינה תקינה');const editorial=x.editorial===true,editorialPrice=editorial?words*15:0;const brief={editorial,editorial_words:words,topic:String(x.topic||'כתבה עבור '+w.name).slice(0,500),customer_id:''};items.push({id:'admin:'+i,website_id:w.id,name:w.name,quantity,topic:brief.topic,editorial,data:brief,website:site,publication_price:site.price_cents,editorial_price:editorialPrice,price_cents:site.price_cents+editorialPrice});}
  assert(version===await pricingVersion(),'המחירים השתנו; יש לרענן',409);const subtotal=items.reduce((n,x)=>n+x.price_cents*x.quantity,0),vatPercent=Number(await setting('vat',18)),vat=Math.round(subtotal*vatPercent/100);return {items,subtotal,discount:0,vat,total:subtotal+vat,vatPercent,pricing_version:version,pricing_token:await hash(JSON.stringify(items.map(x=>[x.website_id,x.quantity,x.price_cents,x.data]))+':'+vat)};
 }
 export async function accountManagementRoutes(r:Request,p:string[],actor:Row){

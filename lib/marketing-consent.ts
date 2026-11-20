@@ -48,8 +48,10 @@ export async function marketingCsv(){
 export async function marketingRemove(actor:Row,text:string){
  const emails=[...new Set(String(text||'').toLowerCase().match(/[^\s,;<>"']+@[^\s,;<>"']+\.[^\s,;<>"']+/g)||[])].slice(0,5000);
  let removed=0;const unknown:string[]=[];
+ // All the pasted addresses in one query (no query per address).
+ const users=new Map((emails.length?await all('SELECT *,lower(email) AS email_key FROM users WHERE lower(email) IN (SELECT value FROM json_each(?))',JSON.stringify(emails)):[]).map(u=>[String(u.email_key),u]));
  for(const email of emails){
-  const user=await one('SELECT * FROM users WHERE lower(email)=?',email);
+  const found=users.get(email),user=found?(({email_key,...rest})=>rest)(found):null;
   if(!user){unknown.push(email);continue;}
   if(await setMarketing(user,false,'admin',actor))removed++;
  }

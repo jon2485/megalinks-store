@@ -2,7 +2,7 @@ import {all,one,stmt,parse,now,assert,audit} from './server';
 import type {Row} from './shared';
 import {money} from './shared';
 import {supplierSettlements,supplierKind,supplierBillingType} from './admin-suppliers';
-import {siteStock,stockState,STOCK_LOW} from './supplier-stock';
+import {siteStock,siteStocks,stockState,STOCK_LOW} from './supplier-stock';
 import {publicationPeriod} from './publication-period';
 import {queueMail} from './mail';
 import {sendSupplierMonth} from './supplier-month';
@@ -42,8 +42,9 @@ function orderSummary(g:Row,current:string){
 async function stockPackages(supplierId:string){
  const sites=await all("SELECT id FROM websites WHERE json_extract(data,'$.supplier_id')=? AND json_extract(data,'$.stock_total') IS NOT NULL ORDER BY name",supplierId);
  const out:Row[]=[];let total=0,used=0;
- for(const w of sites){
-  const st:Row=await siteStock(w.id);total+=Number(st.total||0);used+=Number(st.used||0);
+ const stocks=await siteStocks(sites.map(w=>String(w.id)));
+ for(const [index,w] of sites.entries()){
+  const st:Row=stocks[index];total+=Number(st.total||0);used+=Number(st.used||0);
   for(const p of st.packages){
    const inP=st.slots.filter((s:Row)=>s.place?.package===p.number),qty=Number(p.end)-Number(p.start)+1,u=inP.length,prev=st.packages.find((x:Row)=>x.number===p.number-1),prevUsed=prev?st.slots.filter((s:Row)=>s.place?.package===prev.number).length:0,prevDone=!prev||prevUsed>=Number(prev.end)-Number(prev.start)+1;
    const status=u>=qty?'done':u===0&&!prevDone?'queued':qty-u<=STOCK_LOW?'low':'active';

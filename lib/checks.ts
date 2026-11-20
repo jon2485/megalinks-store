@@ -1,4 +1,4 @@
-import { assert, externalUrl, now, stmt, one } from './server';
+import { assert, externalUrl, now, stmt, one, mapIn } from './server';
 import { Row, plainText } from './shared';
 import { inlineImages } from './rich-content';
 const publicUrl=(value:string)=>{const url=new URL(value);assert(['http:','https:'].includes(url.protocol),'כתובת לא תקינה');const check=new URL(url);check.protocol='https:';externalUrl(check.href);return url;};
@@ -22,7 +22,7 @@ export async function articleChecks(a:Row) {
     if(data.image_id&&!data.image_credit?.trim())errors.push('יש להוסיף קרדיט לתמונה הראשית');
     if(data.secondary_image_id&&!data.secondary_image_credit?.trim())errors.push('יש להוסיף קרדיט לתמונה המשנית');
     const embedded=await inlineImages(a.content||'');if(embedded.length>10)errors.push('מותר עד 10 תמונות בתוך המאמר');for(const image of embedded)if(!image.credit)errors.push('חסר קרדיט לתמונה בתוך המאמר');
-    let imageBytes=0;const imageIds=new Set<string>(embedded.map(i=>i.id));for(const key of ['image_id','secondary_image_id']){if(data[key])imageIds.add(data[key]);}for(const id of imageIds){const file=await one('SELECT type,size FROM files WHERE id=?',id);if(!file||!file.type.startsWith('image/'))errors.push('יש לצרף קובץ תמונה תקין');else imageBytes+=file.size;}if(imageBytes>12*1024*1024)errors.push('התמונות יחד גדולות מ־12MB. הקטינו אותן לפני שליחה');
+    let imageBytes=0;const imageIds=new Set<string>(embedded.map(i=>i.id));for(const key of ['image_id','secondary_image_id']){if(data[key])imageIds.add(data[key]);}const imageFiles=await mapIn('files','id',[...imageIds]);for(const id of imageIds){const file=imageFiles.get(String(id));if(!file||!file.type.startsWith('image/'))errors.push('יש לצרף קובץ תמונה תקין');else imageBytes+=file.size;}if(imageBytes>12*1024*1024)errors.push('התמונות יחד גדולות מ־12MB. הקטינו אותן לפני שליחה');
     const urls:string[]=[];await new HTMLRewriter().on('a[href]',{element(el:any){const href=el.getAttribute('href');if(href&&!urls.includes(href))urls.push(href);}}).transform(new Response(a.content||'')).text();
     if(!urls.length)errors.push('חובה להוסיף לפחות קישור אחד בתוך גוף המאמר');if(urls.length>10)errors.push('ניתן לבדוק עד 10 קישורים במאמר');
     const links=await Promise.all(urls.slice(0,10).map(url=>checkLink(url)));for(const l of links)if(!l.ok)errors.push(l.url+': '+l.message);

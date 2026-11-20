@@ -1,4 +1,4 @@
-import {all,one,parse,stmt,db,now} from './server';
+import {all,one,parse,stmt,db,now,mapIn} from './server';
 import {canWorkOrder} from './payment-state';
 import {articleMail} from './mail';
 import type {Row} from './shared';
@@ -25,8 +25,10 @@ export function dispatchDue(article:Row,stamp=now()){const at=dispatchAtFor(arti
 export async function releaseScheduledApprovals(origin:string){
  const stamp=now(),rows=await all("SELECT a.* FROM articles a WHERE a.status='scheduled' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0 AND COALESCE(json_extract(a.data,'$.publication_refunded'),0)=0 ORDER BY json_extract(a.data,'$.scheduled'),a.id LIMIT 100");
  let released=0;
+ // The orders of all the articles in one query (no query per article).
+ const orders=await mapIn('orders','id',rows.map(a=>a.order_id));
  for(const a of rows){
-  const order=parse(await one('SELECT * FROM orders WHERE id=?',a.order_id));if(!order||!canWorkOrder(order))continue;
+  const order=parse(orders.get(String(a.order_id))||null);if(!order||!canWorkOrder(order))continue;
   const activity='scheduled-review:'+a.id+':'+a.version;
   const results=await db().batch([
    stmt("UPDATE articles SET status='admin_review',version=version+1,updated=?,data=json_set(data,'$.scheduled_released_at',?,'$.review_requested_at',?) WHERE id=? AND status='scheduled' AND version=? AND COALESCE(json_extract(data,'$.cancel_pending'),0)=0 AND COALESCE(json_extract(data,'$.publication_refunded'),0)=0 AND EXISTS(SELECT 1 FROM orders o WHERE o.id=articles.order_id AND o.status<>'cancelled' AND (o.paid=1 OR json_extract(o.data,'$.demo')=1 OR json_extract(o.data,'$.on_account')=1 OR json_extract(o.data,'$.payment_settled')=1))",stamp,stamp,stamp,a.id,a.version),
