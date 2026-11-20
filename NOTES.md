@@ -1589,3 +1589,9 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Tests:** new `tests/n-plus-one-batch.mjs` (bulk reminder and bulk removal, fictional data) passes. `tests/supplier-mail.mjs` mock now exports `mapIn`. tsc, build, 3 Railway tests OK; full run: the same 60 older failures, no new one.
 - **Next:** nothing pushed or deployed; waiting for the owner.
 - **20.11.2026, owner approved "העלאה ל-GitHub וגם לסביבת הבדיקות":** branch pushed to GitHub (f21c48d). In Railway Staging only (service megalinks-web), the source change is **staged, not deployed yet**: branch `claude/n-plus-one-20261120`, commit f21c48d (was `claude/sheets-hebrew-20261119`, 0f9c50a). The approval prompt from here timed out, as on 17.11; the owner can click Deploy in the Railway dashboard, or ask here to try again. Production untouched.
+
+## 20.11.2026: DR decimals, stock types, several supplier addresses, deployed on top of the N+1 work (branch `claude/stock-email-dr-20261120`)
+- **Base:** Staging was running `claude/n-plus-one-20261120` (`292def2`, another session's N+1 work, which already includes `0f9c50a` categories). This branch is `292def2` plus the cherry-picked `97f8a94` from `claude/sheet-fill-20261119`; the only conflict was the import lines in `lib/mail.ts` (kept `mapIn` and `emailList`). Commit `209f04f`.
+- **Checks:** tsc clean, build passes. Passing: sheets-stock-email (new), sheets-plan, sheets-two-way, merge-properties, sync-integration, service-account, supplier-mail, publication-scheduling, per-site-billing, month-close-sites, catalog-suspension, supplier-privacy.
+- **Owner:** "השיטס קובע". In sync conflicts the sheet value wins. The 5 conflicts (ynet, mako and globes: category and logo) are resolved only when the sync applies, which needs zero errors first.
+- **Full details:** the sheet-fill work and the decisions are in NOTES.md on `claude/sheet-fill-20261119`, sections 43 to 45.
