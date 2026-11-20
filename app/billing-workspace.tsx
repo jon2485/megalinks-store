@@ -21,6 +21,7 @@ import {type Row, money, when} from '@/lib/shared';
 import {type Ctx, ErrorBox, UploadField} from './workspace';
 import {Input} from '@/components/ui/input';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
+import PrivacyNote from './privacy-note';
 
 const cardStyle='min-w-0 gap-0 rounded-2xl border-slate-200 bg-white py-0 shadow-sm';
 const primaryStyle='min-h-11 h-auto whitespace-normal rounded-full bg-orange-400 px-5 py-3 text-sm font-bold text-slate-950 shadow-sm shadow-orange-500/20 hover:bg-orange-300';
@@ -78,6 +79,7 @@ function BalanceTopUp({ctx,close}:{ctx:Ctx;close:()=>void}) {
         {method==='bank'&&<><label className="block space-y-2"><span>תאריך ביצוע ההעברה (חובה)</span><Input aria-label="תאריך ביצוע ההעברה" aria-required="true" type="date" value={paymentDate} onChange={e=>setPaymentDate(e.target.value)}/></label><label className="block space-y-2 text-sm font-semibold text-slate-800"><span>מספר אסמכתא (חובה)</span><Input disabled={busy} value={reference} onChange={e=>setReference(e.target.value)} required maxLength={200} className="h-12 rounded-xl bg-white text-base"/></label><label className="block space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-800"><span className="flex items-center gap-2 font-semibold"><Upload size={18}/>צילום מסך של ההעברה (מומלץ)</span><input disabled={busy} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="block w-full min-w-0 text-sm file:me-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:font-semibold file:text-slate-800" onChange={e=>{setProof(e.target.files?.[0]||null);proofSaved.current=null;}}/><span className="block text-sm text-slate-600">תמונה או קובץ PDF · הצירוף אינו אישור תשלום</span></label></>}
         <ErrorBox error={error}/>
         <div className="space-y-3"><Button type="submit" disabled={busy} className="h-auto min-h-12 w-full rounded-xl bg-slate-900 px-4 py-3 text-base font-bold text-white hover:bg-slate-800">{busy?<LoaderCircle size={18} className="animate-spin"/>:method==='card'?<LockKeyhole size={18}/>:<Landmark size={18}/>} {method==='card'?'מעבר לתשלום מאובטח':'שליחת בקשה לאישור'}</Button><p className="text-center text-sm leading-6 text-slate-600">{method==='card'?'היתרה תעודכן באופן מיידי לאחר אישור העסקה.':'הבקשה תועבר לאישור. היתרה תעודכן לאחר אימות הכספים בדרך כלל עד 48 שעות.'}</p></div>
+            {method==='bank'&&<PrivacyNote>פרטי ההעברה והאסמכתא משמשים לבדיקה שהכסף התקבל, לעדכון היתרה ולמניעת שימוש חוזר באותה אסמכתא.</PrivacyNote>}
             </TabsContent>
         </Tabs>
     </form>;

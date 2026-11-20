@@ -10,6 +10,7 @@ import FloatingWhatsApp from './floating-whatsapp';
 import './floating-whatsapp.css';
 import AccessibilityMenu from './accessibility-menu';
 import './accessibility-menu.css';
+import './privacy-note.css';
 import FormMessages from './form-messages';
 import BrandLoading from './brand-loading';
 import {SITE_URL,HOME_TITLE,HOME_DESCRIPTION,privateRobots,publicMetadata} from '@/lib/seo';
