@@ -1,5 +1,5 @@
 /* Approved composition; PublicationCard and catalog actions keep their owners. */
-.azure-catalog.catalog-approved-home{--catalog-ink:#0a234c;--catalog-cyan:#00bed4;--catalog-blue:#087af7;--catalog-copy:#617184;--catalog-surface:#fff;font-family:Heebo,Arial,Helvetica,sans-serif;color:var(--catalog-ink);background:linear-gradient(180deg,#fff 0,#fff 400px,#f8fcff 760px,#f3faff 1300px);container-type:inline-size}
+.azure-catalog.catalog-approved-home{--catalog-ink:#0a234c;--catalog-cyan:#0097a9;--catalog-blue:#0771e6;--catalog-copy:#617184;--catalog-surface:#fff;font-family:Heebo,Arial,Helvetica,sans-serif;color:var(--catalog-ink);background:linear-gradient(180deg,#fff 0,#fff 400px,#f8fcff 760px,#f3faff 1300px);container-type:inline-size}
 .azure-catalog.catalog-approved-home .azure-catalog-hero{position:relative;isolation:isolate;background:transparent;padding:clamp(35px,5.7cqi,68px) clamp(18px,5.2cqi,62px) clamp(30px,4cqi,48px)}
 .azure-catalog.catalog-approved-home .azure-catalog-hero::before{display:none}
 .azure-catalog.catalog-approved-home .catalog-hero-composition{display:grid;grid-template-columns:minmax(0,1.04fr) minmax(0,1fr);align-items:center;gap:clamp(16px,4cqi,52px);max-width:1076px;margin-inline:auto;text-align:right}
@@ -9,7 +9,7 @@
 .azure-catalog.catalog-approved-home .catalog-hero-title .azure-title-accent{color:#008ce7;background:linear-gradient(100deg,var(--catalog-cyan),var(--catalog-blue));background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}
 .azure-catalog.catalog-approved-home .catalog-hero-intro>p{margin:clamp(12px,2cqi,24px) 0 0;color:var(--catalog-copy)!important;font-size:clamp(12px,1.65cqi,18px);font-weight:400;line-height:1.9}
 .azure-catalog.catalog-approved-home .catalog-hero-intro>p>span{display:block}
-.azure-catalog.catalog-approved-home .catalog-home-cta[data-slot="button"]{display:inline-flex;min-height:46px;height:auto;gap:clamp(10px,2.3cqi,25px);margin-top:clamp(18px,2.7cqi,30px);padding:11px clamp(14px,2.2cqi,25px);border:0;border-radius:15px;background:linear-gradient(110deg,#00b7c9,#0494d9);color:#fff;font-family:inherit;font-size:clamp(12px,1.55cqi,16px);font-weight:600;box-shadow:0 7px 22px #049fba19;transition:box-shadow 180ms,transform 180ms}
+.azure-catalog.catalog-approved-home .catalog-home-cta[data-slot="button"]{display:inline-flex;min-height:46px;height:auto;gap:clamp(10px,2.3cqi,25px);margin-top:clamp(18px,2.7cqi,30px);padding:11px clamp(14px,2.2cqi,25px);border:0;border-radius:15px;background:linear-gradient(110deg,#007f8c,#037cb6);color:#fff;font-family:inherit;font-size:clamp(12px,1.55cqi,16px);font-weight:600;box-shadow:0 7px 22px #049fba19;transition:box-shadow 180ms,transform 180ms}
 .azure-catalog.catalog-approved-home .catalog-home-cta:hover{transform:translateY(-2px);box-shadow:0 9px 25px #049fba2a}
 .azure-catalog.catalog-approved-home .catalog-home-cta:focus-visible{outline:3px solid #0079cb;outline-offset:4px}
 .azure-catalog.catalog-approved-home .catalog-publication-scene{position:relative;min-width:0;width:100%;animation:catalog-home-art-in 800ms ease-out both}

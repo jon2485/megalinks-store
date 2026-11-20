@@ -16,7 +16,7 @@ import {exportSpreadsheet} from '@/lib/office';
 
 const SECTIONS=[['overview','סקירה',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks],['calendar','לוח פרסומים',CalendarDays],['reports','דוחות',ChartColumn],['settings','הגדרות',SettingsIcon]] as const;
 const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['links','קישורים ועוגנים',Link2],['notes','הערות',NotebookPen],['details','פרטים',IdCard]] as const;
-const COLORS=['#1673e6','#7c3aed','#0f9f8f','#ea580c','#b45309','#db2777','#0369a1','#16a34a','#0891b2','#65a30d','#c2410c','#be185d'];
+const COLORS=['#1467cf','#7c3aed','#0f9f8f','#ea580c','#b45309','#db2777','#0369a1','#16a34a','#0891b2','#65a30d','#c2410c','#be185d'];
 const colorFor=(id:string)=>COLORS[[...String(id)].reduce((s,c)=>s+c.charCodeAt(0),0)%COLORS.length];
 const ils=(cents:number)=>'₪'+(Math.round(Number(cents||0))/100).toLocaleString('he-IL',{maximumFractionDigits:2});
 const day=(iso:string)=>iso?new Date(iso).toLocaleDateString('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}):'—';
@@ -315,7 +315,7 @@ function MonthChart({rows,field}:{rows:Row[];field:'published'|'spend'}){
  const narrow=useNarrow(),max=Math.max(1,...rows.map(r=>r[field])),W=narrow?340:640,H=narrow?190:220,base=H-35,step=W/rows.length,bar=Math.min(30,step*.6);
  return <><svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} role="img" aria-label={field==='published'?'פרסומים לפי חודש, 12 חודשים':'הוצאה לפי חודש, 12 חודשים'} style={{fontFamily:'Heebo,Arial',overflow:'visible'}}>
   {rows.map((r,i)=>{const x=W-(i+1)*step+(step-bar)/2,h=Math.round((r[field]/max)*(H-70)),last=i===rows.length-1,label=field==='spend'?(r.spend?Math.round(r.spend/100).toLocaleString('he-IL'):''):String(r.published||'');
-   return <g key={r.month}><rect x={x} y={base-h} width={bar} height={Math.max(h,2)} rx={narrow?5:7} fill={last?'#1673e6':'#cfe0f8'}/><text x={x+bar/2} y={base+22} textAnchor="middle" fontSize={narrow?10.5:12} fill="#5b6b82">{MONTH_SHORT[Number(r.month.slice(5))-1]}</text>{label&&<text x={x+bar/2} y={base-8-h} textAnchor="middle" fontSize={field==='spend'?(narrow?9:10.5):12} fontWeight={700} fill={last?'#1460c4':'#7b8796'}>{label}</text>}</g>;})}
+   return <g key={r.month}><rect x={x} y={base-h} width={bar} height={Math.max(h,2)} rx={narrow?5:7} fill={last?'#1467cf':'#cfe0f8'}/><text x={x+bar/2} y={base+22} textAnchor="middle" fontSize={narrow?10.5:12} fill="#5b6b82">{MONTH_SHORT[Number(r.month.slice(5))-1]}</text>{label&&<text x={x+bar/2} y={base-8-h} textAnchor="middle" fontSize={field==='spend'?(narrow?9:10.5):12} fontWeight={700} fill={last?'#1460c4':'#626e7c'}>{label}</text>}</g>;})}
  </svg><table className="sr-only"><caption>{field==='published'?'פרסומים לפי חודש':'הוצאה לפי חודש'}</caption><tbody>{rows.map(r=><tr key={r.month}><th scope="row">{r.month}</th><td>{field==='spend'?ils(r.spend):r.published}</td></tr>)}</tbody></table></>;
 }
 function Overview({ctx}:{ctx:Ctx}){
@@ -339,7 +339,7 @@ function Overview({ctx}:{ctx:Ctx}){
  </>;
 }
 // ---------- to-do (spec 5.4) ----------
-const TASK_LOOK:Record<string,[React.ElementType,string,string,string]>={review:[PencilLine,'#eef5ff','#1673e6','לבדיקה'],revisions:[RotateCcw,'#fff4e5','#b45309','לתיקון'],draft:[FilePen,'#f3f0ff','#6d28d9','להשלמה'],payment:[CreditCard,'#fdecec','#c2262e','לתשלום'],scheduled:[CalendarClock,'#eefbf6','#0f7a55','לפרטים'],budget:[Wallet,'#fff4e5','#b45309','ללקוח'],budget_over:[Wallet,'#fdecec','#c2262e','ללקוח']};
+const TASK_LOOK:Record<string,[React.ElementType,string,string,string]>={review:[PencilLine,'#eef5ff','#1467cf','לבדיקה'],revisions:[RotateCcw,'#fff4e5','#b45309','לתיקון'],draft:[FilePen,'#f3f0ff','#6d28d9','להשלמה'],payment:[CreditCard,'#fdecec','#c2262e','לתשלום'],scheduled:[CalendarClock,'#eefbf6','#0f7a55','לפרטים'],budget:[Wallet,'#fff4e5','#b45309','ללקוח'],budget_over:[Wallet,'#fdecec','#c2262e','ללקוח']};
 function TaskRow({ctx,t}:{ctx:Ctx;t:Row}){
  const [Icon,bg,fg,action]=TASK_LOOK[t.kind==='budget'&&t.level==='over'?'budget_over':t.kind]||TASK_LOOK.review;
  const to=t.kind==='payment'?'purchased/orders':t.kind==='budget'?RP+'/customers/'+encodeURIComponent(t.customer_id):'article/'+t.article_id;
@@ -395,7 +395,7 @@ function reportHtml({agency,color,customer,from,to,rows,costs,logo}:{agency:stri
 header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-bottom:16px;border-bottom:3px solid ${esc(color)}}h1{margin:0;font-size:26px;letter-spacing:-.02em}header p{margin:4px 0 0;color:#5b6b82}.agency{display:flex;align-items:center;gap:12px;font-weight:800;font-size:18px;color:${esc(color)}}.agency img{max-height:56px;max-width:160px;object-fit:contain}
 .stats{display:flex;gap:12px;margin:20px 0}.stats div{flex:1;padding:12px 14px;border-radius:12px;background:#f4f8fe}.stats small{display:block;color:#5b6b82;font-size:12.5px}.stats b{font-size:22px}
 table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:right;padding:8px;border-bottom:1px solid #d6e2ee;color:#5b6b82;font-size:12px}td{padding:9px 8px;border-bottom:1px solid #eef2f6;vertical-align:top}td a{color:#0a5fc2;word-break:break-all}.ltr{direction:ltr;unicode-bidi:isolate}
-footer{margin-top:24px;color:#7b8796;font-size:12px}@media print{main{padding:0}.noprint{display:none}}</style></head><body><main>
+footer{margin-top:24px;color:#626e7c;font-size:12px}@media print{main{padding:0}.noprint{display:none}}</style></head><body><main>
 <header><div><h1>דוח פרסומים · ${esc(customer)}</h1><p>תקופה: <span class="ltr">${esc(from?day(from):'מההתחלה')}</span> עד <span class="ltr">${esc(to?day(to):day(new Date().toISOString()))}</span></p></div><div class="agency">${logo&&/^data:image\/(png|jpeg|webp);base64,[a-z0-9+/=]+$/i.test(logo)?`<img src="${logo}" alt="">`:''}<span>${esc(agency)}</span></div></header>
 <div class="stats"><div><small>פרסומים</small><b>${published.length}</b></div><div><small>אתרים שונים</small><b>${sites}</b></div>${costs?`<div><small>עלות לפני מע״מ</small><b class="ltr">${esc(ils(total))}</b></div>`:''}</div>
 <table><thead><tr><th>אתר</th><th>תאריך פרסום</th><th>קישור לכתבה</th><th>עוגן</th><th>קישור יעד</th>${costs?'<th>עלות</th>':''}</tr></thead><tbody>
@@ -413,7 +413,7 @@ function Reports({ctx}:{ctx:Ctx}){
  const showCosts=costs??!!settings.data?.show_amounts;
  const q=(extra:Record<string,string>={})=>new URLSearchParams({...(range.from?{from:range.from}:{}),...(range.to?{to:range.to}:{}),...extra}).toString();
  const customerReport=async()=>{if(!who){setError('בחרו לקוח');return;}setError('');const win=window.open('','_blank');if(!win){setError('הדפדפן חסם חלון חדש. אפשרו חלונות קופצים לאתר.');return;}win.document.write('<p dir="rtl" style="font-family:Arial;padding:24px">מכין את הדוח…</p>');setBusy('customer');
-  try{const d=await api(AP+'/publications?'+q({customer:who}));const c=list.find(x=>x.id===who),logo=await logoData(settings.data?.logo_url);win.document.open();win.document.write(reportHtml({agency:settings.data?.report_name||'',color:settings.data?.report_color||'#1673e6',customer:c?.name||'',from:range.from,to:range.to,rows:d.publications||[],costs:showCosts,logo}));win.document.close();}
+  try{const d=await api(AP+'/publications?'+q({customer:who}));const c=list.find(x=>x.id===who),logo=await logoData(settings.data?.logo_url);win.document.open();win.document.write(reportHtml({agency:settings.data?.report_name||'',color:settings.data?.report_color||'#1467cf',customer:c?.name||'',from:range.from,to:range.to,rows:d.publications||[],costs:showCosts,logo}));win.document.close();}
   catch(e){win.close();setError((e as Error).message);}finally{setBusy('');}};
  const spendReport=async()=>{setBusy('spend');setError('');try{const d=await api(AP+'/publications?'+q());const by=new Map<string,Row>();for(const a of d.publications||[]){const key=a.customer_id||'';const r=by.get(key)||{name:a.customer_name||'ללא לקוח',count:0,published:0,spend:0};r.count++;if(a.status==='published')r.published++;r.spend+=a.spend;by.set(key,r);}setSpend([...by.values()].sort((x,y)=>y.spend-x.spend));}catch(e){setError((e as Error).message);}finally{setBusy('');}};
  const spendCsv=(excel=false)=>{if(!spend)return;const lines=[['לקוח','פרסומים','פורסמו','הוצאה לפני מע"מ'],...spend.map(r=>[r.name,r.count,r.published,(r.spend/100).toFixed(2)])];

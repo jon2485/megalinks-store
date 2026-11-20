@@ -116,9 +116,9 @@ ctx.go(result.id?'order-confirmed/'+result.id:'purchased');}catch(e){setError((e
             {!checkoutOnly&&productList}{summary}
             {checkoutOnly&&<section className="checkout-form-surface" aria-label="פרטי החשבונית ואמצעי התשלום">
                 <Card className="checkout-customer-card"><CardHeader><CardTitle>פרטי החשבונית</CardTitle></CardHeader><CardContent><div className="form-grid">
-                    <Field label="שם לחשבונית *"><Input id="checkout-invoice-name" autoComplete="organization" aria-required="true" value={form.invoice_name} onChange={e=>setForm({...form,invoice_name:e.target.value})}/></Field>
+                    <Field label="שם לחשבונית (חובה)"><Input id="checkout-invoice-name" autoComplete="organization" aria-required="true" value={form.invoice_name} onChange={e=>setForm({...form,invoice_name:e.target.value})}/></Field>
                     <div className="checkout-name-field"><Field label="שם מלא"><Input autoComplete="name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></Field></div>
-                    <div className="checkout-phone-field"><Field label="טלפון ליצירת קשר *"><Input id="checkout-phone" type="tel" dir="ltr" autoComplete="tel" aria-required="true" value={form.phone} onChange={e=>{const phone=e.target.value;setForm(current=>({...current,phone}));setError('');}}/></Field></div>
+                    <div className="checkout-phone-field"><Field label="טלפון ליצירת קשר (חובה)"><Input id="checkout-phone" type="tel" dir="ltr" autoComplete="tel" aria-required="true" value={form.phone} onChange={e=>{const phone=e.target.value;setForm(current=>({...current,phone}));setError('');}}/></Field></div>
                 </div></CardContent></Card>
                 <Card className="checkout-payment-card"><CardContent><div className="checkout-payment-content">
                     <fieldset className="checkout-payment-field"><legend>איך תרצו לשלם?</legend><CheckoutPaymentTiles disabled={busy} value={form.payment} onChange={payment=>setForm({...form,payment})} options={{card:'כרטיס אשראי',invoice:'העברה בנקאית',credits:'יתרה בחשבון',...(ctx.user?.monthly_account?.enabled?{monthly:'הזמנה פתוחה חודשית'}:{})}}/></fieldset>

@@ -92,6 +92,13 @@ body:has(.admin-unified-shell) .ml-a11y-fab, body:has(.admin-unified-shell) .ml-
 /* A field that gets keyboard focus is scrolled clear of the sticky header and of the floating buttons (WCAG 2.4.11). */
 html { scroll-padding-top: 96px; scroll-padding-bottom: 120px; }
 @media (max-width: 767px) { html { scroll-padding-top: 76px; scroll-padding-bottom: 150px; } }
-
-
-
+/* Required fields: the asterisk is explained next to each form; screen readers hear "חובה" from the field itself. */
+.ml-required-note { margin: 0 0 4px; font-size: 14px; color: #43526B; }
+/* The article editor lifts the WhatsApp button above its action bar; the accessibility button moves with it instead of
+   covering it (WCAG 2.5.8). */
+body:has(.studio-v2 .sv-actionbar) .ml-a11y-fab { bottom: calc(156px + env(safe-area-inset-bottom)); }
+body:has(.studio-v2 .sv-actionbar) .ml-a11y-panel { bottom: calc(214px + env(safe-area-inset-bottom)); }
+@media (max-width: 767px) {
+ body:has(.studio-v2 .sv-actionbar) .ml-a11y-fab { bottom: calc(146px + env(safe-area-inset-bottom)); }
+ body:has(.studio-v2 .sv-actionbar) .ml-a11y-panel { bottom: calc(202px + env(safe-area-inset-bottom)); }
+}

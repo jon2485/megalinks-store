@@ -12,12 +12,12 @@
         <h1 id="st-h">פרטים לראיון</h1>
         <p class="lede">כדי שהמראיין יוכל להתקשר אליכם בזמן שנוח לכם.</p>
         <div class="f">
-          <label><span>שם העסק <span class="req" aria-hidden="true">*</span></span><input name="business_name" required maxlength="120" autocomplete="organization"></label>
-          <label><span>שם איש הקשר <span class="req" aria-hidden="true">*</span></span><input name="contact_name" required maxlength="120" autocomplete="name"></label>
-          <label><span>טלפון <span class="req" aria-hidden="true">*</span></span><input name="phone" required dir="ltr" inputmode="tel" autocomplete="tel" maxlength="20" aria-describedby="phone-hint"><small id="phone-hint">המראיין יתקשר למספר הזה</small></label>
-          <label><span>קישור לאתר או לדף העסק <span class="req" aria-hidden="true">*</span></span><input name="link" required dir="ltr" inputmode="url" maxlength="500" placeholder="www.example.co.il" aria-describedby="link-hint"><small id="link-hint">גם הקישור בכתבה, באתרים שמאפשרים</small></label>
-          <div class="full grp" role="group" aria-labelledby="g-days" data-group="days"><span class="grp__l" id="g-days">ימים נוחים לשיחה <span class="req" aria-hidden="true">*</span></span><div class="chips"><!--PR:DAYS--></div></div>
-          <div class="full grp" role="group" aria-labelledby="g-hours" data-group="hours"><span class="grp__l" id="g-hours">שעות נוחות <span class="req" aria-hidden="true">*</span></span><div class="chips"><!--PR:HOURS--></div></div>
+          <label><span>שם העסק <span class="req">(חובה)</span></span><input name="business_name" required maxlength="120" autocomplete="organization"></label>
+          <label><span>שם איש הקשר <span class="req">(חובה)</span></span><input name="contact_name" required maxlength="120" autocomplete="name"></label>
+          <label><span>טלפון <span class="req">(חובה)</span></span><input name="phone" required dir="ltr" inputmode="tel" autocomplete="tel" maxlength="20" aria-describedby="phone-hint"><small id="phone-hint">המראיין יתקשר למספר הזה</small></label>
+          <label><span>קישור לאתר או לדף העסק <span class="req">(חובה)</span></span><input name="link" required dir="ltr" inputmode="url" maxlength="500" placeholder="www.example.co.il" aria-describedby="link-hint"><small id="link-hint">גם הקישור בכתבה, באתרים שמאפשרים</small></label>
+          <div class="full grp" role="group" aria-labelledby="g-days" data-group="days"><span class="grp__l" id="g-days">ימים נוחים לשיחה <span class="req">(חובה)</span></span><div class="chips"><!--PR:DAYS--></div></div>
+          <div class="full grp" role="group" aria-labelledby="g-hours" data-group="hours"><span class="grp__l" id="g-hours">שעות נוחות <span class="req">(חובה)</span></span><div class="chips"><!--PR:HOURS--></div></div>
           <label class="full"><span>על מה חשוב לכם לדבר? <small style="display:inline">(רשות)</small></span><textarea name="topic" maxlength="600"></textarea></label>
         </div>
         <p class="st__err" id="st-err" role="alert" hidden></p>

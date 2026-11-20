@@ -22,7 +22,7 @@
 /* Schedule: one compact row — what happens, and two clear buttons */
 .schedule-compact{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:#f4f7fb;box-shadow:inset 0 0 0 1px #0b28500f}
 .schedule-compact[data-set=true]{background:#eef6ff;box-shadow:inset 0 0 0 1px #1673e633}
-.schedule-compact-icon{flex:0 0 auto;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;color:#1673e6;box-shadow:0 1px 3px #0b28501a}
+.schedule-compact-icon{flex:0 0 auto;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;color:#1467cf;box-shadow:0 1px 3px #0b28501a}
 .schedule-compact-copy{flex:1;min-width:0}
 .schedule-compact-copy h2{margin:0;font:700 15px/1.3 Heebo,Arial,sans-serif!important;color:#0b1b2f!important}
 .schedule-compact-copy p{margin:2px 0 0;font:500 13.5px/1.45 Heebo,Arial,sans-serif;color:#5b6b82}
