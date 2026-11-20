@@ -956,7 +956,7 @@ if (p[0] === 'cart') {
                 delete b.billing; // billing is per site since 16.11.2026; older clients may still send it
                 for(const key of ['contact','phone','url','notes','workflow'])if(b[key]!==undefined)assert(typeof b[key]==='string'&&b[key].length<=(['notes','workflow'].includes(key)?6000:1000),'פרט ספק ארוך מדי');
                 if(b.url)b.url=httpUrl(b.url);
-                if(b.email&&b.email!==DEFAULT_SUPPLIER_EMAIL){const existing=await one("SELECT id FROM records WHERE kind='supplier' AND lower(json_extract(data,'$.email'))=?",b.email);if(existing)return response({id:existing.id,existing:true});}
+                if(b.email&&b.email!==DEFAULT_SUPPLIER_EMAIL){const existing=await one("SELECT id FROM records WHERE kind='supplier' AND lower(json_extract(data,'$.email'))=? AND lower(trim(COALESCE(json_extract(data,'$.name'),'')))=?",b.email,String(b.name||'').trim().toLowerCase());if(existing)return response({id:existing.id,existing:true});} // one address may serve several suppliers by name (owner, 20.11.2026)
             }
             if(kind==='instruction'){b={name:String(b.name||'').trim(),text:String(b.text||'').trim()};assert(b.name&&b.name.length<=200&&b.text&&b.text.length<=20000,'יש למלא שם ותוכן הנחיה תקינים');}
             if(kind==='ticket')assert(b.payment_method!=='bank_transfer'&&!b.amount_cents,'בקשות הטענה נשלחות דרך הארנק');

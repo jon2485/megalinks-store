@@ -38,14 +38,6 @@ assert.deepEqual(p.errors,[]);assert.equal(p.operations.length,0,'the stored typ
 const stock={...w,data:JSON.stringify({cost_cents:10000,ur:5,stock_mode:'stock',stock_total:30})};
 p=planSheets([heads,[...base,'','','מלאי','']],[stock]);assert.equal(p.operations.length,0,'"מלאי" matches a stock site and keeps its package count');
 
-// Owner 20.11.2026: one supplier card per address, but each row keeps its own supplier name (a filter on the supplier page).
-{const h2=['מזהה אתר','שם האתר','כתובת אתר','קטגוריה','מחיר מחירון ₪','מייל הספק','שם ספק'],b2=['a','אתר א','a.example','חדשות ארציות',200,'owner@a.example'];
- const labelled={...w,data:JSON.stringify({cost_cents:10000,ur:5,supplier_email:'owner@a.example',supplier_name:'בסט לינקס',supplier_label:'ספונסרד'})};
- let q=planSheets([h2,[...b2,'ספונסרד']],[labelled]);assert.deepEqual(q.errors,[]);assert.equal(q.operations.length,0,'the row name reads back as the site label');
- q=planSheets([h2,[...b2,'העלאה עצמאית']],[labelled]);assert.equal(q.operations[0].values.supplier_name,'העלאה עצמאית','a new name for this row is saved');
- const plain={...w,data:JSON.stringify({cost_cents:10000,ur:5,supplier_email:'owner@a.example',supplier_name:'בסט לינקס'})};
- q=planSheets([h2,[...b2,'בסט לינקס']],[plain]);assert.equal(q.operations.length,0,'without a label the card name is the row name');}
-
 assert.deepEqual(emailList('a@x.co, B@y.co;a@x.co'),['a@x.co','b@y.co']);
 assert.equal(stockWord(' החלפה '),'החלפה');assert.equal(stockWord('מלאי'),'מלאי');assert.equal(stockWord('5'),'');
 console.log('Sheets stock types, decimal DR, "-" as no information and several supplier addresses: ok');

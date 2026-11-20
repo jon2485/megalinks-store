@@ -59,21 +59,27 @@ export async function saveCatalogBatch(user:Row,input:Row){
   for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);// Owner: UR (19.11.2026) and DR (20.11.2026) may have decimals, for example 4.1; delivery days stay whole numbers.
   assert(values[k]!==''&&Number.isFinite(n)&&(k!=='turnaround_days'||Number.isInteger(n))&&n>=0&&n<=(k==='turnaround_days'?365:100),'דירוג או זמן אספקה לא תקינים');d[k]=k==='turnaround_days'?n:Math.round(n*100)/100;}
   if('supplier_id' in values){const supplierId=String(values.supplier_id||'');assert(!supplierId||suppliers.has(supplierId),'הספק לא נמצא');d.supplier_id=supplierId;d.supplier_name=suppliers.get(supplierId)?.name||'';}
-  if('supplier_email' in values){
-   let email=String(values.supplier_email||'').trim().toLowerCase();if(!email&&values.supplier_id)email=String(suppliers.get(String(values.supplier_id))?.email||'').trim().toLowerCase();
-   // Several addresses for one supplier (owner, 20.11.2026) are kept as one "a, b" value, so the supplier card stays one card.
+  // Owner 20.11.2026: a supplier is its address together with its name. Several suppliers may share one address (the owner
+  // handles בסט לינקס, ספונסרד, העלאה עצמאית and others from his own mailbox); each name is its own supplier card, with its own
+  // sites, summaries and settlements. Several addresses for one supplier are kept as one "a, b" value.
+  const cardEmail=(x:Row)=>String(x.email||'').trim().toLowerCase(),cardName=(x:Row)=>String(x.name||'').trim().toLowerCase();
+  if('supplier_email' in values||'supplier_name' in values&&!('supplier_id' in values)){
+   let email='supplier_email' in values?String(values.supplier_email||'').trim().toLowerCase():String(d.supplier_email||'').trim().toLowerCase();if(!email&&values.supplier_id)email=String(suppliers.get(String(values.supplier_id))?.email||'').trim().toLowerCase();
    if(email){const list=emailList(email);assert(list.length>=1&&list.length<=5&&list.every(e=>e.length<=254),'מייל הספק אינו תקין');email=list.join(', ');}
+   const name='supplier_name' in values?String(values.supplier_name??'').trim():'';assert(name.length<=200,'שם הספק ארוך מדי');
    d.supplier_email=email;
-   if(email){let supplier=[...suppliers.values()].find(s=>String(s.email||'').trim().toLowerCase()===email);if(!supplier){const sid='supplier-email-'+(await hash(email)).slice(0,32);const given=String(values.supplier_name||'').trim().slice(0,200)||email;supplier={id:sid,name:given,email};suppliers.set(sid,supplier);statements.push(stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',sid,'supplier',user.id,JSON.stringify({name:given,email}),stamp,stamp));}d.supplier_id=supplier.id;d.supplier_name=supplier.name;
+   if(email){
+    const same=[...suppliers.values()].filter(x=>cardEmail(x)===email);
+    let supplier=name?same.find(x=>cardName(x)===name.toLowerCase()):(same.find(x=>x.id===d.supplier_id)||same[0]);
+    // A card of this address that has no real name yet (empty, or only the address) takes the name instead of a new card.
+    if(!supplier&&name){const unnamed=same.find(x=>!cardName(x)||cardName(x)===email);if(unnamed){unnamed.name=name;supplier=unnamed;statements.push(stmt("UPDATE records SET data=json_set(data,'$.name',?),updated=? WHERE id=? AND kind='supplier'",name,stamp,unnamed.id),stmt("UPDATE websites SET data=json_set(data,'$.supplier_name',?) WHERE json_extract(data,'$.supplier_id')=?",name,unnamed.id));}}
+    if(!supplier){const sid='supplier-email-'+(await hash(same.length?email+'|'+name.toLowerCase():email)).slice(0,32);const given=name||email;supplier={id:sid,name:given,email};suppliers.set(sid,supplier);statements.push(stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',sid,'supplier',user.id,JSON.stringify({name:given,email}),stamp,stamp));}
+    d.supplier_id=supplier.id;d.supplier_name=supplier.name;
    }else{d.supplier_id='';d.supplier_name='';}
-  }else if('supplier_id' in values)d.supplier_email=suppliers.get(d.supplier_id)?.email||'';
-  // Owner decision (16.11.2026): a supplier name from the sheet names a supplier that has none yet (or only its e-mail).
-  // An existing different name is kept; the next sync writes it back to the sheet.
-  if('supplier_name' in values){const name=String(values.supplier_name??'').trim();assert(name.length<=200,'שם הספק ארוך מדי');const s=d.supplier_id?suppliers.get(d.supplier_id):undefined;const current=String(s?.name||'').trim();
-   if(name&&s&&(!current||current.toLowerCase()===String(s.email||'').trim().toLowerCase())&&current!==name){s.name=name;statements.push(stmt("UPDATE records SET data=json_set(data,'$.name',?),updated=? WHERE id=? AND kind='supplier'",name,stamp,s.id),stmt("UPDATE websites SET data=json_set(data,'$.supplier_name',?) WHERE json_extract(data,'$.supplier_id')=?",name,s.id));}}
-  // Owner 20.11.2026: one supplier card per email, but each site keeps the name written in its row (for example
-  // "בסט לינקס" or "ספונסרד" under the owner's own address), so the supplier page can filter by it.
-  if('supplier_name' in values){const label=String(values.supplier_name??'').trim().slice(0,200);if(label)d.supplier_label=label;else delete d.supplier_label;}
+  }else if('supplier_id' in values){d.supplier_email=suppliers.get(d.supplier_id)?.email||'';
+   // A supplier picked by its id may still name a card that has no name yet (owner decision 16.11.2026).
+   if('supplier_name' in values){const name=String(values.supplier_name??'').trim();assert(name.length<=200,'שם הספק ארוך מדי');const x=d.supplier_id?suppliers.get(d.supplier_id):undefined;
+    if(name&&x&&(!cardName(x)||cardName(x)===cardEmail(x))){x.name=name;statements.push(stmt("UPDATE records SET data=json_set(data,'$.name',?),updated=? WHERE id=? AND kind='supplier'",name,stamp,x.id),stmt("UPDATE websites SET data=json_set(data,'$.supplier_name',?) WHERE json_extract(data,'$.supplier_id')=?",name,x.id));}}}
   if(d.supplier_id&&suppliers.has(d.supplier_id))d.supplier_name=suppliers.get(d.supplier_id)!.name||'';
   if('sort_order' in values){const n=Number(values.sort_order);assert(Number.isSafeInteger(n)&&n>=0&&n<=1000000,'סדר תצוגה לא תקין');d.sort_order=n;}
   if('pixel_price_ils' in values){d.pixel_price_cents=values.pixel_price_ils===''?undefined:amount(values.pixel_price_ils);d.pixel_price=d.pixel_price_cents===undefined?undefined:d.pixel_price_cents/100;}

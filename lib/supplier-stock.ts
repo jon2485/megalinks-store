@@ -96,7 +96,8 @@ export async function linkOrphanSites(actorId:string){
  const stamp=now(),ops:any[]=[];
  for(const w of orphans){
   const email=String(w.data.supplier_email||'').trim().toLowerCase()||DEFAULT_SUPPLIER_EMAIL;
-  let s=suppliers.find(x=>String(x.email||'').toLowerCase()===email);
+  const name=String(w.data.supplier_name||'').trim().toLowerCase(); // one address may serve several suppliers (owner, 20.11.2026)
+  let s=suppliers.find(x=>String(x.email||'').toLowerCase()===email&&(!name||String(x.name||'').trim().toLowerCase()===name))||suppliers.find(x=>String(x.email||'').toLowerCase()===email);
   if(!s){s={id:'supplier-email-'+(await hash(email)).slice(0,32),name:email,email,partial:true};suppliers.push(s);ops.push(stmt("INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,'supplier',?,?,?,?)",s.id,actorId,JSON.stringify({name:email,email,partial:true}),stamp,stamp));}
   ops.push(stmt("UPDATE websites SET data=json_set(data,'$.supplier_id',?,'$.supplier_name',?,'$.supplier_email',?) WHERE id=? AND COALESCE(json_extract(data,'$.supplier_id'),'')=''",s.id,s.name,email,w.id));
  }
