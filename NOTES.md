@@ -1575,3 +1575,16 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Checks:** `pnpm exec tsc --noEmit` OK, `pnpm build` OK, the 3 Railway tests OK. Full run: the same 60 older failures, no new one. A first run found that D1 refuses a `UNION ALL` of more than a few terms ("too many terms in compound SELECT"), so the control-centre counts use the existing `adminUnionCtes` (CTEs of 3).
 - **CLAUDE.md:** the owner approved adding the N+1 rule (20.11.2026); it is under "Rules".
 - **Next:** nothing pushed or deployed. Push and Staging only after the owner approves.
+
+## 20.11.2026 (45): N+1, a second, deeper round (same branch; owner: "תבצע סבב נוסף ומעמיק יותר", push not approved)
+- **How:** a scan with the TypeScript checker (scratchpad `scan-typed.cjs`): every function that reaches D1 directly or through other functions, then every call to one inside a loop. Also browser code that calls the API inside a loop.
+- **Fixed:**
+  - `lib/supplier-orders.ts` + `lib/admin-suppliers.ts`: a supplier's billing rows were loaded page by page, and every page reloaded all the settlement data (up to 49 full reloads). Now one call (`supplierSettlements(q,true)`), same 49×20 cap as before.
+  - `app/api/[...path]/route.ts` `validBrief`: in a bundle or PR order (one brief per site) the customer, its used sites and the attached files were read again for every site. Now once per request (`BriefCache`); `lib/agency.ts` split `usedSiteHit` into `usedSitesOf` + `usedSiteHitIn`.
+  - `lib/mail.ts`: a mail's attachment files read in one query; `articleMail` takes the order and admin list from the caller (`lib/scheduled-approval.ts` reads the admin list once) and reads the customer only for customer mails.
+  - `lib/marketing-consent.ts`: removing pasted addresses reads all consent rows in one query and writes all changes in one batch (`marketingStatements`; `setMarketing` unchanged for one user).
+  - Interview done (`route.ts`): the activity rows of the moved articles written in one batch.
+  - Package screen "תזכורת לספק" (`app/supplier-v2.tsx`): one request to the new `POST /api/admin/supplier-remind` (admin only, same checks as the single reminder, all checked before anything is sent) instead of one request per article.
+- **Left as is, on purpose (each is one business action per item with its own guard or an outside effect):** sending each mail (`queueMail`/`sendQueuedMail`, one job per recipient), sending each article to its supplier (`dispatchArticle`), closing each customer's month (`closeCustomerMonth`, atomic per customer, once a month), the supplier month mails, catalog saves in chunks of 100, D1 batches in chunks of 20.
+- **Tests:** new `tests/n-plus-one-batch.mjs` (bulk reminder and bulk removal, fictional data) passes. `tests/supplier-mail.mjs` mock now exports `mapIn`. tsc, build, 3 Railway tests OK; full run: the same 60 older failures, no new one.
+- **Next:** nothing pushed or deployed; waiting for the owner.

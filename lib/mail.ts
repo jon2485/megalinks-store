@@ -1,5 +1,5 @@
 import { env } from 'cloudflare:workers';
-import { one, all, stmt, now, connection, externalFetch, parse, ApiError } from './server';
+import { one, all, stmt, now, connection, externalFetch, parse, ApiError, mapIn } from './server';
 import { articleDocx } from './delivery-docx';
 import { Row } from './shared';
 import {supplierPublicationNotes,supplierArticleEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
@@ -14,7 +14,8 @@ const INLINE_FILES_LIMIT=6*1024*1024,RESEND_INLINE_LIMIT=15*1024*1024;
 // A single file up to this size is always offered, attached or as a link, so nothing is dropped without a word.
 const MAIL_FILE_MAX=25*1024*1024;
 const base64=(bytes:Uint8Array)=>{let binary='';for(let i=0;i<bytes.length;i+=8192)binary+=String.fromCharCode(...bytes.subarray(i,i+8192));return btoa(binary);};
-const storedFile=async(id:unknown,max:number)=>{const f=id?await one('SELECT * FROM files WHERE id=?',id):null;if(!f||Number(f.size)>max)return null;const blob=await (env as any).BUCKET?.get(f.key);return blob?{file:f as Row,bytes:new Uint8Array(await blob.arrayBuffer())}:null;};
+// Takes the file row (read beforehand for all of a mail's files in one query), not an id.
+const storedFile=async(f:Row|null|undefined,max:number)=>{if(!f||Number(f.size)>max)return null;const blob=await (env as any).BUCKET?.get(f.key);return blob?{file:f as Row,bytes:new Uint8Array(await blob.arrayBuffer())}:null;};
 // The site address the email belongs to (for the logo and the file links). A button may lead to an outside site, so a stored origin wins.
 const mailOrigin=(job:Row)=>{for(const v of [job.origin,job.button?.url]){try{if(v)return new URL(String(v)).origin;}catch{}}return '';};
 
@@ -25,10 +26,10 @@ export async function mailFiles(job:Row):Promise<MailFile[]>{
  if(job.attach_writing_brief){const {writingBriefFile}=await import('./writing-brief-file');const pdf=await writingBriefFile(job.attach_writing_brief,job.origin);files.length=0;files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'פרטי הכתיבה'});}
  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(a){
   files.length=0;files.push({filename:'article.docx',content_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',bytes:await articleDocx(a),label:'קובץ Word של הכתבה, עם התמונות והקרדיטים'});
-  if(job.attach_images){const d=JSON.parse(a.data||'{}');
-   for(const [fid,name,label] of [[d.image_id,'image','התמונה הראשית'],[d.secondary_image_id,'image-2','תמונה נוספת']]){const s=await storedFile(fid,MAIL_FILE_MAX);if(s)files.push({filename:name+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label});}
+  if(job.attach_images){const d=JSON.parse(a.data||'{}'),fileRows=await mapIn('files','id',[d.image_id,d.secondary_image_id,d.document_id]);
+   for(const [fid,name,label] of [[d.image_id,'image','התמונה הראשית'],[d.secondary_image_id,'image-2','תמונה נוספת']]){const s=await storedFile(fileRows.get(String(fid)),MAIL_FILE_MAX);if(s)files.push({filename:name+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label});}
    // The page no longer shows the article, so the customer's original document travels with the email too.
-   const doc=await storedFile(d.document_id,MAIL_FILE_MAX);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
+   const doc=await storedFile(fileRows.get(String(d.document_id)),MAIL_FILE_MAX);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
   }}}
  return files;
 }
@@ -81,7 +82,9 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
   if(!res.ok)throw resend?new ApiError(502,resendFailure(res.status)):new Error('שירות הדיוור החזיר '+res.status);await stmt("UPDATE jobs SET status='succeeded',updated=? WHERE id=?",now(),id).run();return {status:'succeeded'};
  }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.delivery_error',?),updated=? WHERE id=?",safeFailure(e,'שליחת המייל נכשלה. בדקו את החיבור ונסו שוב.'),now(),id).run();return {status:'failed'};}}
 export async function queueMail(id:string,userId:string,data:Row){await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,userId,'email','requested',JSON.stringify(data),now(),now()).run();return sendQueuedMail(id);}
-export async function articleMail(a:Row,event:'submitted'|'revisions'|'published',origin:string,note=''){const o=parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;const customer=await one('SELECT * FROM users WHERE id=?',a.user_id);let recipients=event==='submitted'?(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email):[customer?.email];if(event==='submitted')recipients.push(String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(','));for(const email of new Set(recipients.filter(Boolean))){await queueMail('email:'+event+':'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:event==='submitted'?'מאמר חדש ממתין לאישור':event==='revisions'?'המאמר הוחזר לתיקון':'המאמר פורסם',text:a.title+'\n'+(note||a.published_url||''),button:{label:event==='published'?'לכתבה שפורסמה':'פתיחת המאמר',url:event==='published'?a.published_url:origin+'/article/'+a.id},demo:!!o.demo,article_id:a.id,origin});}}
+// pre: what the caller already read for many articles at once (the order, the admin addresses), so a loop of
+// mails does not read them again per article. The customer is only needed when the mail goes to the customer.
+export async function articleMail(a:Row,event:'submitted'|'revisions'|'published',origin:string,note='',pre:{order?:Row,admins?:string[]}={}){const o=pre.order||parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;let recipients=event==='submitted'?(pre.admins||(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email)):[(await one('SELECT * FROM users WHERE id=?',a.user_id))?.email];if(event==='submitted')recipients.push(String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(','));for(const email of new Set(recipients.filter(Boolean))){await queueMail('email:'+event+':'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:event==='submitted'?'מאמר חדש ממתין לאישור':event==='revisions'?'המאמר הוחזר לתיקון':'המאמר פורסם',text:a.title+'\n'+(note||a.published_url||''),button:{label:event==='published'?'לכתבה שפורסמה':'פתיחת המאמר',url:event==='published'?a.published_url:origin+'/article/'+a.id},demo:!!o.demo,article_id:a.id,origin});}}
 
 export async function writingRequestMail(a:Row,origin:string){
  const data=typeof a.data==='string'?JSON.parse(a.data):a.data||a;

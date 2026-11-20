@@ -26,7 +26,7 @@ export async function releaseScheduledApprovals(origin:string){
  const stamp=now(),rows=await all("SELECT a.* FROM articles a WHERE a.status='scheduled' AND COALESCE(json_extract(a.data,'$.cancel_pending'),0)=0 AND COALESCE(json_extract(a.data,'$.publication_refunded'),0)=0 ORDER BY json_extract(a.data,'$.scheduled'),a.id LIMIT 100");
  let released=0;
  // The orders of all the articles in one query (no query per article).
- const orders=await mapIn('orders','id',rows.map(a=>a.order_id));
+ const orders=await mapIn('orders','id',rows.map(a=>a.order_id));let admins:string[]|undefined;
  for(const a of rows){
   const order=parse(orders.get(String(a.order_id))||null);if(!order||!canWorkOrder(order))continue;
   const activity='scheduled-review:'+a.id+':'+a.version;
@@ -37,7 +37,7 @@ export async function releaseScheduledApprovals(origin:string){
   if(!results[0].meta.changes)continue;
   released++;
   // A mail failure must not take the article out of the manager's approval queue.
-  try{await articleMail({...a,status:'admin_review',version:a.version+1},'submitted',origin);}catch{/* queue state is durable; the approval is available regardless of mail transport */}
+  try{admins??=(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email);await articleMail({...a,status:'admin_review',version:a.version+1},'submitted',origin,'',{order:orders.get(String(a.order_id))?parse(orders.get(String(a.order_id))!)!:undefined,admins:[...admins]});}catch{/* queue state is durable; the approval is available regardless of mail transport */}
  }
  return {released};
 }

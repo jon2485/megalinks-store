@@ -17,8 +17,8 @@ const monthEnd=(m:string)=>{const [y,n]=m.split('-').map(Number);return new Date
 async function supplierRow(id:string){const s=parse(await one("SELECT r.*,p.user_id AS account_user_id FROM records r LEFT JOIN seller_profiles p ON p.supplier_id=r.id WHERE r.id=? AND r.kind='supplier'",id));assert(s,'הספק לא נמצא',404);return {...s,kind:supplierKind(s)};}
 
 async function settlementRows(supplierId:string){
- const rows:Row[]=[];for(let page=1;page<50;page++){const r:Row=await supplierSettlements(new URLSearchParams({supplier:supplierId,pay:'all',page:String(page)}));rows.push(...r.rows);if(page*Number(r.size||20)>=Number(r.total))break;}
- return rows;
+ // All rows in one call (it was one full reload per page of 20). Same cap as before: the first 49 pages of 20.
+ return (((await supplierSettlements(new URLSearchParams({supplier:supplierId,pay:'all'}),true)) as Row).rows as Row[]).slice(0,49*20);
 }
 
 // open: the month is still running · awaiting: closed, no invoice yet ·

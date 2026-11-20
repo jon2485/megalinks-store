@@ -257,7 +257,7 @@ export function SupplierPackagePage({ctx,site,number}:{ctx:Ctx;site:string;numbe
  if(state.error&&!d)return <div className="sv2"><div className="sv2-empty"><h3>החבילה לא נמצאה</h3><p>{state.error}</p></div></div>;
  if(!d)return <div className="sv2"><p className="sv2-loading" role="status">טוען חבילה…</p></div>;
  const w=d.site,p=d.package,waiting=p.slots.filter((x:Row)=>x.status==='sent'),title=w.name+' · חבילה '+p.number+' · '+p.quantity+' פרסומים';
- const remind=async()=>{setBusy('remind');try{await ctx.run(async()=>{for(const x of waiting)await api('articles/'+x.article_id+'/remind','POST',{});},waiting.length===1?'נשלחה תזכורת לספק':'נשלחו '+waiting.length+' תזכורות לספק');}catch{}finally{setBusy('');}};
+ const remind=async()=>{setBusy('remind');try{await ctx.run(()=>api('admin/supplier-remind','POST',{article_ids:waiting.map((x:Row)=>x.article_id)}),waiting.length===1?'נשלחה תזכורת לספק':'נשלחו '+waiting.length+' תזכורות לספק');}catch{}finally{setBusy('');}};
  const sendStatus=async()=>{setBusy('send');try{await ctx.run(()=>api('admin/supplier-package/'+encodeURIComponent(site)+'/'+number+'/send','POST',{}),'מצב החבילה נשלח לספק');}catch{}finally{setBusy('');}};
  const editPay=()=>ctx.open({kind:'admin-finance',title:'פרטי התשלום על החבילה',description:title,render:(close:()=>void)=><PackagePayment ctx={ctx} site={site} number={number} pack={p} close={close}/>});
  const cells=Math.min(p.quantity,100),scale=p.quantity/cells,published=p.published,atSupplier=p.used-p.published;

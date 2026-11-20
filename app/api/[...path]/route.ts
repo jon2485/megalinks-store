@@ -28,7 +28,7 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
-import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSiteHit,agencyOverview,agencyTasks,adminAgencyView,agencyLinks,agencyNotes,addAgencyNote,changeAgencyNote,agencySettings,saveAgencySettings,agencyCalendar} from '@/lib/agency';
+import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSitesOf,usedSiteHitIn,agencyOverview,agencyTasks,adminAgencyView,agencyLinks,agencyNotes,addAgencyNote,changeAgencyNote,agencySettings,saveAgencySettings,agencyCalendar} from '@/lib/agency';
 import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
 import {adminControlCenter,reviewPriceChange} from '@/lib/admin-control-center';
@@ -159,7 +159,11 @@ async function normalizeBundle(input: Row, prior: Row = {}) {
     b.active = b.active !== false;
     return b;
 }
-async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: input.editorial === true, editorial_words: Math.max(100,Math.min(5000,Math.floor(Number(input.editorial_words)||400))), topic: maxText(input.topic, 500), brand: maxText(input.brand, 200), audience: maxText(input.audience, 500), style: maxText(input.style, 100), keywords: maxText(input.keywords, 300), target_url: httpUrl(input.target_url || ''), anchor: maxText(input.anchor, 200), target_url_2: httpUrl(input.target_url_2 || ''), anchor_2: maxText(input.anchor_2, 200), notes: maxText(input.notes, 6000), words: Math.max(300, Math.min(2500, Number(input.words) || 500)), content_type: input.content_type === PR_CONTENT_TYPE ? PR_CONTENT_TYPE : input.content_type === 'upload' ? 'upload' : 'ai', scheduled: input.scheduled || '', customer_id: input.customer_id || '', image_id: input.image_id || '', document_id: input.document_id || '', pixel: !!input.pixel, shared: !!input.shared }; assert(d.topic, 'יש להזין נושא לכתבה'); if (d.content_type === PR_CONTENT_TYPE) {
+// One request can check many briefs (a bundle or a PR order, one per site). The customer, its used sites and the
+// attached files are the same for all of them, so they are read once per request through this cache, not per site.
+type BriefCache = Map<string, Promise<any>>;
+const briefCached = <T>(cache: BriefCache | undefined, key: string, load: () => Promise<T>): Promise<T> => { if (!cache) return load(); if (!cache.has(key)) cache.set(key, load()); return cache.get(key)!; };
+async function validBrief(input: Row, w: Row, u: Row, cache?: BriefCache) { const d = { editorial: input.editorial === true, editorial_words: Math.max(100,Math.min(5000,Math.floor(Number(input.editorial_words)||400))), topic: maxText(input.topic, 500), brand: maxText(input.brand, 200), audience: maxText(input.audience, 500), style: maxText(input.style, 100), keywords: maxText(input.keywords, 300), target_url: httpUrl(input.target_url || ''), anchor: maxText(input.anchor, 200), target_url_2: httpUrl(input.target_url_2 || ''), anchor_2: maxText(input.anchor_2, 200), notes: maxText(input.notes, 6000), words: Math.max(300, Math.min(2500, Number(input.words) || 500)), content_type: input.content_type === PR_CONTENT_TYPE ? PR_CONTENT_TYPE : input.content_type === 'upload' ? 'upload' : 'ai', scheduled: input.scheduled || '', customer_id: input.customer_id || '', image_id: input.image_id || '', document_id: input.document_id || '', pixel: !!input.pixel, shared: !!input.shared }; assert(d.topic, 'יש להזין נושא לכתבה'); if (d.content_type === PR_CONTENT_TYPE) {
     // A PR article (owner, 17.11.2026): written by our interviewer after a phone call, so the writing service is always on.
     const group = String(input.interview_group || ''); assert(/^[0-9a-f-]{36}$/.test(group), 'חסר מזהה ראיון');
     Object.assign(d, { editorial: true, interview: validInterview(input.interview), interview_group: group });
@@ -167,11 +171,11 @@ async function validBrief(input: Row, w: Row, u: Row) { const d = { editorial: i
     assert(!d.target_url_2, 'באתר זה מותר קישור אחד בלבד'); if (d.scheduled) {
     try { d.scheduled=normalizeRequestedPublication(d.scheduled); } catch(e) { throw new ApiError(400,(e as Error).message); }
 } if (d.customer_id) {
-    const c = owns(u, await one('SELECT * FROM records WHERE id=? AND kind=?', d.customer_id, 'customer'));
+    const c = owns(u, await briefCached(cache, 'customer:' + d.customer_id, () => one('SELECT * FROM records WHERE id=? AND kind=?', d.customer_id, 'customer')));
     assert(c.kind === 'customer', 'לקוח לא תקין');
     // Agency centre: a site already used for this customer needs an explicit confirmation (spec section 7).
-    if (hasAgencyCentre(u)) { const hit = await usedSiteHit(u, c.id, w); if (hit) { assert(input.confirm_used_site === true || input.used_site_confirmed === true, 'USED_SITE:' + JSON.stringify({ site: w.name, customer: JSON.parse(c.data || '{}').name || '', ...hit }), 409); (d as Row).used_site_confirmed = true; } }
-} const attached = [d.image_id, d.document_id].filter(Boolean), attachedFiles = await mapIn('files', 'id', attached);
+    if (hasAgencyCentre(u)) { const hit = usedSiteHitIn(await briefCached(cache, 'used:' + c.id, () => usedSitesOf(u, c.id)), w); if (hit) { assert(input.confirm_used_site === true || input.used_site_confirmed === true, 'USED_SITE:' + JSON.stringify({ site: w.name, customer: JSON.parse(c.data || '{}').name || '', ...hit }), 409); (d as Row).used_site_confirmed = true; } }
+} const attached = [d.image_id, d.document_id].filter(Boolean), attachedFiles = await briefCached(cache, 'files:' + JSON.stringify(attached), () => mapIn('files', 'id', attached));
     for (const file of attached)
     owns(u, attachedFiles.get(String(file)) || null); return d; }
 type ResponseAccess={privileged:boolean};
@@ -388,8 +392,8 @@ async function handle(r: Request,access:ResponseAccess) {
         const b = await json(r); const bundle = parse(await one('SELECT * FROM records WHERE id=? AND kind=?', b.bundle_id, 'bundle'));
         assert(bundle && bundle.active !== false, 'החבילה אינה זמינה', 404);
         assert(Array.isArray(bundle.website_ids) && bundle.website_ids.length, 'לחבילה לא הוגדרו אתרים');
-        const group = uid(), statements = [];
-        for (const w of await websitesById(bundle.website_ids)) { const id = w.id; assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); const brief = await validBrief({ ...b, topic: b.topic || 'כתבה עבור ' + w.name, words: b.words || 500 }, w, u); statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, id, 1, JSON.stringify({ ...brief, bundle_id: bundle.id, bundle_group: group }), now())); }
+        const group = uid(), statements = [], briefCache: BriefCache = new Map();
+        for (const w of await websitesById(bundle.website_ids)) { const id = w.id; assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); const brief = await validBrief({ ...b, topic: b.topic || 'כתבה עבור ' + w.name, words: b.words || 500 }, w, u, briefCache); statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, id, 1, JSON.stringify({ ...brief, bundle_id: bundle.id, bundle_group: group }), now())); }
         await db().batch(statements); return response({ added: statements.length, coupon: bundle.coupon || '' }, 201);
     }
 if (p[0] === 'pr' && p[1] === 'cart' && method === 'POST') {
@@ -399,10 +403,10 @@ if (p[0] === 'pr' && p[1] === 'cart' && method === 'POST') {
         assert(ids.length >= 1 && ids.length <= PR_MAX_SITES, 'יש לבחור בין אתר אחד ל-' + PR_MAX_SITES + ' אתרים');
         // Only the sites the PR page offers (live, active, not archived; the owner's chosen ones once marked).
         const offered = new Set((await prSites()).map(s => s.id)); assert(ids.every(id => offered.has(id)), 'אחד האתרים אינו זמין לכתבות יח״צ', 404);
-        const interview = validInterview(b.interview), group = uid(), statements = [];
+        const interview = validInterview(b.interview), group = uid(), statements = [], briefCache: BriefCache = new Map();
         for (const w of await websitesById(ids)) {
             assert(w.active, 'אחד האתרים אינו זמין כרגע');
-            const brief = await validBrief({ topic: 'כתבת יח״צ: ' + interview.business_name, brand: interview.business_name, target_url: interview.link, notes: interview.topic, content_type: PR_CONTENT_TYPE, interview, interview_group: group, editorial: true }, w, u);
+            const brief = await validBrief({ topic: 'כתבת יח״צ: ' + interview.business_name, brand: interview.business_name, target_url: interview.link, notes: interview.topic, content_type: PR_CONTENT_TYPE, interview, interview_group: group, editorial: true }, w, u, briefCache);
             statements.push(stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), u.id, w.id, 1, JSON.stringify(brief), now()));
         }
         await db().batch(statements); return response({ added: statements.length, interview_group: group }, 201);
@@ -613,7 +617,8 @@ if (p[0] === 'cart') {
             }
             assert(moved.length,'הכתבות של הראיון הזה כבר בכתיבה',409);
             await db().batch(ops);
-            for(const id of moved)await audit(u,id,'הראיון הטלפוני בוצע, הכתבה עברה לכתיבה',{articles:moved.length});
+            // One activity row per article, written together (was one write per article).
+            await db().batch(moved.map(id=>stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),u.id,id,'הראיון הטלפוני בוצע, הכתבה עברה לכתיבה',JSON.stringify({articles:moved.length}),now())));
             return response({moved:moved.length});
         }
         if(p[2]==='writing-request'&&method==='POST'){
@@ -1045,6 +1050,14 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'admin') {
         admin(u);
+        // Reminders to the supplier for several articles in one request (the package screen sent one request per article).
+        // Same checks as articles/:id/remind, all checked before anything is sent; the articles and their supplier
+        // mails are read in one query each.
+        if(p[1]==='supplier-remind'&&method==='POST'){const b=await json(r),ids=[...new Set((Array.isArray(b.article_ids)?b.article_ids:[]).map(String))];assert(ids.length>=1&&ids.length<=200,'יש לבחור כתבות לתזכורת');
+            const articles=await mapIn('articles','id',ids),originals=await mapIn('jobs','id',ids.map(id=>'email:supplier:'+id),"kind='email'"),sends:Row[]=[];
+            for(const id of ids){const a=articles.get(id);assert(a,'הכתבה לא נמצאה',404);assert(a.status==='sent','הכתבה אינה ממתינה לספק');const original=parse(originals.get('email:supplier:'+id)||null);assert(original,'לא נוצר מייל ספק',409);sends.push({a,original});}
+            const day=now().slice(0,10);let sent=0;for(const {a,original} of sends){await queueMail('reminder:'+a.id+':'+day,a.user_id,{...original.data,subject:'תזכורת לפרסום: '+a.title});sent++;}
+            return response({sent});}
         if(p[1]==='supplier-stock'&&p[2]){const site=decodeURIComponent(p[2]);if(method==='GET')return response(await siteStock(site));assert(method==='POST','פעולה לא נתמכת',405);const result=await addStockPackage(u,site,await json(r));let resent=0;const retryRows=await mapIn('articles','id',result.retry);for(const id of result.retry){const a=parse(retryRows.get(String(id))||null);if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;}catch{}}return response({...result,resent});}
         if(p[1]==='supplier-billing'&&p[2]&&method==='GET')return response(await supplierBilling(decodeURIComponent(p[2])));
         if(p[1]==='supplier-order'){if(method==='GET')return response(await supplierOrder(String(query.get('key')||'')));if(p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendOrderSummary(new URL(r.url).origin,String(b.key||''),u));}}

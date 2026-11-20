@@ -202,8 +202,10 @@ export async function setUsedMode(u:Row,customerId:string,mode:string){
  return {ok:true,mode};
 }
 // Whether this site was already used for this customer: by a publication through the system, or in the pasted list.
-export async function usedSiteHit(u:Row,customerId:string,site:Row){
- const [system,rec]=await Promise.all([systemUsed(u,customerId),usedRecord(u,customerId)]);
+export async function usedSiteHit(u:Row,customerId:string,site:Row){return usedSiteHitIn(await usedSitesOf(u,customerId),site);}
+// The customer's used sites, read once; usedSiteHitIn() then checks any number of sites without more queries.
+export async function usedSitesOf(u:Row,customerId:string){const [system,rec]=await Promise.all([systemUsed(u,customerId),usedRecord(u,customerId)]);return {system,rec};}
+export function usedSiteHitIn({system,rec}:Awaited<ReturnType<typeof usedSitesOf>>,site:Row){
  const sys=system.find(s=>s.website_id===site.id);if(sys)return {source:'system',date:sys.last,number:sys.number};
  const manual=rec.entries.find(e=>usedSiteMatches(e,site.url));if(manual)return {source:'manual',date:manual.added_at||''};
  return null;
