@@ -1,4 +1,5 @@
 import { env } from 'cloudflare:workers';
+import {emailList} from './catalog-fields';
 import { one, all, stmt, now, connection, externalFetch, parse, ApiError, mapIn } from './server';
 import { articleDocx } from './delivery-docx';
 import { Row } from './shared';
@@ -51,7 +52,9 @@ export async function mailFileByToken(token:string,index:number):Promise<MailFil
 // Resend's own format (owner, 16.11.2026). With a test inbox set, every message goes only there and the subject names
 // the real recipient, so a trial never reaches a customer or a supplier.
 export function resendMessage(payload:Row,c:Row){const test=String(c.test_to||'').trim();
- return {from:String(c.from||RESEND_TEST_FROM),to:[test||String(payload.to||'')],subject:(test?'[בדיקה · אל: '+payload.to+'] ':'')+String(payload.subject||''),html:payload.html,text:payload.text,
+ // A supplier with several addresses ("a, b") gets one message addressed to all of them (owner, 20.11.2026).
+ const to=test?[test]:emailList(payload.to).length?emailList(payload.to):[String(payload.to||'')];
+ return {from:String(c.from||RESEND_TEST_FROM),to,subject:(test?'[בדיקה · אל: '+payload.to+'] ':'')+String(payload.subject||''),html:payload.html,text:payload.text,
   ...(Array.isArray(payload.attachments)&&payload.attachments.length?{attachments:payload.attachments.map((a:Row)=>({filename:a.filename,content:a.content_base64}))}:{})};}
 const resendFailure=(status:number)=>status===401?'Resend דחה את המפתח. בדקו את מפתח ה-API בחיבור הדוא״ל.':status===403?'Resend חסם את השליחה: בלי דומיין מאומת אפשר לשלוח רק לכתובת שאיתה נרשמתם. מלאו "כתובת לבדיקה" או אמתו דומיין.':status===422?'Resend דחה את פרטי המייל (בדרך כלל כתובת השולח). בדקו את כתובת השולח בחיבור.':status===429?'Resend הגביל את קצב השליחה. נסו שוב בעוד דקה.':'Resend החזיר '+status;
 export async function sendQueuedMail(id:string){const job=parse(await one('SELECT * FROM jobs WHERE id=? AND kind=?',id,'email'));if(!job||['succeeded','demo','writing'].includes(job.status))return job;

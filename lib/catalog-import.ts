@@ -71,7 +71,7 @@ export function planCatalogImport(sheet: string[][], existing: Row[], columns: I
                 else if (column.kind === 'number') {
                     if(key.startsWith('tier_')&&value==='הסר'){values[key]='הסר';continue;}
                     const number = Number(value.replace(/[₪,\s]/g, ''));
-                    if (!Number.isFinite(number) || number < 0 || (['dr','ur','turnaround_days','stock_total'].includes(key) && !Number.isInteger(number)) ||
+                    if (!Number.isFinite(number) || number < 0 || (['turnaround_days','stock_total'].includes(key) && !Number.isInteger(number)) ||
                         (['dr','ur'].includes(key) && number > 100) || (key === 'turnaround_days' && number > 365) || (key === 'stock_total' && number > 1000000) ||
                         (['price_ils','cost_ils','sale_price_ils'].includes(key) && number > 1000000))
                         throw Error('מספר לא תקין בשדה '+column.label);

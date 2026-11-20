@@ -1,7 +1,8 @@
 import type {Row} from './shared';
 export const SHEET_ID='1_bo5ubja3sLePWSPEVIkc5ySOvhCxRICQBf2VnqNmtE';
 export const SHEET_TAB='אתרים';
-export const MONTHLY='חודשי';
+export {MONTHLY,STOCK_WORD,EXCHANGE,stockWord,emailList} from './catalog-fields';
+import {MONTHLY,STOCK_WORD,EXCHANGE,stockWord,emailList} from './catalog-fields';
 // Owner order (16.11.2026): name, URL, list price, DR, UR, notes, supplier e-mail, supplier name, cost, stock, sale price, then the rest.
 // Owner 16.11.2026: one notes column, "הערות", right after DR and UR, is the only source of the notes shown next to each site in the
 // price list. The extra notes and pixel columns that the sync had added to the sheet on its own are no longer read or written.
@@ -31,7 +32,7 @@ export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='str
  if(key==='active')return !!w.active;
  if(key==='category'){const extra=Array.isArray(d.categories)?d.categories:[];return extra.length?extra:w.category?[w.category]:[];}
  // Per-site billing (16.11.2026): a site without stock is billed monthly, and the sheet says so in words.
- if(key==='stock_total')return d.stock_total===null||d.stock_total===undefined||d.stock_total===''?MONTHLY:Number(d.stock_total);
+ if(key==='stock_total')return d.stock_mode==='exchange'?EXCHANGE:d.stock_mode==='stock'?STOCK_WORD:d.stock_total===null||d.stock_total===undefined||d.stock_total===''?MONTHLY:Number(d.stock_total);
  if(flags.has(key))return !!d[key];
  if(lists.has(key))return list(d[key]);
  return Object.hasOwn(w,key)&&key!=='data'?w[key]:d[key];
@@ -70,6 +71,7 @@ export function planSheets(rows:any[][],existing:Row[]){
    for(let j=0;j<keys.length;j++){
     const key=keys[j];if(!key||key==='id')continue;const text=String(cells[j]??'').trim();
     if(!text)continue; // Optional blanks preserve existing information, never turn missing costs into zero.
+    if((key==='dr'||key==='ur')&&/^-+$/.test(text))continue; // "-" = no information yet (owner, 20.11.2026), same as a blank cell.
     // Found on Staging 16.11.2026: the site writes its own values into the sheet (a logo kept on the site as /api/selling/logo/...,
     // free text in example articles) and then rejected them when reading them back, which blocked the whole sync. A cell that
     // still holds exactly the site's value changes nothing, so it is not checked again; only a value someone changed is validated.
@@ -78,12 +80,12 @@ export function planSheets(rows:any[][],existing:Row[]){
     if(text==='__CLEAR__'){if(['name','url','category','price_ils','active','dr','ur','turnaround_days','sort_order'].includes(key))throw Error('אין לרוקן שדה חובה');value=lists.has(key)?[]:flags.has(key)?false:'';}
     else if(flags.has(key)){if(/^(כן|true|1)$/i.test(text))value=true;else if(/^(לא|false|0)$/i.test(text))value=false;else throw Error('יש לכתוב כן או לא בשדה '+heads[j]);}
     else if(lists.has(key))value=text.split(',').map(s=>s.trim()).filter(Boolean);
-    else if(key==='stock_total'&&text===MONTHLY)value=MONTHLY;
-    else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&key!=='ur'&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);if(['dr','ur'].includes(key)&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key)||key==='ur')value=Math.round(value*100)/100;}
+    else if(key==='stock_total'&&stockWord(text))value=stockWord(text);
+    else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&key!=='ur'&&key!=='dr'&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);if(['dr','ur'].includes(key)&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key)||key==='ur'||key==='dr')value=Math.round(value*100)/100;}
     if(key==='url'||key==='logo_url')value=value?url(value):'';
     if(key==='category')value=cats;
     if(key==='sale_ends'&&value&&!Number.isFinite(Date.parse(value)))throw Error('תאריך סיום מבצע לא תקין');
-    if(key==='supplier_email'&&value&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))throw Error('מייל ספק לא תקין');
+    if(key==='supplier_email'&&value){const list=emailList(value),rest=String(value).replace(/[\u200e\u200f\u202a-\u202e]/g,' ').replace(/[^\s@,;<>"']+@[^\s@,;<>"']+\.[^\s@,;<>"']+/g,'').replace(/[\s,;]+/g,'');if(!list.length||rest||list.length>5)throw Error('מייל ספק לא תקין');value=list.join(', ');}
     if(key==='example_articles')value=value.map((s:string)=>url(s));
     normalized[key]=value;
     let current=before?sheetCurrentValue(before,key):undefined;

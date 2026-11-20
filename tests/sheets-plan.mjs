@@ -48,9 +48,9 @@ const newRow=['','חדש','https://new.example','general',300,100,'כן','',''];
  const m=planSheets([heads,['a','אתר א','a.example','כללי',200,'','לא','רק דרך קישור','ישן','ישן','free',50]],[w]);assert.deepEqual(m.errors,[]);assert.deepEqual(m.operations[0].values,{public_notes:'רק דרך קישור'},'only the notes column is read');
  assert.throws(()=>planSheets([[...headings,'הערות'],[...row,'כפול']],[w]),/פעמיים/,'"הערות" and the old "הערות לאתר" together are refused');
  const script=sheetsScript();assert(script.includes('DR, UR, הערות, מייל ספק'),'the column arrangement names the notes after DR and UR');}
-// Owner 19.11.2026: UR may have decimals; DR stays a whole number.
+// Owner: UR may have decimals (19.11.2026), and DR too (20.11.2026).
 {const heads=[...headings,'DR','UR'];let m=planSheets([heads,[...row,'',1.8]],[w]);assert.deepEqual(m.errors,[]);assert.equal(m.operations[0].values.ur,1.8,'UR 1.8 accepted');
- m=planSheets([heads,[...row,1.5,'']],[w]);assert(m.errors.some(e=>e.includes('DR')),'DR 1.5 refused');
+ m=planSheets([heads,[...row,1.5,'']],[w]);assert.deepEqual(m.errors,[]);assert.equal(m.operations[0].values.dr,1.5,'DR 1.5 accepted');
  m=planSheets([headings,['a','אתר א','a.example','חדשות מקומיות',200,'','לא','','']],[{...w,category:'news_local'}]);assert.equal(m.operations.length,0,'the Hebrew category name is the same category');}
 // Owner 19.11.2026: several categories per site, comma separated; the first is the main one. No "כללי" in the list.
 {const {categoryLabels}=await import(pathToFileURL(realpathSync('.sites-runtime/sheets-test/sheets-plan.js')));assert(!Object.values(categoryLabels).includes('כללי'),'no general category offered');

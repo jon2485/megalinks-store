@@ -3,6 +3,7 @@ import {minimumWarning,customerPrice} from './pricing-rules';
 import {Row,httpUrl} from './shared';
 import {admin,all,db,stmt,assert,parse,now,uid,hash,ApiError} from './server';
 import {liveSites} from './site-archive';
+import {MONTHLY,STOCK_WORD,EXCHANGE,emailList} from './catalog-fields';
 const texts=['name','url','category','logo_url','language','website_type','sale_title','sale_ends','public_notes','customer_notes','admin_notes','publishing_restrictions','city','tier_badge','pixel_option','wordpress_connection'];
 const flags=['active','is_on_sale','single_link_only','procurement_verified'];
 const numbers=['price_ils','cost_ils','sale_price_ils','dr','ur','turnaround_days'];
@@ -55,11 +56,13 @@ export async function saveCatalogBatch(user:Row,input:Row){
   // The sale rule is checked when this save touches the price, the sale price or the sale switch, adds a site or makes one visible again.
   if(d.is_on_sale&&(strict||['price_ils','sale_price_ils','is_on_sale'].some(k=>k in values)))assert(Number.isSafeInteger(d.sale_price_cents)&&d.sale_price_cents<price,'מחיר מבצע חייב להיות נמוך מהמחיר הרגיל');
   if(d.sale_ends)assert(Number.isFinite(Date.parse(d.sale_ends)),'תאריך סיום המבצע אינו תקין');
-  for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);// Owner 19.11.2026: UR may have decimals (for example 1.8); DR and delivery days stay whole numbers.
-  assert(values[k]!==''&&Number.isFinite(n)&&(k==='ur'||Number.isInteger(n))&&n>=0&&n<=(k==='turnaround_days'?365:100),'דירוג או זמן אספקה לא תקינים');d[k]=n;}
+  for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);// Owner: UR (19.11.2026) and DR (20.11.2026) may have decimals, for example 4.1; delivery days stay whole numbers.
+  assert(values[k]!==''&&Number.isFinite(n)&&(k!=='turnaround_days'||Number.isInteger(n))&&n>=0&&n<=(k==='turnaround_days'?365:100),'דירוג או זמן אספקה לא תקינים');d[k]=k==='turnaround_days'?n:Math.round(n*100)/100;}
   if('supplier_id' in values){const supplierId=String(values.supplier_id||'');assert(!supplierId||suppliers.has(supplierId),'הספק לא נמצא');d.supplier_id=supplierId;d.supplier_name=suppliers.get(supplierId)?.name||'';}
   if('supplier_email' in values){
-   let email=String(values.supplier_email||'').trim().toLowerCase();if(!email&&values.supplier_id)email=String(suppliers.get(String(values.supplier_id))?.email||'').trim().toLowerCase();assert(!email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)&&email.length<=254,'מייל הספק אינו תקין');
+   let email=String(values.supplier_email||'').trim().toLowerCase();if(!email&&values.supplier_id)email=String(suppliers.get(String(values.supplier_id))?.email||'').trim().toLowerCase();
+   // Several addresses for one supplier (owner, 20.11.2026) are kept as one "a, b" value, so the supplier card stays one card.
+   if(email){const list=emailList(email);assert(list.length>=1&&list.length<=5&&list.every(e=>e.length<=254),'מייל הספק אינו תקין');email=list.join(', ');}
    d.supplier_email=email;
    if(email){let supplier=[...suppliers.values()].find(s=>String(s.email||'').trim().toLowerCase()===email);if(!supplier){const sid='supplier-email-'+(await hash(email)).slice(0,32);const given=String(values.supplier_name||'').trim().slice(0,200)||email;supplier={id:sid,name:given,email};suppliers.set(sid,supplier);statements.push(stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',sid,'supplier',user.id,JSON.stringify({name:given,email}),stamp,stamp));}d.supplier_id=supplier.id;d.supplier_name=supplier.name;
    }else{d.supplier_id='';d.supplier_name='';}
@@ -71,7 +74,10 @@ export async function saveCatalogBatch(user:Row,input:Row){
   if(d.supplier_id&&suppliers.has(d.supplier_id))d.supplier_name=suppliers.get(d.supplier_id)!.name||'';
   if('sort_order' in values){const n=Number(values.sort_order);assert(Number.isSafeInteger(n)&&n>=0&&n<=1000000,'סדר תצוגה לא תקין');d.sort_order=n;}
   if('pixel_price_ils' in values){d.pixel_price_cents=values.pixel_price_ils===''?undefined:amount(values.pixel_price_ils);d.pixel_price=d.pixel_price_cents===undefined?undefined:d.pixel_price_cents/100;}
-  if('stock_total' in values){const n=values.stock_total===''||values.stock_total===null||values.stock_total==='חודשי'?null:Number(values.stock_total); // "חודשי" or empty: back to monthly billing from the next article (owner, 16.11.2026)
+  // Stock types (owner, 20.11.2026): "מלאי" and "החלפה" set the type and keep the package count as it is.
+  if(values.stock_total===STOCK_WORD||values.stock_total===EXCHANGE){d.stock_mode=values.stock_total===STOCK_WORD?'stock':'exchange';delete values.stock_total;}
+  else if('stock_total' in values)delete d.stock_mode;
+  if('stock_total' in values){const n=values.stock_total===''||values.stock_total===null||values.stock_total===MONTHLY?null:Number(values.stock_total); // "חודשי" or empty: back to monthly billing from the next article (owner, 16.11.2026)
   assert(n===null||typeof values.stock_total!=='boolean'&&Number.isSafeInteger(n)&&n>=0&&n<=1000000,'מלאי חייב להיות מספר שלם לא שלילי, או ריק');assert(n===null||d.stock_total===null||d.stock_total===undefined||n>=Number(d.stock_total),'אפשר רק להוסיף מלאי. כדי להוסיף חבילה השתמשו ב"הוספת מלאי" בדף הספק.');d.stock_total=n;}
   for(const tier of meta.pricing_tiers){const key='tier_'+tier.id+'_ils';if(key in values){const old=meta.pricing_overrides.find(o=>o.owner_id===tier.id&&o.website_id===id);if(values[key]===''||values[key]==='הסר'){statements.push(stmt("DELETE FROM pricing_overrides WHERE scope='tier' AND owner_id=? AND website_id=?",tier.id,id));}else{const fixed=amount(values[key]);warnings.push(minimumWarning(d.name+' / '+tier.name,fixed,d.cost_cents));statements.push(stmt("INSERT INTO pricing_overrides(scope,owner_id,website_id,price,checked_cost,updated) VALUES ('tier',?,?,?,?,?) ON CONFLICT(scope,owner_id,website_id) DO UPDATE SET price=excluded.price,checked_cost=excluded.checked_cost,updated=excluded.updated",tier.id,id,fixed,d.cost_cents??null,stamp));}statements.push(stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),user.id,'pricing','מחיר רמה בקטלוג',JSON.stringify({scope:'tier',owner_id:tier.id,rows:[{website_id:id,website_name:d.name,before:old?.price,after:values[key]===''||values[key]==='הסר'?null:amount(values[key])}]}),stamp));}}
   if(!prev||'price_ils' in values||'cost_ils' in values||'sale_price_ils' in values||'is_on_sale' in values){warnings.push(minimumWarning(d.name,price,d.cost_cents));if(d.is_on_sale)warnings.push(minimumWarning(d.name+' מבצע',d.sale_price_cents,d.cost_cents));for(const tier of meta.pricing_tiers){const key='tier_'+tier.id+'_ils',override=meta.pricing_overrides.find(o=>o.owner_id===tier.id&&o.website_id===id);const fixed=key in values?(values[key]===''||values[key]==='הסר'?undefined:amount(values[key])):override?.price;warnings.push(minimumWarning(d.name+' / '+tier.name,customerPrice({...d,price},tier,undefined,fixed).price_cents,d.cost_cents));}statements.push(stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)',uid(),user.id,id,'עדכון מחירי אתר',JSON.stringify({before_price:prev?.price,after_price:price,before_cost:prev?JSON.parse(prev.data).cost_cents:null,after_cost:d.cost_cents}),stamp));}

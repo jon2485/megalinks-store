@@ -2,6 +2,7 @@ import {canWorkOrder} from './payment-state';
 import {assertNoCancelRequest} from './cancel-request';
 import {articleGuard} from './monthly-order';
 import {sendQueuedMail} from './mail';
+import {emailList} from './catalog-fields';
 import {one,stmt,parse,db,now,assert,audit,uid,hash} from './server';
 import {Row} from './shared';
 import {dispatchDue} from './scheduled-approval';
@@ -30,7 +31,9 @@ export async function dispatchArticle(article:Row,actor:Row,origin:string){
  if(!claim.meta.changes)return parse(await one('SELECT * FROM jobs WHERE id=?',id));
  // Owner decision (16.11.2026): billing is per site. A site without stock is monthly even when the same supplier
  // has stock sites; a site with stock is capped by its packages below (allocation).
- if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||(!demo&&!w.procurement_verified)){
+ // One supplier may have several addresses, kept as "a, b" (owner, 20.11.2026); each must be a valid address.
+ const emails=emailList(email),emailOk=emails.length>0&&emails.join(', ')===email;
+ if(!emailOk||(!demo&&!w.procurement_verified)){
   data.error=!email?'יש להזין מייל לספק':!demo&&!w.procurement_verified?'יש לאמת את הסכם הפרסום באתר':'מייל הספק אינו תקין';
   await stmt("UPDATE jobs SET status='blocked',data=?,updated=? WHERE id=?",JSON.stringify(data),now(),id).run();return {...data,status:'blocked'};
  }
