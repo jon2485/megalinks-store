@@ -1693,3 +1693,10 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Not deployed.** Waiting for the owner's approval; check the live Staging commit first (`209f04f` last time).
 - **Deployed to Staging (owner: "תעלה הכל לטסטים", 20.11.2026):** branch pushed; deployment `61d1ad25`, SUCCESS, commit `971fc70` (accessibility, statement and terms, separate suppliers, ticket windows, coordinator "צוות מגה לינקס"). Checked on Staging: the statement shows "רכז הנגישות: צוות מגה לינקס", no draft badge, no "נגיש באופן חלקי", skip link present; terms define "אתר שווה ערך"; the home page has "ביטול עסקה"; legal pages 200, an unknown page 404.
 - **Next:** the sheet sync preview on Staging (read only) to count what still blocks; the owner's decisions on the six steps (duplicates, UR above 100, rows 550 and 974, logos, "החלפה").
+
+## Sheet clean-up and UR above 100 (20.11.2026)
+
+- **Owner's decisions in the sheet:** he fixed rows 31, 71/79, 548 and 972 himself. On his word I deleted the other row of each duplicate pair: kept khan-hadera 80 ₪ (deleted the 200 ₪ row), "זירה צפון", "מקומונט חולון - בת ים", "עירוני בני ברק", million-balonim "אירועים". Deleted bottom-up, each row checked right before deleting. No duplicate address is left (1,674 sites).
+- **UR above 100:** owner: keep the big numbers (46 rows of בסט לינקס, up to 1,719). UR may now be above 100 everywhere (sheet sync `lib/sheets-plan.ts`, save `lib/catalog-bulk.ts`, import `lib/catalog-import.ts`, the site form max); DR stays 0-100. Test added in `tests/sheets-stock-email.mjs`.
+- **Checks:** tsc, build, sheets-stock-email, sheets-plan, sheets-two-way, sheets-sync-integration, sheets-merge-properties, suppliers-shared-email pass.
+- **Not deployed.** After a deploy, the sync preview should show 0 errors; then the sync can be applied (the 5 conflicts take the sheet value).

@@ -31,6 +31,8 @@ p=planSheets([heads,[...base,'','','12','']],[w]);assert.equal(p.operations[0].v
 p=planSheets([heads,[...base,'','','סתם','']],[w]);assert(p.errors.length>0,'an unknown stock word is still an error');
 p=planSheets([heads,[...base,'','','','x@a.example ואחר כך טקסט']],[w]);assert(p.errors.some(e=>e.includes('מייל')),'text that is not an address is still an error');
 p=planSheets([heads,[...base,'101','','','']],[w]);assert(p.errors.length>0,'DR above 100 is still an error');
+// Owner 20.11.2026: UR is the supplier's own number and may be above 100.
+p=planSheets([heads,[...base,'','1719','','']],[w]);assert.deepEqual(p.errors,[]);assert.equal(p.operations[0].values.ur,1719,'UR above 100 is kept');
 
 const stored={...w,data:JSON.stringify({cost_cents:10000,ur:5,stock_mode:'exchange',supplier_email:'x@a.example, y@b.example'})};
 p=planSheets([heads,[...base,'','','החלפה',two]],[stored]);

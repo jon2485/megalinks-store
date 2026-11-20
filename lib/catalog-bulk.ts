@@ -57,7 +57,7 @@ export async function saveCatalogBatch(user:Row,input:Row){
   if(d.is_on_sale&&(strict||['price_ils','sale_price_ils','is_on_sale'].some(k=>k in values)))assert(Number.isSafeInteger(d.sale_price_cents)&&d.sale_price_cents<price,'מחיר מבצע חייב להיות נמוך מהמחיר הרגיל');
   if(d.sale_ends)assert(Number.isFinite(Date.parse(d.sale_ends)),'תאריך סיום המבצע אינו תקין');
   for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);// Owner: UR (19.11.2026) and DR (20.11.2026) may have decimals, for example 4.1; delivery days stay whole numbers.
-  assert(values[k]!==''&&Number.isFinite(n)&&(k!=='turnaround_days'||Number.isInteger(n))&&n>=0&&n<=(k==='turnaround_days'?365:100),'דירוג או זמן אספקה לא תקינים');d[k]=k==='turnaround_days'?n:Math.round(n*100)/100;}
+  assert(values[k]!==''&&Number.isFinite(n)&&(k!=='turnaround_days'||Number.isInteger(n))&&n>=0&&n<=(k==='turnaround_days'?365:k==='ur'?1000000:100),'דירוג או זמן אספקה לא תקינים');d[k]=k==='turnaround_days'?n:Math.round(n*100)/100;}
   if('supplier_id' in values){const supplierId=String(values.supplier_id||'');assert(!supplierId||suppliers.has(supplierId),'הספק לא נמצא');d.supplier_id=supplierId;d.supplier_name=suppliers.get(supplierId)?.name||'';}
   // Owner 20.11.2026: a supplier is its address together with its name. Several suppliers may share one address (the owner
   // handles בסט לינקס, ספונסרד, העלאה עצמאית and others from his own mailbox); each name is its own supplier card, with its own

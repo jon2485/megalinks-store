@@ -81,7 +81,7 @@ export function planSheets(rows:any[][],existing:Row[]){
     else if(flags.has(key)){if(/^(כן|true|1)$/i.test(text))value=true;else if(/^(לא|false|0)$/i.test(text))value=false;else throw Error('יש לכתוב כן או לא בשדה '+heads[j]);}
     else if(lists.has(key))value=text.split(',').map(s=>s.trim()).filter(Boolean);
     else if(key==='stock_total'&&stockWord(text))value=stockWord(text);
-    else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&key!=='ur'&&key!=='dr'&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);if(['dr','ur'].includes(key)&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key)||key==='ur'||key==='dr')value=Math.round(value*100)/100;}
+    else if(numbers.has(key)){value=Number(text.replace(/[₪,\s]/g,''));if(!Number.isFinite(value)||value<0||value>1000000||!money.has(key)&&key!=='ur'&&key!=='dr'&&!Number.isInteger(value))throw Error('מספר לא תקין בשדה '+heads[j]);/* Owner 20.11.2026: UR in the sheet is the supplier's own number and may be above 100 (for example 1,719); DR stays 0-100. */if(key==='dr'&&value>100||key==='turnaround_days'&&value>365)throw Error('מספר מחוץ לטווח בשדה '+heads[j]);if(money.has(key)||key==='ur'||key==='dr')value=Math.round(value*100)/100;}
     if(key==='url'||key==='logo_url')value=value?url(value):'';
     if(key==='category')value=cats;
     if(key==='sale_ends'&&value&&!Number.isFinite(Date.parse(value)))throw Error('תאריך סיום מבצע לא תקין');
