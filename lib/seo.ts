@@ -53,13 +53,30 @@ export function isWorkspacePath(parts:string[]) {
     return parts[0]==='purchased'?hubTabs.has(parts[1]):nestedRoots.has(parts[0]);
 }
 export function isIndexablePath(path:string){return INDEXABLE_PATHS.some(p=>p===path)||/^\/knowledge\/[^/]+$/.test(path);}
+// Every customer screen has its own page title (WCAG 2.4.2): they all used to be "המרחב האישי".
+const customerTitles:Record<string,string>={offers:'מבצעים וחבילות',cart:'סל הפרסום',checkout:'פרטי הזמנה ותשלום',bulk:'הזמנה מרוכזת',purchased:'עדכונים אישיים',
+    'purchased/articles':'הכתבות שלי','purchased/orders':'ההזמנות שלי','purchased/monthly':'ההזמנות שלי','purchased/payments':'יתרה וזיכויים','purchased/customers':'הלקוחות שלי',
+    'purchased/profile':'פרטי חשבון','purchased/support':'תמיכה ופניות','purchased/selling':'האתרים שלי','purchased/files':'קבצים','purchased/api':'מפתחות API',
+    'purchased/notifications':'התראות',support:'תמיכה ופניות',orders:'ההזמנות שלי',articles:'הכתבות שלי',links:'הכתבות שלי',dashboard:'עדכונים אישיים',strategies:'עדכונים אישיים',
+    wallet:'יתרה וזיכויים',monthly:'ההזמנות שלי',customers:'הלקוחות שלי',profile:'פרטי חשבון',files:'קבצים',api:'מפתחות API',notifications:'התראות'};
+/** The page title of a customer screen, without the site name. */
+export function customerPageTitle(view:string){
+    if(customerTitles[view])return customerTitles[view];
+    if(view.startsWith('purchased/agency'))return 'מרכז הלקוחות';
+    if(view.startsWith('purchased/articles/order/'))return 'פירוט הזמנה';
+    if(view.startsWith('order-confirmed/'))return 'אישור הזמנה';
+    if(/^article\/[^/]+\/ai$/.test(view))return 'כתיבה בעזרת AI';
+    if(view.startsWith('article/'))return 'עורך הכתבה';
+    if(view.startsWith('supplier-invoice/'))return 'חשבונית ספק';
+    return 'המרחב האישי';
+}
 export function clientPageSeo(view:string) {
     const legal=legalDoc(view);
     if(legal){const metadata=legalMetadata(legal.id);return {title:(metadata.title as {absolute:string}).absolute,description:metadata.description!,canonical:SITE_URL+legal.path,robots:legalPublished(legal.id)?'index, follow':'noindex, nofollow, noarchive'};}
     const path=view==='catalog'?'/catalog':null;
     if(path){const metadata=publicMetadata(path);return {title:(metadata.title as {absolute:string}).absolute,description:metadata.description!,canonical:SITE_URL+path,robots:'index, follow'};}
     const adminTitle=view.startsWith('admin-seller-request/')?'בדיקת בקשת ספק':view.startsWith('admin-supplier-invoice/')?'בדיקת חשבונית ספק':/^admin-supplier(-articles|-stock|-billing|-order|-package)?\//.test(view)?'פרטי ספק ואתר':view.startsWith('admin-order/')?'פירוט ההזמנה':view.startsWith('admin-article/')?'טיפול בכתבה':view.startsWith('admin-support/')?'פרטי הפנייה':view.startsWith('admin-knowledge/')?'עורך מדריכים וידע':adminAreas.flatMap(a=>a.pages.map(([page,label])=>({page,label}))).find(item=>item.page===view)?.label;
-    return {title:(adminTitle||(view.startsWith('admin')?'ניהול המערכת':'המרחב האישי'))+' | MegaLinks',description:'כניסה למרחב האישי ולניהול פרסומים ב־MegaLinks.',canonical:null,robots:'noindex, nofollow, noarchive'};
+    return {title:(adminTitle||(view.startsWith('admin')?'ניהול המערכת':customerPageTitle(view)))+' | MegaLinks',description:'כניסה למרחב האישי ולניהול פרסומים ב־MegaLinks.',canonical:null,robots:'noindex, nofollow, noarchive'};
 }
 export const privateRobots = {index:false,follow:false,noarchive:true};
 /** Metadata of a legal page (terms, privacy, cancellations, supply, accessibility, cookies). */

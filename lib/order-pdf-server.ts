@@ -1,4 +1,4 @@
-import {PDFDocument,rgb} from 'pdf-lib';
+import {PDFDocument,rgb,PDFName,PDFBool} from 'pdf-lib';
 import fontkit from '@pdf-lib/fontkit';
 import createBidi from 'bidi-js';
 import type {Row} from './shared';
@@ -14,5 +14,5 @@ export async function makeOrderPdf(summary:Row,fontBytes:Uint8Array,logoBytes:Ui
  newPage();for(const [i,item] of summary.items.entries()){const lines=wrap(item.url||item.name,235),height=Math.max(31,lines.length*14+12)+(item.cancelled?17:0);if(y+height>755)newPage();if(i%2||item.cancelled)rect(32,y,531,height,item.cancelled?rgb(1,.94,.96):rgb(.97,.99,1));for(const [n,line] of lines.entries())text(line,550,y+17+n*14,10,blue);text(date(item.date||summary.order_date),300,y+17,10);text(amount(item.net),134,y+17,11);if(item.cancelled)text(item.net?'בוטל חלקית':'בוטל - ללא חיוב',550,y+height-6,9,rgb(.67,.15,.27));page.drawLine({start:{x:32,y:842-y-height},end:{x:563,y:842-y-height},thickness:.4,color:rgb(.8,.89,.94)});y+=height;}
  if(y+275>780)newPage();y+=14;rect(32,y,531,56);for(const [i,label,n] of [[0,'סכום לפני מע״מ',summary.net],[1,'מע״מ ('+(summary.vat_percent??18)+'%)',summary.vat]] as const){text(label,550,y+22+Number(i)*24,11);text(amount(n),134,y+22+Number(i)*24,11);}y+=56;rect(32,y,531,36,navy);text('סכום כולל מע״מ',550,y+24,13,white);text(amount(summary.total),134,y+24,14,white);y+=50;
  rect(32,y,531,112);text('פרטים להעברה בנקאית',550,y+22,12);for(const [i,line] of [summary.bank.name,'סניף: '+summary.bank.branch,'מס׳ חשבון: '+summary.bank.account,'מוטב: '+summary.bank.beneficiary].entries())text(line,550,y+43+i*19,10);y+=130;text('הסיכום נכון למועד הסגירה. עדכונים וזיכויים מופיעים באזור האישי.',563,y,9,muted);text('הסגירה לרכישות אינה מאשרת קבלת תשלום.',563,y+15,9,muted);
- const pages=pdf.getPages();pages.forEach((p,i)=>{page=p;text('עמוד '+(i+1)+' מתוך '+pages.length,563,813,9,muted);});pdf.setTitle('Mega Links '+summary.order_number);pdf.setAuthor('Mega Links');return pdf.save();
+ const pages=pdf.getPages();pages.forEach((p,i)=>{page=p;text('עמוד '+(i+1)+' מתוך '+pages.length,563,813,9,muted);});pdf.catalog.set(PDFName.of('ViewerPreferences'),pdf.context.obj({DisplayDocTitle:PDFBool.True}));pdf.setLanguage('he-IL');pdf.setTitle('Mega Links '+summary.order_number);pdf.setAuthor('Mega Links');return pdf.save();
 }

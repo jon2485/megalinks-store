@@ -126,7 +126,7 @@
 
 /* light theme: frosted white glass over the light brand waves. Same layout, only colors change. */
 .admin-design-v172 .wc2.is-sky.is-light{
- --ink:#0c1d33;--copy:#3a4e66;--mute:#6a7d94;--line:rgba(15,27,45,.12);--line2:rgba(15,27,45,.07);--hover:rgba(255,255,255,.6);
+ --ink:#0c1d33;--copy:#3a4e66;--mute:#5d6e82;--line:rgba(15,27,45,.12);--line2:rgba(15,27,45,.07);--hover:rgba(255,255,255,.6);
  --green:#0f8a5f;--green2:#12a06f;--greenT:rgba(15,138,95,.12);--red:#c42847;--redT:rgba(196,40,71,.10);--amber:#9a5a00;--amberT:rgba(255,170,40,.18);
  --blue:#0a66c2;--blueT:rgba(10,102,194,.10);--teal:#00757f;--tealT:rgba(0,117,127,.10);--slate:#55687f;--slateT:rgba(85,104,127,.10);
  --glass:linear-gradient(180deg,rgba(255,255,255,.66) 0%,rgba(255,255,255,.56) 60%,rgba(255,255,255,.5) 100%);

@@ -1,9 +1,9 @@
 /* Customer "ההזמנות שלי" (approved mockup 11.11.2026), the light look of the admin orders area. */
-.cos{--c-ink:#0c1d33;--c-copy:#3a4e66;--c-mute:#6a7d94;--c-line:rgba(15,27,45,.08);--c-link:#0a66c2;--c-blue:#1673e6;--c-card:0 0 0 1px rgba(15,40,80,.06),0 1px 2px rgba(15,40,80,.05),0 10px 28px rgba(30,80,140,.08);
+.cos{--c-ink:#0c1d33;--c-copy:#3a4e66;--c-mute:#5d6e82;--c-line:rgba(15,27,45,.08);--c-link:#0a66c2;--c-blue:#1467cf;--c-card:0 0 0 1px rgba(15,40,80,.06),0 1px 2px rgba(15,40,80,.05),0 10px 28px rgba(30,80,140,.08);
  display:grid;gap:14px;padding:24px;border-radius:28px;background:linear-gradient(180deg,#ffffffb8,#ffffff9e);box-shadow:var(--c-card);color:var(--c-ink);font-family:Heebo,Arial,sans-serif;text-align:right}
 .cos *{box-sizing:border-box}
 .cos button{font-family:inherit}
-.cos :is(button,a,[role=button],input,select):focus-visible{outline:3px solid #5cc8ff;outline-offset:2px}
+.cos :is(button,a,[role=button],input,select):focus-visible{outline:3px solid #0079cb;outline-offset:2px}
 .cos-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .cos-top h2{margin:0 0 0 auto;font-size:26px!important;font-weight:850;letter-spacing:-.01em;color:var(--c-ink)}
 .cos-chips{display:flex;gap:8px;flex-wrap:wrap}
@@ -17,11 +17,11 @@
 .cos-search button{border:0;background:none;color:var(--c-mute);cursor:pointer;display:grid;place-items:center}
 .cos .cos-select{display:inline-flex;align-items:center;gap:8px;height:46px!important;min-width:180px;padding:0 14px!important;border:0!important;border-radius:14px!important;background:#fff!important;box-shadow:var(--c-card)!important;color:var(--c-ink)!important;font:inherit;font-size:14px!important;font-weight:600;cursor:pointer}
 .cos .cos-select>svg:first-child{color:var(--c-mute)}
-.cos .cos-select:focus-visible{outline:3px solid #5cc8ff;outline-offset:2px}
+.cos .cos-select:focus-visible{outline:3px solid #0079cb;outline-offset:2px}
 .cos-select-menu{min-width:var(--radix-select-trigger-width);padding:6px!important;border:0!important;border-radius:16px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(15,40,80,.08),0 18px 40px -16px rgba(15,40,80,.35)!important;font-family:Heebo,Arial,sans-serif}
 .cos-select-menu [data-slot=select-item]{min-height:40px;padding:8px 32px 8px 12px!important;border-radius:10px!important;font-size:14px;font-weight:600;color:#0c1d33;cursor:pointer}
-.cos-select-menu [data-slot=select-item][data-highlighted]{background:#eef5ff!important;color:#1673e6!important}
-.cos-select-menu [data-slot=select-item][data-state=checked]{color:#1673e6}
+.cos-select-menu [data-slot=select-item][data-highlighted]{background:#eef5ff!important;color:#1467cf!important}
+.cos-select-menu [data-slot=select-item][data-state=checked]{color:#1467cf}
 .cos-cols,.cos-row{display:grid;grid-template-columns:130px minmax(0,1.6fr) 170px 140px 130px 170px;align-items:center;gap:14px}
 .cos-cols{padding:4px 22px 0;color:var(--c-mute);font-size:13px;font-weight:600}
 .cos-list{display:grid;gap:10px}
@@ -37,14 +37,14 @@
 .cos-more{padding:2px 8px;border-radius:999px;background:#f2f6fb;font-size:12px;font-weight:700;color:var(--c-copy);flex:none}
 .cos-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:13px;font-weight:700;white-space:nowrap}
 .cos-pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
-.cos-pill.is-ok{background:#e3f6ec;color:#12804f}.cos-pill.is-wait{background:#fff3df;color:#a85d00}.cos-pill.is-info{background:#e8f2ff;color:#1673e6}.cos-pill.is-off{background:#eef1f5;color:#56677d}
+.cos-pill.is-ok{background:#e3f6ec;color:#117c4c}.cos-pill.is-wait{background:#fff3df;color:#a85d00}.cos-pill.is-info{background:#e8f2ff;color:#1467cf}.cos-pill.is-off{background:#eef1f5;color:#56677d}
 .cos-prog{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--c-copy);font-weight:600;white-space:nowrap}
-.cos-bar{flex:1;min-width:40px;height:6px;border-radius:6px;background:#e7eef6;overflow:hidden}.cos-bar span{display:block;height:100%;background:linear-gradient(90deg,#2fc06b,#1fa65a);border-radius:6px}
-.cos-amt b{display:block;font-size:18px;font-weight:850}.cos-amt del{color:#8a99ad}.cos-amt small{color:var(--c-mute);font-size:12px}
+.cos-bar{flex:1;min-width:40px;height:6px;border-radius:6px;background:#e7eef6;overflow:hidden}.cos-bar span{display:block;height:100%;background:linear-gradient(90deg,#20854a,#1fa65a);border-radius:6px}
+.cos-amt b{display:block;font-size:18px;font-weight:850}.cos-amt del{color:#64768e}.cos-amt small{color:var(--c-mute);font-size:12px}
 .cos-act{display:flex;justify-content:flex-end}
 .cos-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 16px;border:0;border-radius:12px;font-weight:700;font-size:14px;background:#fff;box-shadow:inset 0 0 0 1px #d6e2ee;color:var(--c-ink);white-space:nowrap;cursor:pointer;text-decoration:none;transition:transform .12s,background .15s}
 .cos-btn:active{transform:scale(.97)}
-.cos-btn.is-primary{background:linear-gradient(180deg,#2f8cff,#1673e6);color:#fff;box-shadow:0 8px 18px -10px #1673e6cc}
+.cos-btn.is-primary{background:linear-gradient(180deg,#006ef6,#1467cf);color:#fff;box-shadow:0 8px 18px -10px #1673e6cc}
 .cos-btn.is-round{width:42px;padding:0;border-radius:50%}
 .cos-btn.is-danger{color:#c23552;box-shadow:inset 0 0 0 1px #f3c1cb}
 .cos-btn.is-wait{color:#a85d00;box-shadow:inset 0 0 0 1px #f3d9a9;cursor:default}
@@ -66,7 +66,7 @@
 .cos-item-title:hover{color:var(--c-link);text-decoration:underline}
 .cos-item-note{color:var(--c-mute);font-size:12px}
 .cos-live{display:inline-flex;align-items:center;gap:4px;margin-top:6px;color:var(--c-link);font-size:12px;font-weight:700;text-decoration:none}
-.cos-price{font-weight:800}.cos-price del{color:#8a99ad}
+.cos-price{font-weight:800}.cos-price del{color:#64768e}
 .cos-sum{margin:14px 0 0;border-radius:14px;background:#f6f9fd;padding:4px 14px}
 .cos-sum div{display:flex;justify-content:space-between;padding:9px 0;font-size:14px;color:var(--c-copy)}
 .cos-sum div+div{border-top:1px solid var(--c-line)}.cos-sum dd{margin:0;font-weight:700;color:var(--c-ink);white-space:nowrap}
@@ -102,18 +102,22 @@
 .pay-sky{display:grid;gap:12px;padding:16px;border-radius:16px;background:#f5f9ff;box-shadow:inset 0 0 0 1px #d8e6f7;color:#0c1d33}
 .pay-sky.is-wait{background:#fffaf0;box-shadow:inset 0 0 0 1px #f3dfb4}
 .pay-sky-top{display:flex;gap:12px;align-items:center}
-.pay-sky-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px #d8e6f7;color:#1673e6;font:800 18px Heebo,Arial,sans-serif}
+.pay-sky-ic{flex:none;display:grid;place-items:center;width:40px;height:40px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px #d8e6f7;color:#1467cf;font:800 18px Heebo,Arial,sans-serif}
 .pay-sky.is-wait .pay-sky-ic{color:#a85d00;box-shadow:inset 0 0 0 1px #f3dfb4}
 .pay-sky-top b{display:block;font:800 15px/1.4 Heebo,Arial,sans-serif;color:#0c1d33}
-.pay-sky-top small{display:block;margin-top:2px;font:500 13px/1.5 Heebo,Arial,sans-serif;color:#6a7d94}
-.pay-sky-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border:0;border-radius:13px;background:linear-gradient(180deg,#2f8cff,#1673e6);color:#fff;font:800 15px Heebo,Arial,sans-serif;box-shadow:0 8px 18px -10px #1673e6cc;cursor:pointer;transition:transform .12s ease-out,filter .2s}
+.pay-sky-top small{display:block;margin-top:2px;font:500 13px/1.5 Heebo,Arial,sans-serif;color:#5d6e82}
+.pay-sky-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border:0;border-radius:13px;background:linear-gradient(180deg,#006ef6,#1467cf);color:#fff;font:800 15px Heebo,Arial,sans-serif;box-shadow:0 8px 18px -10px #1673e6cc;cursor:pointer;transition:transform .12s ease-out,filter .2s}
 .pay-sky-btn:hover{filter:brightness(1.05)}.pay-sky-btn:active{transform:scale(.98)}
 .pay-sky-btn:focus-visible,.pay-sky-link:focus-visible{outline:3px solid #1673e655;outline-offset:2px}
 .pay-sky-link{justify-self:center;min-height:32px;padding:0 8px;border:0;background:none;color:#0a66c2;font:700 13px Heebo,Arial,sans-serif;cursor:pointer}
 .pay-sky-link:hover{text-decoration:underline}
 .pay-sky-bank{display:grid;gap:0;margin:0;padding:4px 14px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px #d8e6f7}
 .pay-sky-bank>div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #eef3f9;font:500 13.5px/1.5 Heebo,Arial,sans-serif}
-.pay-sky-bank>div:last-child{border-bottom:0}.pay-sky-bank dt{color:#6a7d94}.pay-sky-bank dd{margin:0;font-weight:700;color:#0c1d33;text-align:left}
+.pay-sky-bank>div:last-child{border-bottom:0}.pay-sky-bank dt{color:#5d6e82}.pay-sky-bank dd{margin:0;font-weight:700;color:#0c1d33;text-align:left}
 .pay-sky-alert{margin:0;padding:10px 12px;border-radius:12px;background:#ffe9ee;color:#a3213f;font:600 13.5px/1.5 Heebo,Arial,sans-serif}
 @media(prefers-reduced-motion:reduce){.pay-sky-btn{transition:none}}
 html body .pay-sky button.pay-sky-link{background:transparent!important;box-shadow:none!important;border:0!important}
+
+/* Keyboard focus on an order row (a div with role=button): an inset ring, because the order card clips anything
+   drawn outside it (WCAG 2.4.7). */
+.cos .cos-row:focus-visible{outline:3px solid #0079cb;outline-offset:-3px;border-radius:inherit}

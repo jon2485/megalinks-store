@@ -23,8 +23,8 @@ export function confirmationState(order: Row, reportStatus?: string): State {
 }
 
 function Mark({ tone }: { tone: 'green' | 'blue' | 'wait' }) {
-    if (tone === 'wait') return <div className="oc-mark oc-clock" aria-hidden="true"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#fff4e2" stroke="#f5b14d" strokeWidth="5"/><line className="oc-hand" x1="42" y1="42" x2="42" y2="20" stroke="#b25e00" strokeWidth="5" strokeLinecap="round"/><line x1="42" y1="42" x2="56" y2="48" stroke="#b25e00" strokeWidth="5" strokeLinecap="round"/><circle cx="42" cy="42" r="4" fill="#b25e00"/></svg></div>;
-    const color = tone === 'green' ? '#2fc06b' : '#1673e6';
+    if (tone === 'wait') return <div className="oc-mark oc-clock" aria-hidden="true"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#fff4e2" stroke="#f5b14d" strokeWidth="5"/><line className="oc-hand" x1="42" y1="42" x2="42" y2="20" stroke="#aa5a00" strokeWidth="5" strokeLinecap="round"/><line x1="42" y1="42" x2="56" y2="48" stroke="#aa5a00" strokeWidth="5" strokeLinecap="round"/><circle cx="42" cy="42" r="4" fill="#aa5a00"/></svg></div>;
+    const color = tone === 'green' ? '#2fc06b' : '#1467cf';
     return <div className="oc-mark oc-play" aria-hidden="true"><svg viewBox="0 0 84 84"><circle className="oc-ring" cx="42" cy="42" r="38" stroke={color}/><circle className="oc-disc" cx="42" cy="42" r="30" fill={color}/><path className="oc-tick" d="M29 43l9 9 17-19"/></svg></div>;
 }
 
@@ -37,7 +37,7 @@ function CopyRow({ label, value, copy }: { label: string; value: React.ReactNode
     const [done, setDone] = useState(false), timer = useRef<ReturnType<typeof setTimeout> | null>(null);
     useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
     const run = async () => { try { await navigator.clipboard.writeText(copy); } catch { /* the value stays visible to copy by hand */ } setDone(true); if (timer.current) clearTimeout(timer.current); timer.current = setTimeout(() => setDone(false), 2000); };
-    return <div className="oc-bank-row"><div><span>{label}</span><strong>{value}</strong></div><button type="button" className="oc-copy" data-done={done} onClick={run}>{done ? 'הועתק' : 'העתקה'}</button></div>;
+    return <div className="oc-bank-row"><div><span>{label}</span><strong>{value}</strong></div><button type="button" className="oc-copy" data-done={done} aria-label={(done?'הועתק':'העתקה')+': '+label} onClick={run}>{done ? 'הועתק' : 'העתקה'}</button></div>;
 }
 
 export default function OrderConfirmation({ ctx, id }: { ctx: Ctx; id: string }) {
@@ -114,7 +114,7 @@ export default function OrderConfirmation({ ctx, id }: { ctx: Ctx; id: string })
             <div className="oc-card oc-sec"><h2>מה קורה עכשיו</h2><Steps steps={steps}/></div>
             {!cancelled && (view === 'paid' || view === 'monthly') && articles.some(article => !article.editorial) && <div className="oc-soft"><span className="oc-soft-ic"><PenLine size={20}/></span><div><b>אין זמן לכתוב?</b><small>אפשר להוסיף כתיבה מקצועית לכל אחד מהאתרים גם עכשיו.</small></div><button type="button" onClick={() => ctx.go('purchased/articles')}>הוספת כתיבה</button></div>}
             </div>
-            <aside className="oc-side">
+            <div className="oc-side">
             <div className="oc-card oc-sec oc-sum">
                 <h2>סיכום ההזמנה</h2>
                 {rows.length > 0 && <details className="oc-items">
@@ -128,7 +128,7 @@ export default function OrderConfirmation({ ctx, id }: { ctx: Ctx; id: string })
                 <div className="oc-line is-total"><span>{left ? 'סה״כ אחרי זיכוי' : 'סה״כ'}</span><strong>{money(left ? left.total : order.total)}</strong></div>
             </div>
             <p className="oc-help">שאלה על ההזמנה? <a href={WHATSAPP} target="_blank" rel="noreferrer"><MessageCircle size={15} aria-hidden="true"/>דברו איתנו בוואטסאפ</a> · <bdi>050-750-8850</bdi></p>
-            </aside>
+            </div>
         </div>
     </section>;
 }

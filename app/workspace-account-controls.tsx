@@ -24,10 +24,10 @@ export function WorkspaceAccountControls({ ctx, compactGreeting = false, menu = 
     </>;
     return <div className="workspace-account-controls">
         {ctx.user && (compactGreeting || !menu.length
-            ? <button type="button" className="workspace-greeting" onClick={() => ctx.go('profile')} aria-label="פתיחת הגדרות החשבון" title={name ? `שלום ${name}` : 'שלום וברוכים הבאים'}>{greeting}</button>
+            ? <button type="button" className="workspace-greeting" onClick={() => ctx.go('profile')} title={name ? `שלום ${name}` : 'שלום וברוכים הבאים'}>{greeting}<span className="sr-only">, פתיחת הגדרות החשבון</span></button>
             : <Popover open={open} onOpenChange={toggle}>
-                <PopoverTrigger asChild><button type="button" className="workspace-greeting" aria-label="תפריט החשבון" title={name ? `שלום ${name}` : 'החשבון שלי'}>{greeting}</button></PopoverTrigger>
-                <PopoverContent align="end" sideOffset={12} className="account-apple-menu" dir="rtl">
+                <PopoverTrigger asChild><button type="button" className="workspace-greeting" title={name ? `שלום ${name}` : 'החשבון שלי'}>{greeting}<span className="sr-only">, תפריט החשבון</span></button></PopoverTrigger>
+                <PopoverContent align="end" sideOffset={12} className="account-apple-menu" dir="rtl" aria-label="תפריט החשבון">
                     <div className="account-apple-head"><span className="account-apple-avatar" aria-hidden="true">{name.slice(0, 1) || 'מ'}</span><span><strong><bdi>{name || 'החשבון שלי'}</bdi></strong>{ctx.user?.email && <small dir="ltr">{ctx.user.email}</small>}</span></div>
                     {balance != null && <div className="account-apple-balance"><span>יתרה לשימוש<strong>{shekels(balance)}</strong></span><button type="button" onClick={() => { setOpen(false); ctx.go('purchased/payments'); }}>טעינת יתרה</button></div>}
                     <ul className="account-apple-grid">{menu.map(([page, label, Icon]) => <li key={page}><button type="button" data-page={page} onClick={() => { setOpen(false); ctx.go(page); }}><span className="account-apple-tile" aria-hidden="true"><Icon size={18}/></span><span>{label}</span>{page === 'purchased' && pending > 0 && <span className="account-apple-count">{pending}</span>}{page === 'purchased/orders' && counts.orders > 0 && <span className="account-apple-count is-quiet">{counts.orders}</span>}</button></li>)}</ul>

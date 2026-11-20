@@ -1,6 +1,6 @@
 /* Content & editing studio v2 — Mega Links colors (navy, blue, orange, teal), Apple-style details.
    Every rule is scoped to .studio-v2 so the admin editor and other pages keep their look. */
-.studio-v2{--sv-ink:#0b1b2f;--sv-muted:#5b6b82;--sv-faint:#8a99ad;--sv-line:#e3e9f1;--sv-bg:#eef3f8;--sv-blue:#1673e6;--sv-blue-ink:#0b5bc4;--sv-blue-tint:#e8f1ff;--sv-teal:#0a7d74;--sv-teal-tint:#e2f6f2;--sv-orange-1:#ff8a1f;--sv-orange-2:#f26b0f;--sv-green:#1d7d45;--sv-green-tint:#e5f6ec;--sv-warn:#a24d00;--sv-warn-tint:#fff3e3;--sv-red:#b42343;--sv-radius:22px;--sv-shadow:0 0 0 1px #0b285012,0 1px 2px #0b28500a,0 14px 34px -24px #0b285055;
+.studio-v2{--sv-ink:#0b1b2f;--sv-muted:#5b6b82;--sv-faint:#64768e;--sv-line:#e3e9f1;--sv-bg:#eef3f8;--sv-blue:#1467cf;--sv-blue-ink:#0b5bc4;--sv-blue-tint:#e8f1ff;--sv-teal:#0a7d74;--sv-teal-tint:#e2f6f2;--sv-orange-1:#d14509;--sv-orange-2:#b93d08;--sv-green:#1d7d45;--sv-green-tint:#e5f6ec;--sv-warn:#a24d00;--sv-warn-tint:#fff3e3;--sv-red:#b42343;--sv-radius:22px;--sv-shadow:0 0 0 1px #0b285012,0 1px 2px #0b28500a,0 14px 34px -24px #0b285055;
  background:var(--sv-bg);color:var(--sv-ink);font-family:Heebo,Arial,sans-serif;padding-bottom:0!important}
 .studio-v2 :where(button,a,label,input,textarea,select){font-family:inherit}
 
@@ -13,7 +13,7 @@
 .studio-v2 .sv-logo-empty{display:grid;place-items:center;color:var(--sv-blue)}
 .studio-v2 .sv-identity-copy{min-width:0}
 .studio-v2 .sv-eyebrow{margin:0;font:700 12px/1.3 Heebo,Arial,sans-serif;letter-spacing:.02em;color:#8fd3ff}
-.studio-v2 .sv-identity h1{margin:2px 0 0;font:800 22px/1.25 Heebo,Arial,sans-serif!important;letter-spacing:-.015em;color:#fff!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.studio-v2 .sv-identity h1{margin:2px 0 0;font:800 22px/1.25 Heebo,Arial,sans-serif!important;letter-spacing:-.015em;color:#fff!important;overflow-wrap:anywhere;white-space:normal}
 .studio-v2 .sv-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:4px 0 0;font:500 13px/1.4 Heebo,Arial,sans-serif;color:#b9c6d8}
 .studio-v2 .sv-meta a{display:inline-flex;align-items:center;gap:4px;color:#cfe3ff;text-decoration:none}
 .studio-v2 .sv-meta a:hover{text-decoration:underline}
@@ -198,19 +198,19 @@ html body .studio-v2 .sv-btn:disabled,html body .studio-v2 .sv-btn.is-disabled{o
 /* AI dialog: three short steps, chips for length, clear primary */
 html body .sv-ai-dialog[data-slot=dialog-content]{padding:0!important;border:0!important;border-radius:26px!important;overflow:hidden;max-height:min(92dvh,860px);display:flex!important;flex-direction:column;gap:0!important;font-family:Heebo,Arial,sans-serif}
 html body .sv-ai-dialog .sv-ai-head{display:flex!important;flex-direction:row!important;align-items:center;gap:14px;padding:22px 24px 16px!important;text-align:right!important;background:radial-gradient(120% 160% at 90% 0%,#14365f,#0b1b2f 65%);color:#fff}
-html body .sv-ai-dialog .sv-ai-badge{flex:0 0 auto;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(180deg,#ff8a1f,#f26b0f);color:#fff;box-shadow:0 10px 20px -10px #f26b0f}
+html body .sv-ai-dialog .sv-ai-badge{flex:0 0 auto;display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(180deg,#d14509,#b93d08);color:#fff;box-shadow:0 10px 20px -10px #b93d08}
 html body .sv-ai-dialog [data-slot=dialog-title]{font:800 22px/1.25 Heebo,Arial,sans-serif!important;color:#fff!important}
 html body .sv-ai-dialog [data-slot=dialog-description]{margin-top:2px;font:500 14px/1.5 Heebo,Arial,sans-serif!important;color:#b9c6d8!important}
 html body .sv-ai-dialog [data-slot=dialog-close]{color:#fff!important}
 html body .sv-ai-dialog .sv-ai-body{display:grid;gap:16px;padding:18px 24px;overflow-y:auto}
 html body .sv-ai-dialog .sv-ai-group{display:grid;gap:12px;padding:16px;border-radius:18px;background:#f6f9fc;box-shadow:inset 0 0 0 1px #0b28500d}
 html body .sv-ai-dialog .sv-ai-group h3{display:flex;align-items:center;gap:8px;margin:0;font:700 15px Heebo,Arial,sans-serif;color:#0b1b2f}
-html body .sv-ai-dialog .sv-ai-group h3 span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#1673e6;color:#fff;font-size:12px}
+html body .sv-ai-dialog .sv-ai-group h3 span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:#1467cf;color:#fff;font-size:12px}
 html body .sv-ai-dialog .sv-ai-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 html body .sv-ai-dialog label{font:600 13px Heebo,Arial,sans-serif!important;color:#33475f!important}
 html body .sv-ai-dialog :is(.sv-input,.sv-textarea){border:0!important;border-radius:12px!important;background:#fff!important;box-shadow:inset 0 0 0 1px #0b28501f!important;padding:10px 12px!important;font:500 15px Heebo,Arial,sans-serif!important;min-height:44px;color:#0b1b2f}
 html body .sv-ai-dialog .sv-textarea{min-height:92px}
-html body .sv-ai-dialog :is(.sv-input,.sv-textarea):focus{box-shadow:0 0 0 2px #1673e6,0 0 0 5px #1673e622!important;outline:none}
+html body .sv-ai-dialog :is(.sv-input,.sv-textarea):focus{box-shadow:0 0 0 2px #1467cf,0 0 0 5px #1673e622!important;outline:none}
 html body .sv-ai-dialog .sv-label{font:600 13px Heebo,Arial,sans-serif;color:#33475f}
 html body .sv-ai-dialog .sv-words{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 html body .sv-ai-dialog .sv-words button{min-height:40px;padding:0 12px;border:0;border-radius:999px;background:#fff;box-shadow:inset 0 0 0 1px #0b28501f;color:#0b1b2f;font:600 14px Heebo,Arial,sans-serif;cursor:pointer;transition:background-color .2s,transform .1s ease-out}
@@ -222,7 +222,7 @@ html body .sv-ai-dialog .sv-check{display:flex;gap:10px;align-items:flex-start;p
 html body .sv-ai-dialog .sv-ai-foot{display:flex;gap:10px;justify-content:flex-start;padding:14px 24px calc(16px + env(safe-area-inset-bottom));border-top:1px solid #e3e9f1;background:#fff}
 html body .sv-ai-dialog .sv-ai-foot .sv-btn-primary{flex:1}
 html body .sv-ai-dialog .sv-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border:0!important;border-radius:14px!important;font:700 15px Heebo,Arial,sans-serif!important;transition:transform .12s ease-out,filter .2s}
-html body .sv-ai-dialog .sv-btn-primary{background:linear-gradient(180deg,#ff8a1f,#f26b0f)!important;color:#fff!important}
+html body .sv-ai-dialog .sv-btn-primary{background:linear-gradient(180deg,#d14509,#b93d08)!important;color:#fff!important}
 html body .sv-ai-dialog .sv-btn-secondary{background:#fff!important;color:#0b1b2f!important;box-shadow:inset 0 0 0 1px #0b28501f!important}
 html body .sv-ai-dialog .sv-btn:active:not(:disabled){transform:scale(.97)}
 html body .sv-ai-dialog .sv-btn:disabled{opacity:.45;cursor:not-allowed}
@@ -342,7 +342,7 @@ html body .studio-v2 .sv-editor .studio-document{border-radius:0 0 24px 24px}
  html body .studio-v2 .sv-identity{order:1;flex:1 1 auto;gap:8px}
  html body .studio-v2 .sv-logo{display:none}
  html body .studio-v2 .sv-eyebrow{display:none}
- html body .studio-v2 .sv-identity h1{font-size:16px!important;white-space:nowrap;display:block}
+ html body .studio-v2 .sv-identity h1{font-size:16px!important;white-space:normal;overflow-wrap:anywhere;display:block}
  html body .studio-v2 .sv-meta{gap:6px;font-size:12px;flex-wrap:nowrap;white-space:nowrap;overflow:hidden}
  html body .studio-v2 .sv-meta a{display:none}
  html body .studio-v2 .sv-step-mini{display:inline}

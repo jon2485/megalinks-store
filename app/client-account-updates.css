@@ -137,3 +137,6 @@
 
 .ml-update-ready .ml-update-image{background:#eaf4ff;color:#1559b3}.ml-update-ready .ml-update-status{color:#1559b3}
 .ml-update-cancel_request .ml-update-image{background:#fff7e7;color:#805400}.ml-update-cancel_request .ml-update-status{color:#805400}
+
+/* Rows inside a rounded list item that clips its overflow: the focus ring is drawn inside the row so it stays visible. */
+.client-hub.approved-account :is(.wallet-tx-row,.topup-row):focus-visible{outline-offset:-3px}

@@ -47,7 +47,7 @@
 .tc .tc-head-actions{display:flex;align-items:center;gap:6px}
 .tc.tc .tc-head-close{display:none}
 .tc .tc-head-main{display:flex;align-items:center;gap:16px;min-width:0}
-.tc .tc-avatar{width:56px;height:56px;flex:none;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0a84ff,#0055c8);color:#fff;font-size:20px;font-weight:800}
+.tc .tc-avatar{width:56px;height:56px;flex:none;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0072e5,#0055c8);color:#fff;font-size:20px;font-weight:800}
 .tc .tc-head-copy{flex:1;min-width:0;display:grid;gap:8px}
 .tc .tc-head-copy small{font-size:13px;color:var(--tc-mute)}
 .tc .tc-head-copy h1{margin:0;font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.15;color:var(--tc-ink);overflow-wrap:anywhere}

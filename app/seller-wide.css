@@ -72,7 +72,7 @@
 .seller-payout-notice {display: flex; align-items: center; gap: 12px; margin: 28px 0; padding: 14px 16px; border-radius: 10px; background: #e8f8fb; font-size: 14px; line-height: 1.65; color: var(--payout-ink)}
 .seller-payout-notice svg {flex-shrink: 0; color: #008d9d}
 .seller-payout-form form > button {min-height: 50px; height: auto; padding: 12px 24px; border-radius: 10px; font: 700 16px/1.5 SellerRubik, Heebo, Arial, sans-serif; cursor: pointer; transition: transform .18s, filter .18s, background .18s}
-.seller-payout-form form > button[type="submit"] {grid-column: 1; min-width: 270px; background: linear-gradient(110deg, #0570c8, #00aaba); color: #fff; border: 0}
+.seller-payout-form form > button[type="submit"] {grid-column: 1; min-width: 270px; background: linear-gradient(110deg, #0570c8, #00808c); color: #fff; border: 0}
 .seller-payout-form form > button[type="button"] {grid-column: 2; background: #fff; border: 1px solid var(--payout-line); color: var(--payout-ink); min-width: 110px}
 .seller-payout-form form > button:hover:enabled {filter: brightness(.95); transform: translateY(-1px)}
 .seller-payout-form :is(input,textarea,button):focus-visible {outline: 2px solid #007f8c; outline-offset: 3px}

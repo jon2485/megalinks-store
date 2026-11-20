@@ -10,6 +10,7 @@ import FloatingWhatsApp from './floating-whatsapp';
 import './floating-whatsapp.css';
 import AccessibilityMenu from './accessibility-menu';
 import './accessibility-menu.css';
+import FormMessages from './form-messages';
 import BrandLoading from './brand-loading';
 import {SITE_URL,HOME_TITLE,HOME_DESCRIPTION,privateRobots,publicMetadata} from '@/lib/seo';
 
@@ -37,7 +38,7 @@ export default function RootLayout({
       <head>
         <link rel="preload" href="/brand/heebo-variable.ttf" as="font" type="font/ttf" crossOrigin="anonymous" />
       </head>
-      <body className="antialiased">{children}<BrandLoading/><FloatingWhatsApp/><AccessibilityMenu/></body>
+      <body className="antialiased">{children}<BrandLoading/><aside aria-label="עזרה ונגישות"><FloatingWhatsApp/><AccessibilityMenu/></aside><FormMessages/></body>
     </html>
   );
 }

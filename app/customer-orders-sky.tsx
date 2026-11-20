@@ -119,8 +119,8 @@ export default function CustomerOrdersSky({ctx,providedOrders}:{ctx:Ctx;provided
    <div className="cos-cols" aria-hidden="true"><span>הזמנה</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span/></div>
    <div className="cos-list">{shown.map(o=>{const items=byOrder.get(o.id)||[],sites=sitesOf(o,items),first=sites[0]||{name:'',url:''},p=progress(o,items),pill=payPill(o),isOpen=open===o.id,amounts=effectiveOrderAmounts(o),gone=orderCancellation(o)==='full',need=kind(o)==='pay'||o.cancel_request_status==='pending',toggle=()=>setOpen(isOpen?'':o.id);
     return <article key={o.id} className={'cos-order'+(isOpen?' is-open':'')+(need?' is-need':'')}>
-     <div className="cos-row" role="button" tabIndex={0} aria-expanded={isOpen} aria-label={'פירוט הזמנה '+o.number} onClick={toggle} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}}}>
-      <div className="cos-num"><b><bdi>{String(o.number||'')}</bdi></b><small>{day(o.created)}</small></div>
+     <div className="cos-row" role="button" tabIndex={0} aria-expanded={isOpen} onClick={toggle} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}}}>
+      <div className="cos-num"><b><span className="sr-only">הזמנה </span><bdi>{String(o.number||'')}</bdi></b><small>{day(o.created)}</small></div>
       <div className="cos-sites"><span className="cos-fav" aria-hidden="true">{(first.name||host(first.url)||'א').trim().charAt(0)}</span><div><b>{first.name||host(first.url)||'אתר'}</b>{first.url&&<small dir="ltr">{host(first.url)}</small>}</div>{sites.length>1&&<span className="cos-more">+{sites.length-1}</span>}</div>
       <div className="cos-paycell"><PillView p={pill}/></div>
       <div className="cos-prog" aria-label={'פורסמו '+p.done+' מתוך '+p.total}><span className="cos-bar"><span style={{width:(p.total?Math.round(p.done/p.total*100):0)+'%'}}/></span>{gone?'—':p.total?(p.done+'/'+p.total+(p.done?' פורסמו':'')):'—'}</div>

@@ -61,7 +61,7 @@ export default function LegalPage({id,go}:{id:LegalDocId;go:(view:string)=>void}
        :block.type==='ul'?<ul key={i}>{block.items.map((item,k)=><li key={k}><Inline parts={item} go={go}/></li>)}</ul>
        :block.type==='ol'?<ol key={i}>{block.items.map((item,k)=><li key={k}><Inline parts={item} go={go}/></li>)}</ol>
        :block.type==='note'?<p key={i} className="legal-note"><Info size={18} aria-hidden="true"/><span><Inline parts={block.inline} go={go}/></span></p>
-       :block.type==='table'?<div key={i} className="legal-table" role="region" aria-label="טבלה" tabIndex={0}><table><thead><tr>{block.head.map((cell,k)=><th key={k} scope="col"><Inline parts={cell} go={go}/></th>)}</tr></thead><tbody>{block.rows.map((row,r)=><tr key={r}>{row.map((cell,k)=><td key={k} data-label={(block.head[k]||[]).map(part=>part.text).join('')}><Inline parts={cell} go={go}/></td>)}</tr>)}</tbody></table></div>
+       :block.type==='table'?<div key={i} className="legal-table" role="region" aria-label={'טבלה'+(n?': '+n.title:'')+(group.blocks.filter(b=>b.type==='table').length>1?' '+group.blocks.slice(0,i+1).filter(b=>b.type==='table').length:'')} tabIndex={0}><table><thead><tr>{block.head.map((cell,k)=><th key={k} scope="col"><Inline parts={cell} go={go}/></th>)}</tr></thead><tbody>{block.rows.map((row,r)=><tr key={r}>{row.map((cell,k)=><td key={k} data-label={(block.head[k]||[]).map(part=>part.text).join('')}><Inline parts={cell} go={go}/></td>)}</tr>)}</tbody></table></div>
        :null)}
      </section>;})}
     <footer className="legal-card legal-contact">

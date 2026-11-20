@@ -57,12 +57,14 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
     const domain = site.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
     // Apple-style card (approved 03.11.2026): numbers stand alone with a one-line explanation instead of a 0-100 bar.
     const [metricTip, setMetricTip] = useState<'DR' | 'UR' | null>(null);
-    // An open explanation closes on any press outside its own "i" button.
+    // An open explanation closes on any press outside its own "i" button, and with Escape (WCAG 1.4.13).
     useEffect(() => {
         if (!metricTip) return;
         const close = (event: PointerEvent) => { const own = event.target instanceof Element ? event.target.closest('.pc-info')?.getAttribute('data-site') : null; if (own !== String(site.id)) setMetricTip(null); };
+        const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMetricTip(null); };
         document.addEventListener('pointerdown', close);
-        return () => document.removeEventListener('pointerdown', close);
+        document.addEventListener('keydown', escape);
+        return () => { document.removeEventListener('pointerdown', close); document.removeEventListener('keydown', escape); };
     }, [metricTip]);
     const metricHelp = { DR: 'חוזק הדומיין כולו (Domain Rating). ככל שהוא גבוה יותר, הקישור מעביר יותר כוח.', UR: 'חוזק העמוד הספציפי (URL Rating), כלומר העמוד שבו תפורסם הכתבה.' } as const;
     // While an agency buys for a customer, a site already used for that customer gets a green "שומש עבור" line (agency-buying.tsx).
@@ -77,7 +79,7 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
         {used && <div className="pc-used-row"><span className="pc-used-check" aria-hidden="true"><Check size={12} strokeWidth={3}/></span><span>שומש עבור <b>{used.customer}</b>{usedDay ? <> · <bdi>{usedDay}</bdi></> : null}</span></div>}
         <div className="pc-chips">{site.is_on_sale && <span className="pc-chip pc-chip-deal">מבצע</span>}<span className="pc-chip pc-chip-cat"><LayoutGrid size={13} aria-hidden="true"/>{categories[site.category] || site.category}</span>{site.features?.some((f:string)=>/follow/i.test(f)) && <span className="pc-chip pc-chip-do"><Check size={13} aria-hidden="true"/>קישור לאתר שלכם</span>}<span className="pc-chip"><IsraelFlag/>ישראל</span></div>
         <div className="pc-metrics" role="group" aria-label="מדדי האתר">
-            {(['DR', 'UR'] as const).map(key => <div className="pc-metric" key={key}><b>{(key === 'DR' ? site.dr : site.ur) ?? '—'}</b><span className="pc-metric-key"><bdi dir="ltr">{key}</bdi><button type="button" className="pc-info" data-site={site.id} aria-label={'מה זה ' + key + '?'} aria-expanded={metricTip === key} onClick={() => setMetricTip(metricTip === key ? null : key)}>i</button></span><span className="pc-tip" role="tooltip"><b dir="ltr">{key}:</b> {metricHelp[key]}</span></div>)}
+            {(['DR', 'UR'] as const).map(key => <div className="pc-metric" key={key}><b>{(key === 'DR' ? site.dr : site.ur) ?? '—'}</b><span className="pc-metric-key"><bdi dir="ltr">{key}</bdi><button type="button" className="pc-info" data-site={site.id} aria-label={'מה זה ' + key + '?'} aria-expanded={metricTip === key} aria-describedby={metricTip === key ? 'pc-tip-' + site.id + '-' + key : undefined} onClick={() => setMetricTip(metricTip === key ? null : key)}>i</button></span><span className="pc-tip" role="tooltip" id={'pc-tip-' + site.id + '-' + key}><b dir="ltr">{key}:</b> {metricHelp[key]}</span></div>)}
         </div>
         <div className="pc-notes-row">
                 <Popover open={notesOpen} onOpenChange={setNotesOpen}>
