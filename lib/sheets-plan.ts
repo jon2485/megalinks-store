@@ -30,6 +30,7 @@ export function sheetCurrentValue(w:Row,key:string){const d=typeof w.data==='str
  if(key==='price_ils')return w.price/100;
  if(key==='cost_ils'||key==='sale_price_ils'||key==='pixel_price_ils'){const field=key.replace('_ils','_cents');return d[field]===undefined?(key==='sale_price_ils'?(d.sale_price||undefined):key==='pixel_price_ils'?(d.pixel_price??undefined):undefined):d[field]/100;}
  if(key==='active')return !!w.active;
+ if(key==='supplier_name')return d.supplier_label||d.supplier_name;
  if(key==='category'){const extra=Array.isArray(d.categories)?d.categories:[];return extra.length?extra:w.category?[w.category]:[];}
  // Per-site billing (16.11.2026): a site without stock is billed monthly, and the sheet says so in words.
  if(key==='stock_total')return d.stock_mode==='exchange'?EXCHANGE:d.stock_mode==='stock'?STOCK_WORD:d.stock_total===null||d.stock_total===undefined||d.stock_total===''?MONTHLY:Number(d.stock_total);

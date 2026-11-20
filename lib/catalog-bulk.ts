@@ -71,6 +71,9 @@ export async function saveCatalogBatch(user:Row,input:Row){
   // An existing different name is kept; the next sync writes it back to the sheet.
   if('supplier_name' in values){const name=String(values.supplier_name??'').trim();assert(name.length<=200,'שם הספק ארוך מדי');const s=d.supplier_id?suppliers.get(d.supplier_id):undefined;const current=String(s?.name||'').trim();
    if(name&&s&&(!current||current.toLowerCase()===String(s.email||'').trim().toLowerCase())&&current!==name){s.name=name;statements.push(stmt("UPDATE records SET data=json_set(data,'$.name',?),updated=? WHERE id=? AND kind='supplier'",name,stamp,s.id),stmt("UPDATE websites SET data=json_set(data,'$.supplier_name',?) WHERE json_extract(data,'$.supplier_id')=?",name,s.id));}}
+  // Owner 20.11.2026: one supplier card per email, but each site keeps the name written in its row (for example
+  // "בסט לינקס" or "ספונסרד" under the owner's own address), so the supplier page can filter by it.
+  if('supplier_name' in values){const label=String(values.supplier_name??'').trim().slice(0,200);if(label)d.supplier_label=label;else delete d.supplier_label;}
   if(d.supplier_id&&suppliers.has(d.supplier_id))d.supplier_name=suppliers.get(d.supplier_id)!.name||'';
   if('sort_order' in values){const n=Number(values.sort_order);assert(Number.isSafeInteger(n)&&n>=0&&n<=1000000,'סדר תצוגה לא תקין');d.sort_order=n;}
   if('pixel_price_ils' in values){d.pixel_price_cents=values.pixel_price_ils===''?undefined:amount(values.pixel_price_ils);d.pixel_price=d.pixel_price_cents===undefined?undefined:d.pixel_price_cents/100;}
