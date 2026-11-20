@@ -1,6 +1,6 @@
 /* My sites (seller area) v7, approved 08.11.2026: dark earnings band with numbers, segmented tabs
    with counts, a card per site, the guide as a numbered thread, card-style articles and payments. */
-.seller-space.seller-wide{--s7-ink:#0b1b2f;--s7-muted:#5b6b82;--s7-faint:#64768e;--s7-line:#e3e9f1;--s7-blue:#1467cf;--s7-blue-tint:#e8f1ff;--s7-green:#15803d;--s7-green-tint:#e5f6ec;--s7-amber:#a24d00;--s7-amber-tint:#fff3e3;--s7-shadow:0 0 0 1px #0b285012,0 14px 34px -24px #0b285055}
+.seller-space.seller-wide{--s7-ink:#0b1b2f;--s7-muted:#5b6b82;--s7-faint:#8a99ad;--s7-line:#e3e9f1;--s7-blue:#1673e6;--s7-blue-tint:#e8f1ff;--s7-green:#15803d;--s7-green-tint:#e5f6ec;--s7-amber:#a24d00;--s7-amber-tint:#fff3e3;--s7-shadow:0 0 0 1px #0b285012,0 14px 34px -24px #0b285055}
 html body .seller-space.seller-wide{display:grid;gap:16px;min-width:0;font-family:Heebo,Arial,sans-serif;color:var(--s7-ink)}
 html body .seller-space.seller-wide>*{min-width:0}
 
@@ -32,7 +32,7 @@ html body .seller-space .sw7-tabs button:focus-visible{outline:2px solid var(--s
 .sw7-card-head{display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:0 0 14px}
 .sw7-card-head h2,.sw7-card>h2{margin:0;font:800 19px Heebo,Arial,sans-serif;color:var(--s7-ink)}
 .sw7-card-head small{font:600 13px Heebo,Arial,sans-serif;color:var(--s7-faint)}
-html body .seller-space .sw7-primary{margin-inline-start:auto;min-height:46px;padding:0 18px!important;border:0!important;border-radius:14px!important;background:linear-gradient(180deg,#1071e6,#1467cf)!important;color:#fff!important;font:800 15px Heebo,Arial,sans-serif!important;box-shadow:0 10px 22px -12px #1673e6cc!important}
+html body .seller-space .sw7-primary{margin-inline-start:auto;min-height:46px;padding:0 18px!important;border:0!important;border-radius:14px!important;background:linear-gradient(180deg,#2a84f0,#1673e6)!important;color:#fff!important;font:800 15px Heebo,Arial,sans-serif!important;box-shadow:0 10px 22px -12px #1673e6cc!important}
 html body .seller-space .sw7-primary:active{transform:scale(.97)}
 .sw7-sites{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .sw7-site{display:grid;gap:12px;min-width:0;padding:16px;border-radius:20px;box-shadow:inset 0 0 0 1px var(--s7-line);overflow:hidden}

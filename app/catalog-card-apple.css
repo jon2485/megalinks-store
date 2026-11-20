@@ -1,6 +1,6 @@
 /* Catalog site card, Apple-style (approved 03.11.2026, mockup in docs/proposals/apple-product-card).
    Logo beside the name, selling chips first, plain DR/UR numbers with an "i" explanation, price and actions together at the bottom. */
-.publication-catalog-card.pc-apple{--pc-ink:#0b1b2f;--pc-muted:#4f5d6e;--pc-faint:#626e7c;--pc-line:rgba(11,40,80,.09);--pc-blue:#1467cf;--pc-ease:cubic-bezier(.32,.72,0,1);
+.publication-catalog-card.pc-apple{--pc-ink:#0b1b2f;--pc-muted:#4f5d6e;--pc-faint:#7b8796;--pc-line:rgba(11,40,80,.09);--pc-blue:#1673e6;--pc-ease:cubic-bezier(.32,.72,0,1);
  position:relative;display:flex!important;flex-direction:column!important;gap:14px!important;height:100%;padding:18px!important;border:0!important;border-radius:24px!important;background:#fff!important;overflow:visible!important;
  font-family:Heebo,Arial,sans-serif;color:var(--pc-ink);box-shadow:0 0 0 1px var(--pc-line),0 1px 2px #0b28500a,0 12px 28px -20px #0b285040!important;transition:transform .35s var(--pc-ease),box-shadow .35s var(--pc-ease)}
 .publication-catalog-card.pc-apple .pc-head{display:grid;grid-template-columns:64px minmax(0,1fr) auto;align-items:center;gap:12px}
@@ -10,7 +10,7 @@
 .publication-catalog-card.pc-apple .pc-name{min-width:0}
 .azure-catalog .publication-catalog-card.pc-apple .pc-name h2,.publication-catalog-card.pc-apple .pc-name h2{margin:0;font-size:18px!important;font-weight:800;line-height:1.3;letter-spacing:-.01em;color:var(--pc-ink);overflow-wrap:anywhere}
 .publication-catalog-card.pc-apple .pc-name a{display:inline-flex;align-items:center;gap:4px;max-width:100%;margin-top:2px;font-size:13px;color:#3d6ea8;transition:color .2s}
-.publication-catalog-card.pc-apple .pc-name a span{min-width:0;overflow-wrap:anywhere;white-space:normal}
+.publication-catalog-card.pc-apple .pc-name a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .publication-catalog-card.pc-apple .pc-fav{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;align-self:start;color:var(--pc-faint);background:#f4f7fb;transition:transform .12s ease-out,color .2s,background-color .2s}
 .publication-catalog-card.pc-apple .pc-fav:active{transform:scale(.85)}
 .publication-catalog-card.pc-apple .pc-fav[aria-pressed=true]{color:#e5484d;background:#fdecea}
@@ -20,7 +20,7 @@
 .publication-catalog-card.pc-apple .pc-chip svg{height:12px;width:auto;opacity:.85}
 .publication-catalog-card.pc-apple .pc-chip-cat{background:#eef5ff;color:var(--pc-blue)}
 .publication-catalog-card.pc-apple .pc-chip-do{background:#e5f5eb;color:#1d7d45}
-.publication-catalog-card.pc-apple .pc-chip-deal{background:linear-gradient(180deg,#20854a,#178648);color:#fff;box-shadow:inset 0 1px 0 #ffffff59}
+.publication-catalog-card.pc-apple .pc-chip-deal{background:linear-gradient(180deg,#2fc06b,#1a9a52);color:#fff;box-shadow:inset 0 1px 0 #ffffff59}
 /* Metrics: the number stands alone */
 .publication-catalog-card.pc-apple .pc-metrics{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .publication-catalog-card.pc-apple .pc-metric{position:relative;padding:10px 12px;border-radius:14px;background:#f6f8fb}
@@ -54,11 +54,11 @@
 .publication-catalog-card.pc-apple .pc-saving{color:#1d7d45;font-weight:700}
 .publication-catalog-card.pc-apple .pc-actions{display:grid;grid-template-columns:minmax(0,1fr) 48px;gap:8px;margin-top:4px}
 .publication-catalog-card.pc-apple .pc-add.catalog-cart-feedback{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;flex-direction:row-reverse;align-items:center;justify-content:center;gap:8px;height:48px;min-height:48px;padding:0 14px;border:0;border-radius:14px;color:#fff;font-size:15px;font-weight:700;
- background:linear-gradient(180deg,#d14509,#b93d08);box-shadow:inset 0 1px 0 #ffffff73,inset 0 -1px 0 #8c280040,0 1px 2px #a03c0040,0 10px 22px -10px #f26a1bb3;transition:transform .14s ease-out,box-shadow .3s var(--pc-ease),filter .2s}
+ background:linear-gradient(180deg,#ffa04a,#f26a1b);box-shadow:inset 0 1px 0 #ffffff73,inset 0 -1px 0 #8c280040,0 1px 2px #a03c0040,0 10px 22px -10px #f26a1bb3;transition:transform .14s ease-out,box-shadow .3s var(--pc-ease),filter .2s}
 .publication-catalog-card.pc-apple .pc-add .catalog-cart-feedback-label{flex:0 1 auto}
 .publication-catalog-card.pc-apple .pc-add .catalog-cart-feedback-icon{width:24px;height:24px;border-radius:8px;background:#ffffff38;box-shadow:inset 0 1px 0 #ffffff59;transition:transform .45s var(--pc-ease)}
 .publication-catalog-card.pc-apple .pc-add:not(:disabled):active{transform:scale(.96);transition-duration:.08s}
-.publication-catalog-card.pc-apple .pc-add[data-added=true]{background:linear-gradient(180deg,#20854a,#178648);box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0c4f2a40,0 10px 22px -10px #1a9a52b3}
+.publication-catalog-card.pc-apple .pc-add[data-added=true]{background:linear-gradient(180deg,#2fc06b,#1a9a52);box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0c4f2a40,0 10px 22px -10px #1a9a52b3}
 .publication-catalog-card.pc-apple .pc-add[data-added=true] .catalog-cart-feedback-icon{animation:pc-pop .5s var(--pc-ease)}
 .publication-catalog-card.pc-apple .pc-site{display:grid;place-items:center;height:48px;border-radius:14px;color:var(--pc-ink);background:linear-gradient(180deg,#fff,#f5f9fd);box-shadow:inset 0 0 0 1px #0b28501a,inset 0 1px 0 #fff,0 4px 12px -6px #0b28501f;transition:transform .12s ease-out,color .2s,box-shadow .25s}
 .publication-catalog-card.pc-apple .pc-site:active{transform:scale(.92)}

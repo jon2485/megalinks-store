@@ -40,7 +40,7 @@
 .mock-order-actions{display:grid;gap:10px;min-width:0;}
 .mock-month-bottom .mock-order-actions{min-width:180px;}
 .mock-order-details .mock-order-actions button,.mock-order-details .mock-order-actions>a{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;height:auto;min-height:46px;padding:10px 18px;border:1px solid #0098e8;border-radius:9px;background:white;color:#0088db;font-size:16px;font-weight:700;line-height:1.5;white-space:normal;text-align:center;box-shadow:none;}
-.mock-order-details .mock-order-actions>a.mock-order-primary{background:linear-gradient(110deg,#008094,#0873e1);border-color:#08a7e6;color:white;}
+.mock-order-details .mock-order-actions>a.mock-order-primary{background:linear-gradient(110deg,#00bad6,#0879ed);border-color:#08a7e6;color:white;}
 .mock-order-details .mock-order-actions button:hover{background:#effaff;}
 .mock-order-details .mock-invoice-missing{font-size:14px;line-height:1.6;padding:10px;border-radius:8px;background:#edf7ff;color:#385371;text-align:center;}
 .mock-paid-summary{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,1.65fr);gap:32px;padding:18px;border:1px solid #d0e9f5;border-radius:12px;background:linear-gradient(105deg,#f3faff,#f7fbff);margin-bottom:22px;align-items:center;}

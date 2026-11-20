@@ -1,7 +1,7 @@
 /* Site header, Apple-style (approved 03.11.2026, mockup docs/proposals/apple-header-filter).
    Navy bar, teal edge and logo stay. Plain Heebo labels instead of icon tiles, menus anchored under their trigger,
    one account button that shows the balance, and the cart as the only lit (orange) control. */
-html body .workspace-site-header.workspace-site-header-compact{--ha-ink:#0b1b2f;--ha-muted:#4f5d6e;--ha-faint:#626e7c;--ha-line:rgba(11,40,80,.09);--ha-blue:#1467cf;--ha-green:#1d7d45;--ha-ease:cubic-bezier(.32,.72,0,1);font-family:Heebo,Arial,sans-serif}
+html body .workspace-site-header.workspace-site-header-compact{--ha-ink:#0b1b2f;--ha-muted:#4f5d6e;--ha-faint:#7b8796;--ha-line:rgba(11,40,80,.09);--ha-blue:#1673e6;--ha-green:#1d7d45;--ha-ease:cubic-bezier(.32,.72,0,1);font-family:Heebo,Arial,sans-serif}
 html body .workspace-site-header.workspace-site-header-compact .workspace-site-header-main{min-height:72px!important;padding-block:12px!important;gap:22px!important}
 /* Top-level categories: text first, no tile */
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-list{gap:2px!important}
@@ -22,14 +22,14 @@ html body .workspace-site-header.workspace-site-header-compact .workspace-top-na
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link-copy{display:grid;min-width:0}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link-copy>span{font-size:16px;font-weight:700;line-height:1.3}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link-copy>small{font-size:13px;font-weight:500;color:var(--ha-muted);line-height:1.4}
-html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link-icon{width:40px!important;height:40px!important;border-radius:12px!important;display:grid!important;place-items:center!important;color:#fff!important;background:linear-gradient(180deg,#006ef6,#1467cf)!important;box-shadow:inset 0 1px 0 #ffffff59!important;border:0!important}
+html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link-icon{width:40px!important;height:40px!important;border-radius:12px!important;display:grid!important;place-items:center!important;color:#fff!important;background:linear-gradient(180deg,#2f8cff,#1673e6)!important;box-shadow:inset 0 1px 0 #ffffff59!important;border:0!important}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 4px 2px;padding:10px 8px 4px;border-top:1px solid var(--ha-line);font-size:13px;color:var(--ha-muted)}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-footer a{display:inline-flex;align-items:center;gap:5px;color:var(--ha-green);font-weight:700}
 /* One color per destination, the same in every menu */
 :is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) [data-page=offers] :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile),
-:is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) [data-page="purchased/orders"] :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#d14509,#b93d08)!important}
-:is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) :is([data-page=knowledge],[data-page=purchased],[data-page="purchased/support"]) :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#108286,#0b6f75)!important}
-:is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) [data-page="purchased/payments"] :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#20854a,#178648)!important}
+:is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) [data-page="purchased/orders"] :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#ffa04a,#f26a1b)!important}
+:is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) :is([data-page=knowledge],[data-page=purchased],[data-page="purchased/support"]) :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important}
+:is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) [data-page="purchased/payments"] :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#2fc06b,#1a9a52)!important}
 :is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) [data-page="purchased/customers"] :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#8b7cff,#5b4fe0)!important}
 :is(.workspace-site-header,.header-apple-sheet,.account-apple-menu) :is([data-page="purchased/profile"],[data-page=admin],[data-page=supplier-workspace]) :is(.workspace-top-navigation-link-icon,.mobile-glass-icon,.account-apple-tile){background:linear-gradient(180deg,#9aa7b6,#6c7a8b)!important}
 .header-saving-chip{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:#e5f5eb;color:#1d7d45;font-size:12px;font-weight:800;font-family:Heebo,Arial,sans-serif;white-space:nowrap}
@@ -42,23 +42,23 @@ html body .workspace-site-header.workspace-site-header-compact .workspace-notifi
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting{display:flex!important;align-items:center;gap:9px!important;height:44px!important;padding:0 12px 0 6px!important;padding-inline:6px 12px!important;border:0!important;border-radius:999px!important;background:#ffffff14!important;box-shadow:inset 0 0 0 1px #ffffff1f!important;color:#fff!important;transition:background-color .2s,transform .12s ease-out!important}
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting:active{transform:scale(.97)}
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting[data-state=open]{background:#ffffff26!important}
-html body .workspace-site-header.workspace-site-header-compact .workspace-greeting-avatar{width:32px!important;height:32px!important;border-radius:50%!important;display:grid!important;place-items:center;font:800 15px/1 Heebo,Arial,sans-serif!important;color:#fff!important;background:linear-gradient(180deg,#108286,#0b6f75)!important;box-shadow:inset 0 1px 0 #ffffff59!important;border:0!important}
+html body .workspace-site-header.workspace-site-header-compact .workspace-greeting-avatar{width:32px!important;height:32px!important;border-radius:50%!important;display:grid!important;place-items:center;font:800 15px/1 Heebo,Arial,sans-serif!important;color:#fff!important;background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important;box-shadow:inset 0 1px 0 #ffffff59!important;border:0!important}
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting-text{display:grid!important;max-width:150px!important;line-height:1.15;text-align:right;color:#fff!important;font:700 14px/1.15 Heebo,Arial,sans-serif!important;overflow:hidden}
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting-text bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting-balance{font-size:12px;font-weight:600;color:#9ff0e6}
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting-chevron{opacity:.7;transition:transform .35s var(--ha-ease)}
 html body .workspace-site-header.workspace-site-header-compact .workspace-greeting[data-state=open] .workspace-greeting-chevron{transform:rotate(180deg)}
 /* Cart: the one lit control, same orange as "add to cart" */
-html body .workspace-site-header.workspace-site-header-compact :is(.workspace-site-cart,.workspace-mobile-cart){display:inline-flex!important;align-items:center;gap:10px!important;height:44px!important;min-height:44px!important;padding:0 8px 0 16px!important;padding-inline:16px 8px!important;border:0!important;border-radius:14px!important;color:#fff!important;font:700 15px/1 Heebo,Arial,sans-serif!important;background:linear-gradient(180deg,#d14509,#b93d08)!important;box-shadow:inset 0 1px 0 #ffffff73,inset 0 -1px 0 #8c280040,0 10px 22px -10px #f26a1bcc!important;transition:transform .14s ease-out,box-shadow .3s var(--ha-ease),filter .2s!important}
+html body .workspace-site-header.workspace-site-header-compact :is(.workspace-site-cart,.workspace-mobile-cart){display:inline-flex!important;align-items:center;gap:10px!important;height:44px!important;min-height:44px!important;padding:0 8px 0 16px!important;padding-inline:16px 8px!important;border:0!important;border-radius:14px!important;color:#fff!important;font:700 15px/1 Heebo,Arial,sans-serif!important;background:linear-gradient(180deg,#ffa04a,#f26a1b)!important;box-shadow:inset 0 1px 0 #ffffff73,inset 0 -1px 0 #8c280040,0 10px 22px -10px #f26a1bcc!important;transition:transform .14s ease-out,box-shadow .3s var(--ha-ease),filter .2s!important}
 html body .workspace-site-header.workspace-site-header-compact :is(.workspace-site-cart,.workspace-mobile-cart):active{transform:scale(.96)}
-.header-cart-count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:8px;background:#0000002e;box-shadow:inset 0 1px 0 #ffffff33;font:800 13px/1 Heebo,Arial,sans-serif;font-variant-numeric:tabular-nums}
+.header-cart-count{display:inline-grid;place-items:center;min-width:24px;height:24px;padding:0 7px;border-radius:8px;background:#ffffff33;box-shadow:inset 0 1px 0 #ffffff59;font:800 13px/1 Heebo,Arial,sans-serif;font-variant-numeric:tabular-nums}
 html body .workspace-site-header.workspace-site-header-compact .workspace-mobile-cart{height:40px!important;min-height:40px!important;gap:6px!important;padding-inline:10px 6px!important;border-radius:13px!important}
 html body .workspace-site-header.workspace-site-header-compact .workspace-mobile-cart .header-cart-count{min-width:22px;height:22px}
 html body .workspace-site-header.workspace-site-header-compact .workspace-mobile-menu-button{width:40px!important;height:40px!important;border-radius:50%!important;background:#ffffff14!important;box-shadow:inset 0 0 0 1px #ffffff1f!important;color:#fff!important}
 /* Account menu (popover) */
 .account-apple-menu[data-slot=popover-content]{width:430px;max-width:calc(100vw - 32px);padding:8px;border:0;border-radius:20px;background:#fffffff5;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:0 0 0 1px #0b285014,0 24px 50px -20px #0b285066;font-family:Heebo,Arial,sans-serif;color:#0b1b2f;z-index:60}
 .account-apple-head{display:flex;align-items:center;gap:12px;padding:10px 10px 12px}
-.account-apple-avatar{flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px;background:linear-gradient(180deg,#108286,#0b6f75);box-shadow:inset 0 1px 0 #ffffff59}
+.account-apple-avatar{flex:0 0 auto;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:19px;background:linear-gradient(180deg,#2fd3c4,#0d9f9a);box-shadow:inset 0 1px 0 #ffffff59}
 .account-apple-head>span:last-child{display:grid;min-width:0}
 .account-apple-head strong{font-size:17px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .account-apple-head small{font-size:13px;color:#4f5d6e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
@@ -70,7 +70,7 @@ html body .workspace-site-header.workspace-site-header-compact .workspace-mobile
 .account-apple-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:2px;margin:0;padding:0;list-style:none}
 .account-apple-grid button{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:8px 9px;border-radius:13px;font:700 15px/1.3 Heebo,Arial,sans-serif;color:#0b1b2f;text-align:right;transition:background-color .2s,transform .12s ease-out}
 .account-apple-grid button:active{transform:scale(.98)}
-.account-apple-tile{flex:0 0 auto;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,#006ef6,#1467cf);box-shadow:inset 0 1px 0 #ffffff59}
+.account-apple-tile{flex:0 0 auto;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;color:#fff;background:linear-gradient(180deg,#2f8cff,#1673e6);box-shadow:inset 0 1px 0 #ffffff59}
 .account-apple-count{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-inline-start:auto;border-radius:999px;background:#ff5a4e;color:#fff;font-size:11px;font-weight:800}
 .account-apple-count.is-quiet{background:#eef2f7;color:#4f5d6e}
 .account-apple-signout{display:flex;align-items:center;gap:8px;margin:6px 4px 2px;padding:12px 10px 6px;border-top:1px solid rgba(11,40,80,.09);color:#c2382e;font-size:14px;font-weight:700}
@@ -88,7 +88,7 @@ html body .header-apple-sheet .workspace-notification-button{position:relative;w
 html body .header-apple-sheet .workspace-notification-dot{position:absolute;top:-3px;inset-inline-end:-3px;min-width:19px;height:19px;padding:0 5px;border-radius:999px;display:grid;place-items:center;background:#ff5a4e;color:#fff;font:800 11px/1 Heebo,Arial,sans-serif;box-shadow:0 0 0 2px #fff}
 html body .header-apple-sheet .workspace-mobile-drawer-links{display:grid;gap:4px;padding:0!important}
 html body .header-apple-sheet .workspace-mobile-drawer-group{padding:0!important;border:0!important;background:transparent!important}
-html body .header-apple-sheet .workspace-mobile-drawer-group h2{margin:12px 6px 6px!important;font:800 12px/1.2 Heebo,Arial,sans-serif!important;letter-spacing:.02em;color:#626e7c!important}
+html body .header-apple-sheet .workspace-mobile-drawer-group h2{margin:12px 6px 6px!important;font:800 12px/1.2 Heebo,Arial,sans-serif!important;letter-spacing:.02em;color:#7b8796!important}
 html body .header-apple-sheet .workspace-mobile-drawer-group{display:grid}
 html body .header-apple-sheet .workspace-mobile-drawer-group>button:first-of-type{border-radius:16px 16px 0 0!important}
 html body .header-apple-sheet .workspace-mobile-drawer-group>button:last-of-type{border-radius:0 0 16px 16px!important}
@@ -97,14 +97,14 @@ html body .header-apple-sheet .workspace-mobile-drawer-link{display:grid!importa
 html body .header-apple-sheet .workspace-mobile-drawer-group>button+button{box-shadow:0 -1px 0 rgba(11,40,80,.09)!important}
 html body .header-apple-sheet .workspace-mobile-drawer-link:active{background:#e9eef5!important}
 html body .header-apple-sheet .workspace-mobile-drawer-link.is-current{background:#eef5ff!important}
-html body .header-apple-sheet .mobile-glass-icon{width:36px!important;height:36px!important;border-radius:11px!important;display:grid!important;place-items:center;color:#fff!important;background:linear-gradient(180deg,#006ef6,#1467cf)!important;box-shadow:inset 0 1px 0 #ffffff59!important;border:0!important}
+html body .header-apple-sheet .mobile-glass-icon{width:36px!important;height:36px!important;border-radius:11px!important;display:grid!important;place-items:center;color:#fff!important;background:linear-gradient(180deg,#2f8cff,#1673e6)!important;box-shadow:inset 0 1px 0 #ffffff59!important;border:0!important}
 html body .header-apple-sheet .mobile-glass-icon svg{width:18px;height:18px}
 html body .header-apple-sheet .mobile-glass-copy>span{font:700 16px/1.3 Heebo,Arial,sans-serif!important;color:#0b1b2f!important}
 html body .header-apple-sheet .mobile-glass-copy>small{font:500 13px/1.4 Heebo,Arial,sans-serif!important;color:#4f5d6e!important}
-html body .header-apple-sheet .mobile-glass-chevron{color:#626e7c!important}
+html body .header-apple-sheet .mobile-glass-chevron{color:#7b8796!important}
 html body .header-apple-sheet .workspace-mobile-drawer-bottom{margin-top:12px;padding:0!important;border:0!important;background:transparent!important}
 html body .header-apple-sheet .workspace-mobile-drawer-bottom .workspace-mobile-drawer-link{border-radius:16px!important}
-html body .header-apple-sheet .workspace-mobile-drawer-bottom .mobile-glass-icon{background:linear-gradient(180deg,#108286,#0b6f75)!important}
+html body .header-apple-sheet .workspace-mobile-drawer-bottom .mobile-glass-icon{background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important}
 @media(hover:hover) and (pointer:fine){
  html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-trigger:hover{color:#fff!important;background:#ffffff14!important}
  html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-link:hover{background:#f2f6fb!important}
@@ -112,7 +112,7 @@ html body .header-apple-sheet .workspace-mobile-drawer-bottom .mobile-glass-icon
  html body .workspace-site-header.workspace-site-header-compact :is(.workspace-greeting,.workspace-notification-button):hover{background:#ffffff26!important}
  html body .workspace-site-header.workspace-site-header-compact .workspace-site-cart:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 #ffffff80,0 2px 4px #a03c0033,0 16px 30px -12px #f26a1bcc!important}
  .account-apple-grid button:hover{background:#f2f6fb}
- .account-apple-balance button:hover{color:#1467cf}
+ .account-apple-balance button:hover{color:#1673e6}
  .account-apple-signout:hover{background:#fdecea;border-radius:0 0 14px 14px}
 }
 @media(max-width:1180px){html body .workspace-site-header.workspace-site-header-compact .workspace-greeting-text{display:none!important}html body .workspace-site-header.workspace-site-header-compact .workspace-greeting{padding-inline:6px!important}}
@@ -140,13 +140,13 @@ html body .workspace-site-header.workspace-site-header-compact .workspace-top-na
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-panel.personal-glass-menu{width:500px!important;min-width:500px!important;max-width:calc(100vw - 32px)!important;overflow:visible!important}
 html body .workspace-site-header.workspace-site-header-compact .workspace-top-navigation-panel.personal-glass-menu .workspace-top-navigation-links{min-width:0!important;width:100%!important}
 /* Destination colors inside the header carry the same weight as the base tile rule */
-html body .workspace-site-header.workspace-site-header-compact :is([data-page=offers],[data-page="purchased/orders"]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#d14509,#b93d08)!important}
-html body .workspace-site-header.workspace-site-header-compact :is([data-page=knowledge],[data-page=purchased],[data-page="purchased/support"]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#108286,#0b6f75)!important}
-html body .workspace-site-header.workspace-site-header-compact [data-page="purchased/payments"] .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#20854a,#178648)!important}
+html body .workspace-site-header.workspace-site-header-compact :is([data-page=offers],[data-page="purchased/orders"]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#ffa04a,#f26a1b)!important}
+html body .workspace-site-header.workspace-site-header-compact :is([data-page=knowledge],[data-page=purchased],[data-page="purchased/support"]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important}
+html body .workspace-site-header.workspace-site-header-compact [data-page="purchased/payments"] .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#2fc06b,#1a9a52)!important}
 html body .workspace-site-header.workspace-site-header-compact [data-page="purchased/customers"] .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#8b7cff,#5b4fe0)!important}
 html body .workspace-site-header.workspace-site-header-compact :is([data-page="purchased/profile"],[data-page=admin],[data-page=supplier-workspace]) .workspace-top-navigation-link-icon{background:linear-gradient(180deg,#9aa7b6,#6c7a8b)!important}
-html body .header-apple-sheet :is([data-page=offers]) .mobile-glass-icon{background:linear-gradient(180deg,#d14509,#b93d08)!important}
-html body .header-apple-sheet :is([data-page=knowledge],[data-page=purchased]) .mobile-glass-icon{background:linear-gradient(180deg,#108286,#0b6f75)!important}
+html body .header-apple-sheet :is([data-page=offers]) .mobile-glass-icon{background:linear-gradient(180deg,#ffa04a,#f26a1b)!important}
+html body .header-apple-sheet :is([data-page=knowledge],[data-page=purchased]) .mobile-glass-icon{background:linear-gradient(180deg,#2fd3c4,#0d9f9a)!important}
 html body .header-apple-sheet :is([data-page=admin],[data-page=supplier-workspace]) .mobile-glass-icon{background:linear-gradient(180deg,#9aa7b6,#6c7a8b)!important}
 /* Signed-out sheet: a short greeting with the reason to sign in, then the sign-in button on its own row */
 html body .header-apple-sheet .workspace-mobile-drawer-top:has(.workspace-guest-welcome){align-items:flex-start!important}

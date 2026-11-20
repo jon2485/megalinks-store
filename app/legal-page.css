@@ -1,6 +1,6 @@
 /* Legal pages (terms, privacy, cancellations, supply, accessibility, cookies). Same language as the personal area:
    azure page, white rounded card, Heebo, navy ink and the site blue. Scoped to .legal so nothing else changes. */
-.legal{--lg-ink:#0b1b2f;--lg-text:#33475f;--lg-muted:#5b6b82;--lg-blue:#1467cf;--lg-line:#e3eaf2;max-width:1180px;margin:0 auto;padding:34px 28px 64px;font-family:Heebo,Arial,sans-serif;color:var(--lg-text);text-align:right}
+.legal{--lg-ink:#0b1b2f;--lg-text:#33475f;--lg-muted:#5b6b82;--lg-blue:#1673e6;--lg-line:#e3eaf2;max-width:1180px;margin:0 auto;padding:34px 28px 64px;font-family:Heebo,Arial,sans-serif;color:var(--lg-text);text-align:right}
 .legal-hero{padding:8px 4px 22px}
 .legal-kicker{margin:0 0 6px;font-size:14px;font-weight:700;color:var(--lg-blue);letter-spacing:.01em}
 .legal h1{margin:0;font-size:clamp(30px,4.2vw,44px);line-height:1.15;font-weight:800;color:var(--lg-ink);letter-spacing:-.01em}
@@ -35,7 +35,7 @@
 .legal-card .legal-contact-phone:hover{color:var(--lg-blue)}
 .legal-contact strong{font-size:16px}
 .legal-contact span{font-size:14.5px;color:var(--lg-muted)}
-.legal-card .legal-contact-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:13px;background:linear-gradient(180deg,#006ef6,#1467cf);color:#fff;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 8px 18px -10px #1673e6cc}
+.legal-card .legal-contact-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:0 20px;border-radius:13px;background:linear-gradient(180deg,#2f8cff,#1673e6);color:#fff;font-size:15px;font-weight:800;text-decoration:none;box-shadow:0 8px 18px -10px #1673e6cc}
 .legal-card .legal-contact-button:hover{color:#fff;filter:brightness(1.05)}
 /* ---- New boxes (owner, 16.11.2026) ---- */
 .legal .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
@@ -45,7 +45,7 @@
 .legal-doc-icon{display:grid;place-items:center;width:34px;height:34px;flex:none;border-radius:11px;background:#fff;color:var(--lg-blue);box-shadow:0 1px 2px #0b28501a,inset 0 0 0 1px #dfe9f6}
 .legal-docs a:hover{background:#eef5ff;box-shadow:inset 0 0 0 1px #c9dcf5;color:var(--lg-blue)}
 .legal-docs a:active{transform:scale(.97)}
-.legal-docs a[aria-current=page]{background:linear-gradient(135deg,#0b2a5b,#1467cf);color:#fff;box-shadow:0 10px 22px -12px #1673e6cc}
+.legal-docs a[aria-current=page]{background:linear-gradient(135deg,#0b2a5b,#1673e6);color:#fff;box-shadow:0 10px 22px -12px #1673e6cc}
 .legal-docs a[aria-current=page] .legal-doc-icon{background:#ffffff26;color:#fff;box-shadow:inset 0 0 0 1px #ffffff40}
 /* Contents box: a header with the number of sections, and a numbered list */
 .legal-toc{position:sticky;top:112px;max-height:calc(100dvh - 140px);overflow:auto;padding:14px;border-radius:22px;background:#fff;box-shadow:0 1px 2px #0b28500d,0 14px 34px -22px #0b285052}
@@ -62,7 +62,7 @@
 .legal-card{min-width:0;padding:28px 32px 22px;border-radius:24px;background:#fff;box-shadow:0 1px 2px #0b28500d,0 14px 34px -24px #0b285052;scroll-margin-top:118px}
 .legal-card-intro{background:linear-gradient(180deg,#f7fbff,#fff);box-shadow:inset 0 0 0 1px #dce9f8}
 .legal-card>h2{display:flex;align-items:center;gap:12px;margin:0 0 16px;font-size:22px;line-height:1.3;font-weight:800;color:var(--lg-ink);scroll-margin-top:118px}
-.legal-num{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:12px;background:linear-gradient(135deg,#0b2a5b,#1467cf);color:#fff;font-size:16px;font-weight:800;box-shadow:0 8px 16px -10px #1673e6cc}
+.legal-num{display:grid;place-items:center;width:38px;height:38px;flex:none;border-radius:12px;background:linear-gradient(135deg,#0b2a5b,#1673e6);color:#fff;font-size:16px;font-weight:800;box-shadow:0 8px 16px -10px #1673e6cc}
 .legal-card>:last-child{margin-bottom:0}
 .legal-note{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border-radius:16px;background:#f2f7fd;box-shadow:inset 0 0 0 1px #d8e6f7;color:#2d4460}
 .legal-note>svg{flex:none;margin-top:.3em;color:var(--lg-blue)}

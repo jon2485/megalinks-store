@@ -15,7 +15,7 @@
  --sk-glow:radial-gradient(55% 40% at 82% 6%,rgba(80,215,235,.22),transparent 70%),radial-gradient(45% 35% at 8% 30%,rgba(40,120,255,.2),transparent 70%);
 }
 html[data-admin-theme=light] .orders-sky{
- --sk-ink:#0c1d33;--sk-copy:#3a4e66;--sk-mute:#5d6e82;--sk-line:rgba(15,27,45,.08);
+ --sk-ink:#0c1d33;--sk-copy:#3a4e66;--sk-mute:#6a7d94;--sk-line:rgba(15,27,45,.08);
  --sk-glass:linear-gradient(180deg,rgba(255,255,255,.74),rgba(255,255,255,.62) 60%,rgba(255,255,255,.56));
  --sk-edge:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(255,255,255,.75),0 1px 2px rgba(15,40,80,.05),0 10px 28px rgba(30,80,140,.08);
  --sk-well:rgba(255,255,255,.62);--sk-well-line:rgba(15,27,45,.07);
@@ -197,7 +197,7 @@ html:not([data-admin-theme=light]) .orders-sky .approved-payment-details .approv
 /* ---------- inline forms stay on a light sheet so every field reads clearly ---------- */
 .orders-sky :is(.om-refund,.approved-inline-refund,.om-sheet,.approved-management-documents form,.approved-management-documents .invoice-attachment,.om-dialog-part){
  --om-ink:#0b274d;--om-copy:#4a5f7a;--om-line:#d9e4ee;--om-navy:#071f4b;--om-red:#b81f3f;--om-red-ink:#8f1530;--om-red-tint:#fdeef1;--om-blue:#0a66c2;--om-blue-tint:#e6f1fc;--om-green:#17694f;--om-green-tint:#e7f6f0;--om-amber:#8a5a0a;--om-amber-tint:#fdf3df;--om-gray:#4f5d6e;--om-gray-tint:#e4e9ef;--om-slate:#55687f;--om-slate-tint:#edf1f6;
- --ao-ink:#102d53;--ao-copy:#526d8d;--ao-line:#d3e4f1;--sk-ink:#0c1d33;--sk-copy:#3a4e66;--sk-mute:#5d6e82;--sk-line:rgba(15,27,45,.08);--sk-link:#0a66c2;--sk-btn:#fff;--sk-btn-hover:#f2f6fb;--sk-edge:inset 0 0 0 1px #d9e4ee}
+ --ao-ink:#102d53;--ao-copy:#526d8d;--ao-line:#d3e4f1;--sk-ink:#0c1d33;--sk-copy:#3a4e66;--sk-mute:#6a7d94;--sk-line:rgba(15,27,45,.08);--sk-link:#0a66c2;--sk-btn:#fff;--sk-btn-hover:#f2f6fb;--sk-edge:inset 0 0 0 1px #d9e4ee}
 html:not([data-admin-theme=light]) .orders-sky :is(.om-refund,.approved-inline-refund){margin:0 12px 12px;padding:14px;border-radius:16px;background:#fff;color:#0c1d33}
 .orders-sky .om-sheet .sk-panel{display:block;padding:0}
 .orders-sky .om-sheet .sk-panel :is(.sk-items,.sk-card){margin-bottom:12px}

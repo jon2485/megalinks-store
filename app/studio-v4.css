@@ -24,7 +24,7 @@ html body .studio-v2 .sv-steps .studio-progress li{padding:0 12px!important}
 html body .studio-v2 .sv-title-input{min-height:58px;padding:10px 16px!important;padding-inline-end:46px!important;border:1.5px solid #d5dfeb!important;border-radius:16px!important;background:#fbfcfe!important;font-size:24px!important;transition:border-color .2s,box-shadow .2s,background-color .2s}
 html body .studio-v2 .sv-title-input:hover:not(:disabled){border-color:#9fbbe0!important;background:#fff!important}
 html body .studio-v2 .sv-title-input:focus{border-color:var(--sv-blue)!important;background:#fff!important;box-shadow:0 0 0 4px #1673e622!important}
-.studio-v2 .sv-title-pencil{position:absolute;inset-inline-end:16px;top:50%;transform:translateY(-50%);color:#64768e;pointer-events:none}
+.studio-v2 .sv-title-pencil{position:absolute;inset-inline-end:16px;top:50%;transform:translateY(-50%);color:#8a99ad;pointer-events:none}
 .studio-v2 .sv-title-field:focus-within .sv-title-pencil{color:var(--sv-blue)}
 
 /* Sources: big while the article is empty, neat compact pills once there is text */
@@ -39,7 +39,7 @@ html body .studio-v2 .sv-sources[data-compact=true] .sv-source strong{font-size:
 .studio-v2 .sv-softcard,html body .studio-v2 .sv-publish .article-schedule-card{padding:18px;border:1px solid #c4dff4!important;border-radius:20px!important;background:linear-gradient(135deg,rgba(255,255,255,.97),rgba(239,249,255,.94))!important;box-shadow:0 10px 26px -22px #123c6855!important}
 .studio-v2 .sv-softcard{display:grid;gap:12px}
 .studio-v2 .sv-softcard-head{display:flex;align-items:center;gap:14px}
-.studio-v2 .sv-softcard-icon,html body .studio-v2 .sv-publish .article-schedule-icon{display:grid;place-items:center;flex:0 0 auto;width:48px;height:48px;border-radius:14px;color:#0771e6;background:#def4ff;border:1px solid #e9fbff}
+.studio-v2 .sv-softcard-icon,html body .studio-v2 .sv-publish .article-schedule-icon{display:grid;place-items:center;flex:0 0 auto;width:48px;height:48px;border-radius:14px;color:#087af7;background:#def4ff;border:1px solid #e9fbff}
 .studio-v2 .sv-softcard h3,html body .studio-v2 .sv-publish .article-schedule-card h2{margin:0;font:750 18px/1.4 Heebo,Arial,sans-serif!important;color:#0b1b2f!important}
 .studio-v2 .sv-softcard-head p{margin:2px 0 0;font:500 14px/1.6 Heebo,Arial,sans-serif;color:#415e7d}
 html body .studio-v2 .sv-soft-input{border:1px solid #79aeea!important;border-radius:12px!important;background:#ffffffb8!important;box-shadow:none!important}
@@ -111,7 +111,7 @@ body.sv-typing .floating-whatsapp{display:none!important}
 .studio-link-menu-url{font:500 12px Heebo,Arial,sans-serif;color:#b9c6d8;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .studio-link-menu-actions{display:flex;gap:6px}
 .studio-link-menu-actions button{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 12px;border:0;border-radius:11px;background:#ffffff1f;color:#fff;font:700 13.5px Heebo,Arial,sans-serif;cursor:pointer;white-space:nowrap;transition:background-color .2s,transform .12s ease-out}
-.studio-link-menu-actions button:first-child{background:#1467cf}
+.studio-link-menu-actions button:first-child{background:#1673e6}
 .studio-link-menu-actions button:active{transform:scale(.96)}
 @media(hover:hover) and (pointer:fine){.studio-link-menu-actions button:hover{background:#ffffff33}.studio-link-menu-actions button:first-child:hover{background:#2f84f0}}
 .studio-link-view .studio-link-facts{display:grid;gap:8px;margin:0}

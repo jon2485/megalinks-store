@@ -23,8 +23,8 @@ export function confirmationState(order: Row, reportStatus?: string): State {
 }
 
 function Mark({ tone }: { tone: 'green' | 'blue' | 'wait' }) {
-    if (tone === 'wait') return <div className="oc-mark oc-clock" aria-hidden="true"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#fff4e2" stroke="#f5b14d" strokeWidth="5"/><line className="oc-hand" x1="42" y1="42" x2="42" y2="20" stroke="#aa5a00" strokeWidth="5" strokeLinecap="round"/><line x1="42" y1="42" x2="56" y2="48" stroke="#aa5a00" strokeWidth="5" strokeLinecap="round"/><circle cx="42" cy="42" r="4" fill="#aa5a00"/></svg></div>;
-    const color = tone === 'green' ? '#2fc06b' : '#1467cf';
+    if (tone === 'wait') return <div className="oc-mark oc-clock" aria-hidden="true"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="38" fill="#fff4e2" stroke="#f5b14d" strokeWidth="5"/><line className="oc-hand" x1="42" y1="42" x2="42" y2="20" stroke="#b25e00" strokeWidth="5" strokeLinecap="round"/><line x1="42" y1="42" x2="56" y2="48" stroke="#b25e00" strokeWidth="5" strokeLinecap="round"/><circle cx="42" cy="42" r="4" fill="#b25e00"/></svg></div>;
+    const color = tone === 'green' ? '#2fc06b' : '#1673e6';
     return <div className="oc-mark oc-play" aria-hidden="true"><svg viewBox="0 0 84 84"><circle className="oc-ring" cx="42" cy="42" r="38" stroke={color}/><circle className="oc-disc" cx="42" cy="42" r="30" fill={color}/><path className="oc-tick" d="M29 43l9 9 17-19"/></svg></div>;
 }
 

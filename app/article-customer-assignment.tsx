@@ -1,7 +1,7 @@
 'use client';
 import React,{useEffect,useRef,useState} from 'react';
 import {Plus,Search,Users,X,LoaderCircle,RefreshCw,Pencil,Check} from 'lucide-react';
-const tones=[['#e8f1ff','#1467cf'],['#e2f6f2','#0a7d74'],['#f1ecff','#6d4bd8'],['#fff1e3','#c25e00'],['#ffe9ee','#c2335a']];
+const tones=[['#e8f1ff','#1673e6'],['#e2f6f2','#0a7d74'],['#f1ecff','#6d4bd8'],['#fff1e3','#c25e00'],['#ffe9ee','#c2335a']];
 /** Round initials badge with a stable color per name. */
 export function CustomerAvatar({name,size}:{name:string;size?:number}){const n=String(name||'').trim()||'?';const t=tones[[...n].reduce((a,c)=>a+c.charCodeAt(0),0)%tones.length];const ini=n.split(/\s+/).slice(0,2).map(w=>w[0]).join('');return <span className="cv7-avatar" aria-hidden="true" style={{background:t[0],color:t[1],...(size?{width:size,height:size}:{})}}>{ini}</span>;}
 const Tick=()=><span className="cv7-tick" aria-hidden="true"><Check size={14} strokeWidth={3}/></span>;

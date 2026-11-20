@@ -1,7 +1,7 @@
 /* Approved centered, illustration-free knowledge hub. No article/editor overrides. */
 .knowledge-hub .knowledge-hub-hero{display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;min-height:0;margin:25px auto 28px;gap:13px}
 .knowledge-hub .knowledge-hub-hero h1{display:flex;flex-direction:column;gap:5px;font-size:clamp(37px,4.3vw,61px);font-weight:850;line-height:1.2;letter-spacing:-.025em;margin:0}
-.knowledge-hub .knowledge-hub-accent{color:#0771e6;background:linear-gradient(90deg,#009dad,#0771e6);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.knowledge-hub .knowledge-hub-accent{color:#087af7;background:linear-gradient(90deg,#00b9cc,#087af7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .knowledge-hub .knowledge-hub-hero p{font-size:clamp(15px,1.5vw,20px);line-height:1.6;margin:0;max-width:none;color:var(--knowledge-copy)}
 .knowledge-hub .knowledge-filters{display:flex;flex-direction:column;gap:17px;margin:0 auto 23px}
 .knowledge-hub .knowledge-search{width:min(100%,820px);flex:initial;min-height:54px;border-radius:22px;padding-inline:16px;background:#ffffffdf;box-shadow:0 0 0 8px #ffffff75,0 7px 20px #0875a308}
@@ -19,7 +19,7 @@
 .knowledge-hub .knowledge-card-bottom .knowledge-meta{order:2;font-size:12px}
 .knowledge-hub .knowledge-card.is-featured .knowledge-card-bottom{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px;border:0;padding-top:0}
 .knowledge-hub .knowledge-waves{opacity:.5}
-.knowledge-read-link{display:inline-flex;align-items:center;gap:8px;color:#0771e6;font-size:14px;font-weight:650;min-height:44px;white-space:nowrap;transition:color .18s,transform .18s}
+.knowledge-read-link{display:inline-flex;align-items:center;gap:8px;color:#087af7;font-size:14px;font-weight:650;min-height:44px;white-space:nowrap;transition:color .18s,transform .18s}
 .knowledge-hub .knowledge-card.is-featured{grid-template-columns:minmax(0,1fr) 43%;gap:25px;min-height:260px}
 .knowledge-hub .knowledge-card.is-featured .knowledge-card-media{height:248px}
 .knowledge-hub .knowledge-card.is-featured h2{font-size:25px}
