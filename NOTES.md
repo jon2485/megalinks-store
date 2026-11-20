@@ -1641,3 +1641,15 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Owner approved the design (20.11)** with two notes: make sure it is centered on a phone, and the bottom button blue in the site's style, not turquoise.
   - The send button of the ticket form (`.support-form-actions` submit in `app/globals.css`) is now the site blue `#1673e6` with a darker hover, instead of turquoise `#69f4dc`.
   - Measured at 390px without the scrollbar: the sheet sits at 0 on both sides, full width. The earlier images looked off-center only because of the test browser's scrollbar.
+
+## Where this stands (20.11.2026, before a possible shutdown)
+
+- **This branch** (`claude/stock-email-dr-20261120`, not pushed): separate suppliers under one email (`0a43dae`), the support ticket windows (`fe55602`, `add023b`), the brand blue `#1467cf` (`634ffaf`). Live Staging is still `209f04f`.
+- **Accessibility session** (`local_99bab848…`, branch `claude/accessibility-terms-c15be3`, own worktree, not pushed): the owner approved all 19 before/after images ("הכל מאושר"); the visible changes are back in `1422954`. Still open there:
+  - privacy notice lines in login, account settings and the bank transfer report (owner: yes);
+  - the definition of "אתר שווה ערך" in the terms (owner's words: a site at a similar price agreed by the customer and Mega Links; if none is agreed, the customer is credited for the cancelled service);
+  - statement sections 7-8 (an alternative channel per external service) with GPT in Chat mode (owner: yes).
+  - GPT findings 1-3 (VAT-inclusive prices, registered owner name, "פרסומת"): owner said do not touch.
+- **Next:** when the accessibility session finishes, merge its branch into this one (expect conflicts in `app/globals.css`, `app/ticket-conversation.css`, `app/workspace.tsx`, `app/dialog-badge.tsx`), build, run the tests, check the ticket window at 390px, then ask the owner before deploying to Staging (check the live commit first).
+- **After the deploy:** run the sheet sync preview. It stays blocked until the owner decides: 7 duplicate address pairs (31/1678, 72/80, 118/1335, 190/192, 335/371, 340/566, 1645/1671), UR above 100 in rows 1418-1545 (46 rows, בסט לינקס), row 550 (no category), row 974 (no name or address). Not urgent: no logo for rows 78, 210, 1276, 1657; how "החלפה" (41 rows) works. The owner said not to write these into the sheet.
+- **Articles session** (`local_a9b1238d…`): a scheduled resume at 17:00 continues from article 3; it needs the computer on with Chrome open.
