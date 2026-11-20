@@ -630,7 +630,7 @@
 @media(max-width:599px){.megalinks-footer-inner{padding:26px 20px 0;}.megalinks-footer-grid{gap:22px;grid-template-columns:minmax(0,1fr) minmax(0,1fr);}.megalinks-footer .megalinks-footer-logo{width:100%;max-width:290px;}.megalinks-footer-group h2{font-size:16px!important;}.megalinks-footer-legal{padding-inline-start:15px;}.megalinks-footer-link-list button,.megalinks-footer-link-list a{min-height:42px;font-size:14px;}.megalinks-footer-legal .megalinks-footer-link-list a{align-items:flex-start;}.megalinks-footer-legal .megalinks-footer-link-list a svg{flex-shrink:0;margin-top:3px;}.megalinks-footer-phone,.megalinks-footer-support{min-height:46px;}.megalinks-footer-copyright{font-size:13px;}}
 
 /* Support: shared brand surfaces, readable rows and compact mobile layout. */
-.support-page{background:#f5f7fb;min-width:0;padding-bottom:56px;color:#102440}
+.support-page{background:#f5f7fb;min-width:0;padding-bottom:56px;color:#102440;font-family:Heebo,Arial,sans-serif}
 .support-hero{position:relative;isolation:isolate;background:radial-gradient(ellipse at 12% 30%,#126273 0,transparent 60%),linear-gradient(115deg,#092747,#0d1731);color:#fff;padding:38px 24px 62px;overflow:hidden}
 .support-hero-inner{max-width:1120px;margin:0 auto;text-align:center;position:relative;z-index:1}
 .support-hero-icon{display:flex;align-items:center;justify-content:center;width:54px;height:54px;background:#ffffff12;border:1px solid #ffffff25;border-radius:18px;margin:0 auto 14px;color:#83eee0}

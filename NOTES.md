@@ -1621,3 +1621,20 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
   - **Failing on the old code too, unrelated:** `admin-suppliers` and `admin-website-save-contract`, which fail the same before and after.
   - **Checked on screen:** the local suppliers list shows three separate cards under one address.
   - **Not deployed yet.**
+
+## Support ticket windows on a phone (20.11.2026)
+
+- **Owner:** "on a phone it opens annoyingly and needs zooming out, and the screen isn't pretty", then "use nicer fonts".
+- **Causes:**
+  - The header icon (sparkles) sat on the close button.
+  - Focus landed on the close button on open and drew a ring; on an open ticket the keyboard could jump into the field.
+  - Fields under 16px (14px and 15px) make the iPhone zoom in.
+  - The font was Arial, the site default.
+- **Changed (only the conversation window and the "פתיחת פנייה" window):**
+  - `app/ticket-conversation.css`: a frame like the cancel request window (white header with a blue badge, close button on the left, only the body scrolls). On a phone (under 640px) the window opens as a sheet from the bottom at full width; fields at 16px; Heebo font; quieter text instead of the site-wide 16px bold dialog rule. The closed-ticket box and the edit row were redone.
+  - `app/dialog-badge.tsx`: support windows show a headset icon instead of sparkles.
+  - `app/workspace.tsx`: support windows take focus themselves on open (`onOpenAutoFocus`), so no ring and no keyboard jump.
+  - `app/ticket-conversation.tsx`: the edit row reads "עריכת פרטי הפנייה" with a quiet hint "נושא, פירוט, מספר הזמנה".
+  - `app/globals.css`: the "הפניות שלי" page uses Heebo.
+- **Checked locally** at 390px and on desktop: closed ticket, open ticket with a long thread, new ticket. No horizontal overflow, fields at 16px, focus on the window.
+- **Not deployed.** It goes up together with the accessibility work and the separate suppliers (`0a43dae`).

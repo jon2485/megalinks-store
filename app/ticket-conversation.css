@@ -1,6 +1,6 @@
 /* 10.11.2026 Support ticket as a conversation (admin page, customer dialog, list preview).
    Scoped to .tc so the rest of the support screens keep their look. Light only. */
-.tc.tc{--tc-ink:#1d1d1f;--tc-copy:#424245;--tc-mute:#86868b;--tc-line:#e8e8ed;--tc-soft:#f5f5f7;--tc-blue:#0071e3;--tc-blue2:#0066cc;--tc-green:#1a7f3c;--tc-greenT:#e9f7ee;--tc-orange:#b25000;--tc-orangeT:#fff1dc;--tc-red:#c4001a;--tc-redT:#ffebee;--tc-ring:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05);color:var(--tc-ink);font-size:15px;line-height:1.5}
+.tc.tc{--tc-ink:#1d1d1f;--tc-copy:#424245;--tc-mute:#86868b;--tc-line:#e8e8ed;--tc-soft:#f5f5f7;--tc-blue:#0071e3;--tc-blue2:#0066cc;--tc-green:#1a7f3c;--tc-greenT:#e9f7ee;--tc-orange:#b25000;--tc-orangeT:#fff1dc;--tc-red:#c4001a;--tc-redT:#ffebee;--tc-ring:0 0 0 1px rgba(0,0,0,.05),0 1px 3px rgba(11,39,77,.05);color:var(--tc-ink);font-family:Heebo,Arial,sans-serif;font-size:15px;line-height:1.5}
 .tc.tc *{box-sizing:border-box}
 .tc.tc bdi{unicode-bidi:isolate}
 .tc-page.tc-page{display:grid;gap:18px;min-width:0}
@@ -116,6 +116,7 @@
 .tc .tc-details summary{display:flex;align-items:center;gap:8px;min-height:52px;padding:0 18px;border-radius:16px;font-size:14px;font-weight:600;color:var(--tc-copy);cursor:pointer;list-style:none}
 .tc .tc-details summary::-webkit-details-marker{display:none}
 .tc .tc-details summary:hover{color:var(--tc-blue2)}
+.tc .tc-details summary small{font-size:12.5px;font-weight:400;color:var(--tc-mute)}
 .tc .tc-details[open] summary{border-bottom:1px solid var(--tc-line);border-radius:16px 16px 0 0}
 .tc .tc-details-body{padding:16px 18px 18px}
 
@@ -124,11 +125,61 @@
 .tc .tc-dialog-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .tc-dialog .tc-msg{max-width:92%}
 .tc-dialog .tc-composer{margin-top:0}
-.tc .tc-closed{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 16px;border-radius:16px;background:var(--tc-greenT);color:#145c2c}
-.tc .tc-closed>svg{flex:none;color:var(--tc-green)}
-.tc .tc-closed>div{flex:1;min-width:180px}
+.tc .tc-closed{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px 14px;padding:16px;border-radius:18px;background:var(--tc-greenT);color:#145c2c}
+.tc .tc-closed>svg{flex:none;width:24px;height:24px;color:var(--tc-green)}
+.tc .tc-closed>div{min-width:0}
 .tc .tc-closed b{font-size:15px}
 .tc .tc-closed p{margin:2px 0 0;font-size:13.5px}
+
+/* 20.11.2026 The conversation window and the new ticket window (same support screen): a white header (badge, title, close button on the far side), only the
+   body scrolls, and on a phone it opens as a sheet from the bottom at full width, so nothing needs zooming out.
+   The site-wide dialog rule forces every p/small/button in a dialog to 16px bold, so the text here is scoped to this
+   window and marked !important, like the cancel request window. */
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form){display:flex!important;flex-direction:column;gap:0!important;padding:0!important;border:0!important;border-radius:24px!important;overflow:hidden!important;width:min(560px,calc(100vw - 24px))!important;max-width:560px!important;max-height:min(90dvh,820px)!important;background:#fff!important;box-shadow:0 24px 60px -16px rgba(11,27,47,.38)!important;font-family:Heebo,Arial,sans-serif!important}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) [data-slot=dialog-header]{flex:none;display:flex!important;flex-direction:row!important;align-items:center;gap:12px!important;margin:0!important;padding:18px 22px 16px 66px!important;text-align:right!important;background:#fff;border-bottom:1px solid #e8e8ed}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) .admin-dialog-badge{flex:none;width:44px;height:44px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,#1673e6,#0a4fb3);box-shadow:0 6px 16px -6px rgba(22,115,230,.6)}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) .admin-dialog-badge svg{width:22px;height:22px}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) .admin-dialog-head-text{display:grid;gap:2px;min-width:0}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) [data-slot=dialog-title]{margin:0!important;padding:0!important;font-size:19px!important;line-height:1.3!important;font-weight:800!important;letter-spacing:-.01em;color:#1d1d1f!important;text-align:right!important;overflow-wrap:anywhere}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) [data-slot=dialog-description]{margin:0!important;font-size:13.5px!important;line-height:1.5!important;font-weight:400!important;color:#6e6e73!important;text-align:right!important}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)>[data-slot=dialog-close]{top:18px!important;left:16px!important;right:auto!important;width:40px;height:40px;min-width:40px;min-height:40px!important;padding:0;display:grid;place-items:center;border-radius:12px;background:#f2f2f5!important;color:#424245!important;opacity:1;box-shadow:none!important;transition:background-color .15s,color .15s}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)>[data-slot=dialog-close]:hover{background:#e8e8ed!important;color:#1d1d1f!important}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)>[data-slot=dialog-close]:focus{outline:none}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)>[data-slot=dialog-close]:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)>[data-slot=dialog-close] svg{width:18px;height:18px}
+html body [data-slot=dialog-content]>:is(.tc-dialog,.support-ticket-form){flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:18px 22px 22px}
+html body [data-slot=dialog-content]>.tc-dialog .tc-msg p{font-size:15px!important;line-height:1.65!important;font-weight:400!important;color:#1d1d1f!important}
+html body [data-slot=dialog-content]>.tc-dialog .tc-closed p{font-size:13.5px!important;line-height:1.55!important;font-weight:400!important;color:#2d6a43!important}
+html body [data-slot=dialog-content]>.tc-dialog .tc-closed b{font-size:15.5px;font-weight:700;color:#145c2c}
+html body [data-slot=dialog-content]>.tc-dialog :is(.tc-after,.tc-loading,.tc-empty){font-size:12.5px!important;line-height:1.5!important;font-weight:400!important;color:#86868b!important}
+html body [data-slot=dialog-content]>.tc-dialog .tc-error{font-size:13px!important;line-height:1.5!important;font-weight:600!important;color:#c4001a!important}
+html body [data-slot=dialog-content]>.tc-dialog .tc-btn{font-size:15px!important;font-weight:600!important}
+html body [data-slot=dialog-content]>.tc-dialog .tc-details{border-radius:14px;box-shadow:0 0 0 1px #e8e8ed}
+html body [data-slot=dialog-content]>.tc-dialog .tc-details summary{min-height:48px;padding:0 16px;font-size:14.5px}
+html body [data-slot=dialog-content]>.tc-dialog .tc-details summary small{font-size:12.5px!important;line-height:1.4!important;font-weight:400!important;color:#86868b!important}
+@keyframes tc-sheet-in{from{transform:translateY(100%)}to{transform:none}}
+@keyframes tc-sheet-out{from{transform:none}to{transform:translateY(100%)}}
+@keyframes tc-fade-in{from{opacity:0}to{opacity:1}}
+@keyframes tc-fade-out{from{opacity:1}to{opacity:0}}
+@media (max-width:639.98px){
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form){top:auto!important;bottom:0!important;left:0!important;right:0!important;translate:none!important;width:100%!important;max-width:100%!important;max-height:88dvh!important;border-radius:22px 22px 0 0!important;padding-bottom:env(safe-area-inset-bottom)!important}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)[data-state=open]{animation:tc-sheet-in .34s cubic-bezier(.32,.72,0,1)!important}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)[data-state=closed]{animation:tc-sheet-out .22s cubic-bezier(.4,0,1,1) forwards!important}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) [data-slot=dialog-header]{padding:16px 18px 14px 64px!important}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)>[data-slot=dialog-close]{top:16px!important;left:14px!important}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) .admin-dialog-badge{width:40px;height:40px;border-radius:12px}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) .admin-dialog-badge svg{width:20px;height:20px}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form) [data-slot=dialog-title]{font-size:18px!important}
+ html body [data-slot=dialog-content]>:is(.tc-dialog,.support-ticket-form){padding:16px 16px 20px}
+ html body [data-slot=dialog-content]>.tc-dialog .tc-closed{grid-template-columns:auto minmax(0,1fr)}
+ html body [data-slot=dialog-content]>.tc-dialog .tc-closed>.tc-btn{grid-column:1/-1;width:100%}
+ /* iOS zooms into any field under 16px when it gets focus; 16px keeps the window at its size. */
+ html body [data-slot=dialog-content]>:is(.tc-dialog,.support-ticket-form) :is(input,textarea,select){font-size:16px!important}
+}
+@media (max-width:639.98px) and (prefers-reduced-motion:reduce){
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)[data-state=open]{animation:tc-fade-in .2s ease!important}
+ html body [data-slot=dialog-content]:has(>.tc-dialog,>.support-ticket-form)[data-state=closed]{animation:tc-fade-out .15s ease forwards!important}
+}
 
 /* preview in the admin list panel */
 .tc-preview.tc-preview{display:grid;gap:10px}
@@ -148,6 +199,7 @@
  .tc .tc-msg{max-width:94%}
  .tc .tc-composer-bar>.tc-btn.is-primary{width:100%}
  .tc .tc-quick{width:100%}
+ .tc.tc .tc-text{font-size:16px!important}
 }
 @media (prefers-reduced-motion:reduce){
  .tc.tc .tc-btn,.tc.tc .tc-back{transition:none}

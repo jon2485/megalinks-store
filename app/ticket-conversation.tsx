@@ -138,7 +138,7 @@ function CloseTicket({ctx,row,asking,setAsking}:{ctx:Ctx;row:Row;asking:boolean;
 function EditDetails({row,details}:{row:Row;details:Details}){
  const [open,setOpen]=useState(false);
  return <details className="tc-details" open={open} onToggle={e=>setOpen((e.currentTarget as HTMLDetailsElement).open)}>
-  <summary><Pencil size={16} aria-hidden="true"/>עריכת פרטי הפנייה (נושא, פירוט, מספר הזמנה)</summary>
+  <summary><Pencil size={16} aria-hidden="true"/><span>עריכת פרטי הפנייה</span><small>נושא, פירוט, מספר הזמנה</small></summary>
   {open?<div className="tc-details-body">{details(row,()=>setOpen(false))}</div>:null}
  </details>;
 }
