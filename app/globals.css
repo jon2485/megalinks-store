@@ -721,8 +721,8 @@
 .support-team-reply p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:16px;line-height:1.7;margin:0}
 .support-form-actions{display:flex;gap:12px;margin-top:4px}
 .support-form-actions>button{flex:1;min-height:46px;border-radius:13px;font-size:16px;font-weight:700}
-.support-form-actions>button[type=submit]{background:#1673e6;color:#fff;border:1px solid #1673e6;box-shadow:0 6px 16px -4px rgba(22,115,230,.45)}
-.support-form-actions>button[type=submit]:hover:not(:disabled){background:#0f66d4;border-color:#0f66d4}
+.support-form-actions>button[type=submit]{background:#1467cf;color:#fff;border:1px solid #1467cf;box-shadow:0 6px 16px -4px rgba(20,103,207,.45)}
+.support-form-actions>button[type=submit]:hover:not(:disabled){background:#1157b5;border-color:#1157b5}
 .support-form-actions>button[type=button]{background:white;color:#082858;border:1px solid #aac9e2}
 @media(max-width:640px){.support-hero{padding:28px 20px 54px}.support-hero h1{font-size:32px!important}.support-hero p{font-size:17px;max-width:320px}.support-hero-actions .support-primary{min-width:200px;font-size:16px!important}.support-content{padding:0 18px;margin-top:12px}.support-list-panel{padding:20px 18px}.support-list-heading h2{font-size:20px!important;gap:10px}.support-heading-icon{width:40px;height:40px}.support-list-heading>span{font-size:13px;padding:5px 8px}.support-empty{padding:28px 0 8px}.support-empty-icon{width:104px;height:104px}.support-empty h3{font-size:22px!important}.support-empty p{font-size:16px}.support-status{font-size:14px}.support-ticket-row{gap:10px}.support-ticket-title{gap:8px}}
 
