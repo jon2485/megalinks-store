@@ -1638,3 +1638,6 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
   - `app/globals.css`: the "הפניות שלי" page uses Heebo.
 - **Checked locally** at 390px and on desktop: closed ticket, open ticket with a long thread, new ticket. No horizontal overflow, fields at 16px, focus on the window.
 - **Not deployed.** It goes up together with the accessibility work and the separate suppliers (`0a43dae`).
+- **Owner approved the design (20.11)** with two notes: make sure it is centered on a phone, and the bottom button blue in the site's style, not turquoise.
+  - The send button of the ticket form (`.support-form-actions` submit in `app/globals.css`) is now the site blue `#1673e6` with a darker hover, instead of turquoise `#69f4dc`.
+  - Measured at 390px without the scrollbar: the sheet sits at 0 on both sides, full width. The earlier images looked off-center only because of the test browser's scrollbar.
