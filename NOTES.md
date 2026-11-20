@@ -1606,3 +1606,11 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
     - One address carries both "פוש דיגיטל" (9) and "רשת פוש דיגיטל" (1).
   - **Rows 550 and 974:** no category or address.
   - **5 conflicts (ynet, mako and globes):** to be resolved with the sheet value when the sync applies.
+- **Supplier names under one email (owner, 20.11):** "not a separate supplier; under my email show a filter by the names".
+  - One supplier card per email stays.
+  - Each site keeps the name from its sheet row in `data.supplier_label`; the sheet reads it back as "שם ספק".
+  - `lib/sheets-sync.ts` no longer refuses different names for one email.
+  - `supplierDetail` returns `labels` (name and count, only when there are two or more) and filters by `?label=`.
+  - The supplier page (`app/supplier-v2.tsx` SitesTab, the `sv2-seg` style) shows the buttons "הכול", "בסט לינקס", "ספונסרד" and so on, each with a count. The older `SiteTable` in `admin-suppliers-workspace.tsx` has the same filter (`OrderViews`).
+  - Checked on the local server (`qa-local`) with 4 fictional sites under one address; the filter returns the right site. Commit `a3ae97e`, not deployed yet.
+- **A parallel session `accessibility-terms`** (own worktree, from this branch) is fixing the accessibility statement and the terms with GPT for the text. Its branch must be combined with this one before the next deploy.
