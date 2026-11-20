@@ -1595,3 +1595,14 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Checks:** tsc clean, build passes. Passing: sheets-stock-email (new), sheets-plan, sheets-two-way, merge-properties, sync-integration, service-account, supplier-mail, publication-scheduling, per-site-billing, month-close-sites, catalog-suspension, supplier-privacy.
 - **Owner:** "השיטס קובע". In sync conflicts the sheet value wins. The 5 conflicts (ynet, mako and globes: category and logo) are resolved only when the sync applies, which needs zero errors first.
 - **Full details:** the sheet-fill work and the decisions are in NOTES.md on `claude/sheet-fill-20261119`, sections 43 to 45.
+- **Deployed:** deployment `ea6aae11`, SUCCESS, commit `209f04f`. The sync check went from 440 errors to 150; no DR, stock, supplier-address or "-" errors remain.
+- **Sheet:** row 923's address had an invisible U+200F at the end (`zerozer.org.il`); fixed.
+- **What blocks the sync now, owner's decision needed** (current row numbers, after row 269 was deleted):
+  - **7 duplicate addresses:** 72/80 withkids, 190/192 ziranorth (two different names), 335/371 bhcity, 340/566 bneibraknews, 118/1335 khan-hadera (different prices), 1645/1671 million-balonim, 31/1678 dynews.
+  - **46 rows with UR above 100,** for example 143, 273, 789. They are rows 1418-1545, supplier "בסט לינקס".
+  - **One supplier email, several names.** The system allows one name per email.
+    - The owner's own address carries 8 supplier names: בסט לינקס (652 rows), ספונסרד - העלאה עצמאית (53), העלאה עצמאית - לייזי (22), מלאי - צוות מגלינקס (7), and 4 single rows.
+    - The hm-news address carries "המחדש" and "ביזנעס".
+    - One address carries both "פוש דיגיטל" (9) and "רשת פוש דיגיטל" (1).
+  - **Rows 550 and 974:** no category or address.
+  - **5 conflicts (ynet, mako and globes):** to be resolved with the sheet value when the sync applies.
