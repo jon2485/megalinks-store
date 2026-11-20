@@ -1614,3 +1614,10 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
   - The supplier page (`app/supplier-v2.tsx` SitesTab, the `sv2-seg` style) shows the buttons "הכול", "בסט לינקס", "ספונסרד" and so on, each with a count. The older `SiteTable` in `admin-suppliers-workspace.tsx` has the same filter (`OrderViews`).
   - Checked on the local server (`qa-local`) with 4 fictional sites under one address; the filter returns the right site. Commit `a3ae97e`, not deployed yet.
 - **A parallel session `accessibility-terms`** (own worktree, from this branch) is fixing the accessibility statement and the terms with GPT for the text. Its branch must be combined with this one before the next deploy.
+- **Correction (owner, 20.11): "they are different suppliers, all handled under my email".** The name filter (`a3ae97e`) was reverted. Commit `0a43dae`:
+  - **Rule:** a supplier is its address plus its name, never merged by the address. Settlements, summaries and reports are grouped by supplier id, which was already the case.
+  - **Changed:** `catalog-bulk` supplier resolution; manual creation in `route.ts` (existing card only when address and name both match); `supplier-stock` orphan sites; `sheets-sync` (no error on several names).
+  - **Test:** `tests/suppliers-shared-email.mjs` (new, isolated D1, 9 steps, passing), including two settlements with separate amounts. `sheets-two-way` updated (98 checks, passing).
+  - **Failing on the old code too, unrelated:** `admin-suppliers` and `admin-website-save-contract`, which fail the same before and after.
+  - **Checked on screen:** the local suppliers list shows three separate cards under one address.
+  - **Not deployed yet.**
