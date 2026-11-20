@@ -1573,4 +1573,5 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
   - `lib/admin-content.ts`: stock packages of a supplier's sites in one query.
 - **Left as is, on purpose:** writes inside loops (each needs its own guard and result, for example `INSERT OR IGNORE` with `meta.changes`), loops whose list itself comes from one query, and sending mails one by one.
 - **Checks:** `pnpm exec tsc --noEmit` OK, `pnpm build` OK, the 3 Railway tests OK. Full run: the same 60 older failures, no new one. A first run found that D1 refuses a `UNION ALL` of more than a few terms ("too many terms in compound SELECT"), so the control-centre counts use the existing `adminUnionCtes` (CTEs of 3).
-- **Next:** the owner decides whether to add the N+1 rule to CLAUDE.md. Nothing pushed or deployed.
+- **CLAUDE.md:** the owner approved adding the N+1 rule (20.11.2026); it is under "Rules".
+- **Next:** nothing pushed or deployed. Push and Staging only after the owner approves.

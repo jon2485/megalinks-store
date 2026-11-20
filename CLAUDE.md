@@ -8,6 +8,7 @@ Rules:
 - Commit, push and Railway Staging deployment only with explicit approval for that action. Never touch Production or merge into `main`.
 - Test only locally with fictional data.
 - Change one screen at a time. No broad rewrites, and never remove existing functionality or approved designs without approval.
+- No N+1 queries: never query D1 inside a loop to fetch related data. Use a JOIN, or read each relation once with `IN (SELECT value FROM json_each(?))` (helpers `allIn`, `mapIn`, `websitesById`, `settingsByKey` in `lib/server.ts`). D1 refuses a `UNION ALL` of more than a few terms, so use `adminUnionCtes` (`lib/admin-sql.ts`).
 
 ## ניהול עבודה ושמירת הקשר
 
