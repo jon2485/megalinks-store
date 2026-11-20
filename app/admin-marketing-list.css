@@ -1,7 +1,7 @@
 .admin-marketing{display:flex;flex-direction:column;gap:14px;margin-bottom:18px}
 .admin-marketing-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
 .admin-marketing-head h2{display:flex;align-items:center;gap:8px;margin:0;font-size:19px;font-weight:800;color:#0b1b2f}
-.admin-marketing-head h2 svg{color:#1673e6}
+.admin-marketing-head h2 svg{color:#1467cf}
 .admin-marketing-head p{margin:4px 0 0;font-size:14px;color:#5b6b82}
 .admin-marketing-count{display:flex;flex-direction:column;align-items:center;min-width:88px;padding:8px 12px;border-radius:14px;background:#f4f8fe}
 .admin-marketing-count strong{font-size:26px;line-height:1.1;font-weight:800;color:#0b1b2f;font-variant-numeric:tabular-nums}

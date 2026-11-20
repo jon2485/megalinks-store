@@ -14,13 +14,14 @@ import React, {useState,useRef} from 'react';
 import {Wallet, History, Plus, Download, ReceiptText, FileText, CalendarDays, ShoppingCart, Eye, ArrowDownLeft, ArrowUpLeft, CreditCard, Landmark, LockKeyhole, Upload, LoaderCircle, CheckCircle2, XCircle, Ban, Clock3, ChevronDown, Check, X, Hash} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Card, CardContent} from '@/components/ui/card';
-import {Tabs, TabsList, TabsTrigger} from '@/components/ui/tabs';
+import {Tabs, TabsContent, TabsList, TabsTrigger} from '@/components/ui/tabs';
 import {Accordion, AccordionItem, AccordionTrigger, AccordionContent} from '@/components/ui/accordion';
 import {api, useData, download, csv} from '@/lib/client';
 import {type Row, money, when} from '@/lib/shared';
 import {type Ctx, ErrorBox, UploadField} from './workspace';
 import {Input} from '@/components/ui/input';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
+import PrivacyNote from './privacy-note';
 
 const cardStyle='min-w-0 gap-0 rounded-2xl border-slate-200 bg-white py-0 shadow-sm';
 const primaryStyle='min-h-11 h-auto whitespace-normal rounded-full bg-orange-400 px-5 py-3 text-sm font-bold text-slate-950 shadow-sm shadow-orange-500/20 hover:bg-orange-300';
@@ -66,17 +67,21 @@ function BalanceTopUp({ctx,close}:{ctx:Ctx;close:()=>void}) {
         },'בקשת ההטענה נשלחה לאימות מנהל. היתרה טרם עודכנה.');close();}catch(err){setError(err instanceof Error?err.message:'שליחת הבקשה נכשלה');}finally{setBusy(false);}
     };
     return <form onSubmit={submit} dir="rtl" className={'min-w-0 space-y-5 text-right'+(!ctx.adminMode&&ctx.user?.role!=='admin'?' customer-topup-glass':'')}>
-        <Tabs dir="rtl" value={method} onValueChange={value=>{if(!busy){setMethod(value);setError('');}}}>
+        <Tabs dir="rtl" className="gap-5" value={method} onValueChange={value=>{if(!busy){setMethod(value);setError('');}}}>
             <TabsList aria-label="אמצעי תשלום להטענת יתרה" className="grid w-full grid-cols-2 gap-2 rounded-xl bg-slate-100 p-1.5 group-data-[orientation=horizontal]/tabs:h-auto">
                 <TabsTrigger disabled={busy||!cardConfig.data?.card_enabled} value="card" className="h-auto min-h-12 whitespace-normal rounded-lg px-2 py-3 font-semibold data-[state=active]:bg-white data-[state=active]:text-slate-900"><CreditCard size={17}/>אשראי</TabsTrigger>
                 <TabsTrigger disabled={busy} value="bank" className="h-auto min-h-12 whitespace-normal rounded-lg px-2 py-3 font-semibold data-[state=active]:bg-white data-[state=active]:text-slate-900"><Landmark size={17}/>העברה בנקאית</TabsTrigger>
             </TabsList>
-        </Tabs>
+            {/* The form below belongs to the chosen tab, so the tab points at a real panel (WCAG 4.1.2). */}
+            <TabsContent value={method} className="min-w-0 space-y-5">
         {!cardConfig.loading&&!cardConfig.data?.card_enabled&&<p role="status">אשראי יהיה זמין לאחר הגדרת חיבור הסליקה.</p>}{method==='bank'&&<div className="space-y-2 rounded-xl border border-cyan-100 bg-cyan-50 p-4 text-base leading-7 text-slate-800"><ErrorBox error={bankState.error}/>{bankState.loading?<p>טוען פרטי בנק…</p>:bankState.data?.bank?<><p className="font-bold">פרטי הבנק להעברה</p><p>{bankState.data.bank.bank_name} ({bankState.data.bank.bank_number}) · סניף {bankState.data.bank.branch}</p><p>חשבון: <b dir="ltr">{bankState.data.bank.account}</b> · ע״ש {bankState.data.bank.holder}</p></>:<p>פרטי הבנק טרם הוגדרו. יש לפנות למנהל לקבלת פרטי העברה.</p>}</div>}
         <label className="block space-y-2 text-sm font-semibold text-slate-800"><span>{method==='card'?'סכום להטענה (₪)':'סכום שהועבר (₪)'}</span><Input disabled={busy} value={amount} onChange={e=>setAmount(e.target.value)} type="number" inputMode="decimal" min="0.01" step="0.01" required placeholder="0.00" className="h-12 rounded-xl bg-white text-base"/></label>
-        {method==='bank'&&<><label className="block space-y-2"><span>תאריך ביצוע ההעברה *</span><Input aria-label="תאריך ביצוע ההעברה" type="date" value={paymentDate} onChange={e=>setPaymentDate(e.target.value)}/></label><label className="block space-y-2 text-sm font-semibold text-slate-800"><span>מספר אסמכתא (חובה)</span><Input disabled={busy} value={reference} onChange={e=>setReference(e.target.value)} required maxLength={200} className="h-12 rounded-xl bg-white text-base"/></label><label className="block space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-800"><span className="flex items-center gap-2 font-semibold"><Upload size={18}/>צילום מסך של ההעברה (מומלץ)</span><input disabled={busy} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="block w-full min-w-0 text-sm file:me-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:font-semibold file:text-slate-800" onChange={e=>{setProof(e.target.files?.[0]||null);proofSaved.current=null;}}/><span className="block text-sm text-slate-600">תמונה או קובץ PDF · הצירוף אינו אישור תשלום</span></label></>}
+        {method==='bank'&&<><label className="block space-y-2"><span>תאריך ביצוע ההעברה (חובה)</span><Input aria-label="תאריך ביצוע ההעברה" aria-required="true" type="date" value={paymentDate} onChange={e=>setPaymentDate(e.target.value)}/></label><label className="block space-y-2 text-sm font-semibold text-slate-800"><span>מספר אסמכתא (חובה)</span><Input disabled={busy} value={reference} onChange={e=>setReference(e.target.value)} required maxLength={200} className="h-12 rounded-xl bg-white text-base"/></label><label className="block space-y-3 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-800"><span className="flex items-center gap-2 font-semibold"><Upload size={18}/>צילום מסך של ההעברה (מומלץ)</span><input disabled={busy} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="block w-full min-w-0 text-sm file:me-3 file:rounded-lg file:border-0 file:bg-white file:px-3 file:py-2 file:font-semibold file:text-slate-800" onChange={e=>{setProof(e.target.files?.[0]||null);proofSaved.current=null;}}/><span className="block text-sm text-slate-600">תמונה או קובץ PDF · הצירוף אינו אישור תשלום</span></label></>}
         <ErrorBox error={error}/>
         <div className="space-y-3"><Button type="submit" disabled={busy} className="h-auto min-h-12 w-full rounded-xl bg-slate-900 px-4 py-3 text-base font-bold text-white hover:bg-slate-800">{busy?<LoaderCircle size={18} className="animate-spin"/>:method==='card'?<LockKeyhole size={18}/>:<Landmark size={18}/>} {method==='card'?'מעבר לתשלום מאובטח':'שליחת בקשה לאישור'}</Button><p className="text-center text-sm leading-6 text-slate-600">{method==='card'?'היתרה תעודכן באופן מיידי לאחר אישור העסקה.':'הבקשה תועבר לאישור. היתרה תעודכן לאחר אימות הכספים בדרך כלל עד 48 שעות.'}</p></div>
+            {method==='bank'&&<PrivacyNote>פרטי ההעברה והאסמכתא משמשים לבדיקה שהכסף התקבל, לעדכון היתרה ולמניעת שימוש חוזר באותה אסמכתא.</PrivacyNote>}
+            </TabsContent>
+        </Tabs>
     </form>;
 }
 const topupStatus=(row:Row)=>row.decision==='approved'?{tone:'ok',label:'אושרה',Icon:CheckCircle2}:row.decision==='rejected'?{tone:'bad',label:'נדחתה',Icon:XCircle}:row.decision==='cancelled'?{tone:'muted',label:'בוטלה',Icon:Ban}:row.decision==='awaiting_gateway'?{tone:'wait',label:'ממתינה לתשלום',Icon:Clock3}:{tone:'wait',label:'בבדיקה',Icon:Clock3};

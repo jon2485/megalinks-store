@@ -83,3 +83,22 @@ body:has(.admin-unified-shell) .ml-a11y-fab, body:has(.admin-unified-shell) .ml-
 @media (prefers-reduced-motion: reduce) { .ml-a11y-fab, .ml-a11y-panel { transition: none; animation: none; } .ml-a11y-fab:hover, .ml-a11y-fab:active { transform: none; } }
 @media (forced-colors: active) { .ml-a11y-fab { background: ButtonFace; color: ButtonText; border: 1px solid ButtonText; box-shadow: none; } }
 @media print { .ml-a11y-fab, .ml-a11y-panel { display: none; } }
+
+/* Skip link (WCAG 2.4.1): the first stop on every page, hidden until it gets keyboard focus. */
+.ml-skip-link { position: fixed; top: 10px; right: 12px; z-index: 1000; padding: 12px 18px; border-radius: 12px; background: #0B1B3A; color: #fff !important; font: 700 16px/1.2 Heebo, Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; transform: translateY(-160%); }
+.ml-skip-link:focus, .ml-skip-link:focus-visible { transform: none; outline: 3px solid #FFB547; outline-offset: 2px; }
+/* Targets of the skip link and of the move to a new screen: they take focus from code, not from the keyboard. */
+#main-content:focus, #knowledge-content:focus, #main-content h1[tabindex="-1"]:focus { outline: none; }
+/* A field that gets keyboard focus is scrolled clear of the sticky header and of the floating buttons (WCAG 2.4.11). */
+html { scroll-padding-top: 96px; scroll-padding-bottom: 120px; }
+@media (max-width: 767px) { html { scroll-padding-top: 76px; scroll-padding-bottom: 150px; } }
+/* Required fields: the asterisk is explained next to each form; screen readers hear "חובה" from the field itself. */
+.ml-required-note { margin: 0 0 4px; font-size: 14px; color: #43526B; }
+/* The article editor lifts the WhatsApp button above its action bar; the accessibility button moves with it instead of
+   covering it (WCAG 2.5.8). */
+body:has(.studio-v2 .sv-actionbar) .ml-a11y-fab { bottom: calc(156px + env(safe-area-inset-bottom)); }
+body:has(.studio-v2 .sv-actionbar) .ml-a11y-panel { bottom: calc(214px + env(safe-area-inset-bottom)); }
+@media (max-width: 767px) {
+ body:has(.studio-v2 .sv-actionbar) .ml-a11y-fab { bottom: calc(146px + env(safe-area-inset-bottom)); }
+ body:has(.studio-v2 .sv-actionbar) .ml-a11y-panel { bottom: calc(202px + env(safe-area-inset-bottom)); }
+}

@@ -20,7 +20,7 @@ export default function KnowledgeHub({initial,initialQuery='',initialCategory=''
   finally{if(sequence.current===seq)setLoading(false);}
  };
  const featured=data.articles.find(a=>a.featured)||data.articles[0],rest=data.articles.filter(a=>a.id!==featured?.id);
- return <main className="knowledge-main knowledge-hub" id="knowledge-content">
+ return <main className="knowledge-main knowledge-hub" id="knowledge-content" tabIndex={-1}>
   <KnowledgeWaves/>
   <nav className="knowledge-breadcrumb" aria-label="מיקום באתר"><a href="/">דף הבית</a><span>/</span><span aria-current="page">מדריכים וידע</span></nav>
   <header className="knowledge-hub-hero">

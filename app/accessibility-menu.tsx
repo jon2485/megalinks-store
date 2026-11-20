@@ -27,6 +27,8 @@ export default function AccessibilityMenu() {
  useEffect(() => { const saved = read(); setOn(saved); apply(saved); }, []);
  useEffect(() => {
   if (!open) return;
+  // The panel is a dialog: focus moves to its first option, and Escape brings it back to the button.
+  panel.current?.querySelector('button')?.focus();
   const key = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); button.current?.focus(); } };
   const click = (e: MouseEvent) => { const t = e.target as Node; if (!panel.current?.contains(t) && !button.current?.contains(t)) setOpen(false); };
   document.addEventListener('keydown', key); document.addEventListener('click', click);

@@ -7,7 +7,7 @@ import {readFileSync,writeFileSync} from 'node:fs';
 const read=path=>readFileSync(new URL('../'+path,import.meta.url),'utf8');
 const home=read('home/index.html'),page=read('home/pr/page.html'),start=read('home/pr/start.html'),css=read('home/pr/pr.css'),startCss=read('home/pr/start.css');
 const need=(text,marker,where)=>{if(!text.includes(marker))throw new Error(where+' is missing '+marker);};
-for(const marker of ['</head>','<section id="interview"','<footer class="ft">','</footer>','<div class="fab">'])need(home,marker,'home/index.html');
+for(const marker of ['</head>','<section id="interview"','<footer class="ft">','</footer>','<div class="fab"'])need(home,marker,'home/index.html');
 for(const marker of ['<!--PR:SITES-->','<!--PR:DATA-->','<!--PR:INTERVIEW-->','<!--PR:FAQ-->'])need(page,marker,'home/pr/page.html');
 for(const marker of ['<!--PR:DATA-->','<!--PR:DAYS-->','<!--PR:HOURS-->'])need(start,marker,'home/pr/start.html');
 
@@ -25,7 +25,7 @@ function head(title,description,path,robots){
 }
 const footer=home.slice(home.indexOf('<footer class="ft">'),home.indexOf('</footer>')+9);
 // The homepage's main script drives its own sections (snake, offer rail, ranking card) and stops on a page without them.
-const tail=home.slice(home.indexOf('<div class="fab">')).replace(/<script>\s*\(function\(\)\{\s*var reduce[\s\S]*?<\/script>\n?/,'');
+const tail=home.slice(home.indexOf('<div class="fab"')).replace(/<script>\s*\(function\(\)\{\s*var reduce[\s\S]*?<\/script>\n?/,'');
 if(tail.includes('the snake'))throw new Error('the homepage main script was not left out of the PR page');
 const ivStart=home.indexOf('<section id="interview"'),iv=home.slice(ivStart,home.indexOf('</section>',ivStart)+10)
  .replace('<p class="kicker">כתיבת ראיון</p>','<p class="kicker">הראיון</p>')
