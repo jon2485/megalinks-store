@@ -1720,3 +1720,16 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Checks:** tsc, build; tests bundle-feedback, bundle-pricing, cart-checkout-actions, checkout-notice, checkout-phone-actions pass. Not deployed.
 - **Later the same night:** amount over the pill fixed (`afa27f3`, invoices, monthly, month close: 0 overlaps); the filter chips on phones scroll sideways on every admin list (the base rule forced `overflow:visible!important`), and the support action no longer shrinks to "מענה ללק". Scanned 12 admin pages at 390px: no chip out of reach, no cut button.
 - **Still open from the phone review:** two header skeletons (now one "קטגוריות" button, but the breadcrumb pages differ), area nav grid on `admin-order/<id>`, missing h2 on three system pages, ₪ and e-mail wrapping on the supplier page, `admin-order/<id>` count wrap and raw file input, "ללא" without a label in users, reversed date in the sheet card, "1 שעות", the other four system pages in the new look.
+### לפני העלאה (articles)
+- **Internal links are absolute to `https://megalinks.co.il/...`:** the editor drops relative links (`editorialUrl` allows only http/https). Today megalinks.co.il is still the old site (`/catalog` there is 404), so these links work only after the new system goes live on that domain.
+- **Production:** the articles live in the Staging database. If production gets its own database, re-publish with `build-payload.py` and the covers in `covers/`.
+- **Phone:** the 5-column table in article 4 was not checked on a phone width.
+
+### 22.11.2026: Article page, contents closed, FAQ folds, photo credit (owner's request)
+- **Owner:** "the guide's contents open on phone and desktop and look bad; keep them closed until someone taps"; FAQ as items that open; "the copyright for the photos is missing".
+- **Code (one screen, the knowledge article page):**
+  - `app/knowledge-components.tsx`: the contents list ("במדריך הזה") is a `<details>`, closed by default, with a chevron; the catalog and WhatsApp box under it stays visible. The cover is a `<figure>` with a caption "צילום: name, site".
+  - `lib/knowledge.ts`: `knowledgeFaqAccordion` turns the H3 questions under an H2 "שאלות נפוצות" or "שאלות ותשובות" into `<details>`; the answers stay in the HTML for Google and AI engines. `knowledgeCoverCredit` reads the credit from the alt text after "צילום:" (the convention of the first guide, "צילום: pexels") and keeps the alt descriptive.
+  - `app/knowledge.css`: styles for the three; on phones (650px and below) article tables scroll sideways instead of breaking words.
+- **Checked locally** (qa-local, fictional local DB, articles 2 and 4 published locally): desktop and iPhone width; contents closed and opening, 5 FAQ items closed and opening, caption under the cover, one H1, no horizontal page scroll. `tsc` clean; `tests/knowledge.mjs` (55), `seo-audit.mjs` (13) and `seo.mjs` (67) pass.
+- **Not deployed.** Staging needs the owner's OK and a base check against the live commit.
