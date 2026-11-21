@@ -493,7 +493,8 @@
  .sv2-orders.sv2-fin.sv2-fin .om-row .om-action{justify-self:stretch;justify-content:center;width:100%!important;max-width:none!important;height:40px;margin-top:4px}
  .sv2-orders.sv2-fin.sv2-fin.om-users .om-user-name{display:block!important}
  .sv2-orders.sv2-fin.sv2-fin .om-site-id img{width:40px!important;height:28px!important;object-fit:contain}
- .sv2-orders.sv2-fin.sv2-fin .om-chips{flex-wrap:nowrap!important;overflow-x:auto;scrollbar-width:none;margin-inline:-4px;padding:2px 4px}
+ /* 22.11.2026: the base rule sets overflow:visible!important, so on phones the last chips were cut off and could not be reached; now the row scrolls sideways */
+ .sv2-orders.sv2-fin.sv2-fin .om-chips{flex-wrap:nowrap!important;overflow-x:auto!important;overflow-y:hidden!important;scrollbar-width:none;margin-inline:-4px!important;padding:4px!important;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
  .sv2-orders.sv2-fin.sv2-fin .om-chips::-webkit-scrollbar{display:none}
  .sv2-orders.sv2-fin.sv2-fin .om-chips>button{flex:none}
  .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"id wait" "who who" "art art" "pay side" "act exp"!important;gap:6px 10px!important}
@@ -565,7 +566,9 @@
  .sv2-orders.sv2-fin.sv2-fin.om-support .om-row>.om-ticket-time{grid-area:time!important;justify-self:end;align-self:end}
  .sv2-orders.sv2-fin.sv2-fin.om-support .om-row>.om-ticket-actions{grid-area:act!important}
  .sv2-orders.sv2-fin.sv2-fin.om-support .om-row>.om-expand{grid-area:exp!important;display:grid!important}
- .sv2-orders.sv2-fin.sv2-fin.om-support .om-ticket-actions .om-action{flex:1;width:auto!important;min-width:0}
+ .sv2-orders.sv2-fin.sv2-fin.om-support .om-row>.om-ticket-actions{width:100%;min-width:0}
+ /* 22.11.2026: the action shrank to ~46px and cut its text ("מענה ללק"); it keeps its full label */
+ .sv2-orders.sv2-fin.sv2-fin.om-support .om-ticket-actions .om-action{flex:1 1 auto;width:auto!important;min-width:max-content!important}
  .sv2-orders.sv2-fin.sv2-fin.om-support .om-row>.om-ticket{display:block!important}
  .sv2-orders.sv2-fin.sv2-fin .om-who>*{min-width:0;flex-shrink:1}
 }
