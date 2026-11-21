@@ -1700,3 +1700,10 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **UR above 100:** owner: keep the big numbers (46 rows of בסט לינקס, up to 1,719). UR may now be above 100 everywhere (sheet sync `lib/sheets-plan.ts`, save `lib/catalog-bulk.ts`, import `lib/catalog-import.ts`, the site form max); DR stays 0-100. Test added in `tests/sheets-stock-email.mjs`.
 - **Checks:** tsc, build, sheets-stock-email, sheets-plan, sheets-two-way, sheets-sync-integration, sheets-merge-properties, suppliers-shared-email pass.
 - **Not deployed.** After a deploy, the sync preview should show 0 errors; then the sync can be applied (the 5 conflicts take the sheet value).
+
+## 21-22.11.2026: Staging crash, UR deploy, first full sheet sync
+
+- **Crash:** on 21.11 at 09:20 UTC the Staging worker died: "JavaScript heap out of memory" after about 21 hours of uptime (heap ~1.4 GB). Back at 18:42 UTC after a restart. Slow memory growth, not one request. **Open: find the leak** (runtime is wrangler dev / workerd on Railway; per-minute maintenance calls run all the time).
+- **Deployed:** `7e0bad7` (UR above 100), deployment `bf10ecdc`, SUCCESS.
+- **Sync applied (owner: "להעלות ולסנכרן"):** preview 0 errors, 147 price warnings acknowledged as in the sheet, 5 conflicts resolved with the sheet value. Catalog on Staging now 1,674 sites, 46 with UR above 100, 1,669 with a logo. Sync status after apply: "awaiting_ack" (waiting for the sheet to confirm the write-back).
+- **Admin on phone:** a read-only review agent is walking the admin pages at 390px; findings to the owner.
