@@ -1733,3 +1733,12 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
   - `app/knowledge.css`: styles for the three; on phones (650px and below) article tables scroll sideways instead of breaking words.
 - **Checked locally** (qa-local, fictional local DB, articles 2 and 4 published locally): desktop and iPhone width; contents closed and opening, 5 FAQ items closed and opening, caption under the cover, one H1, no horizontal page scroll. `tsc` clean; `tests/knowledge.mjs` (55), `seo-audit.mjs` (13) and `seo.mjs` (67) pass.
 - **Not deployed.** Staging needs the owner's OK and a base check against the live commit.
+
+## 22.11.2026 (night): system pages, admin phone pass, tickets as a chat list
+
+- **System and reports:** reports, mail, jobs and audit rebuilt (one agent each) in the approved connections look; same data, API calls and actions.
+- **Tickets list (admin):** a WhatsApp-like chat list (`app/admin-support-list.tsx/.css`): one 72px row per ticket (initials, name · subject, last message, time, waiting badge), delete and close in a "⋯" menu; 8 tickets per phone screen instead of 2.
+- **Phone, admin only (`app/admin-mobile-fixes.css`):** pages run edge to edge (rows 366px of 390 instead of 287), titles back, segmented filters and the order page's area chips scroll, the filter select reads right to left (value on the right, arrow on the left), ₪ and e-mails kept whole on the supplier page, the file picker tidy.
+- **Customer catalog untouched** (owner: "לא לגעת בקטלוג"); `0bcdc46` put `app/catalog-view.tsx` back. The admin catalog page was also left as it was (two small findings there: the reversed sheet date and cost/price alignment).
+- **Guide page fix** from the articles session cherry-picked (`96ed1a0`, from `b303342`), merged with the accessibility attributes in `app/knowledge-components.tsx`.
+- **Checked at 390px:** 26 admin pages (lists and single order, supplier, ticket): nothing off screen, chips scroll, no cut buttons, no overlapping cells, selects right aligned. tsc and build pass; tests admin-lobby-panels, supplier-privacy, payment-reports, customer-account-actions, cart-checkout-actions, checkout-phone-actions, knowledge, seo pass. Not deployed.

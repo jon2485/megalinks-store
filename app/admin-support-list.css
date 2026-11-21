@@ -1,0 +1,76 @@
+/* 22.11.2026 Support tickets as a WhatsApp-style chat list (owner: "בסטייל של שיחות וואצפ, ולא ככה בצורה גדולה לכל קוביה").
+   One white card, one ~72px row per ticket: avatar, name + subject, last message, time and a status mark.
+   Same family as the approved admin lists (supplier-v2.css palette --sv-*). Light only.
+   Scoped under .sl-chat; the root class is doubled and sizes carry !important because global admin rules
+   force some text to 16px bold and orders-v2.css styles .om-list with !important. */
+.sl-chat.sl-chat.sv2-fin .sl-card{min-width:0;margin:0!important;border-radius:20px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05),0 12px 32px rgba(20,40,80,.05);overflow:hidden}
+.sl-chat.sl-chat.sv2-fin .sl-list.om-list{display:block!important;gap:0!important;margin:0!important;padding:4px 0!important;list-style:none!important;background:none!important;border:0!important;box-shadow:none!important}
+
+/* the row; the thin divider starts after the avatar, like WhatsApp */
+.sl-chat.sl-chat.sv2-fin .sl-row{position:relative;display:flex;align-items:center;min-width:0;margin:0!important;padding:0!important;list-style:none;transition:background-color .15s}
+.sl-chat.sl-chat.sv2-fin .sl-row::after{content:"";position:absolute;bottom:0;inset-inline-start:76px;inset-inline-end:0;height:1px;background:var(--sv-line);pointer-events:none}
+.sl-chat.sl-chat.sv2-fin .sl-row:last-child::after{display:none}
+.sl-chat.sl-chat.sv2-fin .sl-row:hover,.sl-chat.sl-chat.sv2-fin .sl-row:has(.sl-more[data-state=open]){background:#f7f9fc}
+.sl-chat.sl-chat.sv2-fin .sl-row:active{background:#f0f4fa}
+.sl-chat.sl-chat.sv2-fin .sl-link{flex:1 1 auto;display:flex;align-items:center;gap:12px;min-width:0;min-height:72px;padding:10px 16px;padding-inline-end:6px;color:inherit!important;text-decoration:none!important;text-align:start;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sl-chat.sl-chat.sv2-fin .sl-link:focus-visible{outline:3px solid rgba(0,113,227,.4);outline-offset:-3px;border-radius:14px}
+
+/* avatar with the customer's initials, a soft tint per customer */
+.sl-chat.sl-chat.sv2-fin .sl-avatar{flex:none;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;font-size:16px!important;font-weight:700!important;line-height:1;letter-spacing:.02em;background:#e3efff;color:#0058b9}
+.sl-chat.sl-chat.sv2-fin .sl-avatar.is-c1{background:#e3f5e8;color:#1a6b34}
+.sl-chat.sl-chat.sv2-fin .sl-avatar.is-c2{background:#fff0dc;color:#a14800}
+.sl-chat.sl-chat.sv2-fin .sl-avatar.is-c3{background:#efe9ff;color:#5b34b8}
+.sl-chat.sl-chat.sv2-fin .sl-avatar.is-c4{background:#dff4f5;color:#11686f}
+.sl-chat.sl-chat.sv2-fin .sl-avatar.is-c5{background:#fde7f0;color:#a3245a}
+
+/* middle: name and subject, then the last message */
+.sl-chat.sl-chat.sv2-fin .sl-main{flex:1 1 auto;display:grid;gap:3px;min-width:0}
+.sl-chat.sl-chat.sv2-fin .sl-line{display:flex;align-items:baseline;gap:6px;min-width:0;line-height:1.35}
+.sl-chat.sl-chat.sv2-fin :is(.sl-name,.sl-subject,.sl-preview){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sl-chat.sl-chat.sv2-fin .sl-name{flex:0 1 auto;max-width:60%;font-size:15.5px!important;font-weight:600!important;color:var(--sv-ink)}
+.sl-chat.sl-chat.sv2-fin .sl-name.is-unknown{color:var(--sv-mute)}
+.sl-chat.sl-chat.sv2-fin .sl-subject{flex:1 1 0;font-size:14.5px!important;font-weight:500!important;color:var(--sv-copy)}
+.sl-chat.sl-chat.sv2-fin .sl-sep{margin-inline-end:6px;color:#c7c7cc}
+.sl-chat.sl-chat.sv2-fin .sl-preview{flex:1 1 0;font-size:14px!important;font-weight:400!important;color:var(--sv-mute)}
+.sl-chat.sl-chat.sv2-fin .sl-order{flex:none;padding:1px 7px;border-radius:6px;background:var(--sv-well);font-size:12px!important;font-weight:600!important;line-height:1.5;color:var(--sv-mute);white-space:nowrap}
+
+/* end side: time, and under it the status mark */
+.sl-chat.sl-chat.sv2-fin .sl-side{flex:none;display:grid;justify-items:end;align-content:center;gap:5px;min-width:48px}
+.sl-chat.sl-chat.sv2-fin .sl-time{font-size:12.5px!important;font-weight:500!important;line-height:1.2;color:var(--sv-mute);white-space:nowrap}
+.sl-chat.sl-chat.sv2-fin .sl-mark{display:grid;place-items:center;height:20px}
+.sl-chat.sl-chat.sv2-fin .sl-badge{display:grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--sv-blue);color:#fff;font-size:12px!important;font-weight:700!important;line-height:1;font-variant-numeric:tabular-nums}
+.sl-chat.sl-chat.sv2-fin .sl-badge.is-dot{min-width:12px;width:12px;height:12px;padding:0}
+.sl-chat.sl-chat.sv2-fin .sl-check{color:#aeaeb2}
+.sl-chat.sl-chat.sv2-fin .sl-check.is-done{color:#1a9a45}
+.sl-chat.sl-chat.sv2-fin .sl-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* waiting for our reply reads like an unread chat */
+.sl-chat.sl-chat.sv2-fin .sl-row.is-unread .sl-name{font-weight:800!important}
+.sl-chat.sl-chat.sv2-fin .sl-row.is-unread .sl-subject{color:var(--sv-ink);font-weight:600!important}
+.sl-chat.sl-chat.sv2-fin .sl-row.is-unread .sl-preview{color:var(--sv-ink);font-weight:600!important}
+.sl-chat.sl-chat.sv2-fin .sl-row.is-unread .sl-time{color:var(--sv-blue2);font-weight:700!important}
+
+/* ⋯ menu (open, close, delete): quiet, shown on hover on desktop, always there on touch screens */
+.sl-chat.sl-chat.sv2-fin .sl-more{flex:none;display:grid;place-items:center;width:40px;height:44px;min-height:44px!important;margin:0;margin-inline-end:8px;padding:0!important;border:0!important;border-radius:12px!important;background:none!important;box-shadow:none!important;color:var(--sv-mute);cursor:pointer;transition:opacity .15s,background-color .15s,color .15s}
+.sl-chat.sl-chat.sv2-fin .sl-more:hover,.sl-chat.sl-chat.sv2-fin .sl-more[data-state=open]{background:#ebebf0!important;color:var(--sv-ink)}
+.sl-chat.sl-chat.sv2-fin .sl-more:focus-visible{outline:3px solid rgba(0,113,227,.4);outline-offset:-2px}
+@media(hover:hover) and (pointer:fine){
+ .sl-chat.sl-chat.sv2-fin .sl-more{opacity:0}
+ .sl-chat.sl-chat.sv2-fin :is(.sl-row:hover,.sl-row:focus-within) .sl-more,.sl-chat.sl-chat.sv2-fin .sl-more[data-state=open]{opacity:1}
+}
+.sl-menu{min-width:220px!important}
+
+/* phones: full width, nothing overflows, 44px targets, the search at 16px so iOS does not zoom */
+@media(max-width:640px){
+ .sl-chat.sl-chat.sv2-fin .sl-card{border-radius:16px}
+ .sl-chat.sl-chat.sv2-fin .sl-link{gap:10px;padding:10px 12px;padding-inline-end:2px}
+ .sl-chat.sl-chat.sv2-fin .sl-avatar{width:46px;height:46px;font-size:15px!important}
+ .sl-chat.sl-chat.sv2-fin .sl-row::after{inset-inline-start:68px}
+ .sl-chat.sl-chat.sv2-fin .sl-name{max-width:58%;font-size:15px!important}
+ .sl-chat.sl-chat.sv2-fin .sl-subject{font-size:14px!important}
+ .sl-chat.sl-chat.sv2-fin .sl-preview{font-size:13.5px!important}
+ .sl-chat.sl-chat.sv2-fin .sl-order{font-size:11.5px!important;padding:1px 6px}
+ .sl-chat.sl-chat.sv2-fin .sl-side{min-width:44px}
+ .sl-chat.sl-chat.sv2-fin .sl-more{width:44px;margin-inline-end:2px}
+ .sl-chat.sl-chat.sv2-fin .orders-reference-search input{font-size:16px!important}
+}

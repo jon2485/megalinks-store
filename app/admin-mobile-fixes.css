@@ -10,15 +10,16 @@
  .sv2 .sv2-seg.sv2-seg::-webkit-scrollbar{display:none}
  .sv2 .sv2-seg.sv2-seg>button{flex:none;white-space:nowrap}
 
- /* the area strip on a single order page: the same scrolling strip as on the orders list, not a grid of two */
- .approved-order-management~* .orders-category-tiles,.admin-design-v172 .orders-unified-heading .orders-category-tiles{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;gap:8px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
- .admin-design-v172 .orders-unified-heading .orders-category-tiles::-webkit-scrollbar{display:none}
- .admin-design-v172 .orders-unified-heading .orders-category-tiles>a{flex:none!important;width:auto!important;min-height:44px!important;height:44px;flex-direction:row!important;gap:6px!important;padding:0 16px!important;white-space:nowrap}
- .admin-design-v172 .orders-unified-heading .orders-category-tiles>a br{display:none}
+ /* the area row on a single order page: the phone shows the chips (the tiles stay hidden); one scrolling strip, not a grid of two */
+ .admin-design-v172 .orders-unified-heading .orders-category-chips.orders-category-chips{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;gap:8px!important;grid-template-columns:none!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .admin-design-v172 .orders-unified-heading .orders-category-chips.orders-category-chips::-webkit-scrollbar{display:none}
+ .admin-design-v172 .orders-unified-heading .orders-category-chips.orders-category-chips>*{flex:none!important;width:auto!important;white-space:nowrap}
 
  /* supplier page: an amount and its ₪ stay together; a long e-mail is cut with an ellipsis instead of breaking mid-word */
  .sv2 .sv2-kpi b,.sv2 .sv2-kpi b bdi,.sv2 .sv2-num,.sv2 .sv2-num bdi{white-space:nowrap}
  .sv2 .sv2-hero .sv2-meta{min-width:0}
+ .sv2 .sv2-hero h2{min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;unicode-bidi:plaintext;text-align:right;overflow-wrap:normal!important;word-break:normal!important}
+ .sv2 .sv2-hero>div{min-width:0}
  .sv2 .sv2-hero .sv2-meta a{display:inline-block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
  .sv2 .sv2-hero .sv2-meta a bdi{white-space:nowrap}
 
@@ -50,6 +51,12 @@ html body .admin-design-v172 .upload-drop .muted.small{font-size:12.5px!importan
    screen itself. The outer main margin (16px) and the rounded page card (28px padding, 28px radius) took 103px of a
    390px screen; now the page runs edge to edge with a small side gutter, like a native app. */
 @media(max-width:760px){
- html body .admin-design-v172.admin-design-v172>.workspace-page-content>main{padding-inline:0!important;padding-top:0!important}
- html body .admin-design-v172 .admin-workspace-body.admin-workspace-body{margin-inline:0!important;max-width:none!important;padding:14px 12px 104px!important;border-radius:0!important;box-shadow:none!important;border:0!important}
+ html body .workspace-page-shell.admin-unified-shell.admin-design-v172.admin-design-v172.admin-design-v172>.workspace-page-content>main.main{padding-inline:0!important;padding-top:0!important}
+ html body .workspace-page-shell.admin-design-v172.admin-design-v172 main .admin-workspace-body.admin-workspace-body.admin-workspace-body{margin-inline:0!important;max-width:none!important;padding:14px 12px 104px!important;border-radius:0!important;box-shadow:none!important;border:0!important}
 }
+
+/* 22.11.2026 (owner: "בסינונים ובבחירות העברית מיושרת לצד הנכון"): an old rule reversed the filter selects, so the
+   Hebrew value sat on the left and the arrow on the right. The value (with its icon) starts on the right, the arrow ends left. */
+.admin-design-v172 .orders-match-screen .orders-reference-month-filter [role=combobox].orders-reference-month-filter,.admin-design-v172 .orders-match-screen .orders-reference-month-filter [role=combobox]{flex-direction:row!important;justify-content:space-between!important;text-align:right}
+.admin-design-v172 .orders-match-screen .orders-reference-month-filter [role=combobox]>span{flex-direction:row!important;justify-content:flex-start!important;text-align:right;min-width:0}
+.admin-design-v172 [data-slot=select-content] [data-slot=select-item]{text-align:right;justify-content:flex-start}
