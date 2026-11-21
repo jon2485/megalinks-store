@@ -505,6 +505,12 @@
  .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row>.om-content-side{grid-area:side!important;align-self:center;max-width:150px}
  .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row>.om-action{grid-area:act!important}
  .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row>.om-expand{grid-area:exp!important;display:grid!important}
+ /* 22.11.2026: rows with an amount (invoices, monthly, month close, profit) had no place for .om-amount and .om-pub,
+    so the amount was drawn over the status pill. The amount goes next to the order number, the pill gets its own cell. */
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row:has(>.om-amount):not(:has(>.om-wait)){grid-template-areas:"id amount" "who who" "art art" "pay pub" "act exp"!important}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row:has(>.om-amount):not(:has(>.om-wait))>.om-amount{grid-area:amount!important;justify-self:end;align-self:start}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row:has(>.om-amount):not(:has(>.om-wait))>.om-pub{grid-area:pub!important;justify-self:end;width:auto!important;max-width:100%}
+ .sv2-orders.sv2-fin.sv2-fin:not(.om-users):not(.om-catalog):not(.om-support) .om-row:has(>.om-amount):not(:has(>.om-wait))>.om-content-side{grid-area:pub!important}
  .sv2-orders.sv2-fin.sv2-fin.om-users .om-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"who role" "monthly credit" "orders orders" "act exp"!important;gap:8px 10px!important}
  .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-user-name{grid-area:who!important}
  .sv2-orders.sv2-fin.sv2-fin.om-users .om-row>.om-user-role{grid-area:role!important;justify-self:end}
