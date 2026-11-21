@@ -205,3 +205,9 @@ html body [data-slot=dialog-content]>.tc-dialog .tc-details summary small{font-s
  .tc.tc .tc-btn,.tc.tc .tc-back{transition:none}
  .tc.tc .tc-btn:active,.tc.tc .tc-back:active{transform:none}
 }
+
+/* 22.11.2026 phone review: on the ticket page "חזרה לעדכונים" was plain text next to the red "סגירת הפנייה" pill;
+   on phones every head action is a pill of the same height */
+@media(max-width:640px){
+ .tc.tc .tc-head .tc-back{height:38px;padding:0 14px;background:var(--tc-soft);border-radius:999px}
+}

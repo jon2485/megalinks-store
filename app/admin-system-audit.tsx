@@ -1,13 +1,17 @@
 'use client';
 import React,{useMemo,useRef,useState} from 'react';
-import {Check,Copy,Loader2,RefreshCw} from 'lucide-react';
+import {Building2,Check,ChevronDown,ChevronUp,Copy,FileText,History,Loader2,RefreshCw,Search,Settings,ShoppingCart,Tags,Users,X} from 'lucide-react';
 import {useData} from '@/lib/client';
 import {money,stages,type Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
-import {OrderPager,OrderRecord,OrderSearch,OrderViews} from './order-list-parts';
+import {OrderPager,RecordPanel} from './order-list-parts';
 import {OrdersAreaHead} from './orders-area-head';
+import './supplier-v2.css';
 import './admin-system-audit.css';
 
+// 22.11.2026 (owner: "like the other admin pages"): the same look as "חיבורים והגדרות", the suppliers and
+// the orders lists: one white card with the search and the category chips, then a table of rows under a
+// day heading. Same data, same refresh, same categories, same open-row details and copy. Layout only.
 // 16.11.2026: activity log in the approved v2 look. Same data as the old LogsView
 // (GET admin/activity: id, user_id, resource, action, data, created, actor) and the same refresh.
 // The action text is already written in Hebrew where it is recorded (audit() in lib/server.ts and
@@ -97,6 +101,11 @@ function summary(e:Entry){
  return summaryKeys.filter(k=>!isEmpty(data[k])&&typeof data[k]!=='object').slice(0,2).map(k=>(keyNames[k]||k)+': '+plain(k,data[k],e.raw)).join(' · ');
 }
 
+// One small icon per category for the row thumb (information only).
+const catIcons:Record<Cat,React.ElementType>={orders:ShoppingCart,content:FileText,customers:Users,suppliers:Building2,catalog:Tags,system:Settings,other:History};
+// Table columns on wide screens: action (icon, what, recorded text), who, details, category, time, open.
+const cols={gridTemplateColumns:'minmax(200px,1.7fr) minmax(0,.8fr) minmax(0,1.3fr) 132px 52px 32px'};
+
 export function AdminAuditPage({ctx}:{ctx:Ctx}){
  const state=useData('admin/activity',ctx.revision);
  const [search,setSearch]=useState(''),[cat,setCat]=useState<string>('all'),[open,setOpen]=useState(''),[page,setPage]=useState(1);
@@ -108,34 +117,48 @@ export function AdminAuditPage({ctx}:{ctx:Ctx}){
  const views:[string,string,number][]=[['all','הכול',all.length],...catOrder.filter(c=>counts(c)>0||cat===c).map(c=>[c,catLabels[c],counts(c)] as [string,string,number])];
  const busy=state.loading&&!!state.data;
  const reset=()=>{setPage(1);setOpen('');};
+ const find=(v:string)=>{setSearch(v);reset();};
  // Rows of the current page under a day heading (היום, אתמול, then the date).
  const groups:{key:string;title:string;items:Entry[]}[]=[];
  for(const e of slice){const d=new Date(e.row.created),key=valid(d)?dayKey(d):'none',last=groups[groups.length-1];if(last&&last.key===key)last.items.push(e);else groups.push({key,title:dayTitle(d),items:[e]});}
- return <section className="orders-match-screen om-content sv2 sv2-orders sv2-fin sys-audit" dir="rtl">
+ return <section className="orders-match-screen sv2 sv2-orders sv2-fin sys-audit" dir="rtl">
   <OrdersAreaHead ctx={ctx} current="admin-audit" title="יומן פעילות" sub="מי עשה מה ומתי. הפעולה החדשה ביותר למעלה." action={<div className="om-top-actions"><button type="button" className="sa-refresh" onClick={ctx.refresh} disabled={busy} aria-busy={busy||undefined}>{busy?<Loader2 className="om-spin" size={17} aria-hidden="true"/>:<RefreshCw size={17} aria-hidden="true"/>}{busy?'מרענן…':'רענון'}</button></div>}/>
-  <div className="orders-reference-panel">
-   <div className="orders-reference-toolbar om-toolbar is-search"><OrderSearch label="חיפוש לפי פעולה, מבצע או פרטים" value={search} onChange={v=>{setSearch(v);reset();}}/></div>
-   {all.length>1?<OrderViews label="סינון לפי סוג הפעולה" value={cat} onChange={v=>{setCat(v);reset();}} views={views}/>:null}
-   {all.length>=400?<p className="om-note">מוצגות 400 הפעולות האחרונות.</p>:null}
-   {state.loading&&!state.data?<div className="orders-reference-loading" role="status">טוען את היומן…</div>
-   :state.error?<div className="orders-reference-error" role="alert"><p>{state.error}</p><button type="button" className="sa-retry" onClick={ctx.refresh}>ניסיון נוסף</button></div>
+  {/* No blur on the card: a blurred parent would trap the phone sheet of an opened row inside the card. */}
+  <section className="sv2-card sa-board" aria-label="פעולות ביומן" style={{backdropFilter:'none',WebkitBackdropFilter:'none'}}>
+   <div className="sv2-tools sa-tools">
+    <label className="sv2-search"><Search size={17} aria-hidden="true"/><input type="search" maxLength={120} aria-label="חיפוש לפי פעולה, מבצע או פרטים" placeholder="חיפוש לפי פעולה, מבצע או פרטים" value={search} onChange={e=>find(e.target.value)}/>{search&&<button type="button" className="sa-clear" aria-label="ניקוי חיפוש" onClick={()=>find('')}><X size={16} aria-hidden="true"/></button>}</label>
+    {all.length>1?<div className="sv2-seg sa-seg" role="group" aria-label="סינון לפי סוג הפעולה">{views.map(([key,label,count])=><button key={key} type="button" className={cat===key?'on':''} aria-pressed={cat===key} onClick={()=>{setCat(key);reset();}}>{label}{count>0&&<b><bdi>{count}</bdi></b>}</button>)}</div>:null}
+    {all.length>=400?<p className="sa-note">מוצגות 400 הפעולות האחרונות.</p>:null}
+   </div>
+   {state.loading&&!state.data?<p className="sv2-loading" role="status">טוען את היומן…</p>
+   :state.error?<div className="sv2-empty" role="alert"><p>{state.error}</p><button type="button" className="sv2-btn tint sm" onClick={ctx.refresh}>ניסיון נוסף</button></div>
    :rows.length?<>
-    <div className="om-head" aria-hidden="true"><span>פעולה</span><span>מבצע</span><span>פרטים</span><span>סוג</span><span>שעה</span><span/></div>
-    <div className={'om-list'+(busy?' is-busy':'')} aria-label="פעולות ביומן" aria-busy={busy||undefined}>{groups.map(g=><React.Fragment key={g.key+g.items[0].row.id}>
-     <div className="sa-day" role="heading" aria-level={3}>{g.title}</div>
-     {g.items.map(e=>{const id=String(e.row.id),isOpen=open===id,d=new Date(e.row.created),sum=summary(e);return <OrderRecord key={id} id={id} tone={e.tone} label={e.label||'פעולה'} open={isOpen} onToggle={()=>setOpen(isOpen?'':id)} panel={<AuditPanel e={e}/>}>
-      <div className="sa-what"><b dir="auto">{e.label||'פעולה ללא שם'}</b>{e.label!==e.raw&&e.raw?<small dir="auto">{e.raw}</small>:null}</div>
-      <div className="sa-actor">{e.row.actor||<span className="om-muted">לא ידוע</span>}</div>
-      <div className="sa-sum" dir="auto">{sum||<span className="om-muted">אין פרטים</span>}</div>
-      <div className="sa-cat"><span className={'om-pill sa-pill is-c-'+e.cat}>{catLabels[e.cat]}</span></div>
-      <div className="sa-time">{valid(d)?<time dateTime={e.row.created}><bdi>{clock(d)}</bdi></time>:'—'}</div>
-     </OrderRecord>;})}
+    <div className="sv2-th" style={cols} aria-hidden="true"><span>פעולה</span><span>מבצע</span><span>פרטים</span><span>סוג</span><span className="sa-end">שעה</span><span/></div>
+    <div className={'sa-list'+(busy?' is-busy':'')} aria-busy={busy||undefined}>{groups.map(g=><React.Fragment key={g.key+g.items[0].row.id}>
+     <div className="sv2-tr sa-day" role="heading" aria-level={3}>{g.title}</div>
+     {g.items.map(e=>{const id=String(e.row.id);return <AuditRow key={id} e={e} open={open===id} toggle={()=>setOpen(open===id?'':id)}/>;})}
     </React.Fragment>)}</div>
    </>
-   :<div className="orders-reference-empty"><h3>{filtered?'לא נמצאו פעולות':'היומן נקי'}</h3><p>{filtered?'נסו חיפוש אחר או סוג אחר.':'הפעולות החדשות יירשמו כאן באופן אוטומטי.'}</p>{filtered?<button type="button" className="sa-retry" onClick={()=>{setSearch('');setCat('all');reset();}}>הצגת כל היומן</button>:null}</div>}
+   :<div className="sv2-empty"><h3>{filtered?'לא נמצאו פעולות':'היומן נקי'}</h3><p>{filtered?'נסו חיפוש אחר או סוג אחר.':'הפעולות החדשות יירשמו כאן באופן אוטומטי.'}</p>{filtered?<button type="button" className="sv2-btn tint sm" onClick={()=>{setSearch('');setCat('all');reset();}}>הצגת כל היומן</button>:null}</div>}
    <OrderPager page={shown} total={rows.length} size={20} onChange={v=>{setPage(v);setOpen('');}}/>
-  </div>
+  </section>
  </section>;
+}
+
+// One action: what (with the recorded text when it differs), who, a short line of details and the record, category, time.
+function AuditRow({e,open,toggle}:{e:Entry;open:boolean;toggle:()=>void}){
+ const id=String(e.row.id),d=new Date(e.row.created),sum=summary(e),Icon=catIcons[e.cat],label=e.label||'פעולה';
+ return <article className={'sa-rec is-tone-'+e.tone+(open?' is-open':'')}>
+  <div className="sv2-tr sa-row" style={cols} onClick={toggle}>
+   <div className="sv2-who sa-what"><span className={'sv2-thumb sa-ico is-c-'+e.cat} aria-hidden="true"><Icon size={19}/></span><span><b dir="auto">{e.label||'פעולה ללא שם'}</b>{e.label!==e.raw&&e.raw?<small dir="auto" title={e.raw}>{e.raw}</small>:null}</span></div>
+   <span className="sa-actor"><small className="sv2-ml">מבצע</small><span className="sa-line">{e.row.actor||<span className="sa-muted">לא ידוע</span>}</span></span>
+   <span className="sa-sum"><small className="sv2-ml">פרטים</small><span className="sa-line" dir="auto" title={sum||undefined}>{sum||<span className="sa-muted">אין פרטים</span>}</span>{e.row.resource?<bdi className="sa-res" dir="ltr" title={String(e.row.resource)}>{String(e.row.resource)}</bdi>:null}</span>
+   <span className="sa-cat"><span className={'sv2-pill sa-pill is-c-'+e.cat}>{catLabels[e.cat]}</span></span>
+   <span className="sa-time">{valid(d)?<time dateTime={e.row.created}><bdi>{clock(d)}</bdi></time>:'—'}</span>
+   <span className="sa-exp"><button type="button" className="sa-expand" aria-label={(open?'סגירת פירוט ':'פירוט ')+label} aria-expanded={open} aria-controls={'record-'+id} onClick={ev=>{ev.stopPropagation();toggle();}}>{open?<ChevronUp size={18} aria-hidden="true"/>:<ChevronDown size={18} aria-hidden="true"/>}</button></span>
+  </div>
+  {open&&<RecordPanel id={'record-'+id} title={label} onClose={toggle}><AuditPanel e={e}/></RecordPanel>}
+ </article>;
 }
 
 // The opened row: who, when and on what; the recorded fields as readable rows; the full data as saved.
@@ -167,5 +190,5 @@ function AuditPanel({e}:{e:Entry}){
 function CopyButton({text}:{text:string}){
  const [state,setState]=useState<'idle'|'done'|'error'>('idle'),timer=useRef<ReturnType<typeof setTimeout>>(undefined);
  const copy=async()=>{clearTimeout(timer.current);try{await navigator.clipboard.writeText(text);setState('done');}catch{setState('error');}timer.current=setTimeout(()=>setState('idle'),1800);};
- return <button type="button" className={'sa-copy'+(state==='done'?' is-done':'')} onClick={copy}>{state==='done'?<Check size={16} aria-hidden="true"/>:<Copy size={16} aria-hidden="true"/>}<span role="status">{state==='done'?'הועתק':state==='error'?'ההעתקה לא הצליחה':'העתקת הנתונים'}</span></button>;
+ return <button type="button" className={'sv2-btn quiet sm sa-copy'+(state==='done'?' is-done':'')} onClick={copy}>{state==='done'?<Check size={15} aria-hidden="true"/>:<Copy size={15} aria-hidden="true"/>}<span role="status">{state==='done'?'הועתק':state==='error'?'ההעתקה לא הצליחה':'העתקת הנתונים'}</span></button>;
 }

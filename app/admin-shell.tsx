@@ -1,5 +1,6 @@
 'use client';
 import './admin-mobile-menu-button.css';
+import './admin-mobile-fixes.css';
 import {Select,SelectTrigger,SelectValue,SelectContent,SelectItem} from '@/components/ui/select';
 import {OrdersAreaHead} from './orders-area-head';
 import './orders-unified.css';

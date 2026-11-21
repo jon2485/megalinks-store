@@ -1,159 +1,165 @@
-/* 16.11.2026 connections log (admin-jobs) in the approved v2 list look.
-   Builds on the shared v2 blocks in orders-v2.css. The shared list rules use long selectors with
-   !important (up to 8 classes), so this page repeats its own class to win without touching them. */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin{--sj-ink:#1d1d1f;--sj-copy:#424245;--sj-mute:#86868b;--sj-blue:#0071e3;--sj-blue-ink:#0066cc;--sj-red:#ff3b30;--sj-red-ink:#c4001a;--sj-red-tint:#fff4f4;--sj-ring:0 0 0 2px #fff,0 0 0 4px #0071e3}
-
-/* ---------- head: refresh with a busy and a done state ---------- */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sj-refresh{min-width:104px;justify-content:center}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sj-refresh.is-busy{color:var(--sj-blue-ink)!important;cursor:progress}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sj-refresh.is-done{color:#1a7f3c!important;box-shadow:0 0 0 1px rgba(52,199,89,.45)!important}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-spin{animation:sj-spin .9s linear infinite}
+/* 22.11.2026 "יומן חיבורים" (admin-jobs) in the same look as "חיבורים והגדרות" and the suppliers and orders lists
+   (supplier-v2.css: sv2-card, sv2-tools, sv2-seg, sv2-search, sv2-select, sv2-th/sv2-tr, sv2-state, sv2-btn). Light only.
+   Only what the shared classes do not cover lives here, scoped under .sys-jobs. The page also carries .sv2-orders.sv2-fin,
+   whose shared rules use up to 4 classes with !important, so a few rules below repeat a class to win. */
+.sys-jobs.sys-jobs.sv2-fin .sj-body{display:grid;gap:14px;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-spin{animation:sj-spin .9s linear infinite}
 @keyframes sj-spin{to{transform:rotate(360deg)}}
 
-/* ---------- failures banner ---------- */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:18px;background:var(--sj-red-tint);box-shadow:0 0 0 1px rgba(255,59,48,.2),0 1px 3px rgba(11,39,77,.05)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-ico{display:grid;place-items:center;flex:none;width:40px;height:40px;border-radius:50%;background:#ffe1e1;color:var(--sj-red-ink)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-txt{display:grid;gap:2px;flex:1;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-txt b{font-size:15.5px;font-weight:700;letter-spacing:-.01em;color:var(--sj-red-ink)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-txt small{font-size:13px;color:var(--sj-copy)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-acts{display:flex;flex-wrap:wrap;gap:8px}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border:0;border-radius:999px;background:#fff;color:var(--sj-ink);box-shadow:0 0 0 1px rgba(0,0,0,.08);font:inherit;font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap;cursor:pointer;transition:transform .1s,box-shadow .15s,background-color .15s,color .15s}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-btn.is-strong{background:var(--sj-red-ink);color:#fff;box-shadow:none}
+/* ---------- head: refresh with a busy and a done state (OrdersAreaHead action, unchanged) ---------- */
+.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sj-refresh{min-width:104px;justify-content:center}
+.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sj-refresh.is-busy{color:var(--sv-blue2)!important;cursor:progress}
+.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sj-refresh.is-done{color:var(--sv-green)!important;box-shadow:0 0 0 1px rgba(52,199,89,.45)!important}
 
-/* inline error after a failed refresh (the old list stays visible) */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-inline-error{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 14px;border-radius:14px;background:var(--sj-red-tint);color:var(--sj-red-ink);font-size:13.5px;font-weight:600;overflow-wrap:anywhere}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-inline-error span{flex:1;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin :is(.sj-inline-error button,.sj-retry){display:inline-flex;align-items:center;justify-content:center;height:38px;padding:0 16px;border:0;border-radius:999px;background:rgba(0,113,227,.08);color:var(--sj-blue-ink);font:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:transform .1s,background-color .15s}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .orders-reference-loading{display:flex!important;align-items:center;justify-content:center;gap:8px;color:var(--sj-mute)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .orders-reference-error p{margin:0;color:var(--sj-red-ink);font-weight:600;overflow-wrap:anywhere}
+/* ---------- failures notice: calm, white card with a small red mark ---------- */
+.sys-jobs.sys-jobs.sv2-fin .sj-alert{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:20px}
+.sys-jobs.sys-jobs.sv2-fin .sj-alert-ico{display:grid;place-items:center;flex:none;width:38px;height:38px;border-radius:50%;background:var(--sv-rtint);color:var(--sv-red)}
+.sys-jobs.sys-jobs.sv2-fin .sj-alert-txt{display:grid;gap:2px;flex:1;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-alert-txt b{font-size:15px!important;font-weight:700!important;color:var(--sv-ink)}
+.sys-jobs.sys-jobs.sv2-fin .sj-alert-txt small{font-size:13px!important;font-weight:500!important;line-height:1.45!important;color:var(--sv-mute)}
+.sys-jobs.sys-jobs.sv2-fin .sj-alert-acts{display:flex;flex-wrap:wrap;gap:8px}
 
-/* chips: the failures count is red so it reads before the others */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-chips>button.is-issues b{background:var(--sj-red)!important;color:#fff!important}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-chips>button.is-issues[aria-pressed=true]{color:var(--sj-red-ink)!important;box-shadow:0 0 0 2px var(--sj-red),0 6px 16px rgba(255,59,48,.14)!important}
+/* ---------- toolbar: state chips, search, kind filter ---------- */
+.sys-jobs.sys-jobs.sv2-fin .sj-tools{min-width:0}
+/* chips never wrap out of reach: a row that does not fit scrolls sideways */
+.sys-jobs.sys-jobs.sv2-fin .sj-seg{flex-wrap:nowrap;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.sys-jobs.sys-jobs.sv2-fin .sj-seg::-webkit-scrollbar{display:none}
+.sys-jobs.sys-jobs.sv2-fin .sj-seg button{flex:none;white-space:nowrap;font-size:13.5px!important;font-weight:600!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-seg button.is-issues b{color:var(--sv-red);font-weight:700}
+.sys-jobs.sys-jobs.sv2-fin .sj-search{min-width:200px}
+.sys-jobs.sys-jobs.sv2-fin .sj-search input::-webkit-search-cancel-button{display:none}
+.sys-jobs.sys-jobs.sv2-fin .sj-kindsel{flex:none}
+.sys-jobs.sys-jobs.sv2-fin .sj-kindsel.is-on{background:var(--sv-tint);color:var(--sv-blue2)}
+/* the "סינון" sheet button is for phones only; its inline select is never shown (the native select does that job) */
+.sys-jobs.sys-jobs.sv2-fin .sj-sheetfilter{display:none}
+.sys-jobs.sys-jobs.sv2-fin .sj-sheetfilter .om-filters-inline{display:none!important}
+
+/* messages inside the card */
+.sys-jobs.sys-jobs.sv2-fin .sj-inline-error{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:12px 16px 0;padding:10px 14px;border-radius:14px;background:var(--sv-rtint);color:#8a0010;font-size:13.5px;font-weight:600;overflow-wrap:anywhere}
+.sys-jobs.sys-jobs.sv2-fin .sj-inline-error>span{flex:1;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-loading{display:flex;align-items:center;justify-content:center;gap:8px}
+.sys-jobs.sys-jobs.sv2-fin .sj-fail p{color:#8a0010!important;font-weight:600;overflow-wrap:anywhere}
+.sys-jobs.sys-jobs.sv2-fin .sv2-empty .sv2-btn{margin-top:8px}
 
 /* ---------- rows ---------- */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-order.is-tone-wait{--oc:#ff9500}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row{cursor:pointer;transition:background-color .15s}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row:active{background:#f7f9fc!important}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-kind{display:flex;align-items:center;gap:10px;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-kind>div{display:grid;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-kind b{font-size:14.5px;font-weight:700;color:var(--sj-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-kind code,.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts dd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;color:var(--sj-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;unicode-bidi:isolate}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-ico{display:grid;place-items:center;flex:none;width:34px;height:34px;border-radius:11px;background:#eef5ff;color:var(--sj-blue-ink)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-order.is-tone-red .sj-ico{background:#ffecec;color:var(--sj-red-ink)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-info{display:grid;gap:2px;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-info b{font-size:14px;font-weight:600;color:var(--sj-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-info small{font-size:12.5px;color:var(--sj-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-info small.sj-err-line{display:flex;align-items:center;gap:5px;color:var(--sj-red-ink);font-weight:600}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-err-line svg{flex:none}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-err-line bdi{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-time{font-size:13px;color:var(--sj-mute);white-space:nowrap;font-variant-numeric:tabular-nums}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-pill.is-wait{background:#fff1dc!important;color:#b25000!important}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-act{display:flex;justify-content:flex-end;gap:6px;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row .sj-act .om-action{display:inline-flex!important;align-items:center;gap:6px;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-list{display:block;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-row{cursor:pointer;min-height:68px}
+.sys-jobs.sys-jobs.sv2-fin .sj-row.is-late{box-shadow:inset -3px 0 0 rgba(215,0,21,.5)}
+.sys-jobs.sys-jobs.sv2-fin .sj-job.is-open .sj-row{background:#fafcff;box-shadow:inset -3px 0 0 var(--sv-blue)}
+.sys-jobs.sys-jobs.sv2-fin .sj-row:active{background:#f3f7ff}
+.sys-jobs.sys-jobs.sv2-fin .sj-ico{width:40px;height:40px;color:var(--sv-blue2)}
+.sys-jobs.sys-jobs.sv2-fin .sj-row.is-late .sj-ico{background:var(--sv-rtint);color:var(--sv-red)}
+.sys-jobs.sys-jobs.sv2-fin .sj-kind b{font-size:14.5px!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-code-kind{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px!important;font-weight:500!important;line-height:1.4!important;text-align:start}
+.sys-jobs.sys-jobs.sv2-fin .sj-info{display:grid;gap:2px;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-info b{font-size:14px!important;font-weight:600!important;color:var(--sv-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sys-jobs.sys-jobs.sv2-fin .sj-info small{font-size:12.5px!important;font-weight:500!important;line-height:1.45!important;color:var(--sv-mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sys-jobs.sys-jobs.sv2-fin .sj-info small.sj-err-line{display:flex;align-items:center;gap:5px;color:var(--sv-red);font-weight:600!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-err-line svg{flex:none}
+.sys-jobs.sys-jobs.sv2-fin .sj-err-line bdi{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sys-jobs.sys-jobs.sv2-fin .sj-links{display:grid;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-links>span:last-child{display:flex;flex-wrap:wrap;gap:2px 10px;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-links .sv2-lk{gap:4px;font-size:13px}
+.sys-jobs.sys-jobs.sv2-fin .sj-time{display:grid;min-width:0;font-size:13px;color:var(--sv-copy);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sys-jobs.sys-jobs.sv2-fin .sv2-state.sj-work{color:var(--sv-blue2)}
+.sys-jobs.sys-jobs.sv2-fin .sv2-state.sj-work i{background:var(--sv-blue)}
+.sys-jobs.sys-jobs.sv2-fin .sv2-muted{color:var(--sv-mute)}
+.sys-jobs.sys-jobs.sv2-fin .sj-act{gap:6px;cursor:default}
+.sys-jobs.sys-jobs.sv2-fin .sj-act .sv2-btn{font-size:13px!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-exp{flex:none;width:32px;height:32px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:var(--sv-well);color:var(--sv-copy);cursor:pointer;transition:background-color .15s,color .15s,transform .1s}
+.sys-jobs.sys-jobs.sv2-fin .sj-exp[aria-expanded=true]{background:var(--sv-tint);color:var(--sv-blue2)}
+.sys-jobs.sys-jobs.sv2-fin .sj-exp:active{transform:scale(.94)}
 
-/* ---------- open record ---------- */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-panel{display:grid;gap:12px;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-msg{display:grid;gap:8px;min-width:0;padding:14px 16px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.06)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-msg.is-error{background:var(--sj-red-tint);box-shadow:0 0 0 1px rgba(255,59,48,.2)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-msg.is-wait{background:#fff8ec;box-shadow:0 0 0 1px rgba(255,149,0,.22)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-msg h3{display:flex;align-items:center;gap:6px;margin:0;font-size:14px;font-weight:700;color:var(--sj-ink)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-msg.is-error h3{color:var(--sj-red-ink)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-msg.is-wait h3{color:#b25000}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-err-text{margin:0;font-size:14.5px;line-height:1.6;color:var(--sj-ink);white-space:pre-wrap;overflow-wrap:anywhere}
-/* technical text: left to right, wraps anywhere, never pushes the card wider */
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-code{display:block;max-width:100%;margin:0;padding:10px 12px;border-radius:10px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.06);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;color:#3a3a3c;text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;max-height:240px;overflow:auto}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-diag{display:grid;gap:4px;min-width:0}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-diag small{font-size:12px;font-weight:600;color:var(--sj-mute)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;margin:0;border-radius:14px;overflow:hidden;background:#eceef2;box-shadow:0 0 0 1px rgba(0,0,0,.04)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts>div{display:grid;gap:2px;align-content:start;min-width:0;padding:10px 14px;background:#fff}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts dt{font-size:12px;font-weight:600;color:var(--sj-mute)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts dd{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:0;min-width:0;font-size:14px;font-weight:500;color:var(--sj-ink);overflow-wrap:anywhere}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts dd code{white-space:normal;overflow-wrap:anywhere;font-size:12.5px;color:var(--sj-copy)}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts dd a{min-width:0;color:var(--sj-blue-ink);font-weight:600;text-decoration:none;overflow-wrap:anywhere;border-radius:4px}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0;background:none}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot .om-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:0;height:40px;padding:0 18px;border:0;border-radius:999px;background:rgba(0,113,227,.08);color:var(--sj-blue-ink);box-shadow:none;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;transition:transform .1s,background-color .15s}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot .om-btn.is-primary{background:var(--sj-blue);color:#fff}
+/* ---------- the open row: readable error, technical details, all facts, the actions ---------- */
+.sys-jobs.sys-jobs.sv2-fin .sj-panel{display:grid;gap:12px;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-msg{display:grid;gap:8px;min-width:0;padding:14px 16px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--sv-line)}
+.sys-jobs.sys-jobs.sv2-fin .sj-msg.is-error{background:#fffafa;box-shadow:0 0 0 1px rgba(215,0,21,.14)}
+.sys-jobs.sys-jobs.sv2-fin .sj-msg.is-wait{background:#fffcf6;box-shadow:0 0 0 1px rgba(178,80,0,.16)}
+.sys-jobs.sys-jobs.sv2-fin .sj-msg h3{display:flex;align-items:center;gap:6px;margin:0;font-size:14px!important;font-weight:700!important;color:var(--sv-ink)!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-msg.is-error h3{color:var(--sv-red)!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-msg.is-wait h3{color:var(--sv-orange)!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-err-text{margin:0;font-size:14.5px!important;font-weight:500!important;line-height:1.6!important;color:var(--sv-ink);white-space:pre-wrap;overflow-wrap:anywhere}
+/* technical text (JSON, provider replies): left to right, wraps anywhere, never pushes the box wider */
+.sys-jobs.sys-jobs.sv2-fin .sj-code{display:block;max-width:100%;min-width:0;margin:0;padding:10px 12px;border-radius:10px;background:var(--sv-well);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.55;color:var(--sv-copy);text-align:left;white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;max-height:240px;overflow:auto}
+.sys-jobs.sys-jobs.sv2-fin .sj-diag{display:grid;gap:4px;min-width:0}
+.sys-jobs.sys-jobs.sv2-fin .sj-diag small{font-size:12px!important;font-weight:600!important;line-height:1.4!important;color:var(--sv-mute)}
+.sys-jobs.sys-jobs.sv2-fin .sj-facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:1px;margin:0;border-radius:14px;overflow:hidden;background:var(--sv-line);box-shadow:0 0 0 1px var(--sv-line)}
+.sys-jobs.sys-jobs.sv2-fin .sj-facts>div{display:grid;gap:2px;align-content:start;min-width:0;padding:10px 14px;background:#fff}
+.sys-jobs.sys-jobs.sv2-fin .sj-facts dt{font-size:12px!important;font-weight:600!important;line-height:1.4!important;color:var(--sv-mute)}
+.sys-jobs.sys-jobs.sv2-fin .sj-facts dd{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;margin:0;min-width:0;font-size:14px!important;font-weight:500!important;line-height:1.5!important;color:var(--sv-ink);overflow-wrap:anywhere}
+.sys-jobs.sys-jobs.sv2-fin .sj-facts dd code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;color:var(--sv-copy);white-space:normal;overflow-wrap:anywhere;min-width:0;unicode-bidi:isolate}
+.sys-jobs.sys-jobs.sv2-fin .sj-facts dd a{min-width:0;color:var(--sv-blue2);font-weight:600;text-decoration:none;overflow-wrap:anywhere}
+.sys-jobs.sys-jobs.sv2-fin .sj-facts dd a:hover{text-decoration:underline}
+.sys-jobs.sys-jobs.sv2-fin .sj-actions{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;border:0;background:none}
 
-/* ---------- feedback: hover only with a mouse, press on every control, a visible focus ring ---------- */
+/* ---------- pager and note at the bottom of the card ---------- */
+.sys-jobs.sys-jobs.sv2-fin.sv2-orders.sv2-fin .sj-card>.orders-reference-pagination{padding:14px 22px!important;border-top:1px solid #f0f1f4!important}
+.sys-jobs.sys-jobs.sv2-fin .sj-note{margin:0;padding:0 22px 14px;font-size:12.5px!important;font-weight:500!important;line-height:1.5!important;color:var(--sv-mute)}
+
+/* ---------- feedback: hover only with a mouse ---------- */
 @media(hover:hover) and (pointer:fine){
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-btn:hover{box-shadow:0 0 0 1px rgba(196,0,26,.4);color:var(--sj-red-ink)}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-btn.is-strong:hover{background:#a80017;color:#fff;box-shadow:none}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin :is(.sj-inline-error button,.sj-retry):hover{background:rgba(0,113,227,.14)}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row:hover{background:#fbfcfe!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot .om-btn:hover{background:rgba(0,113,227,.14)}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot .om-btn.is-primary:hover{background:#0077ed}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts dd a:hover{text-decoration:underline}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .orders-reference-pagination nav button:hover:not(:disabled){box-shadow:0 0 0 1px rgba(0,113,227,.35)!important;color:var(--sj-blue-ink)!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row:hover .sj-exp{color:var(--sv-blue2)}
+ .sys-jobs.sys-jobs.sv2-fin .sj-exp:hover{background:#ebebf0}
 }
-/* touch screens: drop the shared hover looks so nothing stays lit after a tap */
-@media(hover:none){
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-chips>button:hover:not([aria-pressed=true]){color:#424245!important;box-shadow:0 0 0 1px rgba(0,0,0,.06)!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions button:hover:not(.is-busy):not(.is-done){color:var(--sj-ink)!important;box-shadow:0 0 0 1px rgba(0,0,0,.08)!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-order:not(.is-open):hover{box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05)!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row .om-action:not(.is-primary):hover{background:rgba(0,113,227,.08)!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row .om-expand:hover{background:none!important}
-}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin :is(.om-chips>button,.om-top-actions button,.sj-alert-btn,.sj-retry,.sj-inline-error button,.om-action,.om-expand,.sj-foot .om-btn,.orders-reference-pagination nav button:not(:disabled),.om-filters-button,.orders-reference-search button):active{transform:scale(.96)!important}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin :is(button,a,[role=combobox]):focus-visible{outline:none!important;box-shadow:var(--sj-ring)!important}
-.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-chips>button[aria-pressed=true]:focus-visible{box-shadow:0 0 0 2px #0071e3,0 0 0 5px rgba(0,113,227,.3)!important}
 
-/* ---------- desktop ---------- */
+/* ---------- desktop: the open record sits under its row inside the card ---------- */
 @media(min-width:761px){
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .orders-reference-panel>.om-head,
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr) 132px 124px 128px 32px!important;gap:14px!important;align-items:center}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row{grid-template-areas:none!important;min-height:64px!important;padding:10px 22px!important}
- /* the older orders sheet names grid areas between 761 and 1180px; this row places its cells in order */
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>*{grid-area:auto!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.om-expand{display:grid!important;justify-self:end}
- /* the open record sits under the row inside the card (on phones it opens in the bottom sheet) */
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .sj-panel{padding:14px 22px 18px;border-top:1px solid #f0f1f4;background:#fafcff}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row .sj-act .om-action{height:36px!important}
-}
-@media(min-width:761px) and (max-width:1080px){
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .orders-reference-panel>.om-head,
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row{grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 116px 112px 112px 32px!important;gap:10px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row{padding:10px 16px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-ico{display:none}
+ .sys-jobs.sys-jobs.sv2-fin .sj-job>[id^=record-]{padding:16px 22px 20px;border-top:1px solid #f0f1f4;background:#fafcff}
 }
 
-/* ---------- phone: card rows, 44px touch targets ---------- */
+/* ---------- tablets and phones: rows become cards (supplier-v2.css), this page places its cells ---------- */
+@media(max-width:1100px){
+ /* no action: time and the open button share the last line; links (when there are any) get their own line;
+    with an action (send, AI result): time and links share a line, the action gets the full last line */
+ .sys-jobs.sys-jobs.sv2-fin .sj-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"kind state" "info info" "time act";gap:10px 12px!important;padding:14px 16px!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row.has-links{grid-template-areas:"kind state" "info info" "links links" "time act"}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row.has-act{grid-template-areas:"kind state" "info info" "time links" "act act"}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row:not(.has-act)>.sj-act{align-self:end}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row>.sj-kind{grid-area:kind!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row>.sj-state{grid-area:state!important;justify-self:end;align-self:start;padding-top:4px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row>.sj-info{grid-area:info!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row>.sj-time{grid-area:time!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row>.sj-links{grid-area:links!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row>.sj-links.is-empty{display:none}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row>.sj-act{grid-area:act!important;justify-content:flex-end}
+ .sys-jobs.sys-jobs.sv2-fin .sj-row.has-act>.sj-act .sv2-btn{flex:1;min-width:0}
+ .sys-jobs.sys-jobs.sv2-fin .sj-info b{white-space:normal;overflow-wrap:anywhere}
+ .sys-jobs.sys-jobs.sv2-fin .sj-info small.sj-err-line{align-items:flex-start}
+ .sys-jobs.sys-jobs.sv2-fin .sj-info small.sj-err-line svg{margin-top:2px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-err-line bdi{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere}
+ .sys-jobs.sys-jobs.sv2-fin .sv2-ml{font-size:11.5px!important;font-weight:600!important;line-height:1.4!important}
+}
+
+/* phones: the open record is a bottom sheet (RecordPanel), 44px touch targets */
 @media(max-width:760px){
  .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-top-actions .sj-refresh{height:44px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-chips>button{height:44px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .orders-reference-search{height:46px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-filters-button{height:46px!important;min-height:44px}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .orders-reference-pagination nav button{min-width:44px!important;height:44px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert{flex-wrap:wrap;align-items:flex-start;padding:14px}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-txt{flex:1 1 calc(100% - 60px)}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-acts{flex:1 1 100%}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-alert-btn{flex:1 1 0;min-width:0;height:44px}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin :is(.sj-inline-error button,.sj-retry){height:44px}
-
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row{display:grid!important;grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"kind state" "info info" "time exp"!important;gap:8px 10px!important;min-height:0!important;padding:14px 14px 10px 16px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row:has(>.sj-act){grid-template-areas:"kind state" "info info" "time time" "act exp"!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.sj-kind{grid-area:kind!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.sj-state{grid-area:state!important;justify-self:end;align-self:start}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.sj-info{grid-area:info!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.sj-time{grid-area:time!important;align-self:center;font-size:12.5px}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.sj-act{grid-area:act!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.sj-noact{display:none!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row>.om-expand{grid-area:exp!important;display:grid!important;width:44px!important;height:44px!important;justify-self:end!important;align-self:center!important;margin:0!important;border:0!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-list .om-row .sj-act .om-action{flex:1;width:auto!important;height:44px!important;margin:0!important;font-size:14px!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-info small.sj-err-line{align-items:flex-start}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-info small.sj-err-line svg{margin-top:2px}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-err-line bdi{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow-wrap:anywhere}
- /* in the bottom sheet: one column of facts, full-width buttons */
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-facts{grid-template-columns:minmax(0,1fr)}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot{position:sticky;bottom:-18px;margin:0 -16px -18px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #eef0f3}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot .om-btn{flex:1 1 calc(50% - 4px);height:46px;padding:0 12px}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-foot .om-btn.is-primary{flex-basis:100%}
+ .sys-jobs.sys-jobs.sv2-fin .sj-alert{flex-wrap:wrap;align-items:flex-start;padding:14px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-alert-txt{flex:1 1 calc(100% - 56px)}
+ .sys-jobs.sys-jobs.sv2-fin .sj-alert-acts{flex:1 1 100%}
+ .sys-jobs.sys-jobs.sv2-fin .sj-alert-acts .sv2-btn{flex:1 1 0;min-width:0;height:44px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-tools{padding:12px!important;border-bottom:1px solid var(--sv-line)!important;gap:8px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-seg{flex:1 1 100%}
+ .sys-jobs.sys-jobs.sv2-fin .sj-seg button{min-height:40px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-search{flex:1 1 0;min-width:0;height:44px;background:var(--sv-well);box-shadow:none}
+ .sys-jobs.sys-jobs.sv2-fin .sj-search input{font-size:16px!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-kindsel{display:none!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-sheetfilter{display:block;flex:none}
+ .sys-jobs.sys-jobs.sv2-fin.sv2-orders.sv2-fin .sj-sheetfilter .om-filters-button{display:inline-flex!important;align-items:center;gap:6px;height:44px!important;background:var(--sv-well)!important;box-shadow:none!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-inline-error{margin:12px 12px 0}
+ .sys-jobs.sys-jobs.sv2-fin .sj-inline-error .sv2-btn{height:44px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-act .sv2-btn{height:44px;font-size:14px!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-exp{width:44px;height:44px}
+ .sys-jobs.sys-jobs.sv2-fin .sv2-empty .sv2-btn{height:44px}
+ .sys-jobs.sys-jobs.sv2-fin.sv2-orders.sv2-fin .sj-card>.orders-reference-pagination{padding:12px 16px!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-note{padding:0 16px 12px}
+ /* in the bottom sheet: one column of facts, actions pinned to the bottom */
+ .sys-jobs.sys-jobs.sv2-fin .sj-facts{grid-template-columns:minmax(0,1fr)}
+ .sys-jobs.sys-jobs.sv2-fin .sj-actions{position:sticky;bottom:-18px;margin:0 -16px -18px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--sv-line)}
+ .sys-jobs.sys-jobs.sv2-fin .sj-actions .sv2-btn{flex:1 1 calc(50% - 4px);min-width:0;height:46px;padding:0 12px}
+ .sys-jobs.sys-jobs.sv2-fin .sj-actions .sv2-btn.primary{flex-basis:100%}
 }
 @media(prefers-reduced-motion:reduce){
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin *{transition:none!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin :is(button,a):active{transform:none!important}
- .sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .sj-spin{animation-duration:2.4s}
+ .sys-jobs.sys-jobs.sv2-fin *{transition:none!important}
+ .sys-jobs.sys-jobs.sv2-fin :is(button,a):active{transform:none!important}
+ .sys-jobs.sys-jobs.sv2-fin .sj-spin{animation-duration:2.4s}
 }
-
-/* Phone: the type filter lives only in the "סינון" sheet, not inline as well. */
-@media (max-width:760px){.sys-jobs.sys-jobs.sys-jobs.sv2-orders.sv2-fin.sv2-fin .om-filters-inline{display:none}}

@@ -1,123 +1,124 @@
-/* 16.11.2026 Reports page (admin-reports) in the approved v2 look. Light only.
-   Builds on the "inner pages" block of orders-v2.css (head, export button, summary cards);
-   everything here is scoped to .sys-reports. Doubled class beats the shared list styles. */
-.sys-reports{--sr-ink:#0b274d;--sr-text:#1d1d1f;--sr-muted:#6e6e73;--sr-line:#eceef2;--sr-blue:#0071e3;--sr-soft:#8fbcef;--sr-track:#eaf2fc;--sr-green:#1a7f3c;--sr-plot:184px;--sr-band:26px;--sr-gutter:64px}
+/* 22.11.2026 (owner: "like the other admin pages"): "דוחות" (admin-reports) in the same look as the connections,
+   suppliers, orders and content lists (supplier-v2.css: sv2-card, sv2-tools, sv2-sum, sv2-th/sv2-tr, sv2-btn).
+   Light only, sv2 palette only. Only what the shared classes do not cover lives here, scoped under
+   .sys-reports.sys-reports.sv2-fin; sizes the shared admin rules override carry !important. */
+.sys-reports{--srx-plot:184px;--srx-band:26px;--srx-gutter:64px;--srx-soft:#9cc7f7}
 
-.sys-reports.sys-reports .sr-body{display:grid;gap:12px;min-width:0;transition:opacity .2s ease}
-.sys-reports.sys-reports .sr-body>*{min-width:0}
-.sys-reports.sys-reports .sr-body.is-refreshing{opacity:.6}
-.sys-reports.sys-reports .sr-money{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:12px;align-items:start}
-.sys-reports.sys-reports .sr-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
-
-/* cards */
-.sys-reports.sys-reports .sr-card{min-width:0;display:grid;gap:14px;align-content:start;padding:18px 20px 20px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05)}
-.sys-reports.sys-reports .sr-card-head{display:flex;align-items:flex-start;gap:10px;min-width:0}
-.sys-reports.sys-reports .sr-ico{flex:none;display:grid;place-items:center;width:32px;height:32px;border-radius:10px;background:#e4f6fb;color:#0a7ea4}
-.sys-reports.sys-reports .sr-card-head h3{margin:0;font-size:16px;font-weight:700;line-height:1.3;letter-spacing:-.01em;color:var(--sr-ink)}
-.sys-reports.sys-reports .sr-card-head p{margin:2px 0 0;font-size:13px;line-height:1.45;color:var(--sr-muted)}
-.sys-reports.sys-reports .sr-empty{display:grid;justify-items:center;gap:4px;padding:28px 12px;border-radius:14px;background:#f7f9fc;text-align:center}
-.sys-reports.sys-reports .sr-empty b{font-size:15px;font-weight:700;color:var(--sr-ink)}
-.sys-reports.sys-reports .sr-empty p{margin:0;font-size:13.5px;color:var(--sr-muted)}
-.sys-reports.sys-reports .sr-foot{margin:0;font-size:12.5px;color:var(--sr-muted)}
-
-/* month readout: the shown month, its amount and paid orders */
-.sys-reports.sys-reports .sr-readout{display:grid;gap:2px;min-height:78px;align-content:start}
-.sys-reports.sys-reports .sr-readout-label{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--sr-text)}
-.sys-reports.sys-reports .sr-readout-label em{font-style:normal;font-size:12px;font-weight:600;padding:1px 8px;border-radius:999px;background:#f0f1f4;color:#424245}
-.sys-reports.sys-reports .sr-readout-value{font-size:30px;font-weight:800;line-height:1.15;letter-spacing:-.02em;color:var(--sr-green)}
-.sys-reports.sys-reports .sr-readout small{font-size:13px;line-height:1.45;color:var(--sr-muted)}
-
-/* column chart: hairline scale at 0, half and top; one hue, the shown month in solid blue */
-.sys-reports.sys-reports .sr-chart{position:relative;height:calc(var(--sr-plot) + var(--sr-band));padding-inline-start:var(--sr-gutter)}
-.sys-reports.sys-reports .sr-scale{position:absolute;inset:0;pointer-events:none}
-.sys-reports.sys-reports .sr-scale>span{position:absolute;inset-inline-start:calc(var(--sr-gutter) - 6px);inset-inline-end:0;bottom:calc(var(--sr-band) + var(--y) * var(--sr-plot));height:0;border-top:1px solid var(--sr-line)}
-.sys-reports.sys-reports .sr-scale>span:last-child{border-top-color:#d5d9e0}
-.sys-reports.sys-reports .sr-scale bdi{position:absolute;inset-inline-start:calc(6px - var(--sr-gutter));top:0;width:calc(var(--sr-gutter) - 12px);transform:translateY(-50%);font-size:11.5px;font-weight:500;line-height:1;color:var(--sr-muted);white-space:nowrap;font-variant-numeric:tabular-nums}
-.sys-reports.sys-reports .sr-cols{position:relative;display:flex;height:100%;margin:0;padding:0;list-style:none}
-.sys-reports.sys-reports .sr-cols>li{flex:1 1 0;min-width:0;display:flex;flex-direction:column;border-radius:10px;outline:none;cursor:default;-webkit-tap-highlight-color:transparent;transition:background-color .15s ease}
-.sys-reports.sys-reports .sr-col-plot{flex:none;height:var(--sr-plot);display:flex;align-items:flex-end;justify-content:center}
-.sys-reports.sys-reports .sr-col-plot i{display:block;width:min(24px,62%);height:max(3px,calc(var(--h) * 100%));border-radius:4px 4px 0 0;background:var(--sr-soft);transform-origin:bottom;transition:background-color .15s ease,transform .1s ease}
-.sys-reports.sys-reports .sr-cols>li.is-on .sr-col-plot i{background:var(--sr-blue)}
-.sys-reports.sys-reports .sr-cols>li:active .sr-col-plot i{transform:scale(.94)}
-.sys-reports.sys-reports .sr-col-label{flex:none;height:var(--sr-band);display:grid;place-items:center;font-size:11.5px;font-weight:500;color:var(--sr-muted);white-space:nowrap}
-.sys-reports.sys-reports .sr-cols>li.is-on .sr-col-label{color:var(--sr-ink);font-weight:700}
-.sys-reports.sys-reports .sr-cols>li:focus-visible{box-shadow:0 0 0 2px var(--sr-blue)}
-
-/* month table */
-.sys-reports.sys-reports .sr-table{width:100%;border-collapse:collapse;font-size:14px}
-.sys-reports.sys-reports .sr-table :is(thead,tbody,tr,th,td){background:transparent}
-.sys-reports.sys-reports .sr-table :is(th,td){padding:10px 8px;text-align:start;border-bottom:1px solid var(--sr-line);white-space:nowrap}
-.sys-reports.sys-reports .sr-table :is(th,td):not(:first-child){text-align:end}
-.sys-reports.sys-reports .sr-table thead th{padding-top:0;font-size:12px;font-weight:600;color:var(--sr-muted)}
-.sys-reports.sys-reports .sr-table tbody th{font-weight:600;color:var(--sr-text)}
-.sys-reports.sys-reports .sr-table td{color:var(--sr-text);font-variant-numeric:tabular-nums}
-.sys-reports.sys-reports .sr-table td.is-money{font-weight:700;color:var(--sr-green)}
-.sys-reports.sys-reports .sr-table tbody tr:last-child :is(th,td){border-bottom:0}
-.sys-reports.sys-reports .sr-table tbody tr{transition:background-color .15s ease}
-
-/* bars: articles by stage, top sites */
-.sys-reports.sys-reports .sr-bars{display:grid;gap:12px;margin:0;padding:0;list-style:none}
-.sys-reports.sys-reports .sr-bars>li{display:grid;gap:6px;min-width:0}
-.sys-reports.sys-reports .sr-bar-line{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;font-size:14px}
-.sys-reports.sys-reports .sr-bar-name{display:flex;align-items:center;gap:8px;min-width:0;font-weight:500;color:var(--sr-text)}
-.sys-reports.sys-reports .sr-bar-name bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sys-reports.sys-reports .sr-bar-line>b,.sys-reports.sys-reports .sr-bar-meta b{flex:none;font-weight:700;color:var(--sr-ink);font-variant-numeric:tabular-nums}
-.sys-reports.sys-reports .sr-bar-meta{flex:none;display:flex;align-items:baseline;gap:8px;white-space:nowrap}
-.sys-reports.sys-reports .sr-paid{font-size:13px;font-weight:600;color:var(--sr-green)}
-.sys-reports.sys-reports .sr-rank{flex:none;display:grid;place-items:center;min-width:22px;height:22px;border-radius:999px;background:#f0f1f4;color:#424245;font-size:12px;font-weight:700}
-.sys-reports.sys-reports .sr-track{height:8px;border-radius:999px;background:var(--sr-track);overflow:hidden}
-.sys-reports.sys-reports .sr-track i{display:block;width:calc(var(--w) * 100%);min-width:4px;height:100%;border-radius:999px;background:var(--sr-blue)}
-
-/* buttons: show all months, retry */
-.sys-reports.sys-reports :is(.sr-more,.sr-retry){display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 18px;border:0;border-radius:999px;background:rgba(0,113,227,.08);color:#0066cc;font:inherit;font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background-color .15s ease,transform .1s ease}
-.sys-reports.sys-reports .sr-more{justify-self:start}
-.sys-reports.sys-reports .sr-more svg{transition:transform .2s ease}
-.sys-reports.sys-reports .sr-more[aria-expanded=true] svg{transform:rotate(180deg)}
-.sys-reports.sys-reports :is(.sr-more,.sr-retry):active{transform:scale(.97)}
-.sys-reports.sys-reports :is(.sr-more,.sr-retry):focus-visible{outline:2px solid var(--sr-blue);outline-offset:2px}
-.sys-reports.sys-reports .orders-reference-error .sr-retry{margin-top:4px}
-.sys-reports.sys-reports .sr-stale{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:0;padding:8px;padding-inline-start:16px;border-radius:14px;background:#fff4e0;color:#8a4100;font-size:14px;font-weight:600}
-.sys-reports.sys-reports .sr-stale .sr-retry{background:#fff;color:#8a4100}
-
-/* export button in the head: visible focus ring, busy cursor */
-.sys-reports.sv2-orders.sv2-fin.sv2-fin .om-top-actions button:focus-visible{outline:2px solid var(--sr-blue);outline-offset:2px}
-.sys-reports.sv2-orders.sv2-fin.sv2-fin .om-top-actions button[aria-busy=true]{cursor:progress}
-
-/* hover only where there is a fine pointer */
-@media(hover:hover) and (pointer:fine){
- .sys-reports.sys-reports .sr-cols>li:hover{background:rgba(0,113,227,.05)}
- .sys-reports.sys-reports .sr-table tbody tr:hover{background:#f7f9fc}
- .sys-reports.sys-reports :is(.sr-more,.sr-retry):hover{background:rgba(0,113,227,.14)}
- .sys-reports.sys-reports .sr-stale .sr-retry:hover{background:#fff8ee}
+.sys-reports.sys-reports.sv2-fin .srx-body{display:grid;gap:14px;min-width:0;container-type:inline-size;transition:opacity .2s ease}
+.sys-reports.sys-reports.sv2-fin .srx-body>*{min-width:0}
+.sys-reports.sys-reports.sv2-fin .srx-body.is-refreshing{opacity:.6}
+.sys-reports.sys-reports.sv2-fin .srx-money{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;align-items:start}
+.sys-reports.sys-reports.sv2-fin .srx-split{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.sys-reports.sys-reports.sv2-fin .srx-money>*,.sys-reports.sys-reports.sv2-fin .srx-split>*{min-width:0}
+/* side by side only when the page area is wide enough for two tables (the admin menu takes part of the screen) */
+@container (max-width:1000px){
+ .sys-reports.sys-reports.sv2-fin :is(.srx-money,.srx-split){grid-template-columns:minmax(0,1fr)}
 }
 
-/* touch: 44px targets for the export button */
+/* refresh failed, older numbers still shown */
+.sys-reports.sys-reports.sv2-fin .srx-stale{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 12px;margin:0;padding:8px;padding-inline-start:16px;border-radius:16px;background:var(--sv-otint);color:var(--sv-orange);font-size:14px!important;font-weight:600!important;line-height:1.5!important}
+.sys-reports.sys-reports.sv2-fin .orders-reference-error .srx-retry{margin-top:4px}
+
+/* the four totals: white summary cards, ink numbers; verified money in green, waiting orders in orange */
+.sys-reports.sys-reports.sv2-fin .srx-totals{margin:0}
+.sys-reports.sys-reports.sv2-fin .srx-total{display:grid;gap:2px;align-content:start;min-width:0;margin:0}
+.sys-reports.sys-reports.sv2-fin .srx-total :is(dt,dd){margin:0}
+.sys-reports.sys-reports.sv2-fin .srx-total .lbl{font-size:13px!important;font-weight:600!important;color:var(--sv-mute)!important}
+.sys-reports.sys-reports.sv2-fin .srx-total .big{font-size:26px!important;font-weight:800!important;line-height:1.2!important;letter-spacing:-.02em;color:var(--sv-ink);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sys-reports.sys-reports.sv2-fin .srx-total.is-ok .big{color:var(--sv-green)}
+.sys-reports.sys-reports.sv2-fin .srx-total.is-report .big{color:var(--sv-orange)}
+.sys-reports.sys-reports.sv2-fin .srx-total .hint{font-size:13px!important;font-weight:500!important;line-height:1.45!important;color:var(--sv-mute)!important}
+
+/* card header: plain title and a short line, like "הגדרות כלליות" on the connections page */
+.sys-reports.sys-reports.sv2-fin .srx-head{padding:14px 22px}
+.sys-reports.sys-reports.sv2-fin .srx-head h3{margin:0!important;font-size:16px!important;font-weight:700!important;line-height:1.3;color:var(--sv-ink)}
+.sys-reports.sys-reports.sv2-fin .srx-head p{margin:2px 0 0!important;font-size:13px!important;font-weight:500!important;line-height:1.45!important;color:var(--sv-mute)!important}
+.sys-reports.sys-reports.sv2-fin .srx-pad{display:grid;gap:14px;padding:16px 22px 20px;min-width:0}
+
+/* month readout: the shown month, its amount and paid orders */
+.sys-reports.sys-reports.sv2-fin .srx-readout{display:grid;gap:2px;min-height:78px;align-content:start}
+.sys-reports.sys-reports.sv2-fin .srx-readout-label{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13.5px;font-weight:600;color:var(--sv-copy)}
+.sys-reports.sys-reports.sv2-fin .srx-readout-label em{font-style:normal;padding:2px 9px;font-size:12px}
+.sys-reports.sys-reports.sv2-fin .srx-readout-value{font-size:30px;font-weight:800;line-height:1.15;letter-spacing:-.02em;color:var(--sv-green);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sys-reports.sys-reports.sv2-fin .srx-readout small{font-size:13px!important;font-weight:500!important;line-height:1.45!important;color:var(--sv-mute)!important}
+.sys-reports.sys-reports.sv2-fin .srx-nowrap{white-space:nowrap}
+
+/* column chart: hairline scale at 0, half and top; one hue, the shown month in solid blue */
+.sys-reports.sys-reports.sv2-fin .srx-chart{position:relative;min-width:0;height:calc(var(--srx-plot) + var(--srx-band));padding-inline-start:var(--srx-gutter)}
+.sys-reports.sys-reports.sv2-fin .srx-scale{position:absolute;inset:0;pointer-events:none}
+.sys-reports.sys-reports.sv2-fin .srx-scale>span{position:absolute;inset-inline-start:calc(var(--srx-gutter) - 6px);inset-inline-end:0;bottom:calc(var(--srx-band) + var(--y) * var(--srx-plot));height:0;border-top:1px solid var(--sv-line)}
+.sys-reports.sys-reports.sv2-fin .srx-scale>span:last-child{border-top-color:#d2d2d7}
+.sys-reports.sys-reports.sv2-fin .srx-scale bdi{position:absolute;inset-inline-start:calc(6px - var(--srx-gutter));top:0;width:calc(var(--srx-gutter) - 12px);transform:translateY(-50%);font-size:11.5px;font-weight:500;line-height:1;color:var(--sv-mute);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sys-reports.sys-reports.sv2-fin .srx-cols{position:relative;display:flex;height:100%;margin:0;padding:0;list-style:none}
+.sys-reports.sys-reports.sv2-fin .srx-cols>li{flex:1 1 0;min-width:0;display:flex;flex-direction:column;border-radius:10px;outline:none;cursor:default;-webkit-tap-highlight-color:transparent;transition:background-color .15s ease}
+.sys-reports.sys-reports.sv2-fin .srx-col-plot{flex:none;height:var(--srx-plot);display:flex;align-items:flex-end;justify-content:center}
+.sys-reports.sys-reports.sv2-fin .srx-col-plot i{display:block;width:min(24px,62%);height:max(3px,calc(var(--h) * 100%));border-radius:4px 4px 0 0;background:var(--srx-soft);transform-origin:bottom;transition:background-color .15s ease,transform .1s ease}
+.sys-reports.sys-reports.sv2-fin .srx-cols>li.is-on .srx-col-plot i{background:var(--sv-blue)}
+.sys-reports.sys-reports.sv2-fin .srx-cols>li:active .srx-col-plot i{transform:scale(.94)}
+.sys-reports.sys-reports.sv2-fin .srx-col-label{flex:none;height:var(--srx-band);display:grid;place-items:center;font-size:11.5px;font-weight:500;color:var(--sv-mute);white-space:nowrap}
+.sys-reports.sys-reports.sv2-fin .srx-cols>li.is-on .srx-col-label{color:var(--sv-ink);font-weight:700}
+.sys-reports.sys-reports.sv2-fin .srx-cols>li:focus-visible{outline:none;box-shadow:0 0 0 2px var(--sv-blue)}
+
+/* rows: months, article stages, top sites */
+.sys-reports.sys-reports.sv2-fin .srx-name{min-width:0;font-size:14.5px;font-weight:700;color:var(--sv-ink);overflow-wrap:anywhere}
+.sys-reports.sys-reports.sv2-fin .srx-card .sv2-num{font-size:14.5px;color:var(--sv-ink)}
+.sys-reports.sys-reports.sv2-fin .srx-card .srx-money-val{color:var(--sv-green);white-space:nowrap}
+.sys-reports.sys-reports.sv2-fin .srx-none{color:var(--sv-mute)}
+.sys-reports.sys-reports.sv2-fin .srx-card .sv2-empty h3{margin:0!important}
+.sys-reports.sys-reports.sv2-fin .srx-card .sv2-who b{font-size:14.5px}
+.sys-reports.sys-reports.sv2-fin .srx-rank{width:32px;height:32px;border-radius:10px;font-size:13px;color:var(--sv-copy)}
+.sys-reports.sys-reports.sv2-fin .srx-track{display:block;min-width:0;height:8px;border-radius:999px;background:var(--sv-tint);overflow:hidden}
+.sys-reports.sys-reports.sv2-fin .srx-track i{display:block;width:calc(var(--w) * 100%);min-width:4px;height:100%;border-radius:999px;background:var(--sv-blue)}
+
+/* show all months */
+.sys-reports.sys-reports.sv2-fin .srx-morebar{justify-content:flex-start}
+.sys-reports.sys-reports.sv2-fin .srx-more svg{transition:transform .2s ease}
+.sys-reports.sys-reports.sv2-fin .srx-more[aria-expanded=true] svg{transform:rotate(180deg)}
+
+/* export button in the head: visible focus ring, busy cursor */
+.sys-reports.sv2-orders.sv2-fin.sv2-fin .om-top-actions button:focus-visible{outline:2px solid var(--sv-blue);outline-offset:2px}
+.sys-reports.sv2-orders.sv2-fin.sv2-fin .om-top-actions button[aria-busy=true]{cursor:progress}
+
+@media(hover:hover) and (pointer:fine){
+ .sys-reports.sys-reports.sv2-fin .srx-cols>li:hover{background:rgba(0,113,227,.05)}
+}
+
+/* touch: 44px targets for the export button and the row buttons */
 @media(pointer:coarse){
  .sys-reports.sv2-orders.sv2-fin.sv2-fin .om-top-actions button{height:44px!important;padding:0 20px!important}
+ .sys-reports.sys-reports.sv2-fin :is(.srx-more,.srx-stale .sv2-btn){height:44px;padding:0 16px}
 }
 
 @media(max-width:1100px){
- .sys-reports.sys-reports .sr-money{grid-template-columns:minmax(0,1fr)}
+ .sys-reports.sys-reports.sv2-fin :is(.srx-money,.srx-split){grid-template-columns:minmax(0,1fr)}
+ .sys-reports.sys-reports.sv2-fin .srx-head{padding:14px 16px}
+ .sys-reports.sys-reports.sv2-fin .srx-pad{padding:14px 16px 16px}
+ /* stages: the name and its count on one line, the bar under them */
+ .sys-reports.sys-reports.sv2-fin .srx-stage.sv2-tr{grid-template-columns:minmax(0,1fr) auto!important}
+ .sys-reports.sys-reports.sv2-fin .srx-stage>:first-child{grid-column:auto}
+ .sys-reports.sys-reports.sv2-fin .srx-stage>[role=cell]{text-align:end}
+ .sys-reports.sys-reports.sv2-fin :is(.srx-stage,.srx-site)>.srx-track{grid-column:1/-1}
+ .sys-reports.sys-reports.sv2-fin .srx-morebar .srx-more{flex:1 1 auto}
 }
 @media(max-width:760px){
- .sys-reports{--sr-plot:140px;--sr-gutter:58px}
- .sys-reports.sys-reports .sr-split{grid-template-columns:minmax(0,1fr)}
- .sys-reports.sys-reports .sr-card{gap:12px;padding:16px;border-radius:16px}
- .sys-reports.sys-reports .sr-readout{min-height:72px}
- .sys-reports.sys-reports .sr-readout-value{font-size:26px}
+ .sys-reports{--srx-plot:140px;--srx-gutter:58px}
+ .sys-reports.sys-reports.sv2-fin .srx-readout{min-height:72px}
+ .sys-reports.sys-reports.sv2-fin .srx-readout-value{font-size:26px}
  /* every other month name, newest always shown; the shown month keeps its name */
- .sys-reports.sys-reports .sr-cols>li.is-alt:not(.is-on) .sr-col-label{visibility:hidden}
- .sys-reports.sys-reports .sr-col-label{font-size:11px}
- .sys-reports.sys-reports .sr-table{font-size:13.5px}
- .sys-reports.sys-reports .sr-table :is(th,td){padding:10px 4px}
- .sys-reports.sys-reports .sr-more{justify-self:stretch}
+ .sys-reports.sys-reports.sv2-fin .srx-cols>li.is-alt:not(.is-on) .srx-col-label{visibility:hidden}
+ .sys-reports.sys-reports.sv2-fin .srx-col-label{font-size:11px}
  .sys-reports.sv2-orders.sv2-fin.sv2-fin .om-top-actions button{height:44px!important;padding:0 20px!important}
+}
+@media(max-width:640px){
+ /* totals: the verified amount and the customers line get the full width, the two counts share a row */
+ .sys-reports.sys-reports.sv2-fin .srx-totals{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important}
+ .sys-reports.sys-reports.sv2-fin .srx-total{padding:14px 16px;border-radius:18px}
+ .sys-reports.sys-reports.sv2-fin .srx-total:is(.is-money,.is-last){grid-column:1/-1}
+ .sys-reports.sys-reports.sv2-fin .srx-total .big{font-size:22px!important}
+ .sys-reports.sys-reports.sv2-fin .srx-stale{padding-inline-start:12px}
 }
 
 @media(prefers-reduced-motion:reduce){
- .sys-reports.sys-reports :is(.sr-body,.sr-cols>li,.sr-col-plot i,.sr-more,.sr-more svg,.sr-retry,.sr-table tbody tr){transition:none}
- .sys-reports.sys-reports :is(.sr-more,.sr-retry):active,.sys-reports.sys-reports .sr-cols>li:active .sr-col-plot i{transform:none}
+ .sys-reports.sys-reports.sv2-fin :is(.srx-body,.srx-cols>li,.srx-col-plot i,.srx-more svg){transition:none}
+ .sys-reports.sys-reports.sv2-fin .srx-cols>li:active .srx-col-plot i{transform:none}
 }
-
-/* Phone: the month table fits the card (the amount was cut at the edge). */
-@media (max-width:760px){.sys-reports.sys-reports.sys-reports .sr-table{table-layout:fixed;width:100%}.sys-reports.sys-reports.sys-reports .sr-table :is(th,td){padding:10px 2px;white-space:normal;overflow-wrap:normal;word-break:normal}.sys-reports.sys-reports.sys-reports .sr-table :is(th,td):nth-child(1){width:34%}.sys-reports.sys-reports.sys-reports .sr-table :is(th,td):nth-child(2){width:26%}.sys-reports.sys-reports.sys-reports .sr-table td.is-money{white-space:nowrap}}

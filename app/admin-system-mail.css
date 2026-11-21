@@ -1,155 +1,189 @@
-/* 16.11.2026 admin "דיוור" page (app/admin-system-mail.tsx) in the approved orders look.
-   Builds on app/orders-v2.css. Everything is scoped to .sys-mail; the long repeated prefix only wins over
-   the shared list grids, which carry !important. Light only. */
+/* 22.11.2026 (owner: "like the other admin pages"): "דיוור" (app/admin-system-mail.tsx) in the same look as the
+   suppliers, orders, content and connections lists (supplier-v2.css: sv2-card, sv2-tools, sv2-seg, sv2-search,
+   sv2-th/sv2-tr, sv2-state, sv2-btn). Light only, sv2 palette only. Everything is scoped under
+   .sys-mail.sys-mail.sv2-fin; !important only where shared admin rules force their own sizes or boxes. */
 
-/* ---------- needs-handling banner ---------- */
-.sys-mail .sm-alert{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px 14px;padding:14px 18px;border-radius:18px;background:#fff6f6;box-shadow:inset 0 0 0 1px rgba(255,59,48,.2),0 1px 3px rgba(11,39,77,.05)}
-.sys-mail .sm-alert-icon{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#ffe3e3;color:#c4001a}
-.sys-mail .sm-alert-text{min-width:0}
-.sys-mail .sm-alert-text b{display:block;font-size:15.5px;font-weight:700;letter-spacing:-.005em;color:#1d1d1f}
-.sys-mail .sm-alert-text p{margin:2px 0 0;font-size:13.5px;line-height:1.5;color:#515154}
-.sys-mail .sm-alert-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+/* ---------- the list card ---------- */
+.sys-mail.sys-mail.sv2-fin .sm-card{min-width:0}
 
-/* ---------- quiet secondary button ---------- */
-.sys-mail .sm-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:38px;padding:0 16px;border:0;border-radius:999px;background:#fff;color:#1d1d1f;box-shadow:0 0 0 1px rgba(0,0,0,.1);font:inherit;font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap;cursor:pointer;transition:box-shadow .15s,color .15s,transform .1s}
-.sys-mail .sm-btn:active{transform:scale(.97)}
-.sys-mail .sm-btn:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+/* needs-handling strip at the top of the card */
+.sys-mail.sys-mail.sv2-fin .sm-alert{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px 14px;padding:14px 22px;border-radius:24px 24px 0 0;border-bottom:1px solid var(--sv-line);background:#fff8f8}
+.sys-mail.sys-mail.sv2-fin .sm-alert-icon{display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--sv-rtint);color:var(--sv-red)}
+.sys-mail.sys-mail.sv2-fin .sm-alert-text{min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-alert-text b{display:block;font-size:15px!important;font-weight:700!important;color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-alert-text p{margin:2px 0 0;font-size:13.5px!important;font-weight:500!important;line-height:1.5;color:var(--sv-copy)}
+.sys-mail.sys-mail.sv2-fin .sm-alert-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end}
 
-/* ---------- retry (the one primary action) ---------- */
-.sys-mail .sm-retry{display:inline-flex!important;align-items:center;justify-content:center;gap:6px;height:36px!important;min-height:0!important;padding:0 16px!important;border:0!important;border-radius:999px!important;background:#0071e3!important;color:#fff!important;box-shadow:none!important;font:inherit;font-size:13.5px!important;font-weight:700!important;white-space:nowrap;cursor:pointer;transition:background-color .15s,transform .1s,opacity .15s}
-.sys-mail .sm-retry:active:not(:disabled){transform:scale(.97)}
-.sys-mail .sm-retry:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
-.sys-mail .sm-retry:disabled{opacity:.45;cursor:not-allowed}
-.sys-mail .sm-retry.is-busy:disabled{opacity:1;cursor:progress}
-.sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .sm-retry.is-busy{background:#3f8fe8!important}
-.sys-mail .sm-retry svg{flex:none;width:16px!important;height:16px!important}
+/* toolbar: search, then the filter chips; chips that do not fit scroll sideways instead of being cut off */
+.sys-mail.sys-mail.sv2-fin .sm-card>.sv2-tools{padding:14px 16px;border-bottom:1px solid var(--sv-line)}
+.sys-mail.sys-mail.sv2-fin .sm-seg{flex-wrap:nowrap;min-width:0;max-width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.sys-mail.sys-mail.sv2-fin .sm-seg::-webkit-scrollbar{display:none}
+.sys-mail.sys-mail.sv2-fin .sm-seg button{flex:none;white-space:nowrap}
+/* the "needs handling" count reads first */
+.sys-mail.sys-mail.sv2-fin .sm-seg button.is-attention b{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--sv-red);color:#fff;font-size:11.5px;font-weight:700}
 
 /* ---------- rows ---------- */
-.sys-mail .sm-msg{display:grid;gap:2px;min-width:0}
-.sys-mail .sm-msg>*{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sys-mail .sm-msg b{font-size:14.5px;font-weight:700;color:var(--fi)}
-.sys-mail .sm-msg span{font-size:12.5px;color:var(--fm)}
-.sys-mail .sm-msg span.is-error{color:#c4001a;font-weight:500}
-.sys-mail .sm-to{min-width:0}
-.sys-mail .sm-to bdi{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px;color:#424245;text-align:start}
-.sys-mail .sm-state{display:flex;align-items:center;gap:8px;min-width:0}
-.sys-mail .sm-clip{display:inline-grid;place-items:center;flex:none;width:26px;height:26px;border-radius:50%;background:#f0f1f4;color:#424245}
-.sys-mail .sm-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.sys-mail .sm-time{font-size:13px;color:var(--fm);white-space:nowrap}
-.sys-mail .sm-act{display:flex;justify-content:flex-end;min-width:0}
-.sys-mail .sm-result{margin:0;padding:8px 12px;border-radius:12px;font-size:13.5px;font-weight:600;line-height:1.45}
-.sys-mail .sm-result.is-ok{background:#e9f7ee;color:#1a7f3c}
-.sys-mail .sm-result.is-red{background:#ffebee;color:#c4001a}
-.sys-mail .sm-result.is-wait{background:#fff1dc;color:#b25000}
-.sys-mail .sm-result.is-info{background:#eef4ff;color:#0058b0}
-/* a whole card dips slightly when pressed (not when its buttons are, and not while open) */
-.sv2-orders.sv2-fin.sv2-fin.sys-mail .om-list .om-order{transition:box-shadow .2s,transform .12s}
-.sys-mail .om-list .om-order:not(.is-open):has(.om-row:active):not(:has(button:active,a:active)){transform:scale(.995)}
-.sys-mail .om-row{cursor:pointer}
-.sys-mail .om-row .om-expand:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
-.sys-mail .om-chips>button:focus-visible,.sys-mail .orders-reference-pagination button:focus-visible,.sys-mail .orders-reference-search button:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
-/* the "needs handling" chip counts in red so it reads first */
-.sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-chips>button.is-attention b{background:#ff3b30!important;color:#fff!important}
+.sys-mail.sys-mail.sv2-fin .sm-list{display:block}
+.sys-mail.sys-mail.sv2-fin .sm-row{cursor:pointer}
+.sys-mail.sys-mail.sv2-fin .sm-row>*{min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-item.is-open>.sm-row{background:#fafcff}
+.sys-mail.sys-mail.sv2-fin .sm-ico{color:var(--sv-blue)}
+.sys-mail.sys-mail.sv2-fin .sm-row.is-late .sm-ico{background:var(--sv-rtint);color:var(--sv-red)}
+.sys-mail.sys-mail.sv2-fin .sm-who b{display:block;max-width:100%;font-size:15px!important;font-weight:700!important;color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-who small{display:block;max-width:100%;font-size:13px!important;font-weight:500!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-who small.is-error{color:var(--sv-red);font-weight:600!important}
+.sys-mail.sys-mail.sv2-fin .sm-row .sv2-ml{font-size:11.5px!important;font-weight:600!important}
+.sys-mail.sys-mail.sv2-fin .sm-to{display:grid;min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-to bdi{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right;font-size:13.5px;font-weight:500;color:var(--sv-copy)}
+.sys-mail.sys-mail.sv2-fin .sm-state{display:grid;min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-state-line{display:flex;align-items:center;gap:8px;min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-state .sv2-state{white-space:nowrap}
+.sys-mail.sys-mail.sv2-fin .sv2-state.work{color:var(--sv-blue2)}
+.sys-mail.sys-mail.sv2-fin .sv2-state.work i{background:var(--sv-blue)}
+.sys-mail.sys-mail.sv2-fin .sm-clip{display:inline-grid;place-items:center;flex:none;width:24px;height:24px;border-radius:50%;background:var(--sv-well);color:var(--sv-copy)}
+.sys-mail.sys-mail.sv2-fin .sm-time{display:grid;font-size:13px;color:var(--sv-mute);white-space:nowrap;font-variant-numeric:tabular-nums}
+.sys-mail.sys-mail.sv2-fin .sm-act:empty{min-height:0}
+.sys-mail.sys-mail.sv2-fin .sm-exp{display:flex;justify-content:flex-end}
+.sys-mail.sys-mail.sv2-fin .sm-chev{color:#aeaeb2}
 
-/* ---------- open message ---------- */
-.sys-mail .om-list .sm-panel{display:grid;gap:12px;padding:2px 22px 18px}
-.sys-mail .om-sheet .sm-panel{display:grid;gap:12px;padding:0}
-.sys-mail .sm-note{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:14px;background:#f5f5f7;color:#424245}
-.sys-mail .sm-note svg{flex:none;margin-top:2px}
-.sys-mail .sm-note b{display:block;font-size:14px;font-weight:700;color:inherit}
-.sys-mail .sm-note p{margin:2px 0 0;font-size:13.5px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start}
-.sys-mail .sm-note.is-red{background:#ffebee;color:#a3001a}
-.sys-mail .sm-note.is-wait{background:#fff4e0;color:#8a4000}
-.sys-mail .sm-prev-error{margin:0;font-size:12.5px;color:var(--fm);overflow-wrap:anywhere}
-.sys-mail .sm-mail{display:grid;gap:12px;padding:16px 18px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.07)}
-.sys-mail .sm-fields{display:grid;gap:4px;margin:0;padding-bottom:12px;border-bottom:1px solid #eef0f3}
-.sys-mail .sm-fields>div{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:baseline}
-.sys-mail .sm-fields dt{font-size:12.5px;font-weight:600;color:var(--fm)}
-.sys-mail .sm-fields dd{margin:0;min-width:0;font-size:14px;font-weight:600;color:var(--fi);overflow-wrap:anywhere}
-.sys-mail .sm-fields bdi{font-weight:500}
-.sys-mail .sm-text{margin:0;font-size:14.5px;line-height:1.7;color:#1d1d1f;white-space:pre-wrap;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start}
-.sys-mail .sm-link{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-width:0}
-.sys-mail .sm-mail-button{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 16px;border-radius:999px;background:rgba(0,113,227,.08);color:#0066cc;font-size:14px;font-weight:600;text-decoration:none;transition:background-color .15s,transform .1s}
-.sys-mail .sm-mail-button:active{transform:scale(.97)}
-.sys-mail .sm-mail-button:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
-.sys-mail .sm-url{display:block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--fm)}
-.sys-mail .sm-files{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:#f7f9fc}
-.sys-mail .sm-files h4{display:flex;align-items:center;gap:6px;margin:0;font-size:13px;font-weight:700;color:#424245}
-.sys-mail .sm-files ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}
-.sys-mail .sm-files li{display:flex;align-items:center;gap:6px;font-size:13.5px;color:#1d1d1f}
-.sys-mail .sm-files li svg{flex:none;color:#0071e3}
-.sys-mail .sm-files small,.sys-mail .sm-hint{margin:0;font-size:12.5px;color:var(--fm)}
-.sys-mail .sm-html>summary{display:inline-flex;align-items:center;min-height:36px;font-size:13.5px;font-weight:600;color:#0066cc;cursor:pointer;border-radius:8px}
-.sys-mail .sm-html>summary:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
-.sys-mail .sm-html iframe{display:block;width:100%;height:460px;margin-top:8px;border:0;border-radius:12px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.08)}
-.sys-mail .sm-meta{margin:0;font-size:12.5px;color:var(--fm)}
-.sys-mail .sm-meta a{font-weight:600;color:#0066cc;text-decoration:none;border-radius:4px}
-.sys-mail .sm-meta a:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
-.sys-mail .om-list .sm-panel .om-panel-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;padding:12px 0 0;border-top:1px solid #eef0f3}
-.sys-mail .om-sheet .sm-panel .om-panel-foot{display:flex;flex-wrap:wrap;gap:8px;position:sticky;bottom:-18px;margin:0 -16px -18px;padding:12px 16px;background:#fff;border-top:1px solid #eef0f3}
-.sys-mail .sm-panel .om-panel-foot .sm-retry{height:40px!important;padding:0 18px!important;font-size:14px!important}
-.sys-mail .sm-panel .om-panel-foot .sm-btn{height:40px}
+/* retry: the one primary action */
+.sys-mail.sys-mail.sv2-fin .sm-retry svg{flex:none}
+.sys-mail.sys-mail.sv2-fin .sm-retry.is-busy{opacity:1!important;cursor:progress;background:#3f8fe8}
 
-/* ---------- marketing list, kept as is, framed like the rest of the page ---------- */
-.sys-mail .sm-marketing{margin-top:22px;scroll-margin-top:16px;border-radius:20px;outline:none}
-.sys-mail .sm-marketing:focus-visible{box-shadow:0 0 0 3px rgba(0,113,227,.3)}
-.sys-mail .sm-marketing .admin-marketing{margin:0;padding:20px 22px;border:0;border-radius:20px;background:#fff;box-shadow:0 0 0 1px rgba(0,0,0,.04),0 1px 3px rgba(11,39,77,.05)}
-.sys-mail .sm-marketing [data-slot=button]{border-radius:999px;transition:background-color .15s,box-shadow .15s,color .15s,transform .1s}
-.sys-mail .sm-marketing [data-slot=button]:active:not(:disabled){transform:scale(.97)}
-.sys-mail .sm-marketing [data-slot=button]:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
-.sys-mail .sm-marketing summary{display:inline-flex;align-items:center;min-height:36px;border-radius:8px}
-.sys-mail .sm-marketing summary:focus-visible{outline:2px solid #0071e3;outline-offset:2px}
+/* what the retry answered, plain coloured text with an icon (like the connections test result) */
+.sys-mail.sys-mail.sv2-fin .sm-result{display:flex;align-items:flex-start;gap:7px;margin:0;font-size:13px!important;font-weight:600!important;line-height:1.5}
+.sys-mail.sys-mail.sv2-fin .sm-result svg{flex:none;margin-top:2px}
+.sys-mail.sys-mail.sv2-fin .sm-result.is-ok{color:var(--sv-green)}
+.sys-mail.sys-mail.sv2-fin .sm-result.is-red{color:var(--sv-red)}
+.sys-mail.sys-mail.sv2-fin .sm-result.is-wait{color:var(--sv-orange)}
+.sys-mail.sys-mail.sv2-fin .sm-result.is-info{color:var(--sv-blue2)}
+.sys-mail.sys-mail.sv2-fin .sm-row>.sm-result{grid-column:1/-1;margin-top:-2px}
+
+/* ---------- open message: under its row on wide screens, a bottom sheet on phones ---------- */
+.sys-mail.sys-mail.sv2-fin .sm-panel{display:grid;gap:12px;min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-item>div>.sm-panel{padding:4px 22px 20px;background:#fafcff}
+.sys-mail.sys-mail.sv2-fin .om-sheet .sm-panel{padding:0;background:none}
+.sys-mail.sys-mail.sv2-fin .sm-note{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-radius:14px;background:#fff;box-shadow:0 0 0 1px var(--sv-line);color:var(--sv-copy)}
+.sys-mail.sys-mail.sv2-fin .sm-note svg{flex:none;margin-top:2px;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-note>div{min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-note b{display:block;font-size:14px!important;font-weight:700!important;color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-note p{margin:2px 0 0;font-size:13.5px!important;font-weight:500!important;line-height:1.55;color:var(--sv-copy);white-space:pre-wrap;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start}
+.sys-mail.sys-mail.sv2-fin .sm-note.is-red :is(svg,b){color:var(--sv-red)}
+.sys-mail.sys-mail.sv2-fin .sm-note.is-wait :is(svg,b){color:var(--sv-orange)}
+.sys-mail.sys-mail.sv2-fin .sm-prev-error{margin:0;font-size:12.5px!important;font-weight:500!important;color:var(--sv-mute);overflow-wrap:anywhere}
+.sys-mail.sys-mail.sv2-fin .sm-mail{display:grid;gap:12px;min-width:0;padding:16px 18px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px var(--sv-line)}
+.sys-mail.sys-mail.sv2-fin .sm-fields{display:grid;gap:4px;margin:0;padding-bottom:12px;border-bottom:1px solid #f0f1f4}
+.sys-mail.sys-mail.sv2-fin .sm-fields>div{display:grid;grid-template-columns:52px minmax(0,1fr);gap:8px;align-items:baseline}
+.sys-mail.sys-mail.sv2-fin .sm-fields dt{font-size:12.5px!important;font-weight:600!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-fields dd{margin:0;min-width:0;font-size:14px!important;font-weight:600!important;color:var(--sv-ink);overflow-wrap:anywhere}
+.sys-mail.sys-mail.sv2-fin .sm-fields bdi{font-weight:500}
+.sys-mail.sys-mail.sv2-fin .sm-text{margin:0;font-size:14.5px!important;font-weight:400!important;line-height:1.7;color:var(--sv-ink);white-space:pre-wrap;overflow-wrap:anywhere;unicode-bidi:plaintext;text-align:start}
+.sys-mail.sys-mail.sv2-fin .sm-link{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;min-width:0}
+.sys-mail.sys-mail.sv2-fin .sm-mail-button{max-width:100%}
+.sys-mail.sys-mail.sv2-fin .sm-mail-button>span{overflow:hidden;text-overflow:ellipsis}
+.sys-mail.sys-mail.sv2-fin .sm-url{display:block;flex:1 1 160px;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-files{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:var(--sv-well)}
+.sys-mail.sys-mail.sv2-fin .sm-files h4{display:flex;align-items:center;gap:6px;margin:0;font-size:13px!important;font-weight:700!important;color:var(--sv-copy)}
+.sys-mail.sys-mail.sv2-fin .sm-files ul{display:grid;gap:4px;margin:0;padding:0;list-style:none}
+.sys-mail.sys-mail.sv2-fin .sm-files li{display:flex;align-items:center;gap:6px;min-width:0;font-size:13.5px!important;font-weight:500!important;color:var(--sv-ink);overflow-wrap:anywhere}
+.sys-mail.sys-mail.sv2-fin .sm-files li svg{flex:none;color:var(--sv-blue)}
+.sys-mail.sys-mail.sv2-fin :is(.sm-files small,.sm-hint){margin:0;font-size:12.5px!important;font-weight:500!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-html>summary{display:inline-flex;align-items:center;min-height:36px;font-size:13.5px!important;font-weight:600!important;color:var(--sv-blue2);cursor:pointer;border-radius:8px}
+.sys-mail.sys-mail.sv2-fin .sm-html iframe{display:block;width:100%;height:460px;margin-top:8px;border:0;border-radius:12px;background:#fff;box-shadow:0 0 0 1px var(--sv-line)}
+.sys-mail.sys-mail.sv2-fin .sm-meta{margin:0;font-size:12.5px!important;font-weight:500!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-meta a{font-weight:600;color:var(--sv-blue2);text-decoration:none;border-radius:4px}
+.sys-mail.sys-mail.sv2-fin .sm-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0;padding:12px 0 0;border-top:1px solid var(--sv-line)}
+.sys-mail.sys-mail.sv2-fin .om-sheet .sm-actions{position:sticky;bottom:-18px;margin:0 -16px -18px;padding:12px 16px;background:#fff}
+
+/* pager and the "last 400" line close the card */
+.sys-mail.sys-mail.sv2-fin .sm-card>.orders-reference-pagination{padding:12px 22px!important;border-top:1px solid #f0f1f4!important}
+
+/* ---------- marketing list: its own card, the component kept as is ---------- */
+.sys-mail.sys-mail.sv2-fin .sm-marketing{scroll-margin-top:16px;outline:none}
+.sys-mail.sys-mail.sv2-fin .sm-marketing:focus-visible{box-shadow:0 0 0 3px rgba(0,113,227,.3),0 12px 32px rgba(20,40,80,.07)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing{min-width:0;margin:0!important;padding:20px 22px!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-head h2{font-size:16px!important;font-weight:800!important;color:var(--sv-ink)!important}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-head h2 svg{color:var(--sv-blue)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-head p{font-size:13.5px!important;font-weight:500!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-count{border-radius:16px;background:var(--sv-well)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-count strong{font-size:24px!important;color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-count span{font-size:12.5px!important;color:var(--sv-copy)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-count small{font-size:12px!important;font-weight:500!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-rules li{background:var(--sv-well);box-shadow:none;font-size:13px!important;font-weight:500!important;color:var(--sv-copy)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-rules li b{color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button]{min-height:38px!important;height:38px;padding:0 16px!important;border-radius:999px!important;font-size:14px!important;font-weight:600!important;transition:background-color .15s,box-shadow .15s,color .15s,transform .1s}
+.sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button][data-variant=default]{background:var(--sv-blue)!important;background-image:none!important;border:0!important;box-shadow:0 6px 16px rgba(0,113,227,.28)!important;color:#fff!important}
+.sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button][data-variant=outline]{background:#fff!important;background-image:none!important;border:0!important;box-shadow:0 0 0 1px var(--sv-line)!important;color:var(--sv-ink)!important}
+.sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button]:active:not(:disabled){transform:scale(.97)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button]:disabled{opacity:.5}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table{min-width:0;max-width:100%}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table summary{display:inline-flex;align-items:center;min-height:36px;border-radius:8px;font-size:14px!important;font-weight:600!important;color:var(--sv-blue2)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table table{font-size:13.5px}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table :is(th,td){border-bottom:1px solid #f0f1f4;vertical-align:top}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table th{font-size:12px!important;font-weight:600!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table td{color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table td bdi{overflow-wrap:anywhere}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-table p{font-size:12.5px!important;font-weight:500!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-remove{border-top:1px solid var(--sv-line)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-remove label{font-size:14.5px!important;font-weight:700!important;color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-remove label svg{color:var(--sv-blue)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-remove p{font-size:13px!important;font-weight:500!important;color:var(--sv-mute)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-remove textarea{border:0!important;border-radius:12px!important;background:var(--sv-well)!important;box-shadow:inset 0 0 0 1px #d2d2d7!important;font-size:15px;color:var(--sv-ink)}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-remove textarea:focus{outline:none;background:#fff!important;box-shadow:inset 0 0 0 2px var(--sv-blue)!important}
+.sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-result{font-size:13.5px!important;font-weight:600!important;color:var(--sv-green)}
 
 /* ---------- hover, fine pointers only ---------- */
 @media(hover:hover) and (pointer:fine){
- .sys-mail .sm-btn:hover{color:#0066cc;box-shadow:0 0 0 1px rgba(0,113,227,.45)}
- .sys-mail .sm-retry:hover:not(:disabled){background:#0077ed!important}
- .sys-mail .sm-mail-button:hover{background:rgba(0,113,227,.14)}
- .sys-mail .sm-html>summary:hover,.sys-mail .sm-meta a:hover{text-decoration:underline}
+ .sys-mail.sys-mail.sv2-fin .sm-row:hover .sm-chev{color:var(--sv-blue)}
+ .sys-mail.sys-mail.sv2-fin .sm-retry.is-busy:hover{background:#3f8fe8}
+ .sys-mail.sys-mail.sv2-fin :is(.sm-html>summary,.sm-meta a,.sm-marketing summary):hover{text-decoration:underline}
+ .sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button][data-variant=default]:hover:not(:disabled){background:#0077ed!important}
+ .sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button][data-variant=outline]:hover:not(:disabled){color:var(--sv-blue2)!important;box-shadow:0 0 0 1px rgba(0,113,227,.35)!important}
 }
 
-/* ---------- desktop list grid ---------- */
-@media(min-width:761px){
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-head,.sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row{grid-template-columns:minmax(0,1.9fr) minmax(0,1.1fr) 196px 112px 150px 32px!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-result{grid-column:1/-1}
-}
-@media(min-width:761px) and (max-width:1100px){
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-head,.sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) 180px 96px 140px 32px!important}
+/* ---------- narrower screens: each row becomes a card with labels ---------- */
+@media(max-width:1100px){
+ .sys-mail.sys-mail.sv2-fin .sm-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"who exp" "to to" "state time" "act act" "res res";gap:8px 12px!important;padding:14px 16px!important}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-who{grid-area:who}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-exp{grid-area:exp;align-self:start}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-to{grid-area:to}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-state{grid-area:state}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-time{grid-area:time;justify-self:end;text-align:end}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-act{grid-area:act}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-act:empty{display:none}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-result{grid-area:res;margin-top:0}
+ .sys-mail.sys-mail.sv2-fin .sm-item>div>.sm-panel{padding:4px 16px 18px}
+ .sys-mail.sys-mail.sv2-fin .sm-alert{padding:14px 16px}
+ .sys-mail.sys-mail.sv2-fin .sm-card>.orders-reference-pagination{padding:12px 16px!important}
 }
 
-/* ---------- phone: card rows, 44px targets ---------- */
-@media(max-width:760px){
- .sys-mail .sm-alert{grid-template-columns:auto minmax(0,1fr);padding:14px}
- .sys-mail .sm-alert-actions{grid-column:1/-1;justify-content:stretch}
- .sys-mail .sm-alert-actions>*{flex:1 1 auto}
- .sys-mail .sm-btn{height:44px}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .orders-reference-search{height:44px!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-chips>button{height:44px!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .orders-reference-pagination nav button{min-width:44px;height:44px!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row{grid-template-columns:minmax(0,1fr) auto!important;grid-template-areas:"msg msg" "to time" "state exp" "act act" "res res"!important;gap:8px 10px!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-msg{grid-area:msg!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-to{grid-area:to!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-time{grid-area:time!important;justify-self:end;align-self:end;font-size:12.5px}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-state{grid-area:state!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-act{grid-area:act!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-act:empty{display:none}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.sm-result{grid-area:res!important}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row>.om-expand{grid-area:exp!important;display:grid!important;justify-self:end!important;align-self:center!important;width:44px!important;height:44px!important;margin:-6px -6px -6px 0}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail.sys-mail.sys-mail.sys-mail .om-row .sm-retry{width:100%!important;max-width:none!important;height:44px!important;margin:0!important;font-size:14px!important}
- .sys-mail .sm-msg>*{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2}
- .sys-mail .sm-panel .om-panel-foot>*{flex:1 1 auto}
- .sys-mail .sm-panel .om-panel-foot .sm-retry,.sys-mail .sm-panel .om-panel-foot .sm-btn{height:44px!important}
- .sys-mail .sm-mail{padding:14px}
- .sys-mail .sm-mail-button{min-height:44px}
- .sys-mail .sm-html iframe{height:380px}
- .sys-mail .sm-marketing{margin-top:18px}
- .sys-mail .sm-marketing .admin-marketing{padding:16px}
- .sys-mail .sm-marketing [data-slot=button]{min-height:44px}
+/* ---------- phone: 44px targets, nothing wider than the screen ---------- */
+@media(max-width:640px){
+ .sys-mail.sys-mail.sv2-fin .sm-card>.sv2-tools{gap:10px;padding:12px}
+ .sys-mail.sys-mail.sv2-fin .sm-card>.sv2-tools .sv2-search{flex:1 1 100%;min-width:0}
+ .sys-mail.sys-mail.sv2-fin .sm-seg{flex:1 1 100%}
+ .sys-mail.sys-mail.sv2-fin .sm-seg button{min-height:40px}
+ .sys-mail.sys-mail.sv2-fin .sm-alert{grid-template-columns:auto minmax(0,1fr)}
+ .sys-mail.sys-mail.sv2-fin .sm-alert-actions{grid-column:1/-1;justify-content:stretch}
+ .sys-mail.sys-mail.sv2-fin .sm-alert-actions>*{flex:1 1 auto;height:44px}
+ .sys-mail.sys-mail.sv2-fin .sm-ico{width:38px;height:38px;border-radius:11px}
+ .sys-mail.sys-mail.sv2-fin .sm-who{gap:10px}
+ .sys-mail.sys-mail.sv2-fin .sm-who b{white-space:normal;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+ .sys-mail.sys-mail.sv2-fin .sm-row>.sm-exp{margin:-6px -6px 0 -8px}
+ .sys-mail.sys-mail.sv2-fin .sm-exp>button{width:44px;height:44px}
+ .sys-mail.sys-mail.sv2-fin .sm-row .sm-retry{width:100%;height:44px;font-size:14px}
+ .sys-mail.sys-mail.sv2-fin .sm-actions>*{flex:1 1 auto;height:44px}
+ .sys-mail.sys-mail.sv2-fin .sm-mail{padding:14px}
+ .sys-mail.sys-mail.sv2-fin .sm-mail-button{min-height:44px}
+ .sys-mail.sys-mail.sv2-fin .sm-html iframe{height:380px}
+ .sys-mail.sys-mail.sv2-fin .sm-card>.orders-reference-pagination nav button{min-width:44px;height:44px!important}
+ .sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing{padding:16px!important}
+ .sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button]{min-height:44px!important;height:44px}
+ /* iOS zooms into a field under 16px on focus */
+ .sys-mail.sys-mail.sv2-fin .sm-marketing .admin-marketing-remove textarea,.sys-mail.sys-mail.sv2-fin .sm-card .sv2-search input{font-size:16px}
 }
 
 @media(prefers-reduced-motion:reduce){
- .sys-mail .sm-btn,.sys-mail .sm-retry,.sys-mail .sm-mail-button,.sys-mail .sm-marketing [data-slot=button]{transition:none}
- .sv2-orders.sv2-fin.sv2-fin.sys-mail .om-list .om-order{transition:none}
- .sys-mail .sm-btn:active,.sys-mail .sm-retry:active,.sys-mail .sm-mail-button:active,.sys-mail .sm-marketing [data-slot=button]:active{transform:none}
- .sys-mail .om-list .om-order:not(.is-open):has(.om-row:active){transform:none}
+ .sys-mail.sys-mail.sv2-fin :is(.sm-row,.sm-marketing [data-slot=button]){transition:none}
+ .sys-mail.sys-mail.sv2-fin .sm-marketing [data-slot=button]:active{transform:none}
 }

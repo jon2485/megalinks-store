@@ -1,0 +1,55 @@
+/* 22.11.2026 Phone review of the admin pages (owner: "תקלות בנייד, בניהול בלבד"). Admin only: every rule is scoped
+   to admin classes (sv2, orders-match-screen, approved-order-management, admin-design-v172). Light only. */
+
+@media(max-width:1100px){
+ /* page titles: an old rule hid every h2 inside the orders screens, so three system pages opened without a title */
+ .orders-match-screen.orders-match-screen .sv2-ph h2{display:block!important}
+
+ /* segmented filters (suppliers, seller requests): one line that scrolls sideways, never a chip broken in two */
+ .sv2 .sv2-seg.sv2-seg{flex-wrap:nowrap!important;max-width:100%;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .sv2 .sv2-seg.sv2-seg::-webkit-scrollbar{display:none}
+ .sv2 .sv2-seg.sv2-seg>button{flex:none;white-space:nowrap}
+
+ /* the area strip on a single order page: the same scrolling strip as on the orders list, not a grid of two */
+ .approved-order-management~* .orders-category-tiles,.admin-design-v172 .orders-unified-heading .orders-category-tiles{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto;gap:8px!important;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .admin-design-v172 .orders-unified-heading .orders-category-tiles::-webkit-scrollbar{display:none}
+ .admin-design-v172 .orders-unified-heading .orders-category-tiles>a{flex:none!important;width:auto!important;min-height:44px!important;height:44px;flex-direction:row!important;gap:6px!important;padding:0 16px!important;white-space:nowrap}
+ .admin-design-v172 .orders-unified-heading .orders-category-tiles>a br{display:none}
+
+ /* supplier page: an amount and its ₪ stay together; a long e-mail is cut with an ellipsis instead of breaking mid-word */
+ .sv2 .sv2-kpi b,.sv2 .sv2-kpi b bdi,.sv2 .sv2-num,.sv2 .sv2-num bdi{white-space:nowrap}
+ .sv2 .sv2-hero .sv2-meta{min-width:0}
+ .sv2 .sv2-hero .sv2-meta a{display:inline-block;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+ .sv2 .sv2-hero .sv2-meta a bdi{white-space:nowrap}
+
+ /* Latin names in a Hebrew line ("Mega Links") were cut from their start ("ga Links") */
+ .sh-list li span,.approved-order-management bdi,.om-who small{unicode-bidi:plaintext}
+
+ /* single order page: the meta line breaks between items, never inside "1 פריטים" or a date */
+ .approved-order-management .nowrap{white-space:nowrap}
+}
+
+@media(max-width:640px){
+ /* orders list cards: the payment pill had no room and ran into "פורסם 0/2" */
+ .sv2-orders.sv2-orders .sv2-orow>.sv2-paycell{grid-column:1/3;min-width:0}
+ .sv2-orders.sv2-orders .sv2-orow>.sv2-paycell .sv2-pill{max-width:100%;overflow:hidden;text-overflow:ellipsis}
+ .sv2-orders.sv2-orders .sv2-orow>.sv2-pubcell{grid-column:3;justify-self:end;white-space:nowrap}
+ /* the site address under the customer name wraps instead of losing its start ("n.mynet.co.il…") */
+ .sv2-orders.sv2-orders .sv2-who small.sv2-mob{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;overflow-wrap:anywhere}
+}
+
+/* file picker in admin dialogs (attach invoice/receipt): a tidy drop box, the browser's raw "בחירת קובץ" field hidden
+   (still reachable by keyboard and screen readers), and the size hint smaller than its heading */
+.admin-design-v172 .upload-drop{position:relative;display:flex;align-items:center;gap:12px;padding:16px;border-radius:14px;border:1.5px dashed #b9cde4;background:#f7fafe;cursor:pointer}
+.admin-design-v172 .upload-drop:focus-within{outline:2px solid #1467cf;outline-offset:2px}
+.admin-design-v172 .upload-drop input[type=file]{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
+.admin-design-v172 .upload-drop b{display:block;font-size:15px;font-weight:700;color:#0b1b2f}
+html body .admin-design-v172 .upload-drop .muted.small{font-size:12.5px!important;font-weight:400!important;line-height:1.5!important;color:#6e6e73!important}
+
+/* 22.11.2026 (owner: "הכל על מסך מלא, שלא ייראה כמו כרטיסייה בנייד שמקטינה את המסך"): on phones the admin page is the
+   screen itself. The outer main margin (16px) and the rounded page card (28px padding, 28px radius) took 103px of a
+   390px screen; now the page runs edge to edge with a small side gutter, like a native app. */
+@media(max-width:760px){
+ html body .admin-design-v172.admin-design-v172>.workspace-page-content>main{padding-inline:0!important;padding-top:0!important}
+ html body .admin-design-v172 .admin-workspace-body.admin-workspace-body{margin-inline:0!important;max-width:none!important;padding:14px 12px 104px!important;border-radius:0!important;box-shadow:none!important;border:0!important}
+}
