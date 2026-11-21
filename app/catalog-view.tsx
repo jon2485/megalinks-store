@@ -120,6 +120,10 @@ export default function PremiumCatalog({ ctx, search, onSearch, loading = false 
         window.addEventListener('resize', measure);
         return () => { observer?.disconnect(); window.removeEventListener('resize', measure); };
     }, []);
+    // Owner 22.11.2026: page 2 opens at its first site (under the sticky header); nobody scrolls by hand.
+    // A direct jump after the new page has rendered: a smooth scroll is cut off while the cards animate in.
+    const pageJump = useRef(false);
+    const goPage = (next: number) => { pageJump.current = true; setPage(next); };
     const scrollToCatalog = () => {
         const results = document.getElementById('catalog-home-results');
         if (!results) return;
@@ -158,6 +162,12 @@ export default function PremiumCatalog({ ctx, search, onSearch, loading = false 
     const shekel = (ils: number) => '₪' + ils.toLocaleString('he-IL');
     const showCount = (count: number) => count === 1 ? 'הצגת אתר אחד' : count ? `הצגת ${count.toLocaleString('he-IL')} אתרים` : 'אין אתרים מתאימים';
     useEffect(() => setPage(1), [search, selectedCategories, listFilterIds, filter, maxPrice, minDR, sort]);
+    useEffect(() => {
+        if (!pageJump.current) return;
+        pageJump.current = false;
+        const first = document.querySelector<HTMLElement>('#catalog-home-results .catalog-card-reveal') || document.getElementById('catalog-home-results');
+        first?.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }, [page]);
     const pages = Math.max(1, Math.ceil(filtered.length / 24));
     const currentPage = Math.min(page, pages);
     const shown = filtered.slice((currentPage - 1) * 24, currentPage * 24);
@@ -208,7 +218,7 @@ export default function PremiumCatalog({ ctx, search, onSearch, loading = false 
             {(()=>{const active:[string,React.ReactNode,()=>void][]=[...selectedCategories.map(id=>['cat-'+id,categories[id],()=>setSelectedCategories(old=>old.filter(item=>item!==id))] as [string,React.ReactNode,()=>void]),...(filter==='sale'?[['sale','במבצע',()=>setFilter('all')] as [string,React.ReactNode,()=>void]]:[]),...(filter==='favorites'?[['fav','מועדפים',()=>setFilter('all')] as [string,React.ReactNode,()=>void]]:[]),...(maxPrice?[['price','עד '+shekel(Number(maxPrice)),()=>setMaxPrice('')] as [string,React.ReactNode,()=>void]]:[]),...(minDR?[['dr','‎DR '+minDR+'+‎',()=>setMinDR('')] as [string,React.ReactNode,()=>void]]:[]),...(listFilterIds.length?[['list',listFilterIds.length+' אתרים מהרשימה',()=>setListFilterIds([])] as [string,React.ReactNode,()=>void]]:[])];return active.length>0&&<div className="catalog-active-filters" aria-label="מסננים פעילים">{active.map(([key,labelText,remove])=><button type="button" key={key} className="catalog-active-chip" aria-label={'הסרת מסנן'} onClick={remove}>{labelText}<X size={12} aria-hidden="true"/></button>)}<span className="catalog-active-total">{filtered.length.toLocaleString('he-IL')} אתרים</span></div>;})()}
 
             {shown.length ? <CatalogMotionGrid resultKey={shown.map(site=>site.id).join(',')}>{shown.map(site=><div key={site.id} className="catalog-card-reveal" data-catalog-reveal="initial"><PublicationCard site={site} ctx={ctx} favorite={favoriteIds.includes(site.id)} onFavorite={()=>{if(!ctx.user){toast.info('התחברו כדי לשמור אתרים');return;}ctx.run(()=>api('favorites','POST',{website_id:site.id,kind:'favorite'}),'').catch(()=>{});}}/></div>)}</CatalogMotionGrid> : loading ? <div role="status" aria-label="טעינת הקטלוג" className="min-h-40"/> : <Card className="items-center border-dashed py-12 text-center"><Search size={30} className="text-slate-400"/><h2 className="!text-xl text-slate-800">לא נמצאו אתרים</h2><p className="text-base text-slate-500">נסו לשנות את החיפוש או לנקות את המסננים.</p><Button variant="outline" onClick={reset}>ניקוי מסננים</Button></Card>}
-            <nav aria-label="עמודי קטלוג" className="mt-8 flex flex-wrap items-center justify-center gap-2"><Button variant="outline" size="icon" className="rounded-full" disabled={currentPage<=1} onClick={()=>setPage(currentPage-1)} aria-label="עמוד קודם"><ChevronRight size={16}/></Button>{Array.from({length:Math.min(5,pages)},(_,index)=>Math.min(Math.max(1,currentPage-2),Math.max(1,pages-4))+index).map(number=><Button key={number} variant={currentPage===number?'default':'ghost'} className={'size-10 rounded-full ' + (currentPage===number?'bg-slate-900 text-white':'text-slate-500')} onClick={()=>setPage(number)} aria-current={currentPage===number?'page':undefined}>{number}</Button>)}<span className="px-2 text-sm text-slate-500">מתוך {pages}</span><Button variant="outline" size="icon" className="rounded-full" disabled={currentPage>=pages} onClick={()=>setPage(currentPage+1)} aria-label="עמוד הבא"><ChevronLeft size={16}/></Button></nav>
+            <nav aria-label="עמודי קטלוג" className="mt-8 flex flex-wrap items-center justify-center gap-2"><Button variant="outline" size="icon" className="rounded-full" disabled={currentPage<=1} onClick={()=>goPage(currentPage-1)} aria-label="עמוד קודם"><ChevronRight size={16}/></Button>{Array.from({length:Math.min(5,pages)},(_,index)=>Math.min(Math.max(1,currentPage-2),Math.max(1,pages-4))+index).map(number=><Button key={number} variant={currentPage===number?'default':'ghost'} className={'size-10 rounded-full ' + (currentPage===number?'bg-slate-900 text-white':'text-slate-500')} onClick={()=>goPage(number)} aria-current={currentPage===number?'page':undefined}>{number}</Button>)}<span className="px-2 text-sm text-slate-500">מתוך {pages}</span><Button variant="outline" size="icon" className="rounded-full" disabled={currentPage>=pages} onClick={()=>goPage(currentPage+1)} aria-label="עמוד הבא"><ChevronLeft size={16}/></Button></nav>
         </div>
         <Dialog open={advanced} onOpenChange={setAdvanced}><DialogContent dir="rtl" showCloseButton={false} className="catalog-sort-dialog">
             <div className="catalog-sheet-grab" aria-hidden="true"/>

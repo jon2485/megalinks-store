@@ -148,7 +148,7 @@ async function normalizeBundle(input: Row, prior: Row = {}) {
     assert(Array.isArray(b.website_ids) && b.website_ids.length > 0 && b.website_ids.length <= 30, 'בחרו בין אתר אחד ל־30 אתרים');
     assert(new Set(b.website_ids).size === b.website_ids.length, 'אין לבחור אותו אתר פעמיים בחבילה');
     const sites = [];
-    for (const id of b.website_ids) assert(typeof id === 'string', 'מזהה אתר אינו תקין'); for (const w of await websitesById(b.website_ids)) { assert(w.active, 'אחד האתרים בחבילה אינו פעיל'); sites.push(w); }
+    for (const id of b.website_ids) assert(typeof id === 'string', 'מזהה אתר אינו תקין'); { const found = await mapIn('websites', 'id', b.website_ids); assert(b.website_ids.every((id: string) => found.has(id)), 'חלק מהאתרים שנבחרו כבר לא קיימים בקטלוג. רעננו את העמוד ובחרו אותם שוב.', 409); } for (const w of await websitesById(b.website_ids, true)) { assert(w.active, 'האתר ' + w.name + ' מושהה, ולכן אי אפשר לצרף אותו לחבילה'); sites.push(w); }
     if (input.price_ils !== undefined) b.price_cents = Math.round(Number(input.price_ils) * 100);
     if (b.price_cents != null) {
         assert(b.website_ids.length >= 2, 'חבילת מחיר משותף דורשת לפחות שני אתרים');

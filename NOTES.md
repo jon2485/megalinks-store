@@ -1707,3 +1707,14 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Deployed:** `7e0bad7` (UR above 100), deployment `bf10ecdc`, SUCCESS.
 - **Sync applied (owner: "להעלות ולסנכרן"):** preview 0 errors, 147 price warnings acknowledged as in the sheet, 5 conflicts resolved with the sheet value. Catalog on Staging now 1,674 sites, 46 with UR above 100, 1,669 with a logo. Sync status after apply: "awaiting_ack" (waiting for the sheet to confirm the write-back).
 - **Admin on phone:** a read-only review agent is walking the admin pages at 390px; findings to the owner.
+
+## 22.11.2026: phone fixes (owner, all on phones)
+
+- **Page 2 lands on its first item:** customer catalog (`app/catalog-view.tsx`, `goPage` + an effect after render) and every admin list using `OrderPager` (`scrollToListStart` in `app/order-list-parts.tsx`). An instant jump: the site's smooth scroll got cut off while cards animate, and the test browser pauses frame timers in the background.
+- **Menu:** "מערכת ודוחות" is one link in the side menu and the phone sheet (its five pages are tabs at the top).
+- **Phone header:** one "קטגוריות" button on every admin page (`app/admin-mobile-menu-button.css`, up to 1100px), instead of "כל אזורי הניהול" on some pages and a bare hamburger on others.
+- **Coupon:** a wrong coupon no longer leaves the cart on "מחשב…": the cart is priced again without it and the message is "אופס, משהו לא עובד. בדוק אם הקופון בתוקף ופעיל." (`app/purchase-flow.tsx`). Checked locally: a wrong code keeps the total and the button; a valid 10% code (local QATEST10, fictional) takes 10% off.
+- **Packages:** the site picker redone in the admin look (`app/bundle-form.css`, small logo on the start side, domain, price, round check). "האתר אינו זמין להזמנה" came from sites in an old package that left the catalog when it was rebuilt from the sheet: they are dropped on save with a note, and the server now names a paused site or asks to refresh for missing ones.
+- **"חיבורים והגדרות"** rebuilt in the suppliers/orders look (`149ee66`); the other four system pages wait for the owner's OK.
+- **Phone review (agent, read-only, 390px):** 15 findings sent to the owner; not fixed yet (amounts over pills in invoices/monthly/month close, cut buttons in support, chips out of reach, and more).
+- **Checks:** tsc, build; tests bundle-feedback, bundle-pricing, cart-checkout-actions, checkout-notice, checkout-phone-actions pass. Not deployed.

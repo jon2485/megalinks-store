@@ -1,0 +1,15 @@
+/* 22.11.2026 (owner: "בנייד כפתור יפה לפתיחת הקטגוריות למעלה, לא 'כל אזורי הניהול'"): one categories button
+   on every admin page on phones and tablets, instead of a text button on some pages and a bare hamburger on others.
+   Earlier page-scoped rules (orders-reference, orders-approved, finance-records, content-workspace) turned it into a
+   hamburger, so these selectors are doubled and marked !important to win everywhere. Light only. Phones and tablets only: from 1101px the side menu is used and the button stays hidden. */
+@media(max-width:1100px){
+html body .admin-glass-header .admin-all-areas.admin-all-areas{display:inline-flex!important;align-items:center;gap:8px;width:auto!important;min-width:0!important;height:44px;min-height:44px;margin-inline-start:auto;padding:0 12px 0 14px!important;border:0!important;border-radius:999px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(10,102,194,.16),0 4px 14px rgba(15,40,80,.08)!important;color:#0b1b2f!important;font:inherit;font-size:15px!important;font-weight:700!important;white-space:nowrap;cursor:pointer;transition:transform .12s,box-shadow .15s}
+html body .admin-glass-header .admin-all-areas.admin-all-areas:active{transform:scale(.97)}
+html body .admin-glass-header .admin-all-areas.admin-all-areas:focus-visible{outline:2px solid #1467cf;outline-offset:2px}
+html body .admin-glass-header .admin-all-areas.admin-all-areas .orders-phone-menu-icon{display:none!important}
+html body .admin-glass-header .admin-all-areas.admin-all-areas>.admin-areas-ico{display:grid!important;place-items:center;width:30px;height:30px;border-radius:10px;background:linear-gradient(135deg,#1467cf,#0a4fb3);color:#fff}
+html body .admin-glass-header .admin-all-areas.admin-all-areas>.admin-areas-ico svg{display:block!important;width:17px;height:17px}
+html body .admin-glass-header .admin-all-areas.admin-all-areas>.admin-areas-text{display:inline!important}
+html body .admin-glass-header .admin-all-areas.admin-all-areas>svg:last-child{display:block!important;width:16px;height:16px;color:#6e6e73}
+@media(max-width:360px){ html body .admin-glass-header .admin-all-areas.admin-all-areas{font-size:14px!important;padding:0 10px 0 12px!important}}
+}

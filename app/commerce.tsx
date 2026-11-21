@@ -16,6 +16,7 @@ import {AdminWorkbench,AdminSearch} from './admin-workbench';
 import {CartFeedbackButton,notifyCartAdded,CART_ADDED_DURATION} from './cart-add-feedback';
 import { PublicationCard } from './catalog-view';
 import './offers-apple.css';
+import './bundle-form.css';
 
 function offerSearchMatches(query: string, values: unknown[]) {
     const normalize = (value: unknown) => String(value ?? '').normalize('NFKD').replace(/[\u0300-\u036f]/g, '').trim().toLocaleLowerCase('he-IL');
@@ -58,18 +59,38 @@ function BundleCard({ bundle, ctx, managing = false, edit }: { bundle: Row; ctx:
         {managing ? <Button variant="outline" className="ba-edit" onClick={edit}><Pencil size={17}/>עריכת החבילה</Button> : <CartFeedbackButton websiteId={'bundle:'+bundle.id} className="ba-add" enabled={available} disabled={!available||busy} onClick={add} label={busy?'מוסיף לסל…':available?'הוספת החבילה לסל':'החבילה אינה זמינה'} icon={<ShoppingCart size={18}/>}/>}</div>
     </article>;
 }
+function BundleLogo({ site }: { site: Row }) {
+    const [broken, setBroken] = useState(false);
+    return site.logo_url && !broken ? <img className="bf-logo" src={site.logo_url} alt="" loading="lazy" onError={() => setBroken(true)}/> : <span className="bf-logo" aria-hidden="true">{String(site.name || '?').trim().slice(0, 1)}</span>;
+}
 function BundleForm({ ctx, row, close }: { ctx: Ctx; row?: Row; close: () => void }) {
     const [ids, setIds] = useState<string[]>(row?.website_ids || []), [search, setSearch] = useState(''), [name, setName] = useState(row?.name || ''), [description, setDescription] = useState(row?.description || ''), [price, setPrice] = useState(row?.price_cents != null ? String(row.price_cents / 100) : ''), [active, setActive] = useState(row?.active !== false), [error, setError] = useState(''), [busy, setBusy] = useState(false);
     const selected = ids.map(id => ctx.catalog.find(site => site.id === id)).filter(Boolean) as Row[];
+    // 22.11.2026: a package may still hold sites that left the catalog (the catalog was rebuilt from the sheet); they
+    // cannot be ordered, so they are dropped on save instead of failing with "האתר אינו זמין להזמנה".
+    const gone = ctx.catalog.length ? ids.filter(id => !ctx.catalog.some(site => site.id === id)).length : 0;
+    const liveIds = gone ? selected.map(site => site.id) : ids;
     const total = selected.reduce((sum, site) => sum + site.price_cents, 0);
     const originalTotal = bundlePricing(selected, { price_cents: Math.round((Number(price) || 0) * 100) }).original;
     const matches = ctx.catalog.filter(site => site.active !== 0 && (!search || (site.name + ' ' + site.url).toLowerCase().includes(search.toLowerCase()))).slice(0, 80);
     const toggle = (id: string) => setIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
-    const save = async (e: React.FormEvent) => { e.preventDefault(); if (busy) return; setError(''); if (!name.trim() || ids.length < 2 || ids.length > 30 || !Number.isFinite(Number(price)) || Number(price) <= 0 || Math.round(Number(price) * 100) > total) { setError('הזינו שם, בחרו 2–30 אתרים ומחיר חיובי שאינו גבוה מסכום מחירי האתרים כיום.'); return; } setBusy(true); try { await ctx.run(() => pricingApi('records/bundle' + (row ? '/' + row.id : ''), row ? 'PATCH' : 'POST', { name: name.trim(), description, website_ids: ids, price_ils: price, active }), 'החבילה נשמרה'); close(); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } };
+    const save = async (e: React.FormEvent) => { e.preventDefault(); if (busy) return; setError(''); if (!name.trim() || liveIds.length < 2 || liveIds.length > 30 || !Number.isFinite(Number(price)) || Number(price) <= 0 || Math.round(Number(price) * 100) > total) { setError('הזינו שם, בחרו 2–30 אתרים ומחיר חיובי שאינו גבוה מסכום מחירי האתרים כיום.'); return; } setBusy(true); try { await ctx.run(() => pricingApi('records/bundle' + (row ? '/' + row.id : ''), row ? 'PATCH' : 'POST', { name: name.trim(), description, website_ids: liveIds, price_ils: price, active }), 'החבילה נשמרה'); close(); } catch (e) { setError((e as Error).message); } finally { setBusy(false); } };
     return <form onSubmit={save} dir="rtl" className="space-y-5 text-right">
         <div className="grid gap-4 sm:grid-cols-2"><label className="space-y-2 text-sm font-semibold"><span>שם החבילה</span><Input required value={name} onChange={e => setName(e.target.value)} className="mt-2 rounded-xl"/></label><label className="space-y-2 text-sm font-semibold"><span>מחיר מבצע כולל בש״ח, לפני מע״מ</span><Input required type="number" min="0.01" step="0.01" value={price} onChange={e => setPrice(e.target.value)} className="mt-2 rounded-xl"/></label></div>
         <label className="block text-sm font-semibold">תיאור החבילה<Textarea value={description} onChange={e => setDescription(e.target.value)} className="mt-2 rounded-xl"/></label>
-        <section className="rounded-2xl border border-slate-200 p-4"><h3 className="!text-base font-semibold">אתרים בחבילה ({ids.length})</h3><p className="mt-1 text-sm text-slate-600">בחרו לפחות שני אתרים. ניתן לשלב עד 30 אתרים.</p><div className="my-3 flex flex-wrap gap-2">{selected.map(site => <Button key={site.id} type="button" variant="outline" className="h-auto rounded-full border-teal-200 bg-teal-50 py-2 text-sm text-teal-800" onClick={() => toggle(site.id)} aria-label={'הסרת ' + site.name + ' מהחבילה'}>{site.name}<X size={14}/></Button>)}</div><Input aria-label="חיפוש אתר לחבילה" placeholder="חיפוש שם אתר או כתובת" value={search} onChange={e => setSearch(e.target.value)}/><div className="mt-3 max-h-60 space-y-1 overflow-y-auto">{matches.map(site => <label key={site.id} className="flex cursor-pointer items-center gap-3 rounded-xl p-3 hover:bg-slate-50"><input type="checkbox" checked={ids.includes(site.id)} onChange={() => toggle(site.id)} className="size-4 accent-teal-600"/><span className="min-w-0 flex-1"><strong className="block text-sm">{site.name}</strong><span dir="ltr" className="block truncate text-xs text-slate-600">{site.url}</span></span><span className="shrink-0 text-sm font-semibold">{money(site.price_cents)}</span></label>)}</div></section>
+        <section className="bf-pick" aria-labelledby="bf-pick-title">
+            <header className="bf-pick-head"><h3 id="bf-pick-title">אתרים בחבילה <span className="bf-count"><bdi>{selected.length}</bdi></span></h3><p>בחרו לפחות שני אתרים, ועד 30.</p></header>
+            {gone > 0 && <p className="bf-gone" role="status">{gone === 1 ? 'אתר אחד מהחבילה כבר לא קיים בקטלוג ויוסר בשמירה.' : gone + ' אתרים מהחבילה כבר לא קיימים בקטלוג ויוסרו בשמירה.'}</p>}
+            {selected.length > 0 && <div className="bf-chips">{selected.map(site => <button key={site.id} type="button" className="bf-chip" onClick={() => toggle(site.id)} aria-label={'הסרת ' + site.name + ' מהחבילה'}><span>{site.name}</span><X size={14} aria-hidden="true"/></button>)}</div>}
+            <label className="bf-search"><Search size={17} aria-hidden="true"/><input aria-label="חיפוש אתר לחבילה" placeholder="חיפוש שם אתר או כתובת" value={search} onChange={e => setSearch(e.target.value)}/></label>
+            <ul className="bf-list" aria-label="אתרים לבחירה">{matches.map(site => { const on = ids.includes(site.id), domain = String(site.url || '').replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, ''); return <li key={site.id}><label className={'bf-row' + (on ? ' is-on' : '')}>
+                <input type="checkbox" className="bf-native" checked={on} onChange={() => toggle(site.id)}/>
+                <BundleLogo site={site}/>
+                <span className="bf-who"><b>{site.name}</b><small><bdi dir="ltr">{domain}</bdi></small></span>
+                <span className="bf-price"><bdi dir="ltr">{money(site.price_cents)}</bdi></span>
+                <span className="bf-check" aria-hidden="true">{on && <Check size={15} strokeWidth={3}/>}</span>
+            </label></li>; })}{!matches.length && <li className="bf-empty">לא נמצאו אתרים לחיפוש הזה.</li>}</ul>
+        </section>
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-4 text-sm"><span>מחיר מקורי: <strong>{money(originalTotal)}</strong></span><span>מחירי האתרים כיום: <strong>{money(total)}</strong></span><span>חיסכון: <strong className="text-teal-700">{money(Math.max(0, originalTotal - Math.round((Number(price) || 0) * 100)))}</strong></span></div>
         <label className="flex items-center gap-2 text-sm font-medium"><input type="checkbox" checked={active} onChange={e => setActive(e.target.checked)} className="size-4 accent-teal-600"/>הצגת החבילה ללקוחות</label><ErrorBox error={error}/><div className="flex flex-wrap justify-end gap-2"><Button type="button" variant="outline" className="rounded-full" onClick={close}>ביטול</Button><Button type="submit" className={offerButtonStyle} disabled={busy}><Check size={17}/>{busy ? 'שומר…' : 'שמירת החבילה'}</Button></div>
     </form>;
