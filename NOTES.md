@@ -1975,3 +1975,13 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **קבצים:** `lib/delivery-reason.ts` (חדש), `lib/publication.ts`, `app/api/[...path]/route.ts`, `app/admin-article-decision.tsx`, `app/admin-article-review.css`, `tests/delivery-reason.mjs` (חדש).
 - **בדיקות:** `tests/delivery-reason.mjs`, `article-reopen`, `supplier-article-request` עוברות. `admin-content` נכשלת גם לפני השינוי (טיוטה מוסתרת, לא קשור).
 - **לא גמור:** "אין מייל ספק" כמעט לא יקרה, כי יש כתובת ספק ברירת מחדל. נבדק רק דרך סיבה שמורה.
+
+## 22.11.2026: fifth batch (owner: "חוץ מזה מאושר תעלה")
+
+- **Supplier e-mail and Word** (`claude/supplier-mail-files-03afb3`, `bded278` + `c519b27`): Word file right-to-left; images attached as separate files (what doesn't fit is named and stays in the Word); bold credits line; follow-up thread: "Re:" now comes before the test-inbox prefix. Still to confirm on a real e-mail: whether Resend keeps our Message-ID.
+- **Supplier link check and page** (`claude/supplier-link-check-699e9e`, `3561bfb`): browser-like request, 15 s, one retry; one message per cause, including "נראה שהקישור מוביל לכתבה אחרת"; page shows the full article title and the site to publish on. The "האתר לא השיב" on Staging was our 8 s timeout against a Cloudflare site, not a mismatch.
+- **Customer article e-mails** (`claude/fix-request-flow-a67639`, `f428a28`): the "הספק ביקש" e-mail removed; fix / cancelled / published in one layout, none says who asked; the admin's prefilled note no longer starts with "הספק ביקש תיקונים:"; a cancellation e-mail is now sent.
+- **Real reason on "הכתבה לא הגיעה לספק"** (`claude/dispatch-error-reason-2da857`, `ececd7a`): the job's error and what to do, with a link to edit the site.
+- **Sheet:** column Q "הסכם פרסום מאומת" set to "כן" for all 2,250 rows (owner: "לכל האתרים"); order 1018 then reached the supplier.
+- **Checked here:** `tsc`, build, tests resend-email (45), article-reopen, supplier-thread, supplier-mail, publication-scheduling, fix-request-mail, supplier-article-request, rich-docx, delivery-reason, supplier-link-check pass.
+- **Next:** credits block "קרדיט לתמונה מס׳ N:" + the exact attached file name (owner), in `supplier-mail-files`.
