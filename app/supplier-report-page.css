@@ -59,3 +59,6 @@
 .srp-wait-steps li[data-on]{color:var(--srp-ink)}
 .srp-wait-steps li[data-on] span{background:#fff3dc;color:#a15c00}
 .srp-wait-steps li[data-on] b{font-weight:800}
+/* A link the admin did not approve after the manual check (owner, 23.11.2026). */
+.srp-rejected{display:grid;gap:4px;background:#fff7e8;color:#7a4500;box-shadow:inset 0 0 0 1px #f2d7a6}
+.srp-rejected span{white-space:pre-wrap;overflow-wrap:anywhere}

@@ -3,6 +3,7 @@ import React,{useEffect,useRef,useState} from 'react';
 import {Check,ChevronDown,ChevronUp,ExternalLink,FileText,Mail} from 'lucide-react';
 import {Button} from '@/components/ui/button';
 import {Input} from '@/components/ui/input';
+import {toast} from 'sonner';
 import {api,useData} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
@@ -10,7 +11,7 @@ import {SellerTitle} from './seller-guide';
 import {sellerDate} from './seller-display';
 export function ReportPublication({ctx,row,onCancel}:{ctx:Ctx;row:Row;onCancel?:()=>void}){
  const[url,setUrl]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),lock=useRef(false);
- return <form noValidate className="seller-report" onSubmit={async event=>{event.preventDefault();if(lock.current)return;try{const parsed=new URL(url);if(!['http:','https:'].includes(parsed.protocol))throw Error();}catch{setError('יש להזין קישור תקין לכתבה שפורסמה');return;}lock.current=true;setBusy(true);setError('');try{await ctx.run(()=>api('selling/articles/'+encodeURIComponent(row.id),'POST',{url}),'קישור הפרסום נשמר');}catch(e){setError((e as Error).message);}finally{lock.current=false;setBusy(false);}}}><label htmlFor={'report-'+row.id}>קישור לכתבה שפורסמה</label><div><Input id={'report-'+row.id} type="url" dir="ltr" placeholder="https://" value={url} onChange={e=>setUrl(e.target.value)} disabled={busy} aria-invalid={!!error} aria-describedby={error?'report-error-'+row.id:undefined}/><Button type="submit" disabled={busy}>{busy?'שומר…':'שמירת קישור'}</Button>{onCancel&&<Button className="seller-report-cancel" variant="outline" type="button" disabled={busy} onClick={onCancel}>ביטול</Button>}</div>{error&&<p id={'report-error-'+row.id} role="alert">{error}</p>}</form>;
+ return <form noValidate className="seller-report" onSubmit={async event=>{event.preventDefault();if(lock.current)return;try{const parsed=new URL(url);if(!['http:','https:'].includes(parsed.protocol))throw Error();}catch{setError('יש להזין קישור תקין לכתבה שפורסמה');return;}lock.current=true;setBusy(true);setError('');try{const res=await ctx.run(()=>api('selling/articles/'+encodeURIComponent(row.id),'POST',{url}),'');toast.success(res?.manual_review?'הקישור התקבל ויאושר אחרי בדיקה ידנית':'קישור הפרסום נשמר');}catch(e){setError((e as Error).message);}finally{lock.current=false;setBusy(false);}}}><label htmlFor={'report-'+row.id}>קישור לכתבה שפורסמה</label><div><Input id={'report-'+row.id} type="url" dir="ltr" placeholder="https://" value={url} onChange={e=>setUrl(e.target.value)} disabled={busy} aria-invalid={!!error} aria-describedby={error?'report-error-'+row.id:undefined}/><Button type="submit" disabled={busy}>{busy?'שומר…':'שמירת קישור'}</Button>{onCancel&&<Button className="seller-report-cancel" variant="outline" type="button" disabled={busy} onClick={onCancel}>ביטול</Button>}</div>{error&&<p id={'report-error-'+row.id} role="alert">{error}</p>}</form>;
 }
 export default function SellerArticles({ctx,showHeading=true}:{ctx:Ctx;showHeading?:boolean}){
  const[filter,setFilter]=useState('pending'),[page,setPage]=useState(1),[selected,setSelected]=useState('');

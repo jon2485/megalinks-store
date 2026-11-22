@@ -1,7 +1,7 @@
 'use client';
 import React,{useEffect,useRef,useState} from 'react';
 import {toast} from 'sonner';
-import {ArrowRight,BarChart3,Bell,CalendarDays,Check,CheckCircle2,ChevronDown,ChevronLeft,ChevronRight,Clock,CreditCard,FileText,History,Info,Landmark,Loader2,Mail,MessageSquare,PenLine,Plug,Plus,ReceiptText,RefreshCcw,RefreshCw,RotateCcw,Search,Send,Store,Tags,TriangleAlert,Wallet,X,XCircle} from 'lucide-react';
+import {ArrowRight,BarChart3,Bell,CalendarDays,Check,CheckCircle2,ChevronDown,ChevronLeft,ChevronRight,Clock,CreditCard,FileText,History,Info,Landmark,Loader2,Mail,MessageSquare,PenLine,Plug,Plus,ReceiptText,RefreshCcw,RefreshCw,RotateCcw,Search,Send,ShieldCheck,Store,Tags,TriangleAlert,Wallet,X,XCircle} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {money,when,type Row} from '@/lib/shared';
 import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
@@ -33,6 +33,8 @@ const taskDefs:TaskDef[]=[
  {id:'delivery',lane:'urgent',icon:TriangleAlert,one:'תקלה בשליחה לספק',many:'תקלות שליחה לספק',go:'פתיחת הכתבה',goMany:'לתקלות השליחה',page:'admin-publication',old:'הוותיקה',quiet:'תקלות שליחה לספק'},
  {id:'article',lane:'content',icon:FileText,one:'כתבה לאישור שלך',many:'כתבות לאישור שלך',go:'בדיקת הכתבה',goMany:'בדיקת הכתבות',page:'admin-approvals',old:'הוותיקה',quiet:'כתבות לאישור'},
  {id:'supplier_fix',lane:'content',icon:PenLine,one:'הספק ביקש תיקונים',many:'ספקים ביקשו תיקונים',go:'פתיחת הכתבה',goMany:'לכתבות אצל הספק',page:'admin-publication',old:'הוותיקה',quiet:'בקשות תיקון מספקים'},
+ // A published link the system could not read (owner, 23.11.2026). Each opens that article, where the admin approves or rejects it.
+ {id:'link_review',lane:'content',icon:ShieldCheck,one:'קישור ממתין לבדיקה ידנית',many:'קישורים ממתינים לבדיקה ידנית',go:'בדיקת הקישור',goMany:'לכתבות אצל הספק',page:'admin-publication',old:'הוותיק',quiet:'קישורים לבדיקה ידנית'},
  {id:'publication',lane:'content',icon:Send,one:'מוכנה לשליחה לספק',many:'מוכנות לשליחה לספק',go:'פתיחת הכתבה',goMany:'לכתבות המוכנות',page:'admin-publication',old:'הוותיקה',quiet:'מוכנות לשליחה לספק'},
  {id:'writing',lane:'content',icon:PenLine,one:'כתבה לכותב התוכן',many:'כתבות לכותב התוכן',go:'כתיבת המאמר',goMany:'לכתבות לכתיבה',page:'admin-writing',old:'הוותיקה',quiet:'כתבות לכותב התוכן'},
  {id:'late',lane:'content',icon:TriangleAlert,one:'באיחור אצל הספק',many:'באיחור אצל הספק',go:'מעקב מול הספק',goMany:'מעקב מול הספק',page:'admin-publication',old:'הוותיקה',quiet:'איחורים אצל הספק',list:true},
@@ -40,7 +42,7 @@ const taskDefs:TaskDef[]=[
  {id:'seller_request',lane:'service',icon:Store,one:'בקשת ספק לבדיקה',many:'בקשות ספקים לבדיקה',go:'בדיקת הבקשה',goMany:'לבקשות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'requests'}],old:'הוותיקה',quiet:'בקשות ספקים'},
  {id:'seller_invoice',lane:'service',icon:ReceiptText,one:'חשבונית ספק לבדיקה',many:'חשבוניות ספקים לבדיקה',go:'בדיקת החשבונית',goMany:'לחשבוניות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'invoices'}],old:'הוותיקה',quiet:'חשבוניות ספקים'},
 ];
-const kindIcons:Record<string,Icon>={supplier_reject:XCircle,supplier_fix:PenLine,cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,unapplied:CreditCard,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
+const kindIcons:Record<string,Icon>={supplier_reject:XCircle,supplier_fix:PenLine,link_review:ShieldCheck,cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,unapplied:CreditCard,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
 const date=(s:string)=>{const d=new Date(s);return Number.isNaN(+d)?'לא תועד':new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);};
 const clock=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',hour:'2-digit',minute:'2-digit'}).format(d);
 const dayLine=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',weekday:'long',day:'numeric',month:'long'}).format(d);
@@ -59,6 +61,7 @@ function lines(r:Row,task:string):{lead:string;short:unknown[];full:unknown[]}{
  if(task==='bank'||task==='topup')return {lead:r.user_name,short:[r.number,ref],full:[ref||r.status]};
  if(task==='unapplied')return {lead:r.user_name,short:[r.number,r.detail],full:[r.number,r.detail]};
  if(task==='cancellation')return {lead:r.user_name,short:[r.number,r.website_name],full:[r.number,r.website_name,real(r.detail)]};
+ if(task==='link_review')return {lead:r.website_name||r.user_name,short:[r.number,r.user_name],full:[r.number,r.user_name,real(r.detail)]};
  if(task==='supplier_fix'||task==='supplier_reject')return {lead:r.website_name||r.user_name,short:[r.number,r.user_name],full:[r.number,r.user_name,real(r.detail)&&'„'+real(r.detail)+'”']};
  if(task==='seller_request')return {lead:r.user_name,short:[r.website_name],full:[r.website_name]};
  if(task==='seller_invoice')return {lead:r.user_name,short:[r.detail&&'חודש '+r.detail],full:[r.detail&&'חודש '+r.detail]};

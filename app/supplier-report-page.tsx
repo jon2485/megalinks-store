@@ -24,7 +24,9 @@ export default function SupplierReportPage({token}:{token:string}){
  const state=useData('supplier/'+encodeURIComponent(token));
  const [url,setUrl]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[sent,setSent]=useState(''),lock=useRef(false);
  const a=state.data?.article,closed=!!state.data?.closed||!!sent,published=sent||a?.published_url||'';
- const submit=async(e:React.FormEvent)=>{e.preventDefault();if(lock.current)return;const value=url.trim();if(!value){setError('יש להדביק את הקישור לכתבה שפורסמה');return;}lock.current=true;setBusy(true);setError('');try{await api('supplier/'+encodeURIComponent(token),'POST',{url:value});setSent(value);}catch(err){setError((err as Error).message);}finally{lock.current=false;setBusy(false);}};
+ // Owner decision (23.11.2026): a page the system could not read is accepted for the admin's manual check.
+ const [review,setReview]=useState<LinkReview|null>(null),linkReview:LinkReview|null=review||a?.link_review||null;
+ const submit=async(e:React.FormEvent)=>{e.preventDefault();if(lock.current)return;const value=url.trim();if(!value){setError('יש להדביק את הקישור לכתבה שפורסמה');return;}lock.current=true;setBusy(true);setError('');try{const res=await api('supplier/'+encodeURIComponent(token),'POST',{url:value});if(res?.manual_review)setReview(res.link_review||{status:'pending',url:value});else setSent(value);}catch(err){setError((err as Error).message);}finally{lock.current=false;setBusy(false);}};
  const [sentIssue,setSentIssue]=useState<Issue|null>(null),issue:Issue|null=sentIssue||a?.issue||null;
  const article=a&&<ArticleCard a={a}/>;
  let body:React.ReactNode;
@@ -38,12 +40,14 @@ export default function SupplierReportPage({token}:{token:string}){
   <p className="srp-closed"><Lock size={15} aria-hidden="true"/>הקישור האישי הזה סגור</p>
  </>;
  else if(a.waiting_fixes)body=<SupplierHold article={article}/>;
+ else if(linkReview?.status==='pending')body=<SupplierLinkWaiting url={linkReview.url} article={article}/>;
  else if(issue?.open)body=<SupplierIssueWaiting issue={issue} article={article}/>;
  else{const linkForm=<form className="srp-form" onSubmit={submit} noValidate>
   {a.cancel_pending&&<>
   <div className="srp-hero is-form"><span className="srp-pill is-check"><span className="srp-dot"/>קישור אישי לכתבה אחת</span><h1>הכתבה עלתה? שלחו לנו את הקישור.</h1><p>מדביקים את הכתובת של הכתבה באתר, ואנחנו בודקים ומאשרים תוך כמה שניות.</p></div>
   {article}
   <p className="srp-alert" role="alert">התקבלה בקשת ביטול לכתבה הזו. אין לפרסם אותה עד שנחזור אליכם.</p></>}
+  {linkReview?.status==='rejected'&&<div className="srp-alert srp-rejected" role="status"><b>הקישור ששלחתם לא אושר בבדיקה.</b>{linkReview.note&&<span>{linkReview.note}</span>}<span>אחרי התיקון, שלחו כאן את הקישור שוב.</span></div>}
   <label className="srp-field"><span>הקישור לכתבה באתר</span><span className="srp-input"><Link2 size={19} aria-hidden="true"/><input type="url" dir="ltr" inputMode="url" autoComplete="off" placeholder="https://" value={url} disabled={busy||!!a.cancel_pending} onChange={e=>{setUrl(e.target.value);setError('');}}/></span></label>
   {error&&<p className="srp-alert" role="alert">{error}</p>}
   <button type="submit" className="srp-button" disabled={busy||!!a.cancel_pending}>{busy?<><Loader2 className="srp-spin" size={19} aria-hidden="true"/>בודקים את הקישור…</>:'שליחת הקישור לבדיקה'}</button>
@@ -65,5 +69,19 @@ function SupplierHold({article}:{article:React.ReactNode}){
   {article}
   <ol className="srp-wait-steps">{steps.map(([t,on],i)=><li key={t} data-on={on||undefined}><span>{i+1}</span><b>{t}</b></li>)}</ol>
   <p className="srp-closed">אין צורך לעשות דבר כרגע</p>
+ </>;
+}
+
+// Owner decision (23.11.2026): the site did not let our check read the page, so the link waits for a person.
+// A calm page: nothing is wrong with the supplier's link, and there is nothing to do.
+type LinkReview={status:'pending'|'rejected';url:string;note?:string;at?:string};
+function SupplierLinkWaiting({url,article}:{url:string;article:React.ReactNode}){
+ const steps:[string,boolean][]=[['הקישור התקבל',true],['בודקים את הכתבה באתר',false],['הכתבה מסומנת כפורסמה',false]];
+ return <>
+  <div className="srp-hero"><div className="srp-alert-mark is-wait" aria-hidden="true"><Clock size={34}/></div><span className="srp-pill is-wait"><span className="srp-dot"/>ממתין לבדיקה ידנית</span><h1>הקישור התקבל. תודה!</h1><p>הקישור התקבל ויאושר אחרי בדיקה ידנית. האתר לא אפשר לנו לבדוק את הדף אוטומטית, אז נבדוק אותו בעצמנו.</p></div>
+  {article}
+  {url&&<a className="srp-published" href={url} target="_blank" rel="noopener noreferrer" dir="ltr">{url}</a>}
+  <ol className="srp-wait-steps">{steps.map(([t,on],i)=><li key={t} data-on={on||undefined}><span>{i+1}</span><b>{t}</b></li>)}</ol>
+  <p className="srp-closed">אין צורך לעשות דבר נוסף. אם יהיה צורך בתיקון, נכתוב לכם במייל.</p>
  </>;
 }
