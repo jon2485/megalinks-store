@@ -10,6 +10,9 @@ import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
 import {openCancelFocus} from './cancel-focus';
 import {SupplierIssueBox,REOPEN_OPEN_EVENT} from './admin-supplier-issue';
+import {toast} from 'sonner';
+import {deliveryReason,type DeliveryReason} from '@/lib/delivery-reason';
+import {saveAdminViewState} from '@/lib/admin-view-state';
 import './admin-article-review.css';
 
 // The admin's article page answers two questions first: who holds the article now,
@@ -101,7 +104,7 @@ export function AdminArticleHeader({s,stage}:{s:AdminStudio;stage:AdminStage}){
 /** The decision card: what the system checked, what to check by eye, and the actions of the current stage.
  *  On a phone the two main actions of the review stage also float in a bar above the admin dock. */
 export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
- const {ctx,id,a,w,busy,dirty}=s,[returning,setReturning]=useState(false),[url,setUrl]=useState(''),[urlError,setUrlError]=useState('');
+ const {ctx,id,a,w,busy,dirty}=s,[returning,setReturning]=useState(false),[url,setUrl]=useState(''),[urlError,setUrlError]=useState(''),[retried,setRetried]=useState<DeliveryReason|null>(null);
  const demo=!!s.o?.demo;
  const notes=[w?.public_notes,typeof w?.publishing_restrictions==='string'?w.publishing_restrictions:'',w?.customer_notes].filter(Boolean) as string[];
  const savedHint=dirty&&<p className="ar-dirty"><Info size={15} aria-hidden="true"/>יש שינויים שעוד לא נשמרו. <button type="button" disabled={busy} onClick={()=>s.act(s.save,'השינויים נשמרו')}>שמירה עכשיו</button></p>;
@@ -167,10 +170,17 @@ export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
  </>);
  if(stage==='scheduled')return box('מתוזמנת',<p>הכתבה תעבור לאישור שלך בקרוב, והתאריך שהלקוח בחר נשמר.</p>);
  if(stage==='waiting_day')return box('אושרה, ממתינה לתאריך',<p>הכתבה תישלח ל־{site(s)} ב־<b>{dayText(a.scheduled)}</b> ב־7:00 בבוקר, אוטומטית.</p>,<>{edit}<ReopenAction s={s} stage={stage}/></>);
- if(stage==='delivery')return box('הכתבה לא הגיעה לספק',<>
-  <p>אישרת את הכתבה, אבל השליחה לספק לא הושלמה. לפעמים חסר מלאי באתר או פרטי ספק.</p>
-  <div className="ar-row"><button type="button" className="ar-btn ar-primary" disabled={busy} onClick={()=>s.act(()=>api('articles/'+id+'/dispatch','POST',{}),'מצב המסירה לספק עודכן')}><Send size={15} aria-hidden="true"/>שליחה חוזרת לספק</button>{a.website_id&&<button type="button" className="ar-btn" onClick={()=>ctx.go('admin-supplier-stock/'+a.website_id)}>הוספת מלאי</button>}</div>
- </>,<>{edit}<ReopenAction s={s} stage={stage}/></>);
+ if(stage==='delivery'){
+  // The stored reason of the blocked delivery (owner, 22.11.2026): shown as the main line, with the next step.
+  // A retry that comes back blocked shows its reason at once instead of a success message.
+  const reason=retried||deliveryReason(a.delivery_error,a.delivery_status);
+  const editSite=()=>{const supplier=s.w?.supplier_id;if(supplier){saveAdminViewState('supplier-editor:'+supplier,{site:a.website_id,tab:'sites',all:false});ctx.go('admin-supplier/'+supplier);}else{saveAdminViewState('websites-search',site(s));ctx.go('admin-websites');}};
+  const retry=()=>s.act(async()=>{const r=await api('articles/'+id+'/dispatch','POST',{});const stuck=deliveryReason(r?.error,r?.status);setRetried(stuck);if(stuck)toast.error(stuck.text);return r;},r=>deliveryReason(r.error,r.status)?'':'הכתבה נשלחה לספק');
+  return box('הכתבה לא הגיעה לספק',<>
+  {reason?<><p className="ar-reason" role="status"><b>{reason.text}</b></p>{reason.hint&&<p className="ar-muted">{reason.hint}</p>}{reason.fix==='site'&&a.website_id&&<p className="ar-fixlink"><button type="button" className="ar-inline-link" onClick={editSite}>לעריכת האתר {site(s)}<ChevronLeft size={14} aria-hidden="true"/></button></p>}</>
+   :<p>אישרת את הכתבה, אבל השליחה לספק לא הושלמה. לפעמים חסר מלאי באתר או פרטי ספק.</p>}
+  <div className="ar-row"><button type="button" className="ar-btn ar-primary" disabled={busy} onClick={retry}><Send size={15} aria-hidden="true"/>שליחה חוזרת לספק</button>{a.website_id&&<button type="button" className="ar-btn" onClick={()=>ctx.go('admin-supplier-stock/'+a.website_id)}>הוספת מלאי</button>}</div>
+ </>,<>{edit}<ReopenAction s={s} stage={stage}/></>);}
  if(stage==='supplier')return box('ממתינים לפרסום אצל הספק',<>
   <SupplierIssueBox s={s}/>
   <form noValidate className="ar-report" onSubmit={report}>

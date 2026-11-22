@@ -1941,3 +1941,11 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Reply-to address for e-mail** (`34c9f71` from `claude/reply-to-20261122`): optional "reply_to" in the e-mail connection, sent to Resend, so a customer's reply reaches the owner's inbox. Merge conflict in `lib/mail.ts` `resendMessage` resolved by keeping both the thread headers line and the reply_to line.
 - **Checked here:** `tsc` clean, build passes, tests `resend-email` (39 checks), `article-reopen`, `supplier-thread`, `supplier-mail`, `publication-scheduling`, `fix-request-mail`, `supplier-article-request`, `rich-docx` pass.
 - **Found (not fixed, waiting for the owner):** order 1018 (notes.co.il) did not reach the supplier because `procurement_verified` is "לא"; every one of the 2,250 sheet rows has "לא" in "הסכם פרסום מאומת", so every non-demo dispatch is blocked the same way. The admin "הכתבה לא הגיעה לספק" box shows a generic text instead of the job's real `error`.
+
+## סיבת "הכתבה לא הגיעה לספק" (22.11.2026, אושר: "כן")
+- **מה:** במסך הכתבה של המנהל, בתיבה "הכתבה לא הגיעה לספק", מוצגת עכשיו הסיבה האמיתית שנשמרה בשליחה (`jobs` `publication:<id>`, `data.error`, רק כשהסטטוס `blocked` או `failed`), במקום הניחוש הכללי. מתחתיה שורה מה לעשות. בסיבות של האתר (הסכם לא מאומת, אין מייל, מייל לא תקין) יש קישור "לעריכת האתר", שפותח את עריכת האתר אצל הספק שלו. שני הכפתורים נשארו. בלי סיבה שמורה, הטקסט הישן נשאר.
+- **שליחה חוזרת:** אם חזרה חסומה, הסיבה מוצגת מיד בתיבה ובהודעה אדומה, בלי "עודכן" ירוק. בהצלחה: "הכתבה נשלחה לספק".
+- **שרת:** `adminArticleExtras` ב-`lib/publication.ts`, שאילתה אחת (שם הלקוח + סטטוס וסיבת המסירה, LEFT JOIN), רק למנהל. מחליפה את שאילתת שם הלקוח, אז אין שאילתה נוספת.
+- **קבצים:** `lib/delivery-reason.ts` (חדש), `lib/publication.ts`, `app/api/[...path]/route.ts`, `app/admin-article-decision.tsx`, `app/admin-article-review.css`, `tests/delivery-reason.mjs` (חדש).
+- **בדיקות:** `tests/delivery-reason.mjs`, `article-reopen`, `supplier-article-request` עוברות. `admin-content` נכשלת גם לפני השינוי (טיוטה מוסתרת, לא קשור).
+- **לא גמור:** "אין מייל ספק" כמעט לא יקרה, כי יש כתובת ספק ברירת מחדל. נבדק רק דרך סיבה שמורה.

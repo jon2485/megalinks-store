@@ -77,3 +77,9 @@ async function resumeHeldArticle(article:Row,actor:Row){
  await audit(actor,article.id,'הגרסה המעודכנת נשלחה לספק',{supplier_mail:mail});
  return {...(parse(await one('SELECT * FROM jobs WHERE id=?','publication:'+article.id))||{}),status:'succeeded',supplier_update:mail};
 }
+// The admin article page: the customer's name and the supplier delivery's stored reason in one read.
+// The reason is shown only while the delivery is stuck (blocked or failed); a later success clears it.
+export async function adminArticleExtras(article:Row){
+ const r=await one(`SELECT u.name AS user_name,j.status AS delivery_status,CASE WHEN j.status IN ('blocked','failed') THEN json_extract(j.data,'$.error') END AS delivery_error FROM users u LEFT JOIN jobs j ON j.id=? WHERE u.id=?`,'publication:'+article.id,article.user_id);
+ return {user_name:r?.user_name,delivery_status:r?.delivery_status||'',delivery_error:r?.delivery_error||''};
+}
