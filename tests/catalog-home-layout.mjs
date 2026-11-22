@@ -52,16 +52,19 @@ for(const search of ['', 'tech']) {
   const input=nodes.find(n=>n.attrs.id==='catalog-inline-search-input');
   const shell=input.parent,slot=shell.parent,tools=slot.parent;
   assert.equal(category.attrs['data-slot'],'popover-trigger','real Radix attribute is included in layout checks');
-  // Owner 22.11.2026: the toolbar is compact; categories sit with the other catalog buttons in one row, the search
-  // keeps its own place. The compact geometry lives in app/catalog-toolbar-compact.css (checked in the browser).
-  assert.equal(category.parent.attrs['aria-label'],'פעולות קטלוג','categories sit with the other catalog buttons');
-  assert.equal(slot.parent,tools,'the search keeps its own place in the tools');
-  assert(!nodes.some(n=>(n.attrs.class||'').includes('catalog-fav-trigger')),'no favourites button for a visitor who is not signed in');
+  assert.equal(category.parent,tools,'both controls share the same grid parent');
   assert.equal(shell.attrs['data-open'],String(Boolean(search)));
   for(const width of [320,360,375,393,430,640,700,768,1024,1440,1920,2560]) {
+    const row=resolve(tools,width),button=resolve(category,width),holder=resolve(slot,width),field=resolve(shell,width);
+    assert.equal(row.display,'grid',width+': shared grid');
+    const actions=resolve(nodes.find(n=>n.attrs['aria-label']==='פעולות קטלוג'),width);
     if(width>=1024){
+      assert.equal(row.width,actions.width,width+': search and all three actions end at the same edge');
+      assert.match(row.width,/--catalog-desktop-tools-width/);
       assert.equal(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-composition'),width)['max-width'],'1500px');
     }else if(width<=700){
+      assert.equal(row.width,actions.width,width+': mobile search ends above bulk-order edge');
+      assert.equal(row['max-width'],'510px');
       const hero=resolve(nodes.find(n=>n.attrs.class==='azure-catalog-hero'),width);
       assert.match(hero.background,/checkout-waves/,width+': full-height hero retains the original wave asset');
       assert.match(hero['min-height'],/100svh.*--catalog-mobile-hero-top/,width+': first viewport is reserved without hiding catalog controls');
@@ -71,12 +74,27 @@ for(const search of ['', 'tech']) {
       const art=resolve(nodes.find(n=>n.attrs.class==='catalog-publication-scene'),width);
       assert.equal(art['grid-row']??art['grid-area']?.split('/')[0],'1',width+': original artwork precedes title');
       assert.match(nodes.find(n=>n.tag==='img'&&n.attrs.class==='catalog-home-illustration').attrs.src,/home-publication-20261020\.webp$/,width+': original illustration retained');
+      const label=resolve(category===undefined?null:nodes.find(n=>n.tag==='span'&&n.parent===category),width);
+      assert.equal(label['white-space'],'normal',width+': full category label can wrap');
+      assert.equal(label['text-overflow'],'clip',width+': no ellipsis');
       if(width<=440){
         assert.match(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-title'),width)['font-size'],/27px/);
         assert.equal(resolve(nodes.find(n=>n.attrs.class==='catalog-hero-composition'),width)['min-height'],'0');
       }
-    }
+    }else assert.equal(row.width,'100%',width+': existing tablet row preserved');
     if(width>700)assert.equal(resolve(nodes.find(n=>(n.attrs.class||'').split(/\s+/).includes('catalog-mobile-scroll')),width).display,'none',width+': no new desktop control');
+    assert.equal(button['margin-top']??button.margin,'0',width+': no legacy top margin');
+    assert.equal(button['min-width'],'0',width+': no legacy minimum width');
+    assert.equal(button.width,'100%',width+': button fits its own track');
+    assert.equal(button.height,'52px');assert.equal(field.height,'52px');
+    // Production CSS minifies grid-row/grid-column to grid-area.
+    const gridRow=value=>value['grid-row']??value['grid-area']?.split('/')[0];
+    const gridColumn=value=>value['grid-column']??value['grid-area']?.split('/')[1];
+    assert.equal(gridRow(button),'1');assert.equal(gridRow(holder),'1');
+    assert.equal(gridColumn(button),'1');assert.equal(gridColumn(holder),'2');
+    const track=Number(row['grid-template-columns'].match(/^(\d+)px/)[1]),gap=parseFloat(row.gap),content=width-(width<640?32:64);
+    assert(content-track-gap>=52,width+': search track fits beside category without overlap');
+    assert.equal(field.width,search?'100%':'52px',width+': search expands inside the reserved track');
   }
 }
-console.log('CATALOG HOME LAYOUT PASSED: actual Radix/Button markup and resolved CSS at 320–2560px, compact stacked phone intro, the compact toolbar structure (categories with the catalog buttons, search in its own place). CSS/SSR verification; no browser layout was run.');
+console.log('CATALOG HOME LAYOUT PASSED: actual Radix/Button markup and resolved CSS at 320–2560px, compact stacked phone intro, complete category labels, aligned tools/actions, equal heights, no overlap, and open/closed search widths. CSS/SSR verification; no browser layout was run.');
