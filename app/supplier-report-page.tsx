@@ -1,6 +1,6 @@
 'use client';
 import React,{useRef,useState} from 'react';
-import {Check,Link2,Loader2,Lock,TriangleAlert} from 'lucide-react';
+import {Check,Clock,Link2,Loader2,Lock,TriangleAlert} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import BrandLogo from './brand-logo';
 import './supplier-report-page.css';
@@ -26,6 +26,7 @@ export default function SupplierReportPage({token}:{token:string}){
   {published&&<a className="srp-published" href={published} target="_blank" rel="noopener noreferrer" dir="ltr">{published}</a>}
   <p className="srp-closed"><Lock size={15} aria-hidden="true"/>הקישור האישי הזה סגור</p>
  </>;
+ else if(a.waiting_fixes)body=<SupplierHold article={article}/>;
  else body=<form className="srp-form" onSubmit={submit} noValidate>
   <div className="srp-hero is-form"><span className="srp-pill is-check"><span className="srp-dot"/>קישור אישי לכתבה אחת</span><h1>הכתבה עלתה? שלחו לנו את הקישור.</h1><p>מדביקים את הכתובת של הכתבה באתר, ואנחנו בודקים ומאשרים תוך כמה שניות.</p></div>
   {article}
@@ -37,4 +38,16 @@ export default function SupplierReportPage({token}:{token:string}){
   <p className="srp-hint">כל פרטי הכתבה והקבצים נמצאים במייל שקיבלתם.</p>
  </form>;
  return <main className="srp" dir="rtl"><div className="srp-card"><header className="srp-head"><BrandLogo className="srp-logo"/></header><div className="srp-body">{body}</div></div><p className="srp-foot">Mega Links · בניית קישורים וכתבות</p></main>;
+}
+
+// Owner decision (22.11.2026): the article went back to the customer for fixes ("waiting_fixes": a key with "supplier" in it is hidden by the privacy filter). The link stays alive and,
+// instead of the paste field, asks the supplier to wait; the field comes back with the updated version.
+function SupplierHold({article}:{article:React.ReactNode}){
+ const steps:[string,boolean][]=[['הלקוח מתקן את הכתבה',true],['אנחנו שולחים לכם הנחיות מעודכנות',false],['מפרסמים ושולחים את הקישור כאן',false]];
+ return <>
+  <div className="srp-hero"><div className="srp-alert-mark is-wait" aria-hidden="true"><Clock size={34}/></div><span className="srp-pill is-wait"><span className="srp-dot"/>ממתינה לתיקונים של הלקוח</span><h1>נא להמתין עם פרסום הכתבה</h1><p>הכתבה חזרה ללקוח לתיקונים. כשהתיקונים יאושרו, נשלח לכם הנחיות מעודכנות במייל, והדף הזה ייפתח שוב לשליחת הקישור.</p></div>
+  {article}
+  <ol className="srp-wait-steps">{steps.map(([t,on],i)=><li key={t} data-on={on||undefined}><span>{i+1}</span><b>{t}</b></li>)}</ol>
+  <p className="srp-closed">אין צורך לעשות דבר כרגע</p>
+ </>;
 }

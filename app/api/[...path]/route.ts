@@ -50,6 +50,7 @@ import {walletUsageHistory} from '@/lib/wallet-usage';
 import {ledgerView} from '@/lib/ledger-view';
 import {orderSummarySql,fullyCancelledOrderSql} from '@/lib/order-summary';
 import {requestOrderCancel,rejectOrderCancel,approveOrderCancel,assertNoCancelRequest} from '@/lib/cancel-request';
+import {reopenApprovedArticle} from '@/lib/article-reopen';
 import {articleGuard,financialGuard,orderGuard} from '@/lib/monthly-order';
 import {createOrder} from '@/lib/order-create';
 import {accountManagementRoutes} from '@/lib/account-management';
@@ -267,10 +268,11 @@ async function handle(r: Request,access:ResponseAccess) {
         if(method==='GET'&&query.get('asset')==='word'){return new Response(await articleDocx(a) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':'attachment; filename=article.docx'}});}
         if(method==='GET'&&['image','document','inline'].includes(query.get('asset')||'')){const data=JSON.parse(a.data);const fileId=query.get('asset')==='inline'?(await inlineImages(a.content)).find(i=>i.id===query.get('image'))?.id:query.get('asset')==='image'?(query.get('secondary')==='1'?data.secondary_image_id:data.image_id):data.document_id;assert(fileId,'לכתבה לא צורף קובץ',404);const f=await one('SELECT * FROM files WHERE id=?',fileId);assert(f,'הקובץ לא נמצא',404);const blob=await env.BUCKET?.get(f.key);assert(blob,'הקובץ לא נמצא',404);return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'",'Content-Disposition':['image','inline'].includes(query.get('asset')||'')?'inline':'attachment'}});}
         if (method === 'GET')
-            return response({ article: { id: a.id, title: a.title, content: await supplierContent(a.content,'/api/supplier/'+p[1]+'?asset=inline&image='), website_name: a.website_name,scheduled:JSON.parse(a.data).scheduled||'',meta_description:JSON.parse(a.data).meta_description||'',client_notes:JSON.parse(a.data).client_notes||'',secondary_image:!!JSON.parse(a.data).secondary_image_id,secondary_image_credit:JSON.parse(a.data).secondary_image_credit||'',image_credit:JSON.parse(a.data).image_credit||'',image_credit_url:JSON.parse(a.data).image_credit_url||'',image:!!JSON.parse(a.data).image_id,document:!!JSON.parse(a.data).document_id,cancel_pending:!!JSON.parse(a.data).cancel_pending }, expires: token.expires });
+            return response({ article: { id: a.id, title: a.title, content: await supplierContent(a.content,'/api/supplier/'+p[1]+'?asset=inline&image='), website_name: a.website_name,scheduled:JSON.parse(a.data).scheduled||'',meta_description:JSON.parse(a.data).meta_description||'',client_notes:JSON.parse(a.data).client_notes||'',secondary_image:!!JSON.parse(a.data).secondary_image_id,secondary_image_credit:JSON.parse(a.data).secondary_image_credit||'',image_credit:JSON.parse(a.data).image_credit||'',image_credit_url:JSON.parse(a.data).image_credit_url||'',image:!!JSON.parse(a.data).image_id,document:!!JSON.parse(a.data).document_id,cancel_pending:!!JSON.parse(a.data).cancel_pending,waiting_fixes:!!JSON.parse(a.data).supplier_hold_at&&a.status!=='sent' }, expires: token.expires });
         if (method === 'POST') {
             const b = await json(r);
             assert(!JSON.parse(a.data).cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409);
+            assert(!(JSON.parse(a.data).supplier_hold_at&&a.status!=='sent'),'הכתבה חזרה ללקוח לתיקונים. נא להמתין עם פרסום הכתבה עד שנשלח הנחיות מעודכנות',409);
             const url = httpUrl(b.url);
             assert(url, 'יש להזין קישור לפרסום');assert(a.status==='sent','הכתבה כבר טופלה',409);const w=await website(a.website_id,true);const checked=await verifyPublishedArticle(url,w.url,a);assert(checked.ok,checked.message,422);
             const publication=publicationPeriod();
@@ -682,6 +684,8 @@ if (p[0] === 'cart') {
         }
         if(p[2]==='unschedule'&&method==='POST'){const b=await json(r);assert(a.status==='scheduled','הכתבה אינה ממתינה לשליחה מתוזמנת',409);assert(b.version===a.version,'הכתבה עודכנה במקביל',409);const result=await stmt("UPDATE articles SET status=CASE WHEN json_extract(data,'$.scheduled_from_status') IN ('draft','review','revisions') THEN json_extract(data,'$.scheduled_from_status') ELSE 'draft' END,data=json_remove(data,'$.scheduled_submitted_at','$.scheduled_from_status'),version=version+1,updated=? WHERE id=? AND version=? AND status='scheduled'",now(),a.id,a.version).run();assert(result.meta.changes===1,'הכתבה עודכנה במקביל',409);await audit(u,a.id,'השליחה המתוזמנת בוטלה; הכתבה חזרה לטיוטה');return response({ok:true,version:a.version+1});}
         if(p[2]==='validate'&&method==='POST')return response(await articleChecks(a));
+        // Owner decision (22.11.2026): the admin returns an approved (not yet published) article to the customer for editing.
+        if(p[2]==='reopen'&&method==='POST'){admin(u);return response(await reopenApprovedArticle(a,u,await json(r),new URL(r.url).origin));}
         if (p[2] === 'status' && method === 'POST') {
             const b = await json(r);
             let next = b.status;
