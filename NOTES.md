@@ -2009,3 +2009,10 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Images:** shared notes folder `link-manual-review/` (supplier before/after, admin article before/after, lobby row, reject form, supplier after rejection, supplier e-mail).
 - **Open:** a supplier waits up to ~45 s on a site that never answers (the page shows "בודקים את הקישור…"). If the personal link expires while pending, a rejected supplier needs a new link.
 - **Before upload:** nothing temporary in the repo (the `node_modules` junction in the worktree is ignored by git).
+
+## 23.11.2026: sixth batch merged (owner approved upload)
+- **Merged into `claude/iphone-fixes-20261122`:** `supplier-mail-files` (f87217e failed e-mail fix, 7ffbc8a + 1484199 short non-repeating subject), `sent-article-view` (7b41948, 11deff9, 3dd6deb: sent article shows only the green sign and the article read-only), `category-search-box` (1beb761: tidy "חיפוש תחום" field, solid header), `link-manual-review` (92cd346..423e0a0: unreadable supplier page → "ממתין לבדיקה ידנית", admin approves or rejects).
+- **Conflicts:** only `NOTES.md` (both sides kept). No conflict markers left.
+- **Checked here:** `tsc`, build, tests resend-email, article-reopen, supplier-thread, supplier-mail, publication-scheduling, fix-request-mail, supplier-article-request, rich-docx, delivery-reason, supplier-link-check, writing-workflow pass.
+- **Sheet (23.11):** all 150 Leos Media rows (H2102:H2251) now "לאוס מדיה - ספונסרד", column AH = its supplier id; the "לאוס מדיה" card is left with no sites. Best Links is "להשלמה" because its e-mail is the owner's address and it has no contact name.
+- **To check on Staging:** a real supplier e-mail (subject, attachments), the categories search with a real iPhone keyboard, a manual-review link end to end.
