@@ -44,7 +44,7 @@ function ArticleProgress({status,administrative=false}:{status:string;administra
 }
 import { ImageSearch } from './screens';
 import { toast } from 'sonner';
-import ArticleSent from './article-sent';
+import ArticleSent,{ArticleInProcess} from './article-sent';
 
 type Picture={id:string;credit:string;creditUrl:string;alt:string;primary?:boolean;token?:string};
 function StudioField({label,children}:{label:string;children:React.ReactNode}) {return <label className="grid min-w-0 gap-2 text-base font-semibold text-slate-800">{label}{children}</label>;}
@@ -219,6 +219,7 @@ export default function ArticleStudio({ctx,id,initialAi=false}:{ctx:Ctx;id:strin
         </div></header>}
         {adminS&&<AdminArticleHeader s={adminS} stage={adminSt}/>}
         {!isAdmin&&<ArticleFixNote article={a}/>}
+        {!isAdmin&&<ArticleInProcess status={a.status}/>}
         <div className="sv-grid">
             <div className="sv-main">
                 {aiWorking&&<div role="status" className="studio-ai-progress sv-banner"><LoaderCircle size={20} className="animate-spin"/><div><strong>המאמר שלך בהכנה</strong><p>אפשר להמשיך לגלוש באתר ולחזור בעוד כמה שניות. התוצאה תישמר במאמר הזה.</p></div></div>}{!aiWorking&&state.data?.ai_generation?.status==='failed'&&<ErrorBox error={state.data.ai_generation.error}/>}
