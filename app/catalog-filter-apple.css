@@ -131,6 +131,29 @@ body:has(.catalog-category-sheet[data-state=open])::before{content:'';position:f
  html body .catalog-category-sheet .catalog-sheet-foot{margin:14px -18px 0!important;padding:12px 18px 14px!important;grid-template-columns:auto 240px!important;justify-content:space-between}
 }
 @keyframes cf-pop{from{opacity:0;transform:translateY(-6px) scale(.97)}to{opacity:1;transform:none}}
+/* Categories sheet, 23.11.2026 (owner: "a small, nice, tidy box"): solid white so the page never shows through the title row,
+   a thin scrollbar without arrows, and the search as a framed field with room above and below.
+   16px text on phones so iPhone does not zoom the page when the field gets focus. */
+html body .catalog-category-sheet[data-slot=popover-content]{background:#fff!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;scrollbar-width:thin;scrollbar-color:#cdd6e1 transparent}
+html body .catalog-category-sheet .catalog-sheet-search{box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;height:44px;margin:4px 0 2px;padding:0 12px;border-radius:12px;background:#f6f8fb;box-shadow:inset 0 0 0 1px #0b28501f;color:#7a8696;transition:box-shadow .2s,background-color .2s}
+html body .catalog-category-sheet .catalog-sheet-search svg{flex:none}
+html body .catalog-category-sheet .catalog-sheet-search input{flex:1;min-width:0;height:100%;padding:0;border:0;outline:0;background:transparent;font:500 16px Heebo,Arial,sans-serif;color:var(--cf-ink)}
+html body .catalog-category-sheet .catalog-sheet-search input::placeholder{color:#7a8696;opacity:1}
+html body .catalog-category-sheet .catalog-sheet-search:focus-within{background:#fff;box-shadow:inset 0 0 0 1px #1467cf,0 0 0 3px #1467cf26;color:var(--cf-blue)}
+html body .catalog-category-sheet .catalog-sheet-foot{background:#fff!important}
+/* An older panel rule made the title row (second child) a growing, scrolling box; it is a plain row */
+html body .catalog-category-sheet .catalog-sheet-head{flex:none!important;max-height:none!important;min-height:0!important;overflow:visible!important;scrollbar-gutter:auto!important}
+@media(max-width:899px){
+ /* Phone: the sheet keeps its height while typing, so a short result list does not drop the field down behind the keyboard;
+    the buttons stay at the bottom */
+ html body .catalog-category-sheet[data-slot=popover-content]{height:88dvh!important}
+ html body .catalog-category-sheet[data-slot=popover-content] .catalog-sheet-foot{margin-top:auto!important}
+}
+@media(min-width:900px){
+ /* Desktop: two of the three columns wide, its edges on the grid's lines */
+ html body .catalog-category-sheet .catalog-sheet-search{width:calc((100% - 12px)*2/3 + 6px);height:40px;margin:2px 0 0;border-radius:11px}
+ html body .catalog-category-sheet .catalog-sheet-search input{font-size:15px}
+}
 /* Phone toolbar: search on top, then the two narrowing tools, then three secondary tiles */
 @media(max-width:699px){
  html body .azure-catalog.catalog-approved-home .catalog-results-toolbar{display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:10px 8px!important;align-items:stretch}
