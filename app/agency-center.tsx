@@ -211,6 +211,7 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
  const q=new URLSearchParams({...(customer?{customer}:who?{customer:who}:{}),...(custom.from?{from:custom.from}:{}),...(custom.to?{to:custom.to}:{}),...(status?{status}:{})});
  const state=useData(AP+'/publications?'+q.toString(),ctx.revision),rows:Row[]=state.data?.publications||[],s=state.data?.summary;
  const years=useData(AP+'/publications?'+new URLSearchParams(customer?{customer}:{}).toString(),ctx.revision).data?.years||[];
+ const thisYear=String(new Date().getFullYear()),yearOptions:string[]=years.map(String).includes(thisYear)?years.map(String):[thisYear,...years.map(String)];
  const exportCsv=(excel=false)=>{const head=[...(customer?[]:['לקוח']),'אתר','כתובת האתר','תאריך פרסום','קישור לכתבה','עוגן','קישור יעד','הזמנה','עלות לפני מע"מ','סטטוס'];
   const lines=[head,...rows.map(a=>[...(customer?[]:[a.customer_name||'ללא לקוח']),a.website_name,a.website_url,a.published_at?day(a.published_at):'',a.published_url,a.anchor,a.target_url,a.number,(a.spend/100).toFixed(2),a.status==='published'?'פורסם':a.status==='cancelled'||a.publication_refunded?'זוכה':'בדרך'])];
   if(excel){exportSpreadsheet('publications-'+(custom.from||'all')+'.xlsx',lines.map(l=>l.map(xlsCell)),'פרסומים');return;}
@@ -220,8 +221,9 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
  return <>
   <div className="ag-filters pubs" role="group" aria-label="סינון פרסומים">
    {quick.map(r=><button key={r.label} type="button" className={'ag-pill'+(!year&&range.label===r.label?' on':'')} aria-pressed={!year&&range.label===r.label} onClick={()=>{setRange(r);setYear('');setMonth('');}}>{r.label}</button>)}
-   <label className="ag-select"><small>שנה</small><select value={year} onChange={e=>{setYear(e.target.value);if(!e.target.value)setMonth('');}}><option value="">—</option>{years.map((y:string)=><option key={y} value={y}>{y}</option>)}</select></label>
-   <label className="ag-select"><small>חודש</small><select value={month} disabled={!year} onChange={e=>setMonth(e.target.value)}><option value="">הכול</option>{MONTHS.map((m,i)=><option key={m} value={pad(i+1)}>{m}</option>)}</select></label>
+   <label className="ag-select"><small>שנה</small><select value={year} onChange={e=>{setYear(e.target.value);if(!e.target.value)setMonth('');}}><option value="">—</option>{yearOptions.map((y:string)=><option key={y} value={y}>{y}</option>)}</select></label>
+   {/* Owner 22.11.2026: "חודש" did not open (it waited for a year). A month chosen first takes this year. */}
+   <label className="ag-select"><small>חודש</small><select value={month} onChange={e=>{const v=e.target.value;setMonth(v);if(v&&!year)setYear(thisYear);}}><option value="">הכול</option>{MONTHS.map((m,i)=><option key={m} value={pad(i+1)}>{m}</option>)}</select></label>
    <label className="ag-select"><small>סטטוס</small><select value={status} onChange={e=>setStatus(e.target.value)}><option value="">הכול</option><option value="published">פורסם</option><option value="on_the_way">בדרך</option><option value="refunded">זוכה</option></select></label>
    {!customer&&<label className="ag-select"><small>לקוח</small><select value={who} onChange={e=>setWho(e.target.value)}><option value="">כל הלקוחות</option><option value="none">ללא לקוח</option>{(customers.data?.customers||[]).map((c:Row)=><option key={c.id} value={c.id}>{c.name}</option>)}</select></label>}
    <span className="grow"/>
