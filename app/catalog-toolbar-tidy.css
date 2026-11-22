@@ -1,0 +1,44 @@
+/* Catalog toolbar, original look, tidier (owner 22.11.2026): the same buttons and styles as before; "הוספת אתר לקטלוג"
+   moves up into the search row, "שאהבתי" joins the buttons in the same style, and the rows sit closer so the sites
+   start higher. Only placement and spacing change here. Loaded after catalog-filter-apple.css. */
+
+/* Phones (owner 22.11.2026): the original layout and sizes; "שאהבתי" is one more full-width row, the length of
+   "הוספת אתר לקטלוג", just below it. The buttons take the new thin frame (below). */
+@media(max-width:699px){
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-fav-trigger[data-slot=button]:not(#tt){grid-column:1/-1!important;grid-row:6!important;width:100%!important;height:52px!important;min-height:52px!important;margin:0!important;padding:0 14px!important;
+  flex-direction:row!important;gap:8px!important;font:600 15px Heebo,Arial,sans-serif!important;white-space:nowrap!important}
+}
+
+/* Tablet and desktop: one row of categories + search + add site, then one row of equal buttons. */
+@media(min-width:700px){
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:12px!important;margin-top:20px!important;margin-bottom:18px!important;align-items:center}
+ /* Row 2: categories + search over all columns but the last; the last column holds "הוספת אתר לקטלוג". Row 3: the buttons, one per column. */
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar:not(:has(.catalog-fav-trigger)){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-heading{grid-column:1/-1;grid-row:1}
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-home-tools{grid-column:1/-2!important;grid-row:2!important;width:100%!important;max-width:none!important;margin:0!important}
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions[role=group]{display:contents!important}
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-add-site:not(#tt){grid-column:-2/-1!important;grid-row:2!important;align-self:stretch;width:100%!important;height:auto!important;min-height:52px!important;margin:0!important;white-space:nowrap}
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-action-button[data-slot=button]:not(#tt){grid-row:3!important;width:100%!important;min-width:0!important;margin:0!important;white-space:nowrap!important;padding-inline:10px!important}
+ /* The closed search is a field with its hint, like on the phone, instead of a lone circle. */
+ html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-inline-search{width:100%!important}
+ html body .azure-catalog.catalog-approved-home .catalog-inline-search[data-open=false] .catalog-home-search-trigger[data-slot=button]{display:flex!important;flex:1 1 auto!important;width:100%!important;flex-direction:row!important;align-items:center!important;justify-content:flex-start!important;gap:10px;padding-inline:18px!important;color:#6b7b91!important;font:500 16px Heebo,Arial,sans-serif!important}
+ html body .azure-catalog.catalog-approved-home .catalog-inline-search[data-open=false] .catalog-home-search-trigger[data-slot=button]::after{content:"חיפוש אתר או תחום"}
+ html body .azure-catalog.catalog-approved-home .catalog-inline-search[data-open=false] .catalog-inline-search-input{display:none!important}
+}
+
+/* Favourites in the catalog's red; pressed = a soft red. */
+html body .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-fav-trigger svg{color:#e11d48}
+html body .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-fav-trigger[aria-pressed=true][data-slot=button]:not(#tt){background:#fff1f3!important;color:#9f1239!important;box-shadow:0 0 0 1px #fecdd6,0 6px 16px -10px #e11d4855!important}
+html body .azure-catalog.catalog-approved-home .catalog-results-actions .catalog-fav-trigger .catalog-sort-count{position:static!important;background:#ffe4e8;color:#be123c}
+
+/* Owner 22.11.2026: the original order and sizes, with the frame of the new design: a thin line, white, 12px corners,
+   no shadow; blue ring when focused. Applies to the search, categories and every button in the row. */
+html body .azure-catalog.catalog-approved-home .catalog-results-toolbar :is(.catalog-home-category-trigger,.catalog-results-actions .catalog-action-button[data-slot=button]):not(#tt){
+ border:1px solid #dbe4ef!important;border-radius:12px!important;background:#fff!important;box-shadow:none!important;color:#0c1d33!important}
+html body .azure-catalog.catalog-approved-home .catalog-results-toolbar :is(.catalog-home-category-trigger,.catalog-results-actions .catalog-action-button[data-slot=button]):not(#tt):hover{background:#f3f7fc!important;border-color:#c9d7e8!important}
+html body .azure-catalog.catalog-approved-home .catalog-results-toolbar :is(.catalog-home-category-trigger,.catalog-results-actions .catalog-action-button[data-slot=button]):not(#tt):focus-visible{outline:3px solid #0079cb!important;outline-offset:2px!important}
+html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-inline-search:not(#tt){border:1px solid #dbe4ef!important;border-radius:12px!important;background:#fff!important;box-shadow:none!important}
+html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-inline-search:not(#tt):focus-within{border-color:#1467cf!important;box-shadow:0 0 0 3px #1467cf22!important}
+html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-add-site:not(#tt){border-radius:12px!important}
+html body .azure-catalog.catalog-approved-home .catalog-results-toolbar .catalog-results-actions .catalog-fav-trigger[aria-pressed=true][data-slot=button]:not(#tt){background:#fff1f3!important;border-color:#fecdd6!important;color:#9f1239!important}
+
