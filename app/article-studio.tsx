@@ -1,5 +1,6 @@
 'use client';
 import {adminViewState} from '@/lib/admin-view-state';
+import ArticleFixNote from './article-fix-note';
 import './content-workspace.css';
 import './studio-v2.css';
 import './studio-v4.css';
@@ -192,6 +193,7 @@ export default function ArticleStudio({ctx,id,initialAi=false}:{ctx:Ctx;id:strin
             <div className="sv-track" role="group" aria-label={'שלב '+customerStep+' מתוך 3'}><div className="sv-track-bar" aria-hidden="true">{stepNames.map((n,i)=><span key={n} data-on={i<customerStep}/>)}</div><ol className="sv-track-labels">{stepNames.map((n,i)=><li key={n} aria-current={i+1===customerStep?'step':undefined} data-on={i<customerStep}>{i+1} · {n}</li>)}</ol>{nextStep&&<p className="sv-track-next">{nextStep}</p>}</div>
         </div></header>}
         {adminS&&<AdminArticleHeader s={adminS} stage={adminSt}/>}
+        {!isAdmin&&<ArticleFixNote article={a}/>}
         <div className="sv-grid">
             <div className="sv-main">
                 {aiWorking&&<div role="status" className="studio-ai-progress sv-banner"><LoaderCircle size={20} className="animate-spin"/><div><strong>המאמר שלך בהכנה</strong><p>אפשר להמשיך לגלוש באתר ולחזור בעוד כמה שניות. התוצאה תישמר במאמר הזה.</p></div></div>}{!aiWorking&&state.data?.ai_generation?.status==='failed'&&<ErrorBox error={state.data.ai_generation.error}/>}

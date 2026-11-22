@@ -1853,6 +1853,7 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## החזרה לעריכה של כתבה מאושרת (22.11.2026, branch `claude/reopen-approved-article-a85857`)
 - **מה הוחלט (הבעלים):** מנהל יכול להחזיר ללקוח לעריכה כתבה שאושרה ועוד לא פורסמה. כשהיא כבר אצל הספק, הקישור שלו לא מבוטל אלא מציג "נא להמתין עם פרסום הכתבה", המלאי נשאר תפוס, והספק מקבל מייל באותו שרשור. אחרי אישור חוזר הספק מקבל "הנחיות מעודכנות לפרסום" על אותו קישור (תוקף מוארך ב-30 יום). אם הספק כבר פרסם את הגרסה הקודמת, המנהל מטפל בזה מולו בנפרד.
 - **זמין:** אושרה וממתינה לתאריך, לא הגיעה לספק, אצל הספק. **לא זמין:** פורסמה, הדגמה, בוטלה, בקשת ביטול.
@@ -1902,3 +1903,14 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **נבדק מקומית:** 390 ומחשב. נבדקו מחיר לא תקין, שמירה (כולל אזהרת עלות חסרה), והסרת מחיר אישי. המקלדת נבדקה בהדמיה בלבד. עוד צריך בדיקה באייפון אמיתי.
 - **זמני:** אין.
 >>>>>>> claude/personal-price-dialog-afcd59
+=======
+## 22.11.2026: fix-request flow for the customer (branch `claude/fix-request-flow-a67639`, from `0d0b152`)
+- **Owner asked:** when the admin returns an article for a fix, the customer gets a clear email ("המאמר שלך לאתר X דורש תיקון"), a popup in "העדכונים שלך" in the approved popup style, and the admin's note at the top of the editor. Later also: "פרטי הביטול" in the same new style. Mockups approved ("מאשר את כל השאר").
+- **Email (`lib/fix-request-mail.ts` new, `lib/mail.ts`):** `articleMail(a,'revisions',origin,note)` keeps its name and inputs and now goes to `revisionMail`: subject `fixRequestSubject(site)`, its own HTML (`fixRequestEmailHtml`): site + address, article title, order, a box "מה צריך לתקן", button to `/article/<id>`, and a service footer (why the mail came, personal area link, reply for questions; no unsubscribe, it is a service mail). Plain text `fixRequestText` in the same order. Published/submitted mails unchanged.
+- **The note is kept on the article:** `revisionMail` writes `revision_note` and `revision_requested_at` into `articles.data` (no version change), so every path that returns an article (also the sibling "return an approved article" on `claude/reopen-approved-article-a85857`) fills the popup and the editor. Added to the customer whitelist in `lib/customer-privacy.ts`.
+- **Updates feed (`lib/client-updates.ts`, `app/client-updates.tsx`):** the note comes from the article; older returns still read it from the email (old subject or the new one). Popup "נדרש תיקון במאמר" (`app/customer-revision-dialog.tsx` new) and "פרטי הביטול" open with `sky:true`; their look is in `app/customer-updates-sky.css` (new, loaded in `app/layout.tsx`): body scrolls, actions in a bottom strip, so the admin's note is never behind the close button. Icon for the new popup: `kind:'article-revision'` in `app/dialog-badge.tsx`.
+- **Editor (`app/article-fix-note.tsx/.css` new, one line in `app/article-studio.tsx`):** customer only, status `revisions` with a note: a yellow card under the header, open at first, folds to one line.
+- **Checked locally (fictional data, 390px and 1280px):** both popups, editor open/closed, the email HTML taken from the local job (mail connection off, nothing sent). `tests/fix-request-mail.mjs` new, passes; tsc and build pass. `tests/client-updates.mjs` fails on an old cart assertion about `app/workspace.tsx`, same on `0d0b152` (not related).
+- **Not pushed, not deployed.**
+- **Open:** a writer's article (editorial) that the sibling returns goes to `review`, not `revisions`, so it shows no fix note in the popup or editor. The email still goes out.
+>>>>>>> claude/fix-request-flow-a67639
