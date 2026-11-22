@@ -70,7 +70,10 @@ export function supplierThreadId(articleId:string,from:string){const domain=(Str
 export function resendMessage(payload:Row,c:Row){const test=String(c.test_to||'').trim();
  // A supplier with several addresses ("a, b") gets one message addressed to all of them (owner, 20.11.2026).
  const to=test?[test]:emailList(payload.to).length?emailList(payload.to):[String(payload.to||'')];
- return {from:String(c.from||RESEND_TEST_FROM),to,subject:(test?'[בדיקה · אל: '+payload.to+'] ':'')+String(payload.subject||''),html:payload.html,text:payload.text,
+ // The test mark goes after a leading "Re: ", so a reply keeps the thread's subject (owner, 22.11.2026: on Staging the
+ // follow-up "[בדיקה · אל: x] Re: ..." opened a new Gmail conversation instead of joining "[בדיקה · אל: x] ...").
+ const subject=String(payload.subject||''),re=/^Re:\s*/i.exec(subject)?.[0]||'';
+ return {from:String(c.from||RESEND_TEST_FROM),to,subject:test?(re?'Re: ':'')+'[בדיקה · אל: '+payload.to+'] '+subject.slice(re.length):subject,html:payload.html,text:payload.text,
   ...(payload.headers&&Object.keys(payload.headers).length?{headers:payload.headers}:{}),
   // A customer who presses "reply" writes straight to the owner's inbox (owner, 22.11.2026).
   ...(String(c.reply_to||'').trim()?{reply_to:String(c.reply_to).trim()}:{}),
@@ -102,8 +105,12 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    // id and a subject unique to the article; reminders and follow-ups answer it with "Re:". An article whose first e-mail
    // went out before this (no stored id) gets fresh e-mails with their own unique subject instead.
    const unique=supplierEmailSubject(site,counter,a.title),firstMail=id==='email:supplier:'+a.id;
-   const opened=firstMail?null:parse(await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
-   if(firstMail){payload.thread={id:supplierThreadId(a.id,String(c.from||RESEND_TEST_FROM)),subject:unique};payload.subject=unique;payload.headers={'Message-ID':payload.thread.id};}
+   // A first e-mail sent again after the article was pulled back from the supplier (its old job renamed ":recalled:")
+   // answers the article's existing thread: same Gmail conversation, and never a second message with the same Message-ID
+   // (Gmail drops a message whose Message-ID it already has).
+   const opened=parse(firstMail?await one("SELECT data FROM jobs WHERE kind='email' AND id LIKE ? AND json_extract(data,'$.thread_id') IS NOT NULL ORDER BY created LIMIT 1",'email:supplier:'+a.id+':recalled:%'):await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
+   if(firstMail&&opened?.thread_id){payload.thread={id:String(opened.thread_id),subject:String(opened.thread_subject||unique)};payload.subject='Re: '+payload.thread.subject;payload.headers={'In-Reply-To':payload.thread.id,References:payload.thread.id};}
+   else if(firstMail){payload.thread={id:supplierThreadId(a.id,String(c.from||RESEND_TEST_FROM)),subject:unique};payload.subject=unique;payload.headers={'Message-ID':payload.thread.id};}
    else if(opened?.thread_id){payload.subject='Re: '+opened.thread_subject;payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
    else payload.subject=job.supplier_followup==='hold'?'נא להמתין עם פרסום הכתבה · '+unique:job.supplier_followup==='update'?'הנחיות מעודכנות · '+unique:unique;
    if(job.supplier_followup==='hold'){payload.text=['נא להמתין עם פרסום הכתבה',a.title,'הכתבה חזרה ללקוח לתיקונים. כשהתיקונים יאושרו, נשלח לכם כאן הנחיות מעודכנות וקובץ חדש.',link?'הקישור האישי שלכם לכתבה ממשיך לעבוד: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierHoldEmailHtml(a,site,counterLabel,link,origin);}
