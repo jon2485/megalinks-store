@@ -4,7 +4,8 @@ import {dispatchStockWaiting} from './scheduled-dispatch';
 import {closeOrderForStatement,orderStatementId,prepareOrderStatement,refreshOrderStatement,renderOrderStatementPdf} from './order-statement';
 import {paymentEvidenceRows,orderPaymentEvidence} from './payment-evidence';
 import {orderSummarySql} from './order-summary';
-import type {Row} from './shared';
+import {money,type Row} from './shared';
+import {cancelledMail} from './mail';
 import {db,stmt,one,all,parse,admin,assert,now,uid,hash,setting,website,ApiError,mapIn} from './server';
 import {pricingContext,pricedSite,pricingVersion,warnPricing} from './pricing';
 import {minimumWarning} from './pricing-rules';
@@ -99,6 +100,10 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
   if(split&&cardNext===0&&leftTotal>0){const fresh=await one('SELECT * FROM orders WHERE id=?',order.id);if(fresh&&!fresh.paid)await completeOrderPayment(fresh,'payment:wallet-only:'+order.id,{amount_cents:0,payment_method:'credits',reference:'יתרה שמורה',payment_date:stamp}).catch(()=>undefined);}
   // The freed stock slot goes at once to the oldest approved article that was waiting for stock on this site.
   if(amount.publication&&!keepSupplier)await dispatchStockWaiting(new URL(r.url).origin,a.website_id).catch(()=>undefined);
+  // The customer gets one e-mail in the article family (owner, 22.11.2026): what was cancelled, the reason, the money.
+  // A failed mail never undoes the cancellation.
+  const refundLine=gross<=0?'':open?(charge?money(gross)+' ירדו מהחשבון החודשי':money(gross)+' ירדו מסכום ההזמנה'):destination==='wallet'?money(gross)+' זוכו ליתרה בחשבון שלך':destination==='external'?money(gross)+' הוחזרו אליך':'';
+  try{await cancelledMail({...a,data:d},new URL(r.url).origin,{reason,full:!(b.mode==='publication'&&Number(a.editorial_price)>0&&!d.writing_refunded),refund:refundLine,stamp});}catch{/* the cancellation is already saved */}
   if(charge)await refreshClosedMonth(target.id,charge.month,!!charge.demo);await approveOrderCancel(order,actor,reason,new URL(r.url).origin,a.id);return res({ok:true,amount:gross,destination:open?(charge?'monthly':'unpaid'):destination,...(overpaid?{overpaid_action:overpaid}:{}),...(!order.demo&&(!open&&destination==='wallet'||overpaid==='credit')?{wallet_balance:(await one('SELECT credits FROM users WHERE id=?',target.id))?.credits}:{})});
  }
  if(action==='price'){

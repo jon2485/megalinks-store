@@ -36,14 +36,14 @@ globalThis.issueCancelRequest={status:'pending'};
 await assert.rejects(ask(article(),{issue:'reject',text:'לא מתאים לאתר'}),/ביטול/);
 globalThis.issueCancelRequest=null;
 
-// A valid request: saved, logged on the request (not the article), admin mailed, nothing else touched.
+// A valid request: saved, logged on the request (not the article), no e-mail, nothing else touched.
 let r=await ask(article(),{issue:'reject',text:'  הנושא לא מתאים לאתר שלנו  '});
 assert.equal(r.issue.open,true);assert.equal(r.issue.type,'reject');assert.equal(r.issue.text,'הנושא לא מתאים לאתר שלנו');
 const sqls=calls().filter(c=>c.sql).map(c=>c.sql);
 assert.ok(sqls.some(s=>s.startsWith('INSERT INTO records')),'request saved');
 assert.ok(!sqls.some(s=>/UPDATE (articles|orders)|INSERT INTO (refunds|wallet|credits)/i.test(s)),'no article/order/refund change');
 const log=calls().find(c=>c.audit);assert.equal(log.resource,'supplier-issue:art-1');assert.match(log.audit,/לדחות/);
-const mails=calls().filter(c=>c.mail);assert.equal(mails.length,1);assert.equal(mails[0].data.to,'admin@example.test','only the admin is mailed');
+assert.equal(calls().filter(c=>c.mail).length,0,'no e-mail about the request: nobody learns who asked (owner, 22.11.2026)');
 
 // One open request at a time.
 globalThis.issueStored=stored({status:'pending',type:'fix',text:'קודם',requested_at:'2026-11-22T09:00:00.000Z'});
@@ -76,4 +76,4 @@ const mail=await compile('lib/supplier-issue-mail.ts','supplier-issue-mail');
 assert.equal(mail.supplierIssueUrl('https://x.test/supplier/abc'),'https://x.test/supplier/abc#issue');
 assert.equal(mail.supplierIssueUrl('https://x.test/supplier-workspace'),'');
 assert.match(mail.supplierIssueLinkHtml('https://x.test/supplier/abc'),/בקשת תיקונים או דחיית הכתבה/);
-console.log('SUPPLIER ARTICLE REQUEST PASS: fixes/reject reach the admin only, one open request, no order or refund change, logged on the request, admin answer e-mailed in the thread, #issue link only on personal links.');
+console.log('SUPPLIER ARTICLE REQUEST PASS: fixes/reject reach the admin only (work center, no e-mail), one open request, no order or refund change, logged on the request, admin answer e-mailed in the thread, #issue link only on personal links.');
