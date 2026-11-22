@@ -14,7 +14,7 @@ import {hasAgencyCentre,agencyCentreName} from '@/lib/agency-shared';
 import {budgetState,safeCell} from '@/lib/agency-shared';
 import {exportSpreadsheet} from '@/lib/office';
 
-const SECTIONS=[['overview','סקירה',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks],['calendar','לוח פרסומים',CalendarDays],['reports','דוחות',ChartColumn],['settings','הגדרות',SettingsIcon]] as const;
+const SECTIONS=[['overview','ראשי',LayoutDashboard],['customers','לקוחות',Users],['publications','פרסומים',Globe],['tasks','לטיפול',ListChecks],['calendar','לוח פרסומים',CalendarDays],['reports','דוחות',ChartColumn],['settings','הגדרות',SettingsIcon]] as const;
 const CUSTOMER_TABS=[['publications','פרסומים',Globe],['articles','כתבות',FileText],['used-sites','אתרים שכבר שימשו',ShieldBan],['links','קישורים ועוגנים',Link2],['notes','הערות',NotebookPen],['details','פרטים',IdCard]] as const;
 const COLORS=['#1467cf','#7c3aed','#0f9f8f','#ea580c','#b45309','#db2777','#0369a1','#16a34a','#0891b2','#65a30d','#c2410c','#be185d'];
 const colorFor=(id:string)=>COLORS[[...String(id)].reduce((s,c)=>s+c.charCodeAt(0),0)%COLORS.length];
