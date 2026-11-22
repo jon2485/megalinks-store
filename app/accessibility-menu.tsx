@@ -25,6 +25,30 @@ export default function AccessibilityMenu() {
  const panel = useRef<HTMLDivElement>(null);
 
  useEffect(() => { const saved = read(); setOn(saved); apply(saved); }, []);
+ // Phones: while the on-screen keyboard is open over a focused text field, the floating accessibility and WhatsApp
+ // buttons cover the text being typed (owner, 22.11.2026: "מאשר שהם ייעלמו במקלדת"). html.ml-keyboard-open fades them
+ // out (CSS, phone widths only) and they return as soon as the keyboard closes or focus leaves the field.
+ useEffect(() => {
+  const vv = window.visualViewport;
+  if (!vv) return;
+  const root = document.documentElement;
+  const editable = (el: Element | null) => !!el && (el instanceof HTMLTextAreaElement || (el as HTMLElement).isContentEditable
+   || (el instanceof HTMLInputElement && !/^(button|submit|reset|checkbox|radio|range|color|file|image|hidden)$/.test(el.type)));
+  const check = () => {
+   const zoomed = vv.scale > 1.05, keyboard = root.clientHeight - vv.height * (zoomed ? vv.scale : 1) - (zoomed ? 0 : vv.offsetTop);
+   root.classList.toggle('ml-keyboard-open', editable(document.activeElement) && keyboard > 120);
+  };
+  // During focusout the next field is not focused yet, so wait a tick before deciding.
+  const later = () => setTimeout(check, 0);
+  vv.addEventListener('resize', check); vv.addEventListener('scroll', check);
+  document.addEventListener('focusin', check); document.addEventListener('focusout', later);
+  check();
+  return () => {
+   root.classList.remove('ml-keyboard-open');
+   vv.removeEventListener('resize', check); vv.removeEventListener('scroll', check);
+   document.removeEventListener('focusin', check); document.removeEventListener('focusout', later);
+  };
+ }, []);
  useEffect(() => {
   if (!open) return;
   // The panel is a dialog: focus moves to its first option, and Escape brings it back to the button.
