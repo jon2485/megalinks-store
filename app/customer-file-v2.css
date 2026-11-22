@@ -39,6 +39,14 @@
 .cf .panel .field label,.cf .panel label{font-size:13px;font-weight:600;color:#424245}
 .cf .panel input,.cf .panel textarea{height:44px;border:0!important;border-radius:12px!important;background:#f5f5f7!important;box-shadow:none!important;font-size:15px}
 .cf .panel input:focus-visible,.cf .panel textarea:focus-visible{background:#fff!important;box-shadow:0 0 0 2px #0071e3!important;outline:0}
+/* 22.11.2026 The shared admin rule (.admin-design-v172 ... input) forces a white background, so the grey field above
+   turned white on a white card with no border: the owner saw labels with no box on the iPhone. Keep the grey field and add a
+   thin frame, on this screen only. The repeated .cf only raises specificity above that shared rule. */
+.cf.cf.cf.cf .panel .field :is(input,textarea){background-color:#f5f5f7!important;border:0!important;box-shadow:inset 0 0 0 1px #c7d2de!important}
+.cf.cf.cf.cf .panel .field :is(input,textarea):focus-visible{background-color:#fff!important;box-shadow:inset 0 0 0 1px #0071e3,0 0 0 3px #0071e333!important;outline:0}
+.cf.cf.cf.cf .panel .field input[readonly]{color:#6e6e73!important;box-shadow:inset 0 0 0 1px #dde3ea!important;cursor:default;text-align:right}
+.cf .cf-account-email{margin-bottom:24px}
+.cf .cf-account-email .field small{font-size:12px;font-weight:400;color:#6e6e73}
 .cf .panel button[type=submit]{width:auto!important;min-width:140px;justify-self:start}
 .cf .simple-order-card{border:0!important;border-radius:16px!important;background:#fff!important;box-shadow:0 0 0 1px rgba(0,0,0,.06)!important;transition:box-shadow .2s}
 .cf .simple-order-card:hover{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 4px 14px rgba(11,39,77,.08)!important}
