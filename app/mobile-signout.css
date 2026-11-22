@@ -1,10 +1,15 @@
-/* Owner 22.11.2026 (option א): "יציאה מהחשבון" at the bottom of the phone menu, under "תמיכה", calm grey, with the
-   signed-in name; and the sign-out button in "פרטי חשבון" calm instead of red. */
+/* Owner 22.11.2026 (option א): "יציאה מהחשבון" at the bottom of the phone menu, under "תמיכה", with the signed-in name.
+   Follow-up: a clear exit look (red exit icon, "יציאה" tag at the end) and "יוצאים מהחשבון…" once tapped.
+   The sign-out button in "פרטי חשבון" stays calm instead of red. */
 html body .workspace-mobile-drawer-bottom .workspace-mobile-signout{text-decoration:none;margin-top:8px!important;border-top:1px solid rgba(11,40,80,.08)!important;background:#fff!important}
-html body .header-apple-sheet .workspace-mobile-drawer-bottom a.workspace-mobile-signout .mobile-glass-icon,html body .workspace-mobile-drawer-bottom a.workspace-mobile-signout .mobile-glass-icon{background:#eef2f7!important;color:#5d6e82!important;box-shadow:none!important}
-html body .workspace-mobile-drawer-bottom .workspace-mobile-signout .mobile-glass-icon svg{color:#5d6e82!important}
-html body .workspace-mobile-drawer-bottom .workspace-mobile-signout .mobile-glass-copy>span{color:#3a4e66!important;font-weight:700}
+html body .header-apple-sheet .workspace-mobile-drawer-bottom a.workspace-mobile-signout .mobile-glass-icon,html body .workspace-mobile-drawer-bottom a.workspace-mobile-signout .mobile-glass-icon{background:#fff1f2!important;color:#be123c!important;box-shadow:inset 0 0 0 1px #fecdd3!important}
+html body .workspace-mobile-drawer-bottom .workspace-mobile-signout .mobile-glass-icon svg{color:#be123c!important}
+html body .workspace-mobile-drawer-bottom .workspace-mobile-signout .mobile-glass-copy>span{color:#9f1239!important;font-weight:700}
 html body .workspace-mobile-drawer-bottom .workspace-mobile-signout .mobile-glass-copy small{color:#5d6e82!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;max-width:100%}
+html body .workspace-mobile-drawer-bottom .workspace-mobile-signout .workspace-mobile-signout-go{display:inline-flex;align-items:center;gap:5px;flex:none;margin-inline-start:auto;padding:6px 11px;border-radius:999px;background:#fff1f2;color:#be123c;font:700 13px Heebo,Arial,sans-serif;box-shadow:inset 0 0 0 1px #fecdd3}
+html body .workspace-mobile-drawer-bottom .workspace-mobile-signout:active{background:#fff5f6!important}
+html body .workspace-mobile-drawer-bottom .workspace-mobile-signout[data-leaving]{pointer-events:none;opacity:.85}
+html body .workspace-mobile-drawer-bottom .workspace-mobile-signout[data-leaving] .workspace-mobile-signout-go{visibility:hidden}
 html body .workspace-mobile-drawer-bottom .workspace-mobile-signout:focus-visible{outline:3px solid #0079cb;outline-offset:2px}
 html body .client-hub.approved-account .account-settings-signout{border:0!important;background:#f1f5fa!important;color:#3a4e66!important;box-shadow:none!important}
 html body .client-hub.approved-account .account-settings-signout:hover{background:#e7edf5!important}
