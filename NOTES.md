@@ -1819,10 +1819,31 @@ Owner: "כן, לפתוח" (to the question whether to open, without signing in, 
 - **Offers bundle mockup sent (owner: DR, UR and notes per site in a bundle):** chips "DR n" and "UR n" and a "הערות לפרסום" button (disabled "אין הערות" when empty) under each site's address; also found that a square logo is cut in the bundle row (`.ba-logo img` height does not resolve in the grid tile), fix: the tile as flex and the image 100% contain. Waiting for approval; no code yet.
 - **Offers bundle built (owner: "מאושר, לבנות"):** `app/commerce.tsx` `BundleSiteMeta` under each site's address in a package: "DR n" and "UR n" chips, and "הערות לפרסום" opening the same notes window as the catalog card (`publication-notes-popover`, styles from `catalog-product-glass.css`, loaded through `catalog-view`); "אין הערות" as plain text when the site has none. `app/offers-apple.css`: chip styles, and the square-logo fix (`.ba-logo` flex, image 100% contain). Checked locally at 390px and desktop, notes window opened with a test note on a fictional site, then removed. Tests: same results with and without the change (bundle-feedback passes; 7 admin tests fail on their own harness before and after). Not deployed.
 
-## 22.11.2026: agency customers table on a phone (branch `claude/agency-customers-table-mobile-5fdf67`, from a098243)
+## 22.11.2026: four iPhone fixes from the owner's screenshots, merged into `claude/iphone-fixes-20261122` (from a098243)
+
+The owner sent four iPhone screenshots and asked for each fix in its own session, then approved all four together ("כן תעלה"). Each session committed on its own branch; the coordinating session merged them here.
+
+### Agency customers table on a phone (branch `claude/agency-customers-table-mobile-5fdf67`)
 
 - **Bug (owner screenshot, iPhone):** admin → customer → "הלקוחות שלו" → "לקוחות הסוכנות": every column broke one letter per line. Cause: the admin table rule `.admin-design-v172 .admin-editorial-surface :is(td,…)` (20px 18px padding, `overflow-wrap:anywhere`) on seven columns at 390px.
 - **Fix:** `app/customer-account-admin.tsx` table gets class `agency-customers-table` and `data-label` on each cell; `app/globals.css` (end of file, `@media(max-width:767px)` only): each customer is a white rounded card, name on top, then "label: value" lines. Doubled class for specificity over the admin rule. Desktop untouched.
 - **Checked locally** (own QA server on 5181/8788, own state folder in the scratchpad, fictional agency customers on `qa-customer`): 390px readable, long domains wrap, no sideways scroll; desktop the same.
-- **Not done:** no commit, push or deploy; waiting for the owner.
 - **Before upload:** nothing temporary in the code.
+
+### Customer file, "פרטי החשבון" card on the phone (branch `claude/customer-details-form-mobile-3b139d`)
+- **Problem (owner's iPhone):** the e-mail sat under the save button with no label; the fields (name, company, phone) had no visible box.
+- **Cause:** `.cf .panel input` (`app/customer-file-v2.css`) removes the border and expects a grey fill, but the shared admin rule `.admin-design-v172 ... input` forces a white background. White field on a white card = invisible. The shared rule was not touched.
+- **Fix, this screen only:** a stronger `.cf.cf.cf.cf .panel .field` rule keeps the grey fill and adds a thin frame; the e-mail is now a read-only "מייל" field at the top of the card (still not editable, as before). Desktop checked at 1280px.
+- **Files:** `app/customer-account-admin.tsx`, `app/customer-file-v2.css`.
+- **Status:** checked locally with fictional data.
+
+### Site edit form fields (branch `claude/site-edit-fields-mobile-fcda11`)
+- **Problem (owner's iPhone):** "חיבור WordPress", "הנחיות ומגבלות פרסום", "הערות לאתר", "הערות ללקוח", "כתבות לדוגמה" showed only a label and a white gap. Same cause as the customer file: the shared admin rule (`app/admin-editorial.css:36`) paints fields white on a white card. Invisible on desktop too.
+- **Fix, this form only:** two lines in `app/catalog-v2-editors.css` give the textareas and the select the grey fill the other fields have. The shared rule was not touched.
+
+### Customer orders tab buttons (branch `claude/orders-tab-buttons-mobile-f82857`)
+- **Problem (owner: "הכפתורים שם קצת מכוסים, צריך שיהיה מרווח נורמלי"):** the selected filter chip's border was cut at the card edge and the export and new-order buttons sat tight against the chips.
+- **Fix:** `app/customer-file-v2.css` only, phone widths: chips inside the card padding, normal gaps. Wide desktop unchanged.
+
+### Open
+- The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
