@@ -102,11 +102,17 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    // Owner (22.11.2026): one thread per article, never per supplier or batch. The article's first e-mail carries a fixed
    // id and a subject unique to the article; reminders and follow-ups answer it with "Re:". An article whose first e-mail
    // went out before this (no stored id) gets fresh e-mails with their own unique subject instead.
-   const unique=supplierEmailSubject(site,siteUrl,total&&seq?seq:Math.max(1,monthNumber)),firstMail=id==='email:supplier:'+a.id;
+   let unique=supplierEmailSubject(site,siteUrl,total&&seq?seq:Math.max(1,monthNumber),total&&seq?{total}:{sentAt}),firstMail=id==='email:supplier:'+a.id;
    // A first e-mail sent again after the article was pulled back from the supplier (its old job renamed ":recalled:")
    // answers the article's existing thread: same Gmail conversation, and never a second message with the same Message-ID
    // (Gmail drops a message whose Message-ID it already has).
-   const opened=parse(firstMail?await one("SELECT data FROM jobs WHERE kind='email' AND id LIKE ? AND json_extract(data,'$.thread_id') IS NOT NULL ORDER BY created LIMIT 1",'email:supplier:'+a.id+':recalled:%'):await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
+   const ownThread='<supplier-article-'+a.id+'@';
+   const found=parse(firstMail?await one("SELECT data FROM jobs WHERE kind='email' AND id LIKE ? AND json_extract(data,'$.thread_id') IS NOT NULL ORDER BY created LIMIT 1",'email:supplier:'+a.id+':recalled:%'):await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
+   // A thread id is used only if it is this article's own (it carries the article id): never another article's thread.
+   const opened=found&&String(found.thread_id||'').startsWith(ownThread)?found:found?{...found,thread_id:undefined}:null;
+   // A subject another article already used (a stock slot freed by a recall and given to this one) gets the article's
+   // short code, so two articles never share a subject.
+   if(firstMail&&!opened?.thread_id){const taken=await one("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:supplier:%' AND id NOT LIKE ? AND json_extract(data,'$.thread_subject')=? LIMIT 1",'email:supplier:'+a.id+'%',unique);if(taken)unique+=' · '+String(a.id).replace(/[^\w]/g,'').slice(0,6).toUpperCase();}
    if(firstMail&&opened?.thread_id){payload.thread={id:String(opened.thread_id),subject:String(opened.thread_subject||unique)};payload.subject='Re: '+payload.thread.subject;payload.headers={'In-Reply-To':payload.thread.id,References:payload.thread.id};}
    else if(firstMail){payload.thread={id:supplierThreadId(a.id,String(c.from||RESEND_TEST_FROM)),subject:unique};payload.subject=unique;payload.headers={'Message-ID':payload.thread.id};}
    else if(opened?.thread_id){payload.subject='Re: '+opened.thread_subject;payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
