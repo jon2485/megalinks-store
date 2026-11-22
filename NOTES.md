@@ -1968,3 +1968,10 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Test:** `tests/supplier-link-check.mjs` (mocked fetch and a small HTMLRewriter stand-in). Local run: a different real pcmag article returns the "another article" message in 0.4 s.
 - **Not built (proposal for the owner):** a site that can never be checked automatically → accept the link as "ממתין לבדיקה ידנית" for the admin to confirm.
 - **Before upload:** nothing temporary in the repo.
+## סיבת "הכתבה לא הגיעה לספק" (22.11.2026, אושר: "כן")
+- **מה:** במסך הכתבה של המנהל, בתיבה "הכתבה לא הגיעה לספק", מוצגת עכשיו הסיבה האמיתית שנשמרה בשליחה (`jobs` `publication:<id>`, `data.error`, רק כשהסטטוס `blocked` או `failed`), במקום הניחוש הכללי. מתחתיה שורה מה לעשות. בסיבות של האתר (הסכם לא מאומת, אין מייל, מייל לא תקין) יש קישור "לעריכת האתר", שפותח את עריכת האתר אצל הספק שלו. שני הכפתורים נשארו. בלי סיבה שמורה, הטקסט הישן נשאר.
+- **שליחה חוזרת:** אם חזרה חסומה, הסיבה מוצגת מיד בתיבה ובהודעה אדומה, בלי "עודכן" ירוק. בהצלחה: "הכתבה נשלחה לספק".
+- **שרת:** `adminArticleExtras` ב-`lib/publication.ts`, שאילתה אחת (שם הלקוח + סטטוס וסיבת המסירה, LEFT JOIN), רק למנהל. מחליפה את שאילתת שם הלקוח, אז אין שאילתה נוספת.
+- **קבצים:** `lib/delivery-reason.ts` (חדש), `lib/publication.ts`, `app/api/[...path]/route.ts`, `app/admin-article-decision.tsx`, `app/admin-article-review.css`, `tests/delivery-reason.mjs` (חדש).
+- **בדיקות:** `tests/delivery-reason.mjs`, `article-reopen`, `supplier-article-request` עוברות. `admin-content` נכשלת גם לפני השינוי (טיוטה מוסתרת, לא קשור).
+- **לא גמור:** "אין מייל ספק" כמעט לא יקרה, כי יש כתובת ספק ברירת מחדל. נבדק רק דרך סיבה שמורה.

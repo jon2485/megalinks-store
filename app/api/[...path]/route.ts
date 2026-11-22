@@ -65,7 +65,7 @@ import { writingRequestMail, articleMail, queueMail, mailFileByToken } from '@/l
 import { articleDocx } from '@/lib/delivery-docx';
 import { closeMonth } from '@/lib/monthly';
 import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-content';
-import { dispatchArticle } from '@/lib/publication';
+import { dispatchArticle,adminArticleExtras } from '@/lib/publication';
 import { siteStock, addStockPackage, linkOrphanSites, releaseSlotStatements } from '@/lib/supplier-stock';
 import { supplierBilling, supplierOrder, supplierPackage, sendOrderSummary, sendPackageStatus, updatePackagePayment } from '@/lib/supplier-orders';
 import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManualSupplierMonths } from '@/lib/supplier-month';
@@ -602,7 +602,7 @@ if (p[0] === 'cart') {
         if(method==='GET'&&p[2]==='document')return new Response(await articleDocx(a) as BodyInit,{headers:{'Content-Type':'application/vnd.openxmlformats-officedocument.wordprocessingml.document','Content-Disposition':"attachment; filename=article.docx; filename*=UTF-8''"+encodeURIComponent((a.title||'article').slice(0,80)+'.docx'),'Cache-Control':'private, no-store'}});
         if (method === 'GET') {
             const aiConfig = await connection('ai');
-            return response({ ai_generation:await articleGenerationStatus(a.id), ai_available: !!(aiConfig.enabled && aiConfig.secret), article: {...customerArticle(a,u),...(u.role==='admin'?{user_name:(await one('SELECT name FROM users WHERE id=?',a.user_id))?.name,issue_request:await issueForAdmin(a)}:{})}, order: parse(await one('SELECT * FROM orders WHERE id=?', a.order_id)), website: u.role === 'admin' ? await website(a.website_id, true) : publicWebsite((await one('SELECT * FROM websites WHERE id=?', a.website_id))!), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', a.id),u) });
+            return response({ ai_generation:await articleGenerationStatus(a.id), ai_available: !!(aiConfig.enabled && aiConfig.secret), article: {...customerArticle(a,u),...(u.role==='admin'?{...(await adminArticleExtras(a)),issue_request:await issueForAdmin(a)}:{})}, order: parse(await one('SELECT * FROM orders WHERE id=?', a.order_id)), website: u.role === 'admin' ? await website(a.website_id, true) : publicWebsite((await one('SELECT * FROM websites WHERE id=?', a.website_id))!), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', a.id),u) });
         }
         if(method==='PATCH'||method==='POST'&&['status','writing-request','writing-complete','writing-revisions'].includes(p[2]))assert((await articleGenerationStatus(a.id))?.status!=='writing','המאמר בהכנה. אפשר לערוך או לשלוח אותו לאחר שהכתיבה תסתיים.',409);
         if(['writing-complete','writing-revisions'].includes(p[2])&&method==='POST')return response(await writingAction(a,u,await json(r),new URL(r.url).origin,p[2]));

@@ -227,3 +227,10 @@ html body .studio-v2.admin-content-review .studio-writing-summary .studio-outlin
 }
 @media(prefers-reduced-motion:reduce){.ar-btn,.ar-back,.ar-seg button,.ar-fact.is-go{transition:none}.ar-btn:active,.ar-back:active{transform:none}}
 @media(prefers-reduced-transparency:reduce){.ar-bar{background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none}}
+/* Blocked delivery: the stored reason is the main line, the edit-site link sits under the hint. */
+.ar-state p.ar-reason{margin:0 0 6px;color:#1d1d1f}
+.ar-state p.ar-reason+.ar-muted{margin-bottom:4px}
+.ar-state p.ar-fixlink{margin:0 0 8px}
+.ar-inline-link{display:inline-flex;align-items:center;gap:2px;min-height:44px;padding:0;border:0;background:none;font:inherit;font-size:14px;font-weight:500;color:#0066cc;cursor:pointer}
+.ar-inline-link:hover{text-decoration:underline}
+.ar-inline-link:focus-visible{outline:2px solid #0071e3;outline-offset:2px;border-radius:4px}
