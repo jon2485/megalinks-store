@@ -99,6 +99,20 @@ html body .catalog-category-sheet .catalog-sheet-grab{flex:0 0 auto!important;wi
 html body .catalog-category-sheet .catalog-cat-chips{display:flex!important;flex-wrap:wrap!important;gap:7px!important;max-height:none!important;overflow:visible!important;padding:0!important;grid-template-columns:none!important}
 html body .catalog-category-sheet label.catalog-cat-chip{display:inline-flex!important;align-items:center!important;gap:6px!important;width:auto!important;height:38px!important;padding:0 13px!important;margin:0!important;border:0!important;border-radius:999px!important;background:#fff!important;color:var(--cf-ink)!important;box-shadow:0 0 0 1px var(--cf-line)!important;font:700 14px Heebo,Arial,sans-serif!important}
 html body .catalog-category-sheet label.catalog-cat-chip[data-on=true]{background:linear-gradient(180deg,#006ef6,#1467cf)!important;color:#fff!important;box-shadow:inset 0 1px 0 #ffffff59,0 6px 14px -8px #1673e6b3!important}
+/* The sheet scrolls; its parts keep their height instead of being squeezed (the title row collapsed when the list was long) */
+html body .catalog-category-sheet[data-slot=popover-content]>*{flex-shrink:0!important}
+/* Category groups (approved mockup 22.11.2026): a bold title with a thin line, then two equal columns.
+   A long name wraps inside its chip, the count stays at the chip's end, a category with no sites stays in grey. */
+html body .catalog-category-sheet .catalog-cat-group{margin:0 0 4px}
+html body .catalog-category-sheet .catalog-cat-group-title{display:flex;align-items:center;gap:10px;margin:18px 2px 10px!important;font:800 15px/1.2 Heebo,Arial,sans-serif;color:#2b3a4f}
+html body .catalog-category-sheet .catalog-cat-group-title::after{content:'';flex:1;height:1px;background:var(--cf-line)}
+html body .catalog-category-sheet .catalog-cat-group-title span{white-space:nowrap}
+html body .catalog-category-sheet .catalog-cat-chips{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:9px!important}
+html body .catalog-category-sheet label.catalog-cat-chip{width:100%!important;min-width:0!important;height:auto!important;min-height:48px!important;padding:6px 14px 6px 12px!important;justify-content:flex-start!important;font-size:14.5px!important}
+html body .catalog-category-sheet .catalog-cat-name{flex:1 1 auto;min-width:0;line-height:1.15;overflow-wrap:anywhere}
+html body .catalog-category-sheet label.catalog-cat-chip::after{flex:none;margin-inline-start:auto;font-size:13px;font-weight:600}
+html body .catalog-category-sheet label.catalog-cat-chip[data-empty=true]:not([data-on=true]){color:#a7adb6!important}
+html body .catalog-category-sheet label.catalog-cat-chip[data-empty=true]:not([data-on=true])::after{color:#c0c5cc}
 /* Categories: bottom sheet on phones only */
 @media(max-width:899px){
 html body [data-radix-popper-content-wrapper]:has(>.catalog-category-sheet){position:fixed!important;inset:auto 0 0 0!important;top:auto!important;left:0!important;right:0!important;transform:none!important;min-width:0!important;z-index:60!important}
@@ -111,7 +125,8 @@ body:has(.catalog-category-sheet[data-state=open])::before{content:'';position:f
  html body .catalog-category-sheet .catalog-sheet-grab{display:none!important}
  html body .catalog-category-sheet .catalog-sheet-head{padding-top:14px!important}
  html body .catalog-category-sheet .catalog-cat-chips{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:6px!important}
- html body .catalog-category-sheet label.catalog-cat-chip{justify-content:flex-start!important;width:100%!important;height:42px!important;border-radius:12px!important;padding:0 12px!important}
+ html body .catalog-category-sheet .catalog-cat-group-title{margin:14px 2px 8px!important;font-size:14px}
+ html body .catalog-category-sheet label.catalog-cat-chip{justify-content:flex-start!important;width:100%!important;height:auto!important;min-height:42px!important;border-radius:12px!important;padding:5px 12px!important}
  html body .catalog-category-sheet label.catalog-cat-chip::after{margin-inline-start:auto}
  html body .catalog-category-sheet .catalog-sheet-foot{margin:14px -18px 0!important;padding:12px 18px 14px!important;grid-template-columns:auto 240px!important;justify-content:space-between}
 }
