@@ -60,6 +60,8 @@ export function resendMessage(payload:Row,c:Row){const test=String(c.test_to||''
  const to=test?[test]:emailList(payload.to).length?emailList(payload.to):[String(payload.to||'')];
  return {from:String(c.from||RESEND_TEST_FROM),to,subject:(test?'[בדיקה · אל: '+payload.to+'] ':'')+String(payload.subject||''),html:payload.html,text:payload.text,
   ...(payload.headers&&Object.keys(payload.headers).length?{headers:payload.headers}:{}),
+  // A customer who presses "reply" writes straight to the owner's inbox (owner, 22.11.2026).
+  ...(String(c.reply_to||'').trim()?{reply_to:String(c.reply_to).trim()}:{}),
   ...(Array.isArray(payload.attachments)&&payload.attachments.length?{attachments:payload.attachments.map((a:Row)=>({filename:a.filename,content:a.content_base64}))}:{})};}
 const resendFailure=(status:number)=>status===401?'Resend דחה את המפתח. בדקו את מפתח ה-API בחיבור הדוא״ל.':status===403?'Resend חסם את השליחה: בלי דומיין מאומת אפשר לשלוח רק לכתובת שאיתה נרשמתם. מלאו "כתובת לבדיקה" או אמתו דומיין.':status===422?'Resend דחה את פרטי המייל (בדרך כלל כתובת השולח). בדקו את כתובת השולח בחיבור.':status===429?'Resend הגביל את קצב השליחה. נסו שוב בעוד דקה.':'Resend החזיר '+status;
 export async function sendQueuedMail(id:string){const job=parse(await one('SELECT * FROM jobs WHERE id=? AND kind=?',id,'email'));if(!job||['succeeded','demo','writing'].includes(job.status))return job;

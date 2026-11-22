@@ -1928,3 +1928,9 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **נבדק מקומית ב-390:** העורך, חלון הקישור, עמוד רגיל ומחשב. חלון המחיר נמצא באזור הניהול, ושם שני הכפתורים כבר מוסתרים.
 - **תוספת לעורך הכתבה בניהול** (הבעלים: "עוד תיקון שיש בעריכת הכתבה בניהול"): גם סרגל ההחלטה (`.ar-bar`) והתפריט התחתון של הניהול (`.admin-mobile-dock`) נעלמים כשהמקלדת פתוחה, וחוזרים מיד כשהיא נסגרת. בעורך של הלקוח הסרגל התחתון כבר נעלם בזמן הקלדה (`sv-typing`, קיים), לכן לא שיניתי שם.
 - **לא נבדק:** אייפון אמיתי (בדפדפן הבדיקה המקלדת מדומה).
+## 22.11.2026: Reply address for outgoing mail (branch `claude/reply-to-20261122`, from 912ff3f)
+- **Owner:** a customer who presses "reply" (for example "יש בעיה בכתבה") must reach him as an ordinary email, not inside the system. Today mail has no reply address, so a reply goes to the sender (on the trial, `onboarding@resend.dev`, i.e. lost).
+- **Built:** "חיבורים והגדרות → דוא״ל → Resend" has a new field "כתובת לתשובות". Saved with the connection (lower case, checked as an address, returned to the screen), and sent to Resend as `reply_to` on every message. Empty field = nothing sent, as before. Webhook path unchanged. Files: `lib/integration-security.ts`, `lib/mail.ts`, `app/screens.tsx`, `tests/resend-email.mjs` (now 39 checks).
+- **The address itself is not in the code:** the owner fills his inbox in the field on Staging after deploy. Not committed anywhere in the repo.
+- **Checked:** build passes, `tests/resend-email.mjs` and `tests/supplier-mail.mjs` pass, the field shows in the dialog locally. Not deployed.
+- **Research (same day, no code):** SendRaven (Common Ninja Ltd., Israel, built 2026) vs Mautic vs Resend for the newsletter. SendRaven: per email, free 3,000/month, $19 for 50K; inbound replies, one-click unsubscribe, postal address required; no Hebrew/RTL statement. Resend marketing is per contact (free 1,000 contacts, $40 for 5,000). Owner has not chosen yet.
