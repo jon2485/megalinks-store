@@ -4,6 +4,7 @@ import {Check,Clock,Link2,Loader2,Lock,TriangleAlert} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import BrandLogo from './brand-logo';
 import './supplier-report-page.css';
+import {SupplierIssueChooser,SupplierIssueWaiting,type Issue} from './supplier-issue';
 
 // Owner decision (11.11.2026): the supplier gets all details and files by email. This page only takes the
 // published address, the system checks it, and after a valid link the page (and the link) is closed.
@@ -15,6 +16,7 @@ export default function SupplierReportPage({token}:{token:string}){
  const [url,setUrl]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[sent,setSent]=useState(''),lock=useRef(false);
  const a=state.data?.article,closed=!!state.data?.closed||!!sent,published=sent||a?.published_url||'';
  const submit=async(e:React.FormEvent)=>{e.preventDefault();if(lock.current)return;const value=url.trim();if(!value){setError('יש להדביק את הקישור לכתבה שפורסמה');return;}lock.current=true;setBusy(true);setError('');try{await api('supplier/'+encodeURIComponent(token),'POST',{url:value});setSent(value);}catch(err){setError((err as Error).message);}finally{lock.current=false;setBusy(false);}};
+ const [sentIssue,setSentIssue]=useState<Issue|null>(null),issue:Issue|null=sentIssue||a?.issue||null;
  const article=a&&<div className="srp-article"><span>{a.website_name}</span><strong>{a.title}</strong></div>;
  let body:React.ReactNode;
  if(state.loading&&!state.data&&!state.error)body=<p className="srp-loading" role="status"><Loader2 className="srp-spin" size={20} aria-hidden="true"/>טוען…</p>;
@@ -27,16 +29,21 @@ export default function SupplierReportPage({token}:{token:string}){
   <p className="srp-closed"><Lock size={15} aria-hidden="true"/>הקישור האישי הזה סגור</p>
  </>;
  else if(a.waiting_fixes)body=<SupplierHold article={article}/>;
- else body=<form className="srp-form" onSubmit={submit} noValidate>
+ else if(issue?.open)body=<SupplierIssueWaiting issue={issue} article={article}/>;
+ else{const linkForm=<form className="srp-form" onSubmit={submit} noValidate>
+  {a.cancel_pending&&<>
   <div className="srp-hero is-form"><span className="srp-pill is-check"><span className="srp-dot"/>קישור אישי לכתבה אחת</span><h1>הכתבה עלתה? שלחו לנו את הקישור.</h1><p>מדביקים את הכתובת של הכתבה באתר, ואנחנו בודקים ומאשרים תוך כמה שניות.</p></div>
   {article}
-  {a.cancel_pending&&<p className="srp-alert" role="alert">התקבלה בקשת ביטול לכתבה הזו. אין לפרסם אותה עד שנחזור אליכם.</p>}
+  <p className="srp-alert" role="alert">התקבלה בקשת ביטול לכתבה הזו. אין לפרסם אותה עד שנחזור אליכם.</p></>}
   <label className="srp-field"><span>הקישור לכתבה באתר</span><span className="srp-input"><Link2 size={19} aria-hidden="true"/><input type="url" dir="ltr" inputMode="url" autoComplete="off" placeholder="https://" value={url} disabled={busy||!!a.cancel_pending} onChange={e=>{setUrl(e.target.value);setError('');}}/></span></label>
   {error&&<p className="srp-alert" role="alert">{error}</p>}
   <button type="submit" className="srp-button" disabled={busy||!!a.cancel_pending}>{busy?<><Loader2 className="srp-spin" size={19} aria-hidden="true"/>בודקים את הקישור…</>:'שליחת הקישור לבדיקה'}</button>
   <ul className={'srp-checks'+(busy?' is-busy':'')} aria-label="מה נבדק">{checks.map(t=><li key={t}><span className="srp-check-dot" aria-hidden="true"/>{t}</li>)}</ul>
   <p className="srp-hint">כל פרטי הכתבה והקבצים נמצאים במייל שקיבלתם.</p>
  </form>;
+ // Owner decision (22.11.2026): next to the link, the supplier can ask for fixes or ask to reject (supplier-issue.tsx).
+ // While a cancellation is pending only today's form shows: nothing should be published or requested then.
+ body=a.cancel_pending?linkForm:<div className="srp-form"><SupplierIssueChooser token={token} issue={issue} article={article} linkForm={linkForm} onSent={setSentIssue}/></div>;}
  return <main className="srp" dir="rtl"><div className="srp-card"><header className="srp-head"><BrandLogo className="srp-logo"/></header><div className="srp-body">{body}</div></div><p className="srp-foot">Mega Links · בניית קישורים וכתבות</p></main>;
 }
 

@@ -4,6 +4,7 @@ import { one, all, stmt, now, connection, externalFetch, parse, ApiError, mapIn 
 import { articleDocx } from './delivery-docx';
 import { Row } from './shared';
 import {supplierPublicationNotes,supplierArticleEmailHtml,supplierHoldEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
+import {supplierIssueLinkText,supplierAnswerEmailHtml} from './supplier-issue-mail';
 import {brandedEmailHtml,withMailFiles,mailFilesText,MAIL_FILE_DAYS,type MailFileLink} from './mail-template';
 import {safeFailure} from './security';
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
@@ -86,8 +87,10 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    else if(opened?.thread_id){payload.subject='Re: '+opened.thread_subject;payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
    else payload.subject=job.supplier_followup==='hold'?'נא להמתין עם פרסום הכתבה · '+unique:job.supplier_followup==='update'?'הנחיות מעודכנות · '+unique:unique;
    if(job.supplier_followup==='hold'){payload.text=['נא להמתין עם פרסום הכתבה',a.title,'הכתבה חזרה ללקוח לתיקונים. כשהתיקונים יאושרו, נשלח לכם כאן הנחיות מעודכנות וקובץ חדש.',link?'הקישור האישי שלכם לכתבה ממשיך לעבוד: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierHoldEmailHtml(a,site,counterLabel,link,origin);}
+   // The admin's answer to a supplier's request for fixes or rejection (owner, 22.11.2026).
+   else if(job.supplier_followup==='answer'){if(!opened?.thread_id)payload.subject='תשובה לבקשה שלכם · '+unique;payload.text=[job.answer_type==='reject'?'הכתבה נשארת לפרסום':'אפשר לפרסם את הכתבה כמו שהיא',a.title,'מה כתבנו לכם:\n'+String(job.answer_note||''),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierAnswerEmailHtml(a,site,counterLabel,link,origin,String(job.answer_type||''),String(job.answer_note||''));}
    else{
-   payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links,job.supplier_followup==='update');if(job.supplier_followup==='update')payload.text='הנחיות מעודכנות לפרסום. הגרסה הזו מחליפה את הקודמת.\n\n'+payload.text;if(links[0]?.url)payload.word_file_url=links[0].url;}}
+   payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:'',supplierIssueLinkText(link)].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links,job.supplier_followup==='update');if(job.supplier_followup==='update')payload.text='הנחיות מעודכנות לפרסום. הגרסה הזו מחליפה את הקודמת.\n\n'+payload.text;if(links[0]?.url)payload.word_file_url=links[0].url;}}
   else{
    // Every other message goes out as a designed right-to-left page: its own design when it has one, the standard one otherwise.
    payload.html=job.html?withMailFiles(String(job.html),links):brandedEmailHtml({subject:String(job.subject||''),text:String(job.text||''),button:job.button,origin,files:links});

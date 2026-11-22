@@ -1,0 +1,20 @@
+/* Supplier link page: fixes / rejection options (owner, 22.11.2026). Uses the page's own tokens (.srp). */
+.sxi-seg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;padding:5px;border-radius:15px;background:#f1f4f8}
+.sxi-seg button{min-height:46px;padding:4px 2px;border:0;border-radius:11px;background:transparent;font:inherit;font-size:clamp(12.5px,3.6vw,14px);white-space:nowrap;font-weight:800;line-height:1.15;color:var(--srp-muted);cursor:pointer;transition:background-color .15s,color .15s,box-shadow .15s}
+.sxi-seg button.is-on{background:#fff;color:var(--srp-ink);box-shadow:0 1px 3px #0b28501f}
+.sxi-seg button.is-on.is-red{color:#b4232c}
+.sxi-seg button:focus-visible{outline:2px solid var(--srp-blue);outline-offset:2px}
+.sxi-seg button:disabled{cursor:default}
+.sxi-field{display:grid;gap:8px;font-weight:800;font-size:15px}
+.sxi-field textarea{width:100%;min-height:118px;padding:13px 15px;border:0;border-radius:15px;resize:vertical;font:inherit;font-size:16px;font-weight:500;line-height:1.6;color:var(--srp-ink);background:#fff;box-shadow:inset 0 0 0 1.5px #c9d6e4;outline:0;transition:box-shadow .2s}
+.sxi-field textarea:focus{box-shadow:inset 0 0 0 2px var(--srp-blue),0 0 0 4px #1673e61f}
+.sxi-field small{font-size:13px;font-weight:500;color:var(--srp-faint)}
+.srp-button.sxi-red{background:linear-gradient(180deg,#d63a3a,#b4232c);box-shadow:inset 0 1px 0 #ffffff40,0 10px 22px -10px #b4232ccc}
+.sxi-wait{display:grid;place-items:center;width:80px;height:80px;margin-bottom:4px;border-radius:50%;background:#fff4e0;color:#a85d00}
+.srp-pill.sxi-pill{background:#fff1d6;color:#8a4b00}
+.sxi-sent,.sxi-answer{padding:14px 16px;border-radius:16px;text-align:right}
+.sxi-sent{background:#fffaf0;box-shadow:inset 0 0 0 1px #f2dcae}
+.sxi-sent span{display:block;margin-bottom:4px;font-size:13px;font-weight:700;color:#8a4b00}
+.sxi-answer{background:#f5f8fc;box-shadow:inset 0 0 0 1px var(--srp-line)}
+.sxi-answer span{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:13px;font-weight:700;color:var(--srp-blue)}
+.sxi-sent p,.sxi-answer p{margin:0;font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}

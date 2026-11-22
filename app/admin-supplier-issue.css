@@ -1,0 +1,14 @@
+/* Admin article screen: a supplier's request for fixes or rejection (owner, 22.11.2026). Light design only. */
+.sxa{display:grid;gap:10px;margin-bottom:6px;padding-bottom:16px;border-bottom:1px solid #e5e5ea}
+.sxa-pill{justify-self:start;padding:4px 12px;border-radius:999px;background:#fff1d6;color:#8a4b00;font-size:13px;font-weight:700}
+.sxa.is-reject .sxa-pill{background:#ffe5e7;color:#b4232c}
+.sxa-head{margin:0;font-size:14.5px;line-height:1.6;color:#3a3a3c}
+.sxa-quote{padding:12px 14px;border-radius:14px;background:#fffaf0;box-shadow:inset 0 0 0 1px #f2dcae}
+.sxa.is-reject .sxa-quote{background:#fff5f6;box-shadow:inset 0 0 0 1px #f3c9cd}
+.sxa-quote small{display:block;margin-bottom:3px;font-size:12.5px;font-weight:700;color:#8a4b00}
+.sxa.is-reject .sxa-quote small{color:#b4232c}
+.sxa-quote p{margin:0;font-size:15px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.sxa-answer{display:grid;gap:8px}
+.sxa-answer label{font-size:14px;font-weight:700}.sxa-answer label small{font-weight:500;color:#6e6e73}
+.ar-btn.sxa-danger{background:#d70015;color:#fff;box-shadow:none}
+.sxa-fine{margin:0;font-size:12.5px;line-height:1.55;color:#6e6e73}
