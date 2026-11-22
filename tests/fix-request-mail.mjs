@@ -20,6 +20,20 @@ for(const part of ['אתר: אתר בדיקה · site.example.test/news','כות
 assert.ok(mail.fixRequestEmailHtml({...m,name:'',orderNumber:''}).indexOf('שלום')<0);
 writeFileSync('.sites-runtime/fix-request-mail.html',html);
 
+// One family (owner, 22.11.2026): cancelled and published look the same and never say who asked.
+const base={origin:m.origin,site:m.site,siteUrl:m.siteUrl,title:'כותרת',orderNumber:'#1003',name:'דנה',url:m.url};
+const cancelled=mail.cancelledEmailHtml({...base,note:'האתר הפסיק לקבל כתבות בנושא.',full:true,refund:'₪100.00 זוכו ליתרה בחשבון שלך'});
+for(const part of ['המאמר שלך לאתר אתר בדיקה בוטל','המאמר בוטל','סיבת הביטול','האתר הפסיק לקבל כתבות בנושא.','הזיכוי','זוכו ליתרה','צפייה בפרטי המאמר','href="https://shop.example.test/article/a1"','מספר הזמנה','קיבלת את המייל כי יש לך חשבון ב-Mega Links'])assert.ok(cancelled.includes(part),'cancelled missing: '+part);
+assert.equal(mail.cancelledSubject('אתר בדיקה',false),'פרסום המאמר שלך באתר אתר בדיקה בוטל');
+assert.ok(mail.cancelledEmailHtml({...base,note:'x',full:false}).includes('שירות הכתיבה נשאר בהזמנה'));
+assert.ok(!mail.cancelledEmailHtml({...base,note:'x',full:true}).includes('הזיכוי'),'no refund row without a refund');
+assert.ok(mail.cancelledText({...base,note:'סיבה',full:true,refund:'₪1'}).includes('סיבת הביטול:\nסיבה'));
+const published=mail.publishedEmailHtml({...base,publishedUrl:'https://www.site.example.test/news/story-1',publishedOn:'22.11.2026'});
+for(const part of ['המאמר שלך פורסם באתר אתר בדיקה','המאמר פורסם','הקישור לכתבה','www.site.example.test/news/story-1','href="https://www.site.example.test/news/story-1"','לצפייה בכתבה שפורסמה','תאריך הפרסום','22.11.2026','כניסה לאזור האישי'])assert.ok(published.includes(part),'published missing: '+part);
+assert.ok(mail.publishedText({...base,publishedUrl:'https://x.test/a'}).includes('הקישור לכתבה:\nhttps://x.test/a'));
+for(const page of [html,text,cancelled,published,mail.cancelledText({...base,note:'x',full:true}),mail.publishedText({...base,publishedUrl:'https://x.test/a'})])assert.ok(!/ספק/.test(page),'the customer never reads about the supplier');
+writeFileSync('.sites-runtime/article-cancelled-mail.html',cancelled);writeFileSync('.sites-runtime/article-published-mail.html',published);
+
 // The updates feed: the note saved on the article wins; the new subject still links an older email to its article.
 const article={id:'a1',status:'revisions',title:'כותרת',website_name:'אתר בדיקה',website_url:'https://www.site.example.test',number:'#1003',updated:'2026-11-22T10:00:00Z',revision_note:'הקישור לא תקין.',revision_requested_at:'2026-11-22T09:00:00Z'};
 let [u]=buildClientUpdates([article],[],[],[]);

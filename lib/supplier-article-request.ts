@@ -1,6 +1,6 @@
 import type {Row} from './shared';
 import {one,all,stmt,parse,now,assert,audit} from './server';
-import {queueMail,sendQueuedMail} from './mail';
+import {sendQueuedMail} from './mail';
 import {pendingCancelRequest} from './cancel-request';
 
 // Owner decision (22.11.2026): the supplier who received an article can ask for fixes or ask to reject it, with a text.
@@ -38,7 +38,7 @@ export async function issueForAdmin(a:Row){
 }
 
 /** The supplier, through its personal link (token already checked by the caller), asks for fixes or to reject. */
-export async function requestSupplierIssue(a:Row,token:Row,b:Row,origin:string){
+export async function requestSupplierIssue(a:Row,token:Row,b:Row,_origin:string){
  const type=String(b.issue) as IssueType,text=clip(b.text,1500),d=articleData(a);
  assert(TYPES.includes(type),'יש לבחור בקשת תיקונים או דחיית הכתבה');
  assert(text.length>=5,type==='fix'?'יש לכתוב מה צריך לתקן':'יש לכתוב למה אי אפשר לפרסם את הכתבה');
@@ -54,11 +54,8 @@ export async function requestSupplierIssue(a:Row,token:Row,b:Row,origin:string){
  const saved=await stmt("INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data,updated=excluded.updated WHERE json_extract(records.data,'$.status')<>'pending'",issueRecordId(a.id),ISSUE_KIND,a.user_id,JSON.stringify(data),stamp,stamp).run();
  assert(saved.meta.changes,'כבר שלחתם בקשה, והיא ממתינה לתשובת המנהל',409);
  await audit({id:token.user_id},issueRecordId(a.id),type==='fix'?'הספק ביקש תיקונים בכתבה':'הספק ביקש לדחות את הכתבה',{text});
- // The admin also gets an e-mail, like a customer's cancellation request. A failed mail never undoes the request:
- // the work center shows it either way.
- const order=await one('SELECT number,data FROM orders WHERE id=?',a.order_id),demo=!!articleData(order||{}).demo||!!d.demo;
- const what=(type==='fix'?'הספק ביקש תיקונים בכתבה':'הספק ביקש לדחות את הכתבה')+' "'+a.title+'"'+(a.website_name?' באתר '+a.website_name:'')+(order?.number?' (הזמנה '+order.number+')':'');
- for(const admin of await all("SELECT email FROM users WHERE role='admin'"))if(admin.email)try{await queueMail('email:supplier-issue:'+a.id+':'+stamp+':'+admin.email,a.user_id,{to:admin.email,subject:type==='fix'?'הספק ביקש תיקונים בכתבה':'הספק ביקש לדחות כתבה',text:what+'.\n\nמה הספק כתב:\n'+text+'\n\nשום דבר לא השתנה בהזמנה עד שתחליט.',button:{label:'פתיחת הכתבה',url:origin+'/admin-article/'+encodeURIComponent(a.id)},demo});}catch{/* saved; shown in the work center */}
+ // No e-mail about the request (owner, 22.11.2026: "הוא לא אמור לדעת מי ביקש"): the admin sees it in the work center
+ // and on the article screen, and the customer only ever gets the admin's own words if the article is returned.
  return {ok:true,issue:{open:true,type,text,at:stamp}};
 }
 

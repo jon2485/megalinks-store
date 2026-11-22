@@ -74,5 +74,6 @@ export async function approveOrderCancel(order:Row,u:Row,note:string,origin:stri
  if(!result.meta.changes)return;
  const customer=await one('SELECT email FROM users WHERE id=?',order.user_id);
  const what=current.scope==='article'&&articleId?'האתר '+current.target+' בהזמנה '+order.number+' בוטל':'ההזמנה '+order.number+' בוטלה';
- if(customer?.email)try{await queueMail('email:cancel-approved:'+order.id+':'+stamp,order.user_id,{to:customer.email,subject:'בקשת הביטול אושרה · '+order.number,text:what+' לפי בקשתך.'+(note?'\n'+note:''),button:{label:'צפייה בהזמנה',url:orderLink(origin,order.id)},demo:isDemo(order),order_id:order.id});}catch{/* the cancellation is already saved */}
+ // A cancelled site already got its own article e-mail (cancelledMail); this one is for a whole order.
+ if(customer?.email&&!articleId)try{await queueMail('email:cancel-approved:'+order.id+':'+stamp,order.user_id,{to:customer.email,subject:'בקשת הביטול אושרה · '+order.number,text:what+' לפי בקשתך.'+(note?'\n'+note:''),button:{label:'צפייה בהזמנה',url:orderLink(origin,order.id)},demo:isDemo(order),order_id:order.id});}catch{/* the cancellation is already saved */}
 }

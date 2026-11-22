@@ -7,7 +7,7 @@ import {supplierPublicationNotes,supplierArticleEmailHtml,supplierHoldEmailHtml,
 import {supplierIssueLinkText,supplierAnswerEmailHtml} from './supplier-issue-mail';
 import {brandedEmailHtml,withMailFiles,mailFilesText,MAIL_FILE_DAYS,type MailFileLink} from './mail-template';
 import {safeFailure} from './security';
-import {fixRequestEmailHtml,fixRequestSubject,fixRequestText} from './fix-request-mail';
+import {fixRequestEmailHtml,fixRequestSubject,fixRequestText,publishedEmailHtml,publishedSubject,publishedText,cancelledEmailHtml,cancelledSubject,cancelledText} from './fix-request-mail';
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
 export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string};
@@ -106,18 +106,37 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
 export async function queueMail(id:string,userId:string,data:Row){await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,userId,'email','requested',JSON.stringify(data),now(),now()).run();return sendQueuedMail(id);}
 // pre: what the caller already read for many articles at once (the order, the admin addresses), so a loop of
 // mails does not read them again per article. The customer is only needed when the mail goes to the customer.
-export async function articleMail(a:Row,event:'submitted'|'revisions'|'published',origin:string,note='',pre:{order?:Row,admins?:string[]}={}){if(event==='revisions')return revisionMail(a,origin,note,pre);const o=pre.order||parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;let recipients=event==='submitted'?(pre.admins||(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email)):[(await one('SELECT * FROM users WHERE id=?',a.user_id))?.email];if(event==='submitted')recipients.push(String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(','));for(const email of new Set(recipients.filter(Boolean))){await queueMail('email:'+event+':'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:event==='submitted'?'מאמר חדש ממתין לאישור':'המאמר פורסם',text:a.title+'\n'+(note||a.published_url||''),button:{label:event==='published'?'לכתבה שפורסמה':'פתיחת המאמר',url:event==='published'?a.published_url:origin+'/article/'+a.id},demo:!!o.demo,article_id:a.id,origin});}}
+export async function articleMail(a:Row,event:'submitted'|'revisions'|'published',origin:string,note='',pre:{order?:Row,admins?:string[]}={}){if(event==='revisions')return revisionMail(a,origin,note,pre);if(event==='published')return publishedMail(a,origin,pre);const o=pre.order||parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;let recipients=event==='submitted'?(pre.admins||(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email)):[(await one('SELECT * FROM users WHERE id=?',a.user_id))?.email];if(event==='submitted')recipients.push(String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(','));for(const email of new Set(recipients.filter(Boolean))){await queueMail('email:'+event+':'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:'מאמר חדש ממתין לאישור',text:a.title+'\n'+(note||a.published_url||''),button:{label:'פתיחת המאמר',url:origin+'/article/'+a.id},demo:!!o.demo,article_id:a.id,origin});}}
 
-// Returned for a fix (owner, 22.11.2026): the note is kept on the article, so the updates popup and the editor show the
-// same words as the email; the customer gets "המאמר שלך לאתר X דורש תיקון" with the site, title, order and the note.
-async function revisionMail(a:Row,origin:string,note:string,pre:{order?:Row}){
+// The customer's article e-mails (lib/fix-request-mail.ts), one family since 22.11.2026. The shared facts of the
+// article are read once here: the order, the customer and the site.
+async function articleFacts(a:Row,origin:string,pre:{order?:Row}={}){
  const d=typeof a.data==='string'?JSON.parse(a.data||'{}'):a.data||{};
  const [order,customer,w]=await Promise.all([pre.order?Promise.resolve(pre.order):one('SELECT * FROM orders WHERE id=?',a.order_id).then(r=>parse(r)),one('SELECT name,email FROM users WHERE id=?',a.user_id),one('SELECT name,url FROM websites WHERE id=?',a.website_id)]);
+ const base={origin,site:String(d.website_name||w?.name||a.website_name||'').trim(),siteUrl:String(d.website_url||w?.url||a.website_url||''),title:String(a.title||d.topic||'המאמר שלך'),orderNumber:order?.number?String(order.number):'',name:String(customer?.name||'').trim().split(/\s+/)[0]||'',url:origin+'/article/'+a.id};
+ return {base,email:String(customer?.email||''),demo:!!order?.demo||!!d.demo};
+}
+
+// Returned for a fix: the note is kept on the article, so the updates popup and the editor show the same words.
+async function revisionMail(a:Row,origin:string,note:string,pre:{order?:Row}){
  await stmt("UPDATE articles SET data=json_set(data,'$.revision_note',?,'$.revision_requested_at',?) WHERE id=?",String(note||''),now(),a.id).run();
- if(!customer?.email)return;
- const site=String(d.website_name||w?.name||a.website_name||'').trim(),url=origin+'/article/'+a.id;
- const m={origin,site,siteUrl:String(d.website_url||w?.url||a.website_url||''),title:String(a.title||d.topic||'המאמר שלך'),orderNumber:order?.number?String(order.number):'',note:String(note||'').trim()||'הפרטים מופיעים בעמוד המאמר.',name:String(customer.name||'').trim().split(/\s+/)[0]||'',url};
- await queueMail('email:revisions:'+a.id+':'+a.version+':'+customer.email,a.user_id,{to:customer.email,subject:fixRequestSubject(site),text:fixRequestText(m),html:fixRequestEmailHtml(m),button:{label:'פתיחת המאמר לתיקון',url},demo:!!order?.demo,article_id:a.id,origin});
+ const {base,email,demo}=await articleFacts(a,origin,pre);if(!email)return;
+ const m={...base,note:String(note||'').trim()||'הפרטים מופיעים בעמוד המאמר.'};
+ await queueMail('email:revisions:'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:fixRequestSubject(m.site),text:fixRequestText(m),html:fixRequestEmailHtml(m),button:{label:'פתיחת המאמר לתיקון',url:m.url},demo,article_id:a.id,origin});
+}
+
+// Published, with the live link.
+async function publishedMail(a:Row,origin:string,pre:{order?:Row}){
+ const {base,email,demo}=await articleFacts(a,origin,pre);if(!email||!a.published_url)return;
+ const m={...base,publishedUrl:String(a.published_url),publishedOn:new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date())};
+ await queueMail('email:published:'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:publishedSubject(m.site),text:publishedText(m),html:publishedEmailHtml(m),button:{label:'לצפייה בכתבה שפורסמה',url:m.publishedUrl},demo,article_id:a.id,origin});
+}
+
+/** The admin cancelled the article (all of it, or only its publication) and the money was settled: one e-mail to the customer. */
+export async function cancelledMail(a:Row,origin:string,info:{reason:string;full:boolean;refund?:string;stamp:string}){
+ const {base,email,demo}=await articleFacts(a,origin);if(!email)return;
+ const m={...base,note:info.reason.trim()||'הפרטים מופיעים בעמוד המאמר.',full:info.full,refund:info.refund};
+ await queueMail('email:cancelled:'+a.id+':'+info.stamp+':'+email,a.user_id,{to:email,subject:cancelledSubject(m.site,m.full),text:cancelledText(m),html:cancelledEmailHtml(m),button:{label:'צפייה בפרטי המאמר',url:m.url},demo,article_id:a.id,origin});
 }
 
 export async function writingRequestMail(a:Row,origin:string){

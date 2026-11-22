@@ -18,7 +18,8 @@ export function SupplierIssueBox({s}:{s:AdminStudio}){
  const {ctx,id,a,busy}=s,r=a.issue_request,[answering,setAnswering]=useState(false),[note,setNote]=useState('');
  if(!r)return null;
  const reject=r.type==='reject';
- const reopen=()=>window.dispatchEvent(new CustomEvent(REOPEN_OPEN_EVENT,{detail:{note:'הספק ביקש תיקונים:\n'+r.text}}));
+ // The note reaches the customer as the admin's own words, so it never says who asked (owner, 22.11.2026).
+ const reopen=()=>window.dispatchEvent(new CustomEvent(REOPEN_OPEN_EVENT,{detail:{note:r.text}}));
  const answer=()=>s.act(async()=>{const res=await api('articles/'+id+'/supplier-issue','POST',{note:note.trim()});setAnswering(false);setNote('');return res;},
   (res:any)=>(reject?'הבקשה סורבה':'הבקשה נסגרה')+(res?.supplier_mail==='failed'?'. המייל לספק לא נשלח, אפשר לבדוק בדיוור.':res?.supplier_mail==='blocked'?'. המייל לספק ממתין להגדרות הדיוור.':', והספק קיבל את ההערה במייל'));
  return <div className={'ar-sect sxa'+(reject?' is-reject':'')} role="region" aria-label="בקשה מהספק">
