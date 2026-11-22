@@ -220,3 +220,27 @@ body:has(.admin-design-v172) .om-attach .orders-reference-search:focus-within{bo
 .om-attach .orders-reference-pagination nav{display:flex;flex-direction:row;align-items:center;gap:6px}
 .om-attach .orders-reference-pagination nav button{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:#f1f5fa;border:0}
 .om-attach-foot{border-top:0!important;padding-top:0!important}
+/* Personal price for one customer (owner approved 22.11.2026): the field first, one compact summary, the sheet above the iPhone keyboard */
+.personal-price-editor.om-pay-form{gap:10px}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .pp-field{font-size:15px;font-weight:700;color:#0b1b2f}
+.personal-price-editor .pp-input{position:relative;display:block}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor.om-pay-form .pp-input.pp-input input[type=number]{height:56px!important;min-height:56px!important;padding-inline:16px 44px;background:#fff!important;border:1.5px solid #c7d6e4!important;border-radius:14px!important;font-size:26px!important;font-weight:800;color:#0b1b2f;text-align:right;-moz-appearance:textfield;appearance:textfield}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor.om-pay-form .pp-input.pp-input input[type=number]:focus{border-color:#1467cf!important;box-shadow:0 0 0 4px #1467cf1f!important}
+.personal-price-editor .pp-input input::-webkit-outer-spin-button,.personal-price-editor .pp-input input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.personal-price-editor .pp-input>span{position:absolute;inset-inline-end:16px;top:50%;translate:0 -50%;font-size:20px;font-weight:600;color:#5b6b82;pointer-events:none}
+/* the old dialog rule forces 16px/650/1.8 on every p, dt and dd; keep 16px for readability but make it calm and compact */
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor :is(.pp-hint,.pp-vat){margin:0;font-size:15px!important;line-height:1.5!important;font-weight:500!important;color:#5b6b82!important}
+.personal-price-editor .pp-summary{display:grid;grid-template-columns:1fr 1fr;margin:4px 0 0;border-radius:14px;background:#f5f7fa;box-shadow:inset 0 0 0 1px #e3e9f1}
+.personal-price-editor .pp-summary>div{padding:9px 12px;min-width:0}
+.personal-price-editor .pp-summary>div:nth-child(odd){border-inline-end:1px solid #e3e9f1}
+.personal-price-editor .pp-summary>div:nth-child(-n+2){border-bottom:1px solid #e3e9f1}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .pp-summary dt{font-size:14px!important;line-height:1.4!important;font-weight:500!important;color:#5b6b82!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .pp-summary dd{margin:0;font-size:17px!important;line-height:1.4!important;font-weight:750!important;color:#0b1b2f!important;white-space:nowrap}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .pp-summary .is-now dd{color:#1467cf!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .pp-summary small{font-size:13px!important;font-weight:500!important;color:#5b6b82!important}
+body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .pp-reset{justify-self:center;min-height:44px;padding:0 8px;background:none;border:0;font-family:inherit;font-size:15px!important;font-weight:600!important;color:#1467cf;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.personal-price-editor .pp-reset:disabled{opacity:.55;cursor:default}
+@media(max-width:560px){
+ .personal-price-editor .pp-more{display:none}
+ body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor){bottom:var(--pp-keyboard,0px)!important;max-height:min(92dvh,calc(var(--pp-visible,100dvh) - 12px))!important}
+}

@@ -56,7 +56,7 @@ export function PersonalPricebook({ctx,id,embedded=false}:{ctx:Ctx;id:string;emb
  const rows=(data?.websites||[]).filter((w:Row)=>(listIds===null||listIds.includes(w.id))&&(w.name+' '+w.url).toLowerCase().includes(search.toLowerCase())&&(filter==='all'||filter==='fixed'&&w.personal_price!=null||filter==='review'&&w.review));
  const safePage=Math.min(page,Math.max(0,Math.ceil(rows.length/24)-1));
  const personalCount=(data?.websites||[]).filter((w:Row)=>w.personal_price!=null).length,tierName=data?.tiers.find((t:Row)=>t.id===data.customer.tier_id)?.name||'לא הוגדרה רמה',pending=Object.keys(changes).length;
- const editPrice=(w:Row)=>ctx.open({kind:"admin-finance",title:"עריכת מחיר אישי - "+w.name,description:data.customer.name+" · "+data.customer.email,render:(close:()=>void)=><PersonalPriceEditor ctx={ctx} customer={data.customer} site={w} version={data.version} close={close}/>});
+ const editPrice=(w:Row)=>ctx.open({kind:"admin-finance",touchCalm:true,title:"מחיר אישי · "+w.name,description:data.customer.name+" · "+data.customer.email,render:(close:()=>void)=><PersonalPriceEditor ctx={ctx} customer={data.customer} site={w} version={data.version} close={close}/>});
  return <section dir="rtl" className={'pb2'+(embedded?' is-embedded':'')}><Status state={state}/>{error&&<p role="alert" className="pb2-error">{error}</p>}{data&&<>
   <header className="pb2-head">
    {!embedded&&<div className="pb2-head-top"><button type="button" className="pb2-back" onClick={()=>ctx.go('admin-pricebooks')}><ArrowRight size={18} aria-hidden="true"/>כל המחירונים האישיים</button><span className="pb2-muted">כל המחירים בש״ח, לפני מע״מ</span></div>}

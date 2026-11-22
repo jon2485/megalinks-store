@@ -1850,3 +1850,10 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 
 ### Open
 - The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
+
+## חלון "מחיר אישי" ללקוח (22.11.2026, ענף claude/personal-price-dialog-afcd59)
+- **מה הוחלט:** הבעלים אישר הדמיה. שדה המחיר בראש החלון, ארבעת המחירים לעיון בכרטיס אחד, הערת מע״מ קצרה, שמירה וביטול בסגנון "עריכה מהירה".
+- **באג האייפון:** החלון נצמד לתחתית המסך, והמקלדת כיסתה אותו. עכשיו החלון עוקב אחרי `visualViewport` ויושב מעל המקלדת. בנייד המקלדת לא נפתחת לבד (דגל `touchCalm` ב-`ctx.open`).
+- **קבצים:** `app/personal-price-editor.tsx`, `app/pricing-admin.tsx` (כותרת ודגל), `app/workspace.tsx` (דגל `touchCalm`), `app/admin-dialogs.css` (עיצוב חדש), `app/globals.css` ו-`app/admin-reviewed-controls.css` (הוסר עיצוב ישן).
+- **נבדק מקומית:** 390 ומחשב. נבדקו מחיר לא תקין, שמירה (כולל אזהרת עלות חסרה), והסרת מחיר אישי. המקלדת נבדקה בהדמיה בלבד. עוד צריך בדיקה באייפון אמיתי.
+- **זמני:** אין.
