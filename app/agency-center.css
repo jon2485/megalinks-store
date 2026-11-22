@@ -418,13 +418,13 @@ a.ag-task{text-decoration:none;color:inherit}
 .ag .ag-td-actions .purchase-action-buttons :is(button,a):focus-visible{outline:3px solid #0079cb;outline-offset:2px}
 .ag .ag-td-actions .purchase-secondary-actions{display:contents}
 /* Owner 22.11.2026: a publications row is tall (its action buttons stack), so the customer and the site read larger
-   and fill their row. Desktop only; the phone cards keep their size. */
+   and fill their row. Desktop only; the phone cards keep their size. A site-wide rule sets every td to 13px!important. */
 @media(min-width:761px){
- .ag .ag-table td[data-label="לקוח"]{font-size:16px;font-weight:700;color:var(--ink);white-space:nowrap}
- .ag .ag-table td[data-label="לקוח"] .ag-muted{font-size:15.5px;font-weight:600}
- .ag .ag-table .ag-td-site .ag-site{gap:14px}
- .ag .ag-table .ag-td-site .ag-logo{width:56px;height:56px;padding:4px;border-radius:15px}
- .ag .ag-table .ag-td-site .ag-logo .nm{font-size:12.5px}
- .ag .ag-table .ag-td-site .ag-site b{font-size:16.5px}
- .ag .ag-table .ag-td-site .ag-site small{margin-top:2px;font-size:13.5px}
+ .ag .ag-table td[data-label="לקוח"]{font-size:18px!important;font-weight:700;color:var(--ink);white-space:nowrap}
+ .ag .ag-table td[data-label="לקוח"] .ag-muted{font-size:17.5px;font-weight:600}
+ .ag .ag-table .ag-td-site .ag-site{gap:16px}
+ .ag .ag-table .ag-td-site .ag-logo{width:68px;height:68px;padding:5px;border-radius:17px}
+ .ag .ag-table .ag-td-site .ag-logo .nm{font-size:14px}
+ .ag .ag-table .ag-td-site .ag-site b{font-size:18px}
+ .ag .ag-table .ag-td-site .ag-site small{margin-top:3px;font-size:14.5px}
 }
