@@ -1851,9 +1851,6 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 ### Open
 - The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 ## החזרה לעריכה של כתבה מאושרת (22.11.2026, branch `claude/reopen-approved-article-a85857`)
 - **מה הוחלט (הבעלים):** מנהל יכול להחזיר ללקוח לעריכה כתבה שאושרה ועוד לא פורסמה. כשהיא כבר אצל הספק, הקישור שלו לא מבוטל אלא מציג "נא להמתין עם פרסום הכתבה", המלאי נשאר תפוס, והספק מקבל מייל באותו שרשור. אחרי אישור חוזר הספק מקבל "הנחיות מעודכנות לפרסום" על אותו קישור (תוקף מוארך ב-30 יום). אם הספק כבר פרסם את הגרסה הקודמת, המנהל מטפל בזה מולו בנפרד.
 - **זמין:** אושרה וממתינה לתאריך, לא הגיעה לספק, אצל הספק. **לא זמין:** פורסמה, הדגמה, בוטלה, בקשת ביטול.
@@ -1865,7 +1862,6 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **בדיקות:** `tests/article-reopen.mjs` עוברת (ב-Windows דרך עותק harness עם `pathToFileURL`), וגם `publication-scheduling`, `supplier-mail`, `resend-email`. בדיקה מקומית מלאה עם נתוני דמה: החזרה, עמוד ספק בהמתנה, שליחה מחדש, אישור חוזר, הארכת תוקף. המיילים נחסמו מקומית (אין חיבור דיוור).
 - **לפני העלאה:** אין שאריות זמניות ב-repo. לא בוצע commit.
 
-<<<<<<< HEAD
 ## 22.11.2026: second batch merged into `claude/iphone-fixes-20261122` (owner: "מאשר את כל השאר")
 
 - **Catalog categories sheet** (branch `claude/catalog-category-groups-e86da9`, `57b22bd`): "הכי מבוקשות" and "כל התחומים" replaced by four open groups (חדשות ומגזינים, עסקים וכסף, בית ומשפחה, פנאי וסגנון חיים), two equal columns on a phone, largest first, 0-site categories in grey, "עוד" for any category outside the groups. Desktop keeps three columns with group headings; the sheet title no longer gets squeezed. Files: `app/catalog-view.tsx`, `app/catalog-filter-apple.css`. Handover: `side-session-notes/.../catalog-groups/catalog-groups-handover.md`.
@@ -1873,7 +1869,6 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Return an approved article to editing** (branch `claude/reopen-approved-article-a85857`, `e255ad0`): see its own NOTES entry above.
 - **Checked here:** merged without conflicts, build passes, tests `article-reopen`, `supplier-thread`, `supplier-mail`, `resend-email`, `publication-scheduling` pass.
 - **Still being built in their own sessions:** editor title auto-move and phone copy fix, link dialog, personal price dialog, fix-request e-mail and popups, supplier fix/reject requests.
-=======
 ## בקשת תיקונים / דחייה מהספק (22.11.2026, branch `claude/supplier-fix-or-reject-7c9a90`)
 - **מה הוחלט (הבעלים):** הספק יכול לבקש תיקונים או לבקש לדחות כתבה, עם טקסט חובה. הבקשה מגיעה רק למנהל: לא משנה הזמנה, לא מבטלת, לא מזכה ולא מודיעה ללקוח. בקשה פתוחה אחת בכל פעם.
 - **מייל הכתבה:** הכפתור הכחול נשאר. מתחתיו שורה אחת "יש בעיה בכתבה? בקשת תיקונים או דחיית הכתבה", לאותו קישור אישי עם `#issue` (העמוד נפתח על בקשת תיקונים). רק לקישור אישי (`/supplier/<token>`), לא לפורטל ההדגמה.
@@ -1885,8 +1880,6 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **בדיקות:** `tests/supplier-article-request.mjs` ו-`tests/article-reopen.mjs` עוברות (ב-Windows רק עם תיקון זמני של `pathToFileURL` ב-harness, שלא נשמר). עוברות גם `supplier-thread`, `admin-lobby-panels`, `payment-reports`, `admin-glass`, `monthly-order-lifecycle`. בדיקה מקומית ב-390 עם נתוני דמה: תיקונים, דחייה, המתנה, החזרה ללקוח, סירוב, מרכז העבודה. המיילים נחסמו מקומית (אין חיבור דיוור, כתובות example.test).
 - **במסד המקומי בלבד:** שלוש רשומות יומן ישנות שנרשמו על הכתבה עצמה בניסיון הראשון (לפני תיקון הפרטיות). אין שאריות זמניות ב-repo.
 - **לא נבדק:** השלמת ביטול וזיכוי מלאה מתוך בקשת דחייה (רק פתיחת החלון), ומייל אמיתי ב-Staging.
->>>>>>> claude/supplier-fix-or-reject-7c9a90
-=======
 ### Editor link popup, new design (branch `claude/editor-link-dialog-eb0a29`)
 - **Owner (22.11):** "עיצוב חדש לחלון הקופץ של הוספת קישור / שינוי קישור". Mockup approved ("מאשר את כל השאר").
 - **What:** the add / change link popup in the article editor (`app/rich-editor.tsx`, `.sv-link-dialog`) now matches the approved customer popups (white card, violet-blue icon tile, grey close button on the left, light field with a blue ring, one violet-blue main action). The subtitle shows the selected words. Add: "הוספת הקישור" + "ביטול". Change: the current address + "שמירת השינוי" + "הסרת הקישור" (red). Invalid address: red ring + the same message as before. Enter submits. Position (owner 22.11: "שהם ייפתחו באמצע, ויעלו עם המקלדת"): the card opens centred, also on phones; while the keyboard is open, `window.visualViewport` moves the whole card to 12px above the keyboard (smooth, off with reduced motion) and it returns to the centre when the keyboard closes. Desktop unchanged.
@@ -1894,16 +1887,12 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Kept:** the same `editorialUrl` check, internal (absolute megalinks.co.il) links, undo/redo (remove then undo restores the link), the tap-on-link card and the "פרטי הקישור" view are unchanged. The admin knowledge editor uses the same component, so it gets the same popup.
 - **Note:** a site-wide dialog rule forces every dialog `<p>` to 16px dark text, so the small texts in this popup use `!important`.
 - **Checked:** locally, fictional draft, 390px and 1280px: add, invalid, change, save, remove, undo, cancel; at 390px with an emulated 336px keyboard (visual viewport shrunk): card bottom 12px above the keyboard, back to centre when closed. `tsc` and build pass. Not checked on a real iPhone keyboard.
->>>>>>> claude/editor-link-dialog-eb0a29
-=======
 ## חלון "מחיר אישי" ללקוח (22.11.2026, ענף claude/personal-price-dialog-afcd59)
 - **מה הוחלט:** הבעלים אישר הדמיה. שדה המחיר בראש החלון, ארבעת המחירים לעיון בכרטיס אחד, הערת מע״מ קצרה, שמירה וביטול בסגנון "עריכה מהירה".
 - **באג האייפון:** החלון נצמד לתחתית המסך, והמקלדת כיסתה אותו. לבקשת הבעלים, בנייד החלון נפתח באמצע המסך, ועולה בתנועה רכה אל מעל המקלדת כשהיא נפתחת (לפי `visualViewport`). כשהמקלדת נסגרת, הוא חוזר לאמצע. בנייד המקלדת לא נפתחת לבד (דגל `touchCalm` ב-`ctx.open`).
 - **קבצים:** `app/personal-price-editor.tsx`, `app/pricing-admin.tsx` (כותרת ודגל), `app/workspace.tsx` (דגל `touchCalm`), `app/admin-dialogs.css` (עיצוב חדש), `app/globals.css` ו-`app/admin-reviewed-controls.css` (הוסר עיצוב ישן).
 - **נבדק מקומית:** 390 ומחשב. נבדקו מחיר לא תקין, שמירה (כולל אזהרת עלות חסרה), והסרת מחיר אישי. המקלדת נבדקה בהדמיה בלבד. עוד צריך בדיקה באייפון אמיתי.
 - **זמני:** אין.
->>>>>>> claude/personal-price-dialog-afcd59
-=======
 ## 22.11.2026: fix-request flow for the customer (branch `claude/fix-request-flow-a67639`, from `0d0b152`)
 - **Owner asked:** when the admin returns an article for a fix, the customer gets a clear email ("המאמר שלך לאתר X דורש תיקון"), a popup in "העדכונים שלך" in the approved popup style, and the admin's note at the top of the editor. Later also: "פרטי הביטול" in the same new style. Mockups approved ("מאשר את כל השאר").
 - **Email (`lib/fix-request-mail.ts` new, `lib/mail.ts`):** `articleMail(a,'revisions',origin,note)` keeps its name and inputs and now goes to `revisionMail`: subject `fixRequestSubject(site)`, its own HTML (`fixRequestEmailHtml`): site + address, article title, order, a box "מה צריך לתקן", button to `/article/<id>`, and a service footer (why the mail came, personal area link, reply for questions; no unsubscribe, it is a service mail). Plain text `fixRequestText` in the same order. Published/submitted mails unchanged.
@@ -1913,4 +1902,3 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Checked locally (fictional data, 390px and 1280px):** both popups, editor open/closed, the email HTML taken from the local job (mail connection off, nothing sent). `tests/fix-request-mail.mjs` new, passes; tsc and build pass. `tests/client-updates.mjs` fails on an old cart assertion about `app/workspace.tsx`, same on `0d0b152` (not related).
 - **Not pushed, not deployed.**
 - **Open:** a writer's article (editorial) that the sibling returns goes to `review`, not `revisions`, so it shows no fix note in the popup or editor. The email still goes out.
->>>>>>> claude/fix-request-flow-a67639
