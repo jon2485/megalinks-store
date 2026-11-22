@@ -1608,3 +1608,17 @@ html,body{max-width:100%;overflow-x:clip;}
 .account-marketing [data-slot=switch][data-state=checked] [data-slot=switch-thumb]{transform:translateX(20px)}
 .account-marketing [data-slot=switch][data-state=checked]:active [data-slot=switch-thumb]{transform:translateX(16px)}
 @media(prefers-reduced-motion:reduce){.account-marketing [data-slot=switch],.account-marketing [data-slot=switch-thumb]{transition:none}}
+/* Admin customer view, "לקוחות הסוכנות": on a phone each customer becomes a small card with label: value lines, so the seven columns no longer break one letter per line. Desktop keeps the table. */
+@media(max-width:767px){
+.customer-account-admin table.agency-customers-table.agency-customers-table,.customer-account-admin table.agency-customers-table.agency-customers-table tbody{display:block;width:100%}
+.customer-account-admin table.agency-customers-table.agency-customers-table thead{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody{display:grid;gap:12px}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody tr{display:grid;grid-template-columns:minmax(0,1fr);gap:6px;padding:14px 16px;border:1px solid #d6e6f3;border-radius:14px;background:#fff}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody td{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline;gap:12px;padding:2px 0!important;border:0;background:transparent;min-height:0;line-height:1.5;font-size:15px!important;white-space:normal;overflow-wrap:normal;word-break:normal;text-align:right}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody td::before{content:attr(data-label);font-size:13px;font-weight:600;color:#5b6b82}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody td>*{min-width:0;text-align:left;overflow-wrap:anywhere}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody td[data-label="לקוח"]{display:block;padding:0 0 8px!important;margin-bottom:2px;border-bottom:1px solid #e6eff7;font-size:17px!important}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody td[data-label="לקוח"]::before{content:none}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody td[data-label="לקוח"]>*{text-align:right}
+.customer-account-admin table.agency-customers-table.agency-customers-table tbody td[data-label="לקוח"] .small{margin-top:2px;font-size:14px!important;font-weight:500}
+}
