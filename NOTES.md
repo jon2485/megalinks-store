@@ -1861,3 +1861,15 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **לא נבדק:** ש-Resend מכבד `Message-ID` מותאם. לבדוק ב-Staging עם תיבת הבדיקה.
 - **בדיקות:** `tests/article-reopen.mjs` עוברת (ב-Windows דרך עותק harness עם `pathToFileURL`), וגם `publication-scheduling`, `supplier-mail`, `resend-email`. בדיקה מקומית מלאה עם נתוני דמה: החזרה, עמוד ספק בהמתנה, שליחה מחדש, אישור חוזר, הארכת תוקף. המיילים נחסמו מקומית (אין חיבור דיוור).
 - **לפני העלאה:** אין שאריות זמניות ב-repo. לא בוצע commit.
+
+## בקשת תיקונים / דחייה מהספק (22.11.2026, branch `claude/supplier-fix-or-reject-7c9a90`)
+- **מה הוחלט (הבעלים):** הספק יכול לבקש תיקונים או לבקש לדחות כתבה, עם טקסט חובה. הבקשה מגיעה רק למנהל: לא משנה הזמנה, לא מבטלת, לא מזכה ולא מודיעה ללקוח. בקשה פתוחה אחת בכל פעם.
+- **מייל הכתבה:** הכפתור הכחול נשאר. מתחתיו שורה אחת "יש בעיה בכתבה? בקשת תיקונים או דחיית הכתבה", לאותו קישור אישי עם `#issue` (העמוד נפתח על בקשת תיקונים). רק לקישור אישי (`/supplier/<token>`), לא לפורטל ההדגמה.
+- **עמוד הספק:** שלוש אפשרויות: הוספת קישור (כמו היום), בקשת תיקונים, דחיית הכתבה. אחרי שליחה: "הבקשה נשלחה · ממתין לתשובת המנהל", והדבקת קישור חסומה גם בשרת. בזמן שהכתבה אצל הלקוח (`waiting_fixes` של reopen) כל האפשרויות מוסתרות. בבקשת ביטול של לקוח מוצג רק הטופס הישן.
+- **מנהל:** מרכז העבודה: "הספק ביקש לדחות כתבה" בדחוף, "הספק ביקש תיקונים" בתוכן. מסך הכתבה (שלב "אצל הספק"): תיבה עם הטקסט. תיקונים: "החזרה לעריכה של הלקוח" פותחת את `ReopenAction` עם דברי הספק, ו"הספק יפרסם כמו שהיא" מבקשת הערה שנשלחת לספק. דחייה: "אישור ביטול וזיכוי" פותח את חלון הביטול הקיים, ו"סירוב" מבקש הערה שנשלחת לספק. גם מייל למנהלים כשנפתחת בקשה.
+- **סגירה:** החזרה לעריכה סוגרת את הבקשה (`closeIssueOnReopen` בנתיב `reopen`). ביטול, בקשת ביטול או גרסה מעודכנת (`supplier_updated_at`) הופכים בקשה ישנה ללא פעילה (`stale`), בלי לגעת בתהליך הביטול.
+- **פרטיות:** יומן הפעולות נרשם על `supplier-issue:<article>` ולא על הכתבה, כי הלקוח רואה את יומן הכתבה. בעמוד הספק השדה נקרא `issue` ובמנהל `issue_request` (שדות עם supplier מסוננים).
+- **קבצים:** חדשים: `lib/supplier-article-request.ts`, `lib/supplier-issue-mail.ts`, `app/supplier-issue.tsx/.css`, `app/admin-supplier-issue.tsx/.css`, `tests/supplier-article-request.mjs`. שונו: `app/api/[...path]/route.ts`, `app/supplier-report-page.tsx`, `app/admin-article-decision.tsx` (תיבה בשלב הספק, האזנה ב-`ReopenAction`), `lib/admin-updates.ts`, `app/admin-update-feed.tsx`, `lib/supplier-mail-content.ts` (שורה אחת), `lib/mail.ts` (שורת טקסט ומייל תשובה `supplier_followup:'answer'`).
+- **בדיקות:** `tests/supplier-article-request.mjs` ו-`tests/article-reopen.mjs` עוברות (ב-Windows רק עם תיקון זמני של `pathToFileURL` ב-harness, שלא נשמר). עוברות גם `supplier-thread`, `admin-lobby-panels`, `payment-reports`, `admin-glass`, `monthly-order-lifecycle`. בדיקה מקומית ב-390 עם נתוני דמה: תיקונים, דחייה, המתנה, החזרה ללקוח, סירוב, מרכז העבודה. המיילים נחסמו מקומית (אין חיבור דיוור, כתובות example.test).
+- **במסד המקומי בלבד:** שלוש רשומות יומן ישנות שנרשמו על הכתבה עצמה בניסיון הראשון (לפני תיקון הפרטיות). אין שאריות זמניות ב-repo.
+- **לא נבדק:** השלמת ביטול וזיכוי מלאה מתוך בקשת דחייה (רק פתיחת החלון), ומייל אמיתי ב-Staging.

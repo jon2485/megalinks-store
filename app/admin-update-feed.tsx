@@ -25,11 +25,14 @@ const lanes:{id:Lane;label:string;sub:string}[]=[
 // `page` is where several items of the same kind are handled. A single item opens directly, except `list` kinds.
 const taskDefs:TaskDef[]=[
  {id:'cancellation',lane:'urgent',icon:XCircle,one:'בקשת ביטול וזיכוי',many:'בקשות ביטול וזיכוי',go:'טיפול בביטול',goMany:'לבקשות הביטול',page:'admin-orders',preset:['orders-bucket','attention'],old:'הוותיקה',quiet:'בקשות ביטול וזיכוי'},
+ // A supplier's request about an article (owner, 22.11.2026). Each opens that article's screen, where the admin decides.
+ {id:'supplier_reject',lane:'urgent',icon:XCircle,one:'הספק ביקש לדחות כתבה',many:'ספקים ביקשו לדחות כתבות',go:'פתיחת הכתבה',goMany:'לכתבות אצל הספק',page:'admin-publication',old:'הוותיקה',quiet:'בקשות דחייה מספקים'},
  {id:'bank',lane:'urgent',icon:Landmark,one:'דיווח תשלום לאישור',many:'דיווחי תשלום לאישור',go:'בדיקה ואישור',goMany:'בדיקה ואישור',page:'admin-payment-reports',old:'הוותיק',quiet:'דיווחי תשלום',list:true},
  {id:'unapplied',lane:'urgent',icon:CreditCard,one:'תשלום בכרטיס שלא זוכה',many:'תשלומים בכרטיס שלא זוכו',go:'טיפול בתשלום',goMany:'טיפול בתשלומים',page:'admin-orders',old:'הוותיק',quiet:'תשלומים בכרטיס שלא זוכו',list:true},
  {id:'topup',lane:'urgent',icon:Wallet,one:'בקשת הטענת יתרה',many:'בקשות הטענת יתרה',go:'בדיקת הבקשה',goMany:'בדיקת הבקשות',page:'admin-topups',old:'הוותיקה',quiet:'הטענות יתרה'},
  {id:'delivery',lane:'urgent',icon:TriangleAlert,one:'תקלה בשליחה לספק',many:'תקלות שליחה לספק',go:'פתיחת הכתבה',goMany:'לתקלות השליחה',page:'admin-publication',old:'הוותיקה',quiet:'תקלות שליחה לספק'},
  {id:'article',lane:'content',icon:FileText,one:'כתבה לאישור שלך',many:'כתבות לאישור שלך',go:'בדיקת הכתבה',goMany:'בדיקת הכתבות',page:'admin-approvals',old:'הוותיקה',quiet:'כתבות לאישור'},
+ {id:'supplier_fix',lane:'content',icon:PenLine,one:'הספק ביקש תיקונים',many:'ספקים ביקשו תיקונים',go:'פתיחת הכתבה',goMany:'לכתבות אצל הספק',page:'admin-publication',old:'הוותיקה',quiet:'בקשות תיקון מספקים'},
  {id:'publication',lane:'content',icon:Send,one:'מוכנה לשליחה לספק',many:'מוכנות לשליחה לספק',go:'פתיחת הכתבה',goMany:'לכתבות המוכנות',page:'admin-publication',old:'הוותיקה',quiet:'מוכנות לשליחה לספק'},
  {id:'writing',lane:'content',icon:PenLine,one:'כתבה לכותב התוכן',many:'כתבות לכותב התוכן',go:'כתיבת המאמר',goMany:'לכתבות לכתיבה',page:'admin-writing',old:'הוותיקה',quiet:'כתבות לכותב התוכן'},
  {id:'late',lane:'content',icon:TriangleAlert,one:'באיחור אצל הספק',many:'באיחור אצל הספק',go:'מעקב מול הספק',goMany:'מעקב מול הספק',page:'admin-publication',old:'הוותיקה',quiet:'איחורים אצל הספק',list:true},
@@ -37,7 +40,7 @@ const taskDefs:TaskDef[]=[
  {id:'seller_request',lane:'service',icon:Store,one:'בקשת ספק לבדיקה',many:'בקשות ספקים לבדיקה',go:'בדיקת הבקשה',goMany:'לבקשות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'requests'}],old:'הוותיקה',quiet:'בקשות ספקים'},
  {id:'seller_invoice',lane:'service',icon:ReceiptText,one:'חשבונית ספק לבדיקה',many:'חשבוניות ספקים לבדיקה',go:'בדיקת החשבונית',goMany:'לחשבוניות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'invoices'}],old:'הוותיקה',quiet:'חשבוניות ספקים'},
 ];
-const kindIcons:Record<string,Icon>={cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,unapplied:CreditCard,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
+const kindIcons:Record<string,Icon>={supplier_reject:XCircle,supplier_fix:PenLine,cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,unapplied:CreditCard,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
 const date=(s:string)=>{const d=new Date(s);return Number.isNaN(+d)?'לא תועד':new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);};
 const clock=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',hour:'2-digit',minute:'2-digit'}).format(d);
 const dayLine=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',weekday:'long',day:'numeric',month:'long'}).format(d);
@@ -56,6 +59,7 @@ function lines(r:Row,task:string):{lead:string;short:unknown[];full:unknown[]}{
  if(task==='bank'||task==='topup')return {lead:r.user_name,short:[r.number,ref],full:[ref||r.status]};
  if(task==='unapplied')return {lead:r.user_name,short:[r.number,r.detail],full:[r.number,r.detail]};
  if(task==='cancellation')return {lead:r.user_name,short:[r.number,r.website_name],full:[r.number,r.website_name,real(r.detail)]};
+ if(task==='supplier_fix'||task==='supplier_reject')return {lead:r.website_name||r.user_name,short:[r.number,r.user_name],full:[r.number,r.user_name,real(r.detail)&&'„'+real(r.detail)+'”']};
  if(task==='seller_request')return {lead:r.user_name,short:[r.website_name],full:[r.website_name]};
  if(task==='seller_invoice')return {lead:r.user_name,short:[r.detail&&'חודש '+r.detail],full:[r.detail&&'חודש '+r.detail]};
  return real(r.detail)?{lead:real(r.detail),short:[r.number,r.website_name],full:[r.user_name,r.number,r.website_name]}:{lead:r.user_name,short:[r.number,r.website_name],full:[r.number,r.website_name]};

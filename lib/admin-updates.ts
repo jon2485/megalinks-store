@@ -5,6 +5,7 @@ import {fullyCancelledOrderSql} from './order-summary';
 import {adminUnionCtes} from './admin-sql';
 import {ORDER_ABANDONED_DAYS} from './admin-order-buckets';
 import {unappliedOpenSql,unappliedReasonSql} from './unapplied-payments';
+import {openIssueSql} from './supplier-article-request';
 
 // Source events remain read-only; manual handling is separate metadata.
 export function adminUpdatesCte(){
@@ -23,6 +24,8 @@ export function adminUpdatesCte(){
   `SELECT 'paid:'||o.id,'paid',o.id,o.number,u.name,'',CASE o.payment WHEN 'credits' THEN 'תשלום מהיתרה' WHEN 'card' THEN 'תשלום באשראי' WHEN 'credits_card' THEN 'יתרה ואשראי' ELSE 'תשלום מאושר' END,COALESCE(json_extract(o.data,'$.paid_at'),o.updated),o.total,'תשלום אושר','שולם ואושר','פתיחת ההזמנה','admin-order/'||o.id,0 FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=1 AND o.status<>'cancelled' AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND COALESCE(json_extract(o.data,'$.paid_at'),o.updated)>=datetime('now','-30 days')`,
   `SELECT 'delivery:'||j.id,'delivery',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(a.title,''),'כתבה ללא כותרת'),j.updated,NULL,'תקלה בשליחת כתבה','דורש בדיקה','פתיחת הכתבה','admin-article/'||a.id,1 FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id LEFT JOIN websites w ON w.id=a.website_id WHERE j.kind='supplier_publication' AND j.status IN ('failed','blocked') AND a.status<>'cancelled'`,
   `SELECT 'cancellation:'||a.id,'cancellation',a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(NULLIF(a.title,''),'כתבה ללא כותרת'),a.updated,NULL,'בקשת ביטול וזיכוי','ביטול בבדיקה','טיפול בביטול וזיכוי','admin-order/'||o.id,1 FROM ${articleBase} WHERE COALESCE(json_extract(a.data,'$.cancel_pending'),0)=1`,
+  // A supplier's request about an article it received (owner, 22.11.2026): fixes go to content, a rejection is urgent.
+  `SELECT 'supplier-issue:'||a.id,CASE json_extract(r.data,'$.type') WHEN 'reject' THEN 'supplier_reject' ELSE 'supplier_fix' END,a.id,o.number,u.name,COALESCE(w.name,''),COALESCE(json_extract(r.data,'$.text'),''),r.updated,NULL,CASE json_extract(r.data,'$.type') WHEN 'reject' THEN 'הספק ביקש לדחות כתבה' ELSE 'הספק ביקש תיקונים' END,'ממתינה להחלטה','פתיחת הכתבה','admin-article/'||a.id,1 FROM records r JOIN articles a ON a.id=json_extract(r.data,'$.article_id') JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id LEFT JOIN websites w ON w.id=a.website_id WHERE ${openIssueSql('r','a')}`,
   // A customer's request to cancel a whole order. Unpaid orders count too: the admin decides either way.
   `SELECT 'cancel-request:'||o.id,'cancellation',o.id,o.number,u.name,'',COALESCE(json_extract(r.data,'$.target')||' · ','')||COALESCE(json_extract(r.data,'$.reason'),''),r.updated,o.total,CASE WHEN json_extract(r.data,'$.scope')='article' THEN 'בקשת ביטול לאתר בהזמנה' ELSE 'בקשת ביטול מהלקוח' END,'ממתינה להחלטה','טיפול בבקשת הביטול','admin-order/'||o.id,1 FROM records r JOIN orders o ON o.id=json_extract(r.data,'$.order_id') JOIN users u ON u.id=o.user_id WHERE r.kind='order_cancel_request' AND json_extract(r.data,'$.status')='pending'`,
   // A card charge the provider confirmed that was not applied to its order. It leaves the list only when the admin closes it with a note.
@@ -51,7 +54,7 @@ export async function reopenAdminUpdate(user:Row,body:Row){
  assert(row&&await eventVersion(row)===h.version,'האירוע המקורי השתנה. ההתראה נשארה בהיסטוריה',409);
  await stmt("DELETE FROM records WHERE id=? AND kind='admin_update_handled'",raw.id).run();await audit(user,raw.id,'התראה הוחזרה לטיפול',{event_id:row.id});return {ok:true};
 }
-const laneSql=`CASE kind WHEN 'cancellation' THEN 'urgent' WHEN 'delivery' THEN 'urgent' WHEN 'bank' THEN 'urgent' WHEN 'topup' THEN 'urgent' WHEN 'unapplied' THEN 'urgent' WHEN 'article' THEN 'content' WHEN 'publication' THEN 'content' WHEN 'writing' THEN 'content' WHEN 'late' THEN 'content' WHEN 'support' THEN 'service' WHEN 'seller' THEN 'service' ELSE 'info' END`;
+const laneSql=`CASE kind WHEN 'cancellation' THEN 'urgent' WHEN 'delivery' THEN 'urgent' WHEN 'bank' THEN 'urgent' WHEN 'topup' THEN 'urgent' WHEN 'unapplied' THEN 'urgent' WHEN 'supplier_reject' THEN 'urgent' WHEN 'supplier_fix' THEN 'content' WHEN 'article' THEN 'content' WHEN 'publication' THEN 'content' WHEN 'writing' THEN 'content' WHEN 'late' THEN 'content' WHEN 'support' THEN 'service' WHEN 'seller' THEN 'service' ELSE 'info' END`;
 const laneLimits={urgent:20,content:5,service:5,info:3} as const;
 const withVersion=async(row:Row):Promise<Row>=>({...row,page:String(row.id).startsWith('seller-request:')?'admin-seller-request/'+encodeURIComponent(String(row.resource_id)):row.page,version:await eventVersion(row)});
 // Open updates per work lane: oldest waiting first, information newest first. Counts come from the same rows as the list.
@@ -72,7 +75,7 @@ async function adminUpdateLanes(query:URLSearchParams){
 // Lobby (10.11.2026): the same open rows, grouped by the kind of work instead of one long list per lane.
 // Each task type carries its count, the money it holds and its oldest rows, so the lobby shows one line per type.
 const taskSql=`CASE WHEN id LIKE 'seller-invoice:%' THEN 'seller_invoice' WHEN kind='seller' THEN 'seller_request' ELSE kind END`;
-const taskIds=['cancellation','delivery','bank','topup','unapplied','article','publication','writing','late','support','seller_request','seller_invoice','paid'] as const;
+const taskIds=['cancellation','supplier_reject','delivery','bank','topup','unapplied','article','supplier_fix','publication','writing','late','support','seller_request','seller_invoice','paid'] as const;
 async function adminUpdateTasks(query:URLSearchParams){
  const open=`SELECT * FROM feed WHERE NOT EXISTS(SELECT 1 FROM records h WHERE h.kind='admin_update_handled' AND ${sameEvent()})`;
  const q=(query.get('q')||'').trim().slice(0,120),args=[q,'%'+q.replace(/[\\%_]/g,c=>'\\'+c)+'%'];

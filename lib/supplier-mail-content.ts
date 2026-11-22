@@ -1,6 +1,7 @@
 import type {Row} from './shared';
 import {displayPublicationDay} from './publication-date';
 import {mailAttachedHtml,richLine,type MailFileLink} from './mail-template';
+import {supplierIssueLinkHtml} from './supplier-issue-mail';
 
 // Publication instructions belong in the message, never in the article attachment.
 export function supplierPublicationFields(article:Row):[string,string][] {
@@ -51,6 +52,7 @@ ${rows?`<table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" sty
 ${files}
 <div dir="rtl" style="margin-top:22px;padding:16px 18px;border-radius:16px;border:1px solid ${line};text-align:right"><div style="font-size:13px;color:${faint};font-weight:700;margin-bottom:4px">מה עושים עכשיו</div><table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">${step(1,'מפרסמים את הכתבה באתר')}${step(2,'לוחצים על הכפתור ומדביקים את הקישור')}${step(3,'אנחנו בודקים ומאשרים תוך כמה שניות')}</table></div>
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px"><tr><td align="center"><a href="${esc(link)}" style="display:block;background:${blue};color:#ffffff;text-decoration:none;font-size:17px;font-weight:700;padding:16px 20px;border-radius:15px;text-align:center">שליחת הקישור לכתבה שפורסמה</a></td></tr></table>
+${supplierIssueLinkHtml(link)}
 <p style="margin:14px 0 0;font-size:13px;color:${faint};text-align:center;line-height:1.6">הקישור אישי לכתבה הזו ותקף 30 יום. אחרי שליחת קישור תקין הוא נסגר.</p>
 </div></div>
 <p style="margin:16px 0 0;font-size:12px;color:${faint};text-align:center">Mega Links · בניית קישורים וכתבות</p>

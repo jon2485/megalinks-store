@@ -1,5 +1,5 @@
 'use client';
-import React,{useState} from 'react';
+import React,{useEffect,useState} from 'react';
 import {ArrowRight,Bell,Check,ChevronLeft,Download,ExternalLink,FileText,Info,Pencil,RotateCw,Send,Upload,X} from 'lucide-react';
 import {Textarea} from '@/components/ui/textarea';
 import {Input} from '@/components/ui/input';
@@ -9,6 +9,7 @@ import {writingCode} from '@/lib/writing-workflow';
 import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
 import {openCancelFocus} from './cancel-focus';
+import {SupplierIssueBox,REOPEN_OPEN_EVENT} from './admin-supplier-issue';
 import './admin-article-review.css';
 
 // The admin's article page answers two questions first: who holds the article now,
@@ -171,6 +172,7 @@ export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
   <div className="ar-row"><button type="button" className="ar-btn ar-primary" disabled={busy} onClick={()=>s.act(()=>api('articles/'+id+'/dispatch','POST',{}),'מצב המסירה לספק עודכן')}><Send size={15} aria-hidden="true"/>שליחה חוזרת לספק</button>{a.website_id&&<button type="button" className="ar-btn" onClick={()=>ctx.go('admin-supplier-stock/'+a.website_id)}>הוספת מלאי</button>}</div>
  </>,<>{edit}<ReopenAction s={s} stage={stage}/></>);
  if(stage==='supplier')return box('ממתינים לפרסום אצל הספק',<>
+  <SupplierIssueBox s={s}/>
   <form noValidate className="ar-report" onSubmit={report}>
    {!demo&&<><label htmlFor="ar-url">קישור לכתבה שפורסמה</label><Input id="ar-url" type="url" dir="ltr" maxLength={2000} placeholder="https://" value={url} disabled={busy} aria-invalid={!!urlError} onChange={e=>setUrl(e.target.value)}/></>}
    {urlError&&<p className="ar-error" role="alert">{urlError}</p>}
@@ -191,6 +193,8 @@ export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
 function ReopenAction({s,stage}:{s:AdminStudio;stage:AdminStage}){
  const {a,id,busy,dirty}=s,[open,setOpen]=useState(false),[note,setNote]=useState('');
  const withSupplier=stage==='supplier';
+ // A supplier's request for fixes opens this form with the supplier's words (admin-supplier-issue.tsx).
+ useEffect(()=>{const on=(e:Event)=>{setOpen(true);setNote(String((e as CustomEvent).detail?.note||''));requestAnimationFrame(()=>document.getElementById('ar-reopen-note')?.scrollIntoView({behavior:'smooth',block:'center'}));};window.addEventListener(REOPEN_OPEN_EVENT,on);return ()=>window.removeEventListener(REOPEN_OPEN_EVENT,on);},[]);
  const send=()=>s.act(async()=>{const r=await api('articles/'+id+'/reopen','POST',{note:note.trim(),version:a.version});setOpen(false);setNote('');return r;},withSupplier?'הכתבה הוחזרה ללקוח, והספק קיבל עדכון':'הכתבה הוחזרה ללקוח לעריכה');
  if(!open)return <div className="ar-sect ar-self ar-reopen"><span><b>צריך לשנות משהו בכתבה?</b>{withSupplier?'הספק יקבל עדכון במייל, והקישור שלו יעבור להמתנה.':'מחזירים אותה ללקוח לעריכה.'}</span><button type="button" className="ar-btn ar-sm ar-warn" disabled={busy} onClick={()=>{setOpen(true);requestAnimationFrame(()=>document.getElementById('ar-reopen-note')?.scrollIntoView({behavior:'smooth',block:'center'}));}}><RotateCw size={15} aria-hidden="true"/>החזרה לעריכה</button></div>;
  return <div className="ar-sect ar-reopen"><div className="ar-return">
