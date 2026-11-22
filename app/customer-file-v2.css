@@ -92,7 +92,8 @@
 @media (max-width:640px){
  .cf .cfo.sv2-orders{padding-bottom:0}
  .cf .cfo .cfo-bar{align-items:stretch}
- .cf .cfo .cfo-bar .om-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+ /* 22.11.2026 The chips wrap into rows on phones, so no scroll box: overflow:auto clipped the selected chip's ring at the card's edge. */
+ .cf .cfo .cfo-bar .om-chips{overflow:visible}
  .cf .cfo .cfo-actions{width:100%}
  .cf .cfo .cfo-actions .sv2-btn{flex:1;justify-content:center}
  /* no customer column here: number and date, then amount; sites and payment; publication and the open button */
@@ -113,6 +114,12 @@
 .cf .cfo .cfo-bar .om-chips>button b{min-width:20px;padding:1px 7px;border-radius:999px;background:#f0f1f4;color:#424245;font-size:12px;font-weight:700;text-align:center}
 .cf .cfo .cfo-bar .om-chips>button[aria-pressed=true] b{background:#0071e3;color:#fff}
 .cf .cfo .cfo-actions .sv2-btn{height:40px}
+/* 22.11.2026 Phones: normal gaps between the chip rows and between the chips and the action buttons. */
+@media (max-width:640px){
+ .cf .cfo .cfo-bar{gap:16px}
+ .cf .cfo .cfo-bar .om-chips{gap:10px}
+ .cf .cfo .cfo-actions{gap:10px}
+}
 @media (prefers-reduced-motion:reduce){.cf .cfo .cfo-bar .om-chips>button{transition:none}.cf .cfo .cfo-bar .om-chips>button:active{transform:none}}
 /* phones: the item actions (price + cancel) get their own full-width line, so the site address keeps its room */
 @media (max-width:760px){.cf .cfo .om-item>.om-item-acts{grid-area:auto;grid-column:1/-1;grid-row:3;justify-self:end}}
