@@ -45,8 +45,11 @@ export function supplierCounter(seq:number,total:number,monthNumber:number){
     if(total>0&&seq>0)return {counter:seq+'/'+total,label:'כתבה '+seq+' מתוך '+total+' בחבילה'};
     const n=Math.max(1,monthNumber);return {counter:String(n),label:'כתבה מס׳ '+n+' החודש'};
 }
-// Owner (22.11.2026): one thread per article, so the subject also names the article; two articles never share a subject.
-export const supplierEmailSubject=(site:string,counter:string,title='')=>('כתבה לפרסום באתר '+site+' '+counter+(String(title).trim()?' · '+String(title).trim().slice(0,90):'')).replace(/\s+/g,' ').trim();
+// Owner (23.11.2026): the subject is only "כתבה מס׳ X לאתר <name> (<domain>)"; X is the article's number for its supplier
+// (supplierCounter's rule). Everything else stays in the body. The thread per article is kept by Message-ID/References.
+export const siteDomain=(url:string)=>{try{return new URL(/^https?:\/\//i.test(url)?url:'https://'+url).hostname.replace(/^www\./i,'').toLowerCase();}catch{return '';}};
+export const supplierEmailSubject=(site:string,siteUrl:string,n:number)=>{const domain=siteDomain(String(siteUrl||'').trim()),name=String(site||'').trim()||domain;
+    return ('כתבה מס׳ '+Math.max(1,Number(n)||1)+' לאתר '+name+(domain&&domain!==name.toLowerCase().replace(/^www\./,'')?' ('+domain+')':'')).replace(/\s+/g,' ').trim();};
 const esc=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 // Owner decision (11.11.2026): everything the supplier needs arrives in the email (details + attached files);
 // the link only opens a small page to send back the published address. Same clean white look as that page.

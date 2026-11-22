@@ -91,15 +91,18 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    if(attached.some(Boolean))payload.attachments=files.filter((_,i)=>attached[i]).map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
   }
   // Rebuild supplier messages from publication fields on every send (also for retries of older jobs).
-  if(job.attach_article||job.supplier_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article||job.supplier_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');
-   // Owner decision (11.11.2026): the subject names the site and its package count (3/10); without a package, the article's number for that site this month.
+  if(job.attach_article||job.supplier_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article||job.supplier_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url,data FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');
+   // Owner decision (23.11.2026): the article's number for its supplier. A stock supplier: its number within the stock (3/10).
+   // A monthly-billing supplier: how many articles were sent to that supplier (supplier_id, any of its sites) in the same
+   // Israel-time month up to this one; a site without a supplier counts by the site, as before.
    const seq=Number(d.supplier_sequence)||0,total=Number(d.supplier_stock_total)||0,sentAt=String(d.supplier_sent_at||new Date().toISOString());
-   let monthNumber=0;if(!(total&&seq)){const peers=await all("SELECT json_extract(data,'$.supplier_sent_at') AS s FROM articles WHERE website_id=? AND COALESCE(json_extract(data,'$.demo'),0)=? AND json_extract(data,'$.supplier_sent_at')>=? AND json_extract(data,'$.supplier_sent_at')<=?",a.website_id,d.demo?1:0,new Date(Date.parse(sentAt)-32*86400000).toISOString(),sentAt);monthNumber=peers.filter((x:Row)=>x.s&&israelMonth(x.s)===israelMonth(sentAt)).length;}
+   const supplierId=String(d.supplier_id||(()=>{try{return JSON.parse(w?.data||'{}').supplier_id;}catch{return '';}})()||'');
+   let monthNumber=0;if(!(total&&seq)){const peers=await all(`SELECT json_extract(a.data,'$.supplier_sent_at') AS s FROM articles a LEFT JOIN websites w ON w.id=a.website_id WHERE ${supplierId?"COALESCE(NULLIF(json_extract(a.data,'$.supplier_id'),''),json_extract(w.data,'$.supplier_id'))=?":'a.website_id=?'} AND COALESCE(json_extract(a.data,'$.demo'),0)=? AND json_extract(a.data,'$.supplier_sent_at')>=? AND json_extract(a.data,'$.supplier_sent_at')<=?`,supplierId||a.website_id,d.demo?1:0,new Date(Date.parse(sentAt)-32*86400000).toISOString(),sentAt);monthNumber=peers.filter((x:Row)=>x.s&&israelMonth(x.s)===israelMonth(sentAt)).length;}
    const {counter,label:counterLabel}=supplierCounter(seq,total,monthNumber);
    // Owner (22.11.2026): one thread per article, never per supplier or batch. The article's first e-mail carries a fixed
    // id and a subject unique to the article; reminders and follow-ups answer it with "Re:". An article whose first e-mail
    // went out before this (no stored id) gets fresh e-mails with their own unique subject instead.
-   const unique=supplierEmailSubject(site,counter,a.title),firstMail=id==='email:supplier:'+a.id;
+   const unique=supplierEmailSubject(site,siteUrl,total&&seq?seq:Math.max(1,monthNumber)),firstMail=id==='email:supplier:'+a.id;
    // A first e-mail sent again after the article was pulled back from the supplier (its old job renamed ":recalled:")
    // answers the article's existing thread: same Gmail conversation, and never a second message with the same Message-ID
    // (Gmail drops a message whose Message-ID it already has).
