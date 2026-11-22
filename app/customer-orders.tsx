@@ -53,6 +53,6 @@ export function AdminFinancialHistory({ctx,providedOrders,providedArticles,month
  </section>;
 }
 
-export function CustomerOrdersView(props:{ctx:Ctx;providedOrders?:Row[];providedArticles?:Row[];monthlyOnly?:boolean;customerId?:string}){return props.ctx.user?.role==='admin'||props.ctx.adminMode?<AdminFinancialHistory {...props}/>:<CustomerOrdersSky ctx={props.ctx} providedOrders={props.providedOrders}/>;}
+export function CustomerOrdersView(props:{ctx:Ctx;providedOrders?:Row[];providedArticles?:Row[];monthlyOnly?:boolean;customerId?:string}){return props.ctx.adminMode?<AdminFinancialHistory {...props}/>:<CustomerOrdersSky ctx={props.ctx} providedOrders={props.providedOrders}/>;}
 
-export function FinancialOrderDetails(props:{ctx:Ctx;order:Row;providedArticles?:Row[];monthlyRow?:Row}){return props.ctx.user?.role==='admin'||props.ctx.adminMode?<AdminOrderDetails {...props}/>:<CustomerOrderDetail ctx={props.ctx} order={props.order} providedArticles={props.providedArticles}/>;}
+export function FinancialOrderDetails(props:{ctx:Ctx;order:Row;providedArticles?:Row[];monthlyRow?:Row}){return props.ctx.adminMode?<AdminOrderDetails {...props}/>:<CustomerOrderDetail ctx={props.ctx} order={props.order} providedArticles={props.providedArticles}/>;}

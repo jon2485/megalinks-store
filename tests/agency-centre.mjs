@@ -35,8 +35,8 @@ assert.deepEqual(parsed.added,[{domain:'a.co.il',path:''},{domain:'c.org',path:'
 console.log('agency centre: used sites ok');
 // Who gets the centre (owner, 12.11.2026: every customer for now) and its name.
 const {hasAgencyCentre,agencyCentreName}=require(realpathSync('.sites-runtime/agency-shared.cjs'));
-for(const role of ['customer','agency'])assert.equal(hasAgencyCentre({role}),true,role);
-for(const role of ['admin','supplier','',undefined])assert.equal(hasAgencyCentre({role}),false,String(role));
+for(const role of ['customer','agency','admin'])assert.equal(hasAgencyCentre({role}),true,role); // 22.11.2026: the admin account too
+for(const role of ['supplier','',undefined])assert.equal(hasAgencyCentre({role}),false,String(role));
 assert.equal(hasAgencyCentre(null),false);
 assert.equal(agencyCentreName({role:'agency'}),'מרכז הסוכנות');assert.equal(agencyCentreName({role:'customer'}),'ניהול לקוחות');
 console.log('agency centre: access ok');

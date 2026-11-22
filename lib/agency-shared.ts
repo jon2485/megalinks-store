@@ -3,7 +3,7 @@ import type {Row} from './shared';
 import {writingStyles} from './shared';
 
 // Who gets the customer management centre. The owner (12.11.2026): for now every customer, not only "סוכנות" accounts.
-export const AGENCY_CENTRE_ROLES=['customer','agency'];
+export const AGENCY_CENTRE_ROLES=['customer','agency','admin']; // 22.11.2026: the admin account too, so on the customer side it sees the same pages as a customer (its own customers only)
 export const hasAgencyCentre=(u?:Row|null)=>!!u&&AGENCY_CENTRE_ROLES.includes(String(u.role||''));
 // The name on the tab and the page: agencies keep "מרכז הסוכנות", other customers see "ניהול לקוחות".
 export const agencyCentreName=(u?:Row|null)=>u?.role==='agency'?'מרכז הסוכנות':'ניהול לקוחות';
