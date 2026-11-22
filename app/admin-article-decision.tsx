@@ -10,6 +10,7 @@ import type {Row} from '@/lib/shared';
 import type {Ctx} from './workspace';
 import {openCancelFocus} from './cancel-focus';
 import {SupplierIssueBox,REOPEN_OPEN_EVENT} from './admin-supplier-issue';
+import {LinkReviewBox} from './admin-link-review';
 import {toast} from 'sonner';
 import {deliveryReason,type DeliveryReason} from '@/lib/delivery-reason';
 import {saveAdminViewState} from '@/lib/admin-view-state';
@@ -76,7 +77,7 @@ export function AdminArticleHeader({s,stage}:{s:AdminStudio;stage:AdminStage}){
  const first=a.editorial?'הכותב':'הלקוח',at=stage==='published'?4:['supplier','waiting_day','delivery'].includes(stage)?2:stage==='review'?1:['cancel_pending','cancelled'].includes(stage)?-1:0;
  const steps:[string,string][]=[[first,a.editorial?'כותב את המאמר':'כותב ושולח'],['אתה','בודק ומאשר'],['הספק',stage==='waiting_day'?'ב־'+dayText(a.scheduled)+', 7:00':stage==='delivery'?'עוד לא קיבל':'מפרסם באתר'],['פורסם','הקישור מגיע אליך']];
  const customer=a.user_name||o?.name||'לקוח',email=a.user_email||o?.email||'',domain=w?.url?String(w.url).replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,''):'';
- const [sendMain,sendSub]=sendDate(a,stage),[pill,tone]=pills[stage];
+ const [sendMain,sendSub]=sendDate(a,stage),[pill,tone]=stage==='supplier'&&a.link_review?['ממתין לבדיקה ידנית','blue']:pills[stage];
  const who=<><span className="ar-k">לקוח</span><span className="ar-v"><span>{customer}</span>{a.user_id&&<ChevronLeft size={15} aria-hidden="true"/>}</span>{email&&<span className="ar-s"><bdi>{email}</bdi></span>}</>;
  const where=<><span className="ar-k">האתר</span><span className="ar-v"><span>{site(s)}</span>{w?.url&&<ExternalLink size={15} aria-hidden="true"/>}</span>{domain&&<span className="ar-s"><bdi>{domain}</bdi></span>}</>;
  return <header className="ar-head">
@@ -109,7 +110,7 @@ export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
  const notes=[w?.public_notes,typeof w?.publishing_restrictions==='string'?w.publishing_restrictions:'',w?.customer_notes].filter(Boolean) as string[];
  const savedHint=dirty&&<p className="ar-dirty"><Info size={15} aria-hidden="true"/>יש שינויים שעוד לא נשמרו. <button type="button" disabled={busy} onClick={()=>s.act(s.save,'השינויים נשמרו')}>שמירה עכשיו</button></p>;
  const remind=()=>s.act(()=>api('articles/'+id+'/remind','POST',{}),(r:Row)=>r.status==='failed'?'התזכורת נשמרה אך השליחה נכשלה. אפשר לבדוק בדיוור.':r.status==='blocked'?'התזכורת ממתינה להשלמת הגדרות הדיוור.':'התזכורת נרשמה לשליחה לספק.');
- const report=(e:React.FormEvent)=>{e.preventDefault();if(!demo&&!url.trim()){setUrlError('יש להזין את הקישור לכתבה שפורסמה.');return;}setUrlError('');s.act(()=>api('supplier-inbox/'+encodeURIComponent('publication:'+a.id),'POST',{url:url.trim()}),demo?'הדגמת הפרסום הושלמה':'קישור הפרסום נשמר');};
+ const report=(e:React.FormEvent)=>{e.preventDefault();if(!demo&&!url.trim()){setUrlError('יש להזין את הקישור לכתבה שפורסמה.');return;}setUrlError('');s.act(()=>api('supplier-inbox/'+encodeURIComponent('publication:'+a.id),'POST',{url:url.trim()}),(r:Row)=>demo?'הדגמת הפרסום הושלמה':r?.manual_review?'הקישור התקבל וממתין לבדיקה ידנית':'קישור הפרסום נשמר');};
  const startReturn=()=>{setReturning(true);requestAnimationFrame(()=>document.getElementById('ar-note')?.scrollIntoView({behavior:'smooth',block:'center'}));};
  // The site's publishing requirements, the internal note and the demo note: the same block in every stage.
  const reqs=<div className="ar-sect">
@@ -182,6 +183,7 @@ export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
   <div className="ar-row"><button type="button" className="ar-btn ar-primary" disabled={busy} onClick={retry}><Send size={15} aria-hidden="true"/>שליחה חוזרת לספק</button>{a.website_id&&<button type="button" className="ar-btn" onClick={()=>ctx.go('admin-supplier-stock/'+a.website_id)}>הוספת מלאי</button>}</div>
  </>,<>{edit}<ReopenAction s={s} stage={stage}/></>);}
  if(stage==='supplier')return box('ממתינים לפרסום אצל הספק',<>
+  <LinkReviewBox s={s}/>
   <SupplierIssueBox s={s}/>
   <form noValidate className="ar-report" onSubmit={report}>
    {!demo&&<><label htmlFor="ar-url">קישור לכתבה שפורסמה</label><Input id="ar-url" type="url" dir="ltr" maxLength={2000} placeholder="https://" value={url} disabled={busy} aria-invalid={!!urlError} onChange={e=>setUrl(e.target.value)}/></>}

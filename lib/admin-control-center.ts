@@ -8,6 +8,7 @@ import {adminPageQueues} from './admin-attention';
 import {adminUnionCtes} from './admin-sql';
 import {adminOpenActionCount} from './admin-updates';
 import {adminOrdersAttentionCount} from './admin-order-data';
+import {pendingLinkReviewSql} from './supplier-link-review';
 export async function reviewPriceChange(id:string,u:Row){const row=await one("SELECT * FROM activity WHERE id=? AND json_type(data,'$.before_price') IS NOT NULL",id);assert(row,'עדכון המחיר לא נמצא',404);await stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)','price-reviewed:'+id,'price_review',u.id,JSON.stringify({activity_id:id}),now(),now()).run();await audit(u,id,'עדכון מחיר נבדק');return {ok:true};}
 const actionable=`NOT ${fullyCancelledOrderSql()} AND (o.paid=1 OR COALESCE(json_extract(o.data,'$.demo'),0)=1 OR COALESCE(json_extract(o.data,'$.on_account'),0)=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1))`;
 export async function adminControlCenter(){
@@ -26,8 +27,10 @@ export async function adminControlCenter(){
   ['delivery','תקלות פרסום','admin-publication','שליחות לספק שנכשלו או נחסמו','jobs j',"j.kind='supplier_publication' AND j.status IN ('failed','blocked') AND NOT EXISTS(SELECT 1 FROM articles a WHERE a.id=json_extract(j.data,'$.article_id') AND a.status='cancelled')",'j.updated'],
   ['mail','דיוור לטיפול','admin-notifications','הודעות שנכשלו או מחכות לחיבור','jobs j',"j.kind='email' AND j.status IN ('failed','blocked')",'j.updated'],
  ];
+ // A published link waiting for the admin's manual check (owner, 23.11.2026).
+ definitions.push(['link_review','קישורים לבדיקה ידנית','admin-publication','האתר לא אפשר לבדוק את הקישור אוטומטית',"records r JOIN articles a ON a.id=json_extract(r.data,'$.article_id')",pendingLinkReviewSql('r','a'),'r.updated']);
  definitions.push(['late','כתבות באיחור אצל הספק','admin-publication','נמסרו לספק לפני יותר מ־3 ימים ועדיין לא פורסמו',`articles a JOIN orders o ON o.id=a.order_id`,`${actionable} AND ${supplierLateSql()}`,"COALESCE(json_extract(a.data,'$.supplier_sent_at'),a.updated)"]);
- const taskKey:Record<string,string>={seller_requests:"'seller-request:'||sr.id",seller_invoices:"'seller-invoice:'||ss.id",payment_reports:"'order:'||o.id",content:"'article:'||a.id",writing:"'article:'||a.id",publication:"'article:'||a.id",late:"'article:'||a.id",bank:"'order:'||o.id",topups:"'record:'||r.id",invoices:"'order:'||o.id",cancellations:"'article:'||a.id",support:"'record:'||r.id",delivery:"'article:'||json_extract(j.data,'$.article_id')",mail:"'job:'||j.id"};
+ const taskKey:Record<string,string>={seller_requests:"'seller-request:'||sr.id",seller_invoices:"'seller-invoice:'||ss.id",payment_reports:"'order:'||o.id",content:"'article:'||a.id",writing:"'article:'||a.id",publication:"'article:'||a.id",late:"'article:'||a.id",link_review:"'article:'||a.id",bank:"'order:'||o.id",topups:"'record:'||r.id",invoices:"'order:'||o.id",cancellations:"'article:'||a.id",support:"'record:'||r.id",delivery:"'article:'||json_extract(j.data,'$.article_id')",mail:"'job:'||j.id"};
  const taskSources=definitions.map(([id,,,,from,where])=>`SELECT '${id}' AS queue_id,${taskKey[id]} AS task_key FROM ${from} WHERE ${where}`);
  // Every queue's count in ONE query (UNION ALL of the fixed queue definitions, split into CTEs of 3 for D1's compound limit), not one query per queue.
  const queueCounts=new Map((await all(`WITH ${adminUnionCtes('queue_counts',definitions.map(([id,,,,from,where,date])=>`SELECT '${id}' AS id,COUNT(*) AS count,MIN(${date}) AS oldest FROM ${from} WHERE ${where}`))} SELECT * FROM queue_counts`)).map(row=>[String(row.id),row]));

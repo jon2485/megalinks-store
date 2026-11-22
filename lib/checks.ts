@@ -29,19 +29,19 @@ const httpMessage=(status:number,published=false):{reason:LinkReason,message:str
  [401,403,429].includes(status)?{reason:'blocked',message:`האתר לא אפשר לנו לבדוק את הדף (שגיאה ${status}). זו לא בעיה בקישור. נסו שוב בעוד כמה דקות.`}:
  status>=500?{reason:'http',message:`האתר החזיר שגיאת שרת (שגיאה ${status}). נסו שוב בעוד כמה דקות.`}:
  {reason:'http',message:`הדף לא נפתח (שגיאה ${status}). בדקו שהכתובת נכונה${published?' ושהכתבה פורסמה':''}.`};
-// One request, and one retry when the site does not answer in time or the connection fails (an HTTP answer is final).
-async function fetchPage(href:string){
+// One request, and (retry=true) one more when the site does not answer in time or the connection fails (an HTTP answer is final).
+async function fetchPage(href:string,timeoutMs=PAGE_TIMEOUT_MS,retry=true){
  for(let attempt=0;;attempt++){
-  try{return await fetch(href,{method:'GET',redirect:'manual',headers:BROWSER_HEADERS,signal:AbortSignal.timeout(PAGE_TIMEOUT_MS)});}
-  catch(error){if(attempt>=1)throw error;}
+  try{return await fetch(href,{method:'GET',redirect:'manual',headers:BROWSER_HEADERS,signal:AbortSignal.timeout(timeoutMs)});}
+  catch(error){if(!retry||attempt>=1)throw error;}
  }
 }
 // Opens the page, following up to 3 redirects that stay on public addresses and on the expected site.
-async function openPage(value:string,expectedDomain='',published=false):Promise<Opened>{
+async function openPage(value:string,expectedDomain='',published=false,timeoutMs=PAGE_TIMEOUT_MS,retry=true):Promise<Opened>{
  let url:URL;try{url=publicUrl(value);}catch{return {ok:false,reason:'invalid',message:messages.invalid};}
  if(expectedDomain&&bareHost(url.href)!==bareHost(expectedDomain))return {ok:false,reason:'domain',message:otherDomain(bareHost(url.href),expectedDomain)};
  for(let redirects=0;redirects<4;redirects++){
-  let res:Response;try{res=await fetchPage(url.href);}catch{return {ok:false,reason:'unreachable',message:messages.unreachable};}
+  let res:Response;try{res=await fetchPage(url.href,timeoutMs,retry);}catch{return {ok:false,reason:'unreachable',message:messages.unreachable};}
   if(res.status>=300&&res.status<400){
    await res.body?.cancel();const next=res.headers.get('location');if(!next)return {ok:false,status:res.status,...httpMessage(res.status,published)};
    try{url=publicUrl(new URL(next,url).href);}catch{return {ok:false,reason:'redirect',message:messages.badRedirect};}
@@ -53,6 +53,49 @@ async function openPage(value:string,expectedDomain='',published=false):Promise<
  }
  return {ok:false,reason:'redirect',message:messages.redirects};
 }
+
+// Owner decision (23.11.2026): some supplier sites never answer an automated request. The published link is tried a
+// few ordinary ways (the same address again after a short wait, then https/http and with/without "www"), all within
+// about 45 s. Plain requests only: nothing tries to get past a site's bot protection. If the page still cannot be read,
+// the link is accepted for the admin's manual check. A wrong article, missing links, a 404 or another site stay errors.
+export const LINK_RETRY={budgetMs:45000,retryTimeoutMs:10000,waitMs:1500};
+/** The page could not be read: no answer, network error, the site refused the check, or a server error. */
+export const unreadable=(r:{reason?:string,status?:number})=>r.reason==='unreachable'||r.reason==='blocked'||(r.reason==='http'&&Number(r.status)>=500);
+const pause=(ms:number)=>ms>0?new Promise(done=>setTimeout(done,ms)):Promise.resolve();
+// The other spellings of the same address: https/http, with/without "www", and both.
+function variants(value:string){
+ let u:URL;try{u=new URL(value);}catch{return [];}
+ const flip=(x:URL)=>{const v=new URL(x.href);v.protocol=v.protocol==='https:'?'http:':'https:';return v;};
+ const www=(x:URL)=>{const v=new URL(x.href);v.hostname=v.hostname.startsWith('www.')?v.hostname.slice(4):'www.'+v.hostname;return v;};
+ return [...new Set([flip(u),www(u),www(flip(u))].map(v=>v.href))].filter(h=>h!==u.href);
+}
+async function openPublished(value:string,expectedDomain:string){
+ const deadline=Date.now()+LINK_RETRY.budgetMs,left=()=>deadline-Date.now();
+ let attempts=1,cause=await openPage(value,expectedDomain,true,Math.min(PAGE_TIMEOUT_MS,left()),false);
+ if(cause.ok||!unreadable(cause))return {page:cause,attempts};
+ // The same address once more: its answer (a page, a 404, another site) is final.
+ await pause(Math.min(LINK_RETRY.waitMs,Math.max(0,left()-1000)));
+ if(left()>1000){attempts++;const again=await openPage(value,expectedDomain,true,Math.min(LINK_RETRY.retryTimeoutMs,left()),false);if(again.ok||!unreadable(again))return {page:again,attempts};cause=again;}
+ // Another spelling is used only when it opens; its errors never replace the cause of the address the supplier sent.
+ for(const href of variants(value)){
+  if(left()<=1000)break;
+  attempts++;const other=await openPage(href,expectedDomain,true,Math.min(LINK_RETRY.retryTimeoutMs,left()),false);
+  if(other.ok)return {page:other,attempts};
+ }
+ return {page:cause,attempts};
+}
+// What the admin reads next to a link waiting for the manual check.
+function reviewReason(reason:string,status:number|undefined,attempts:number,challenge=false){
+ if(challenge)return 'האתר הציג דף אימות נגד רובוטים במקום הכתבה, ולכן לא יכולנו לקרוא אותה.';
+ if(reason==='blocked')return `האתר חסם את הבדיקה האוטומטית (שגיאה ${status}).`;
+ if(reason==='http')return `האתר החזיר שגיאת שרת (שגיאה ${status}).`;
+ return `האתר לא ענה לבדיקה האוטומטית${attempts>1?` (ניסינו ${attempts} פעמים)`:''}.`;
+}
+export const MANUAL_REVIEW_MESSAGE='הקישור התקבל ויאושר אחרי בדיקה ידנית.';
+const manual=(value:string,reason:LinkReason,status:number|undefined,attempts:number,challenge=false)=>({url:value,ok:false,status,reason,manual_review:true as const,review_reason:reviewReason(reason,status,attempts,challenge),message:MANUAL_REVIEW_MESSAGE});
+// A bot-check page answered with 200 instead of the article (judged by its <title> only, and only when the topic does not match).
+// The whole title must be the bot check's own words (an article titled "Access denied: ..." is still an article).
+const challengeTitle=/^\s*(?:(?:just a moment|attention required|access denied|ddos-guard|please wait|one more step|security check|are you (?:a )?(?:human|robot)|captcha)[^\p{L}]*(?:cloudflare)?[^\p{L}]*|(?:checking your browser|verifying you are human)\b.*)$/iu;
 export async function checkLink(value:string, expectedDomain='') {
  const page=await openPage(value,expectedDomain);
  if(!page.ok)return {url:value,ok:false,status:page.status,reason:page.reason,message:page.message};
@@ -85,24 +128,25 @@ export function topicMatch(articleTitle:string,pageTitles:string[],bodyText:stri
 // The first readable title found on the page (og:title, <title> or <h1>), for the "another article" message.
 const pageTitle=(titles:string[])=>titles.map(t=>t.replace(/&quot;/g,'"').replace(/&#0?39;|&apos;/g,"'").replace(/&amp;/g,'&').replace(/&#8211;|&ndash;/g,'–').replace(/&[a-z#0-9]+;/gi,' ').replace(/\s+/g,' ').trim()).find(Boolean)?.slice(0,160)||'';
 export async function verifyPublishedArticle(value:string,siteUrl:string,article:Row){
- const page=await openPage(value,siteUrl,true);
- if(!page.ok)return {url:value,ok:false,status:page.status,reason:page.reason,message:page.message};
+ const {page,attempts}=await openPublished(value,siteUrl);
+ if(!page.ok)return unreadable(page)?manual(value,page.reason,page.status,attempts):{url:value,ok:false,status:page.status,reason:page.reason,message:page.message};
  const final=page.url.href,first={url:value,final_url:final,status:page.res.status};
  let html='';
  try{const reader=page.res.body?.getReader(),decoder=new TextDecoder();let size=0;
   while(reader){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;html+=decoder.decode(part.value,{stream:true});if(size>3_000_000){await reader.cancel();break;}}
- }catch{return {...first,ok:false,reason:'unreachable' as LinkReason,message:messages.unreachable};}
- const pageLinks=new Set<string>(),titles:string[]=[];let body='',current:'title'|'h1'|'',buffer='';
+ }catch{return {...manual(value,'unreachable',page.res.status,attempts),final_url:final};}
+ const pageLinks=new Set<string>(),titles:string[]=[];let body='',current:'title'|'h1'|'',buffer='',docTitle='';
  await new HTMLRewriter()
   .on('a[href]',{element(el:any){const href=normalLink(el.getAttribute('href')||'',final);if(href)pageLinks.add(href);}})
   .on('meta[property="og:title"]',{element(el:any){titles.push(el.getAttribute('content')||'');}})
-  .on('title',{element(el:any){current='title';buffer='';el.onEndTag?.(()=>{titles.push(buffer);current='';});},text(t:any){if(current)buffer+=t.text;}})
+  .on('title',{element(el:any){current='title';buffer='';el.onEndTag?.(()=>{titles.push(buffer);if(!docTitle)docTitle=buffer;current='';});},text(t:any){if(current)buffer+=t.text;}})
   .on('h1',{element(el:any){current='h1';buffer='';el.onEndTag?.(()=>{titles.push(buffer);current='';});},text(t:any){if(current)buffer+=t.text;}})
   .on('body',{text(t:any){if(body.length<400000)body+=t.text+' ';}})
   .transform(new Response(html)).text();
  const sent:string[]=[];await new HTMLRewriter().on('a[href]',{element(el:any){const href=el.getAttribute('href')||'';if(/^https?:/i.test(href)&&!sent.includes(href))sent.push(href);}}).transform(new Response(article.content||'')).text();
  // The topic is checked first: a page of another article lacks the links too, and "another article" is the real cause.
  const articleTitle=String(article.title||'').trim();
+ if(!topicMatch(articleTitle,titles,body)&&challengeTitle.test(docTitle))return {...manual(value,'blocked',page.res.status,attempts,true),final_url:final};
  if(!topicMatch(articleTitle,titles,body)){const seen=pageTitle(titles);return {...first,ok:false,reason:'topic' as LinkReason,message:'נראה שהקישור מוביל לכתבה אחרת.'+(seen?' כותרת הדף שמצאנו: "'+seen+'".':'')+' הכתבה שצריך לפרסם: "'+articleTitle.slice(0,200)+'". בדקו שהדבקתם את הקישור הנכון.'};}
  const missing=sent.filter(href=>{const n=normalLink(href);return n&&!pageLinks.has(n);});
  if(missing.length)return {...first,ok:false,reason:'links' as LinkReason,message:(missing.length===1?'לא מצאנו בדף את הקישור שהיה בכתבה: ':'לא מצאנו בדף את הקישורים שהיו בכתבה: ')+missing.join(' , ')+'. יש לוודא שהקישורים פורסמו בדיוק כמו שנשלחו.'};
