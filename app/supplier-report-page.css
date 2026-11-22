@@ -43,3 +43,13 @@
 .srp-spin{animation:srp-spin 1s linear infinite}@keyframes srp-spin{to{transform:rotate(360deg)}}
 @media(max-width:520px){.srp{justify-content:flex-start;padding-top:18px}.srp-body{padding:8px 18px 24px}}
 @media(prefers-reduced-motion:reduce){.srp *{animation-duration:.01ms!important;animation-iteration-count:1!important}.srp-ring{stroke-dashoffset:0}.srp-disc{transform:none;opacity:1}.srp-tick{stroke-dashoffset:0}}
+/* Waiting for the customer's fixes (owner, 22.11.2026) */
+.srp-alert-mark.is-wait{background:#fff3dc;color:#a15c00}
+.srp-pill.is-wait{background:#fff3dc;color:#a15c00}
+.srp-wait-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.srp-wait-steps li{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--srp-faint)}
+.srp-wait-steps li span{display:grid;place-items:center;flex:none;width:26px;height:26px;border-radius:50%;background:#f1f4f8;font-size:13px;font-weight:800}
+.srp-wait-steps li b{font-weight:600}
+.srp-wait-steps li[data-on]{color:var(--srp-ink)}
+.srp-wait-steps li[data-on] span{background:#fff3dc;color:#a15c00}
+.srp-wait-steps li[data-on] b{font-weight:800}

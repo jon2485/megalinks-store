@@ -8,6 +8,7 @@ import {Row} from './shared';
 import {dispatchDue} from './scheduled-approval';
 import {freeSlotSql} from './supplier-stock';
 import {DEFAULT_SUPPLIER_EMAIL} from './supplier-presentation';
+import {supplierFollowUp} from './article-reopen';
 export function supplierSequenceLabel(sequence:number,total:number|null){return total===null?`כתבה מספר ${sequence}`:`כתבה ${sequence} מתוך ${total}`;}
 // Allocate a number, consume capacity and create the portal/email jobs in one
 // transaction. The article is the idempotency key; reminders never allocate.
@@ -15,6 +16,7 @@ export async function dispatchArticle(article:Row,actor:Row,origin:string){
  assert(dispatchDue(article),'הכתבה תישלח לספק ביום שנבחר, ב־7:00 בבוקר',409);
  assert(!article.cancel_pending&&!article.publication_refunded&&article.status!=='cancelled','הכתבה בביטול ואינה זמינה לפרסום',409);
  await assertNoCancelRequest(article.order_id,article.id);
+ const held=await resumeHeldArticle(article,actor);if(held)return held;
  const id='publication:'+article.id;
  let job=await one('SELECT * FROM jobs WHERE id=?',id);
  if(job&&['succeeded','demo','writing','completed','demo_completed'].includes(job.status))return parse(job);
@@ -58,4 +60,20 @@ export async function dispatchArticle(article:Row,actor:Row,origin:string){
  await sendQueuedMail(mailId);
  await audit(actor,article.id,demo?'הכתבה הועברה לתור הדגמה של הספק':'הכתבה הועברה אוטומטית לפורטל הספק',{supplier_name:data.supplier_name,supplier_sequence:allocation.sequence,stock_total:allocation.stock_total});
  return parse(await one('SELECT * FROM jobs WHERE id=?',id));
+}
+
+// An article returned for editing while it was with the supplier (owner, 22.11.2026): it keeps its stock slot and
+// its supplier link, so approving it again only reopens that link for 30 more days and sends the updated version
+// in the same e-mail thread. Returns null for every other article.
+async function resumeHeldArticle(article:Row,actor:Row){
+ const d=typeof article.data==='string'?JSON.parse(article.data||'{}'):article.data||{};
+ if(!d.supplier_hold_at)return null;
+ const stamp=now();
+ const moved=await stmt("UPDATE articles SET status='sent',version=version+1,updated=?,data=json_remove(json_set(data,'$.supplier_updated_at',?),'$.supplier_hold_at','$.dispatch_at','$.dispatch_attempted_at') WHERE id=? AND status='approved' AND json_extract(data,'$.supplier_hold_at') IS NOT NULL",stamp,stamp,article.id).run();
+ if(!moved.meta.changes)return parse(await one('SELECT * FROM jobs WHERE id=?','publication:'+article.id));
+ await stmt("UPDATE tokens SET expires=? WHERE kind='supplier' AND resource=? AND used=0",new Date(Date.now()+30*86400000).toISOString(),article.id).run();
+ const fresh=await one('SELECT * FROM articles WHERE id=?',article.id);
+ const mail=await supplierFollowUp(fresh!,'update');
+ await audit(actor,article.id,'הגרסה המעודכנת נשלחה לספק',{supplier_mail:mail});
+ return {...(parse(await one('SELECT * FROM jobs WHERE id=?','publication:'+article.id))||{}),status:'succeeded',supplier_update:mail};
 }

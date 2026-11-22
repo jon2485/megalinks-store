@@ -60,7 +60,7 @@ export function AdminArticleHeader({s,stage}:{s:AdminStudio;stage:AdminStage}){
  const now:Record<AdminStage,React.ReactNode>={
   review:<><b>הכתבה אצלך.</b> הלקוח שלח אותה לבדיקה{sent?' '+sent:''}.</>,
   writer:<><b>הכתבה אצל הכותב.</b> כשהמאמר מוכן, מצרפים אותו כאן וממשיכים לפי מה שהלקוח בחר.</>,
-  customer:<><b>הכתבה אצל הלקוח.</b> הוא עורך או בודק אותה. אין צורך בפעולה ממך כרגע.</>,
+  customer:<><b>הכתבה אצל הלקוח.</b> הוא עורך או בודק אותה. אין צורך בפעולה ממך כרגע.{a.supplier_hold_at?' הספק ממתין לגרסה המעודכנת, והיא תישלח אליו אחרי שתאשר.':''}</>,
   scheduled:<><b>הכתבה ממתינה לתאריך שהלקוח בחר.</b> היא תעבור לאישור שלך בקרוב.</>,
   waiting_day:<><b>אישרת את הכתבה.</b> היא תישלח ל־{site(s)} ב־{dayText(a.scheduled)} ב־7:00 בבוקר.</>,
   delivery:<><b>אישרת את הכתבה, אבל היא עוד לא הגיעה לספק.</b> אפשר לנסות לשלוח שוב.</>,
@@ -165,11 +165,11 @@ export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
   <div className="ar-row"><button type="button" className="ar-btn" onClick={s.editArticle}><Pencil size={15} aria-hidden="true"/>עריכת הכתבה</button>{s.canSend&&<button type="button" className="ar-btn ar-tint" disabled={busy} onClick={()=>s.status('admin_review')}><Send size={15} aria-hidden="true"/>שליחה לאישור בשם הלקוח</button>}</div>
  </>);
  if(stage==='scheduled')return box('מתוזמנת',<p>הכתבה תעבור לאישור שלך בקרוב, והתאריך שהלקוח בחר נשמר.</p>);
- if(stage==='waiting_day')return box('אושרה, ממתינה לתאריך',<p>הכתבה תישלח ל־{site(s)} ב־<b>{dayText(a.scheduled)}</b> ב־7:00 בבוקר, אוטומטית.</p>,edit);
+ if(stage==='waiting_day')return box('אושרה, ממתינה לתאריך',<p>הכתבה תישלח ל־{site(s)} ב־<b>{dayText(a.scheduled)}</b> ב־7:00 בבוקר, אוטומטית.</p>,<>{edit}<ReopenAction s={s} stage={stage}/></>);
  if(stage==='delivery')return box('הכתבה לא הגיעה לספק',<>
   <p>אישרת את הכתבה, אבל השליחה לספק לא הושלמה. לפעמים חסר מלאי באתר או פרטי ספק.</p>
   <div className="ar-row"><button type="button" className="ar-btn ar-primary" disabled={busy} onClick={()=>s.act(()=>api('articles/'+id+'/dispatch','POST',{}),'מצב המסירה לספק עודכן')}><Send size={15} aria-hidden="true"/>שליחה חוזרת לספק</button>{a.website_id&&<button type="button" className="ar-btn" onClick={()=>ctx.go('admin-supplier-stock/'+a.website_id)}>הוספת מלאי</button>}</div>
- </>,edit);
+ </>,<>{edit}<ReopenAction s={s} stage={stage}/></>);
  if(stage==='supplier')return box('ממתינים לפרסום אצל הספק',<>
   <form noValidate className="ar-report" onSubmit={report}>
    {!demo&&<><label htmlFor="ar-url">קישור לכתבה שפורסמה</label><Input id="ar-url" type="url" dir="ltr" maxLength={2000} placeholder="https://" value={url} disabled={busy} aria-invalid={!!urlError} onChange={e=>setUrl(e.target.value)}/></>}
@@ -177,11 +177,28 @@ export function AdminDecision({s,stage}:{s:AdminStudio;stage:AdminStage}){
    <button type="submit" className="ar-btn ar-primary" disabled={busy}><Check size={15} aria-hidden="true"/>{demo?'סיום הדגמת פרסום':'דיווח על פרסום'}</button>
   </form>
   <div className="ar-row"><button type="button" className="ar-btn" disabled={busy} onClick={remind}><Bell size={15} aria-hidden="true"/>שליחת תזכורת לספק</button></div>
- </>);
+ </>,<ReopenAction s={s} stage={stage}/>);
  if(stage==='published')return box('פורסמה',a.published_url?<div className="ar-row"><a className="ar-btn" href={a.published_url} target="_blank" rel="noreferrer"><ExternalLink size={15} aria-hidden="true"/>לכתבה שפורסמה</a></div>:<p className="ar-muted">הכתבה פורסמה. אין כאן פעולה נוספת.</p>);
  if(stage==='cancel_pending')return box('בקשת ביטול',<>
   <p>הלקוח ביקש לבטל את הכתבה. מאשרים עצירת פרסום מול הספק ואז מזכים.</p>
   <button type="button" className="ar-btn ar-primary ar-lg" onClick={()=>openCancelFocus(ctx,a.id)}>טיפול בביטול וזיכוי</button>
  </>);
  return box('בוטלה',<p className="ar-muted">{a.cancel_reason||a.refund_reason||'הכתבה בוטלה ואינה בטיפול.'}</p>);
+}
+
+/** Owner decision (22.11.2026): an approved article is locked for the customer. Until it is published the admin
+ *  can return it for editing; with the supplier, the supplier gets an e-mail and the link waits for the new version. */
+function ReopenAction({s,stage}:{s:AdminStudio;stage:AdminStage}){
+ const {a,id,busy,dirty}=s,[open,setOpen]=useState(false),[note,setNote]=useState('');
+ const withSupplier=stage==='supplier';
+ const send=()=>s.act(async()=>{const r=await api('articles/'+id+'/reopen','POST',{note:note.trim(),version:a.version});setOpen(false);setNote('');return r;},withSupplier?'הכתבה הוחזרה ללקוח, והספק קיבל עדכון':'הכתבה הוחזרה ללקוח לעריכה');
+ if(!open)return <div className="ar-sect ar-self ar-reopen"><span><b>צריך לשנות משהו בכתבה?</b>{withSupplier?'הספק יקבל עדכון במייל, והקישור שלו יעבור להמתנה.':'מחזירים אותה ללקוח לעריכה.'}</span><button type="button" className="ar-btn ar-sm ar-warn" disabled={busy} onClick={()=>{setOpen(true);requestAnimationFrame(()=>document.getElementById('ar-reopen-note')?.scrollIntoView({behavior:'smooth',block:'center'}));}}><RotateCw size={15} aria-hidden="true"/>החזרה לעריכה</button></div>;
+ return <div className="ar-sect ar-reopen"><div className="ar-return">
+  <p className="ar-label">החזרה ללקוח לעריכה</p>
+  {withSupplier&&<p className="ar-memo">הכתבה כבר אצל הספק. הוא יקבל עדכון במייל, והקישור שלו יעבור להמתנה עד שתאשר שוב.</p>}
+  <label htmlFor="ar-reopen-note">מה הלקוח צריך לשנות? <small>נשלח אליו במייל</small></label>
+  <Textarea id="ar-reopen-note" dir="rtl" className="ar-textarea" maxLength={3000} autoFocus value={note} onChange={e=>setNote(e.target.value)} placeholder="למשל: לעדכן את המחיר בפסקה השנייה"/>
+  {dirty&&<p className="ar-after">יש שינויים שעוד לא נשמרו. שומרים אותם לפני ההחזרה.</p>}
+  <div className="ar-row"><button type="button" className="ar-btn ar-warn" disabled={busy||dirty||!note.trim()} onClick={send}><RotateCw size={15} aria-hidden="true"/>החזרה לעריכה</button><button type="button" className="ar-btn" disabled={busy} onClick={()=>{setOpen(false);setNote('');}}><X size={15} aria-hidden="true"/>ביטול</button></div>
+ </div></div>;
 }

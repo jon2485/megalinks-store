@@ -3,7 +3,7 @@ import {emailList} from './catalog-fields';
 import { one, all, stmt, now, connection, externalFetch, parse, ApiError, mapIn } from './server';
 import { articleDocx } from './delivery-docx';
 import { Row } from './shared';
-import {supplierPublicationNotes,supplierArticleEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
+import {supplierPublicationNotes,supplierArticleEmailHtml,supplierHoldEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
 import {brandedEmailHtml,withMailFiles,mailFilesText,MAIL_FILE_DAYS,type MailFileLink} from './mail-template';
 import {safeFailure} from './security';
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
@@ -51,10 +51,13 @@ export async function mailFileByToken(token:string,index:number):Promise<MailFil
 
 // Resend's own format (owner, 16.11.2026). With a test inbox set, every message goes only there and the subject names
 // the real recipient, so a trial never reaches a customer or a supplier.
+// One fixed id per article for the supplier's first e-mail; follow-ups point to it (In-Reply-To / References).
+export function supplierThreadId(articleId:string,from:string){const domain=(String(from).match(/@([^>\s]+)/)?.[1]||'megalinks.local').toLowerCase();return '<supplier-article-'+articleId+'@'+domain+'>';}
 export function resendMessage(payload:Row,c:Row){const test=String(c.test_to||'').trim();
  // A supplier with several addresses ("a, b") gets one message addressed to all of them (owner, 20.11.2026).
  const to=test?[test]:emailList(payload.to).length?emailList(payload.to):[String(payload.to||'')];
  return {from:String(c.from||RESEND_TEST_FROM),to,subject:(test?'[בדיקה · אל: '+payload.to+'] ':'')+String(payload.subject||''),html:payload.html,text:payload.text,
+  ...(payload.headers&&Object.keys(payload.headers).length?{headers:payload.headers}:{}),
   ...(Array.isArray(payload.attachments)&&payload.attachments.length?{attachments:payload.attachments.map((a:Row)=>({filename:a.filename,content:a.content_base64}))}:{})};}
 const resendFailure=(status:number)=>status===401?'Resend דחה את המפתח. בדקו את מפתח ה-API בחיבור הדוא״ל.':status===403?'Resend חסם את השליחה: בלי דומיין מאומת אפשר לשלוח רק לכתובת שאיתה נרשמתם. מלאו "כתובת לבדיקה" או אמתו דומיין.':status===422?'Resend דחה את פרטי המייל (בדרך כלל כתובת השולח). בדקו את כתובת השולח בחיבור.':status===429?'Resend הגביל את קצב השליחה. נסו שוב בעוד דקה.':'Resend החזיר '+status;
 export async function sendQueuedMail(id:string){const job=parse(await one('SELECT * FROM jobs WHERE id=? AND kind=?',id,'email'));if(!job||['succeeded','demo','writing'].includes(job.status))return job;
@@ -69,20 +72,30 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    if(!origin||files.reduce((n,f)=>n+f.bytes.length,0)<=(c.provider==='resend'?RESEND_INLINE_LIMIT:INLINE_FILES_LIMIT))payload.attachments=files.map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
   }
   // Rebuild supplier messages from publication fields on every send (also for retries of older jobs).
-  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');
+  if(job.attach_article||job.supplier_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article||job.supplier_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');
    // Owner decision (11.11.2026): the subject names the site and its package count (3/10); without a package, the article's number for that site this month.
    const seq=Number(d.supplier_sequence)||0,total=Number(d.supplier_stock_total)||0,sentAt=String(d.supplier_sent_at||new Date().toISOString());
    let monthNumber=0;if(!(total&&seq)){const peers=await all("SELECT json_extract(data,'$.supplier_sent_at') AS s FROM articles WHERE website_id=? AND COALESCE(json_extract(data,'$.demo'),0)=? AND json_extract(data,'$.supplier_sent_at')>=? AND json_extract(data,'$.supplier_sent_at')<=?",a.website_id,d.demo?1:0,new Date(Date.parse(sentAt)-32*86400000).toISOString(),sentAt);monthNumber=peers.filter((x:Row)=>x.s&&israelMonth(x.s)===israelMonth(sentAt)).length;}
    const {counter,label:counterLabel}=supplierCounter(seq,total,monthNumber);
-   payload.subject=supplierEmailSubject(site,counter);payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links);if(links[0]?.url)payload.word_file_url=links[0].url;}
+   // Owner (22.11.2026): one thread per article, never per supplier or batch. The article's first e-mail carries a fixed
+   // id and a subject unique to the article; reminders and follow-ups answer it with "Re:". An article whose first e-mail
+   // went out before this (no stored id) gets fresh e-mails with their own unique subject instead.
+   const unique=supplierEmailSubject(site,counter,a.title),firstMail=id==='email:supplier:'+a.id;
+   const opened=firstMail?null:parse(await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
+   if(firstMail){payload.thread={id:supplierThreadId(a.id,String(c.from||RESEND_TEST_FROM)),subject:unique};payload.subject=unique;payload.headers={'Message-ID':payload.thread.id};}
+   else if(opened?.thread_id){payload.subject='Re: '+opened.thread_subject;payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
+   else payload.subject=job.supplier_followup==='hold'?'נא להמתין עם פרסום הכתבה · '+unique:job.supplier_followup==='update'?'הנחיות מעודכנות · '+unique:unique;
+   if(job.supplier_followup==='hold'){payload.text=['נא להמתין עם פרסום הכתבה',a.title,'הכתבה חזרה ללקוח לתיקונים. כשהתיקונים יאושרו, נשלח לכם כאן הנחיות מעודכנות וקובץ חדש.',link?'הקישור האישי שלכם לכתבה ממשיך לעבוד: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierHoldEmailHtml(a,site,counterLabel,link,origin);}
+   else{
+   payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links,job.supplier_followup==='update');if(job.supplier_followup==='update')payload.text='הנחיות מעודכנות לפרסום. הגרסה הזו מחליפה את הקודמת.\n\n'+payload.text;if(links[0]?.url)payload.word_file_url=links[0].url;}}
   else{
    // Every other message goes out as a designed right-to-left page: its own design when it has one, the standard one otherwise.
    payload.html=job.html?withMailFiles(String(job.html),links):brandedEmailHtml({subject:String(job.subject||''),text:String(job.text||''),button:job.button,origin,files:links});
    const fileText=mailFilesText(links.filter(l=>l.url));if(fileText)payload.text=[payload.text,fileText].filter(Boolean).join('\n\n');
   }
   const resend=c.provider==='resend';
-  const res=await externalFetch(resend?RESEND_URL:c.url,{method:'POST',headers:{Authorization:'Bearer '+c.secret,'Content-Type':'application/json','Idempotency-Key':id},body:JSON.stringify(resend?resendMessage(payload,c):payload)});
-  if(!res.ok)throw resend?new ApiError(502,resendFailure(res.status)):new Error('שירות הדיוור החזיר '+res.status);await stmt("UPDATE jobs SET status='succeeded',updated=? WHERE id=?",now(),id).run();return {status:'succeeded'};
+  const res=await externalFetch(resend?RESEND_URL:c.url,{method:'POST',headers:{Authorization:'Bearer '+c.secret,'Content-Type':'application/json','Idempotency-Key':id},body:JSON.stringify(resend?resendMessage(payload,c):{...payload,thread:undefined})});
+  if(!res.ok)throw resend?new ApiError(502,resendFailure(res.status)):new Error('שירות הדיוור החזיר '+res.status);if(payload.thread)await stmt("UPDATE jobs SET status='succeeded',updated=?,data=json_set(data,'$.thread_id',?,'$.thread_subject',?) WHERE id=?",now(),payload.thread.id,payload.thread.subject,id).run();else await stmt("UPDATE jobs SET status='succeeded',updated=? WHERE id=?",now(),id).run();return {status:'succeeded'};
  }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.delivery_error',?),updated=? WHERE id=?",safeFailure(e,'שליחת המייל נכשלה. בדקו את החיבור ונסו שוב.'),now(),id).run();return {status:'failed'};}}
 export async function queueMail(id:string,userId:string,data:Row){await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,userId,'email','requested',JSON.stringify(data),now(),now()).run();return sendQueuedMail(id);}
 // pre: what the caller already read for many articles at once (the order, the admin addresses), so a loop of
