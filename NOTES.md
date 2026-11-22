@@ -1861,3 +1861,11 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **לא נבדק:** ש-Resend מכבד `Message-ID` מותאם. לבדוק ב-Staging עם תיבת הבדיקה.
 - **בדיקות:** `tests/article-reopen.mjs` עוברת (ב-Windows דרך עותק harness עם `pathToFileURL`), וגם `publication-scheduling`, `supplier-mail`, `resend-email`. בדיקה מקומית מלאה עם נתוני דמה: החזרה, עמוד ספק בהמתנה, שליחה מחדש, אישור חוזר, הארכת תוקף. המיילים נחסמו מקומית (אין חיבור דיוור).
 - **לפני העלאה:** אין שאריות זמניות ב-repo. לא בוצע commit.
+
+## 22.11.2026: second batch merged into `claude/iphone-fixes-20261122` (owner: "מאשר את כל השאר")
+
+- **Catalog categories sheet** (branch `claude/catalog-category-groups-e86da9`, `57b22bd`): "הכי מבוקשות" and "כל התחומים" replaced by four open groups (חדשות ומגזינים, עסקים וכסף, בית ומשפחה, פנאי וסגנון חיים), two equal columns on a phone, largest first, 0-site categories in grey, "עוד" for any category outside the groups. Desktop keeps three columns with group headings; the sheet title no longer gets squeezed. Files: `app/catalog-view.tsx`, `app/catalog-filter-apple.css`. Handover: `side-session-notes/.../catalog-groups/catalog-groups-handover.md`.
+- **Phone menu** (branch `claude/mobile-menu-order-074d5c`, `a754df6`): "אזור אישי" right after "דף הבית"; desktop unchanged. File: `app/workspace-navigation.tsx`.
+- **Return an approved article to editing** (branch `claude/reopen-approved-article-a85857`, `e255ad0`): see its own NOTES entry above.
+- **Checked here:** merged without conflicts, build passes, tests `article-reopen`, `supplier-thread`, `supplier-mail`, `resend-email`, `publication-scheduling` pass.
+- **Still being built in their own sessions:** editor title auto-move and phone copy fix, link dialog, personal price dialog, fix-request e-mail and popups, supplier fix/reject requests.
