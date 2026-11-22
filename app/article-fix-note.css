@@ -1,0 +1,21 @@
+/* The admin's fix request at the top of the customer's editor (app/article-fix-note.tsx), owner 22.11.2026. */
+.article-fix-note{margin:14px 16px 0;border:1px solid #f3dca0;border-radius:18px;background:#fff8e6;color:#071f4b;font-family:Heebo,Arial,sans-serif;text-align:right;direction:rtl}
+.article-fix-note>summary{display:flex;align-items:center;gap:10px;min-height:52px;padding:12px 16px;cursor:pointer;list-style:none;border-radius:18px}
+.article-fix-note>summary::-webkit-details-marker{display:none}
+.article-fix-note>summary:focus-visible{outline:2px solid #1467cf;outline-offset:2px}
+.article-fix-note-icon{display:grid;place-items:center;flex:0 0 34px;height:34px;border-radius:50%;background:#ffe7a8;color:#704a00}
+/* The editor turns the last icon of an open summary (app/studio-v2.css); the message icon stays upright. */
+.article-fix-note .article-fix-note-icon svg{transform:none!important}
+.article-fix-note-head{flex:1;min-width:0}
+.article-fix-note-head strong{display:block;font-size:16px;font-weight:700;line-height:1.4;color:#071f4b}
+.article-fix-note-head small{display:block;font-size:13px;color:#704a00;line-height:1.5}
+.article-fix-note-toggle{flex:0 0 auto;display:flex;align-items:center;gap:4px;font-size:13px;color:#704a00;font-weight:600}
+.article-fix-note-toggle svg{transition:transform .2s}
+.article-fix-note[open] .article-fix-note-toggle svg{transform:rotate(180deg)}
+.article-fix-note:not([open]) .article-fix-note-toggle .is-open,.article-fix-note[open] .article-fix-note-toggle .is-closed{display:none}
+.article-fix-note-body{padding:0 16px 14px}
+.article-fix-note-text{margin:0;padding:12px 14px;border-radius:14px;background:#fff;border:1px solid #f6e4b5;font-size:16px;line-height:1.7;color:#071f4b;white-space:pre-wrap;overflow-wrap:anywhere}
+.article-fix-note-hint{margin:10px 2px 0;font-size:13px;color:#5b4a1f;line-height:1.6}
+@media(min-width:900px){.article-fix-note{margin:16px auto 0;max-width:1180px;width:calc(100% - 48px)}}
+@media(prefers-reduced-motion:reduce){.article-fix-note-toggle svg{transition:none}}
+@media(forced-colors:active){.article-fix-note,.article-fix-note-text{background:Canvas;border-color:CanvasText;color:CanvasText}}

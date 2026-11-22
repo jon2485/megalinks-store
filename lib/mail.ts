@@ -6,6 +6,7 @@ import { Row } from './shared';
 import {supplierPublicationNotes,supplierArticleEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
 import {brandedEmailHtml,withMailFiles,mailFilesText,MAIL_FILE_DAYS,type MailFileLink} from './mail-template';
 import {safeFailure} from './security';
+import {fixRequestEmailHtml,fixRequestSubject,fixRequestText} from './fix-request-mail';
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
 export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string};
@@ -87,7 +88,19 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
 export async function queueMail(id:string,userId:string,data:Row){await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,userId,'email','requested',JSON.stringify(data),now(),now()).run();return sendQueuedMail(id);}
 // pre: what the caller already read for many articles at once (the order, the admin addresses), so a loop of
 // mails does not read them again per article. The customer is only needed when the mail goes to the customer.
-export async function articleMail(a:Row,event:'submitted'|'revisions'|'published',origin:string,note='',pre:{order?:Row,admins?:string[]}={}){const o=pre.order||parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;let recipients=event==='submitted'?(pre.admins||(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email)):[(await one('SELECT * FROM users WHERE id=?',a.user_id))?.email];if(event==='submitted')recipients.push(String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(','));for(const email of new Set(recipients.filter(Boolean))){await queueMail('email:'+event+':'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:event==='submitted'?'מאמר חדש ממתין לאישור':event==='revisions'?'המאמר הוחזר לתיקון':'המאמר פורסם',text:a.title+'\n'+(note||a.published_url||''),button:{label:event==='published'?'לכתבה שפורסמה':'פתיחת המאמר',url:event==='published'?a.published_url:origin+'/article/'+a.id},demo:!!o.demo,article_id:a.id,origin});}}
+export async function articleMail(a:Row,event:'submitted'|'revisions'|'published',origin:string,note='',pre:{order?:Row,admins?:string[]}={}){if(event==='revisions')return revisionMail(a,origin,note,pre);const o=pre.order||parse(await one('SELECT * FROM orders WHERE id=?',a.order_id))!;let recipients=event==='submitted'?(pre.admins||(await all("SELECT email FROM users WHERE role='admin'")).map(x=>x.email)):[(await one('SELECT * FROM users WHERE id=?',a.user_id))?.email];if(event==='submitted')recipients.push(String((env as any).POSTFLOW_OWNER_EMAIL||''),...String((env as any).POSTFLOW_ADMIN_EMAILS||'').split(','));for(const email of new Set(recipients.filter(Boolean))){await queueMail('email:'+event+':'+a.id+':'+a.version+':'+email,a.user_id,{to:email,subject:event==='submitted'?'מאמר חדש ממתין לאישור':'המאמר פורסם',text:a.title+'\n'+(note||a.published_url||''),button:{label:event==='published'?'לכתבה שפורסמה':'פתיחת המאמר',url:event==='published'?a.published_url:origin+'/article/'+a.id},demo:!!o.demo,article_id:a.id,origin});}}
+
+// Returned for a fix (owner, 22.11.2026): the note is kept on the article, so the updates popup and the editor show the
+// same words as the email; the customer gets "המאמר שלך לאתר X דורש תיקון" with the site, title, order and the note.
+async function revisionMail(a:Row,origin:string,note:string,pre:{order?:Row}){
+ const d=typeof a.data==='string'?JSON.parse(a.data||'{}'):a.data||{};
+ const [order,customer,w]=await Promise.all([pre.order?Promise.resolve(pre.order):one('SELECT * FROM orders WHERE id=?',a.order_id).then(r=>parse(r)),one('SELECT name,email FROM users WHERE id=?',a.user_id),one('SELECT name,url FROM websites WHERE id=?',a.website_id)]);
+ await stmt("UPDATE articles SET data=json_set(data,'$.revision_note',?,'$.revision_requested_at',?) WHERE id=?",String(note||''),now(),a.id).run();
+ if(!customer?.email)return;
+ const site=String(d.website_name||w?.name||a.website_name||'').trim(),url=origin+'/article/'+a.id;
+ const m={origin,site,siteUrl:String(d.website_url||w?.url||a.website_url||''),title:String(a.title||d.topic||'המאמר שלך'),orderNumber:order?.number?String(order.number):'',note:String(note||'').trim()||'הפרטים מופיעים בעמוד המאמר.',name:String(customer.name||'').trim().split(/\s+/)[0]||'',url};
+ await queueMail('email:revisions:'+a.id+':'+a.version+':'+customer.email,a.user_id,{to:customer.email,subject:fixRequestSubject(site),text:fixRequestText(m),html:fixRequestEmailHtml(m),button:{label:'פתיחת המאמר לתיקון',url},demo:!!order?.demo,article_id:a.id,origin});
+}
 
 export async function writingRequestMail(a:Row,origin:string){
  const data=typeof a.data==='string'?JSON.parse(a.data):a.data||a;

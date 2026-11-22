@@ -2,7 +2,7 @@ import type {Row} from './shared';
 import {publicationLink} from './purchased-history';
 import {paymentMethodLabel} from './payment-state';
 
-export type ClientUpdate={id:string;kind:'published'|'payment'|'credit'|'cancelled'|'revision'|'ready'|'cancel_request';date:string;dateLabel:string;title:string;status:string;articleId?:string;orderId?:string;orderNumber?:string;siteName?:string;image?:string;logo?:string;url?:string;amount?:number;method?:string;note?:string};
+export type ClientUpdate={id:string;kind:'published'|'payment'|'credit'|'cancelled'|'revision'|'ready'|'cancel_request';date:string;dateLabel:string;title:string;status:string;articleId?:string;orderId?:string;orderNumber?:string;siteName?:string;siteUrl?:string;image?:string;logo?:string;url?:string;amount?:number;method?:string;note?:string};
 export function updateDate(value:unknown){const n=Date.parse(String(value||''));return Number.isFinite(n)?n:0;}
 export function displayUpdateDate(value:string){return updateDate(value)?new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(value)):'לא תועד';}
 function localDay(value:Date){const parts=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Jerusalem',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(value);return ['year','month','day'].map(type=>parts.find(p=>p.type===type)?.value).join('-');}
@@ -15,20 +15,22 @@ export function buildClientUpdates(articles:Row[],orders:Row[],transactions:Row[
  const result:ClientUpdate[]=[];
  for(const a of articles){
   if(a.demo)continue;
-  const common={articleId:a.id,orderId:a.order_id,orderNumber:a.number,siteName:a.website_name,title:a.title||a.topic||'כתבה ללא כותרת',image:a.image_id?'/api/files/'+encodeURIComponent(a.image_id):undefined,logo:a.website_logo};
+  const common={articleId:a.id,orderId:a.order_id,orderNumber:a.number,siteName:a.website_name,siteUrl:a.website_url||undefined,title:a.title||a.topic||'כתבה ללא כותרת',image:a.image_id?'/api/files/'+encodeURIComponent(a.image_id):undefined,logo:a.website_logo};
   if(a.status==='published')result.push({...common,id:'published:'+a.id,kind:'published',status:'הכתבה פורסמה',date:a.published_at||a.updated||'',dateLabel:a.published_at?'תאריך הפרסום':'עודכן בתאריך',url:publicationLink(a)});
   if(a.status==='cancelled'||a.publication_refunded)result.push({...common,id:'cancelled:'+a.id,kind:'cancelled',status:a.publication_refunded?'פרסום הכתבה בוטל':'הכתבה בוטלה',date:a.cancelled_at||a.refunded_at||a.updated||'',dateLabel:a.cancelled_at||a.refunded_at?'תאריך הביטול':'עודכן בתאריך',note:a.refund_reason||a.cancel_reason||''});
   // The admin wrote the text and returned it: the customer reviews it (the same moment as the "ready" email).
   if(a.status==='review'&&a.editorial&&a.writing_returned_at)result.push({...common,id:'ready:'+a.id+':'+a.writing_returned_at,kind:'ready',status:'הטקסט מוכן לאישורך',date:a.writing_returned_at,dateLabel:'תאריך ההחזרה'});
   if(a.status==='revisions'){
    const message=notifications.filter(n=>{
-    if(n.subject!=='המאמר הוחזר לתיקון')return false;
+    // The old subject, and the new one "המאמר שלך לאתר X דורש תיקון" (22.11.2026).
+    if(n.subject!=='המאמר הוחזר לתיקון'&&!/^המאמר שלך לאתר .* דורש תיקון$/.test(String(n.subject||'')))return false;
     try{return decodeURIComponent(new URL(n.button?.url,'https://megalinks.invalid').pathname).replace(/\/$/,'')==='/article/'+a.id;}catch{return false;}
    }).sort((x,y)=>updateDate(y.created)-updateDate(x.created))[0];
    // Only the existing customer-addressed message may supply a manager reply.
    // Internal admin_notes and raw audit payloads are never displayed.
-   const body=String(message?.text||''),note=body.startsWith(a.title+'\n')?body.slice(String(a.title).length+1):body;
-   result.push({...common,id:'revision:'+a.id,kind:'revision',status:'נדרשים תיקונים',date:message?.created||a.updated||'',dateLabel:message?.created?'תאריך הבקשה':'עודכן בתאריך',note});
+   // Since 22.11.2026 the admin's note is kept on the article itself (revision_note); older returns read it from the email.
+   const body=String(message?.text||''),note=typeof a.revision_note==='string'&&a.revision_note.trim()?a.revision_note:body.startsWith(a.title+'\n')?body.slice(String(a.title).length+1):body,asked=a.revision_requested_at||message?.created;
+   result.push({...common,id:'revision:'+a.id,kind:'revision',status:'נדרשים תיקונים',date:asked||a.updated||'',dateLabel:asked?'תאריך הבקשה':'עודכן בתאריך',note});
   }
  }
  for(const o of orders){
