@@ -1845,5 +1845,8 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Problem (owner: "הכפתורים שם קצת מכוסים, צריך שיהיה מרווח נורמלי"):** the selected filter chip's border was cut at the card edge and the export and new-order buttons sat tight against the chips.
 - **Fix:** `app/customer-file-v2.css` only, phone widths: chips inside the card padding, normal gaps. Wide desktop unchanged.
 
+### Deployed
+- **Staging (owner: "כן תעלה", 22.11):** merge `b99ccb7`, deployment `cb722626`, SUCCESS. Build passed on the merged branch; each fix was checked locally by its own session at 390px and desktop. Not checked on Staging itself. Staging now follows `claude/iphone-fixes-20261122` (pinned to `b99ccb7`). The e-mail reply-to commit `34c9f71` on `claude/reply-to-20261122` is not part of it.
+
 ### Open
 - The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
