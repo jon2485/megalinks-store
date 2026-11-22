@@ -1921,3 +1921,10 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Merge:** conflicts only in `NOTES.md` (joined by hand).
 - **Checked here:** `tsc` clean, build passes; tests `article-reopen`, `supplier-thread`, `supplier-mail`, `resend-email`, `publication-scheduling`, `fix-request-mail`, `supplier-article-request`, `rich-docx` pass. `client-updates` fails on `app/workspace.tsx` (`notifyCartAdded` outside the slice it reads); it fails the same way on `a098243`, before today's work.
 - **Not checked:** real e-mails (all rendered locally only, including the per-article supplier thread through Resend), a real iPhone keyboard, a full cancel-and-refund started from a supplier rejection.
+
+## כפתורי הנגישות והוואטסאפ נעלמים כשהמקלדת פתוחה בטלפון (22.11.2026, ענף claude/a11y-button-typing-a980f5)
+- **מה ולמה:** באייפון, כשהמקלדת פתוחה בעורך, כפתור הנגישות כיסה את הטקסט. אישור הבעלים: "מאשר שהם ייעלמו במקלדת". בטלפון בלבד, כששדה טקסט או העורך בפוקוס והמסך הנראה קצר ביותר מ-120 פיקסלים, שני הכפתורים נעלמים בהדרגה וחוזרים כשהמקלדת נסגרת או כשיוצאים מהשדה. במחשב אין שינוי. כשאין שדה בפוקוס הכפתורים תמיד מוצגים.
+- **קבצים:** `app/accessibility-menu.tsx` (מחלקה `ml-keyboard-open` על html), `app/accessibility-menu.css` (בלוק בסוף הקובץ).
+- **נבדק מקומית ב-390:** העורך, חלון הקישור, עמוד רגיל ומחשב. חלון המחיר נמצא באזור הניהול, ושם שני הכפתורים כבר מוסתרים.
+- **תוספת לעורך הכתבה בניהול** (הבעלים: "עוד תיקון שיש בעריכת הכתבה בניהול"): גם סרגל ההחלטה (`.ar-bar`) והתפריט התחתון של הניהול (`.admin-mobile-dock`) נעלמים כשהמקלדת פתוחה, וחוזרים מיד כשהיא נסגרת. בעורך של הלקוח הסרגל התחתון כבר נעלם בזמן הקלדה (`sv-typing`, קיים), לכן לא שיניתי שם.
+- **לא נבדק:** אייפון אמיתי (בדפדפן הבדיקה המקלדת מדומה).
