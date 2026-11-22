@@ -1934,3 +1934,10 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **The address itself is not in the code:** the owner fills his inbox in the field on Staging after deploy. Not committed anywhere in the repo.
 - **Checked:** build passes, `tests/resend-email.mjs` and `tests/supplier-mail.mjs` pass, the field shows in the dialog locally. Not deployed.
 - **Research (same day, no code):** SendRaven (Common Ninja Ltd., Israel, built 2026) vs Mautic vs Resend for the newsletter. SendRaven: per email, free 3,000/month, $19 for 50K; inbound replies, one-click unsubscribe, postal address required; no Hebrew/RTL statement. Resend marketing is per contact (free 1,000 contacts, $40 for 5,000). Owner has not chosen yet.
+
+## 22.11.2026: fourth batch (owner: "כן", upload with the next round)
+
+- **Keyboard hides floating UI on phones** (branch `claude/a11y-button-typing-a980f5`, `23a2061` + `ac82a0c`, owner: "מאשר שהם ייעלמו במקלדת"): while the keyboard is open, the accessibility and WhatsApp buttons, the admin decision bar ("אישור ושליחה לספק" / "החזרה לתיקון") and the admin bottom navigation fade out; they return when the keyboard closes. Desktop unchanged. File: `app/accessibility-menu.css`.
+- **Reply-to address for e-mail** (`34c9f71` from `claude/reply-to-20261122`): optional "reply_to" in the e-mail connection, sent to Resend, so a customer's reply reaches the owner's inbox. Merge conflict in `lib/mail.ts` `resendMessage` resolved by keeping both the thread headers line and the reply_to line.
+- **Checked here:** `tsc` clean, build passes, tests `resend-email` (39 checks), `article-reopen`, `supplier-thread`, `supplier-mail`, `publication-scheduling`, `fix-request-mail`, `supplier-article-request`, `rich-docx` pass.
+- **Found (not fixed, waiting for the owner):** order 1018 (notes.co.il) did not reach the supplier because `procurement_verified` is "לא"; every one of the 2,250 sheet rows has "לא" in "הסכם פרסום מאומת", so every non-demo dispatch is blocked the same way. The admin "הכתבה לא הגיעה לספק" box shows a generic text instead of the job's real `error`.
