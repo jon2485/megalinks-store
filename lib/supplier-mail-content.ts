@@ -13,12 +13,20 @@ export function supplierPublicationFields(article:Row):[string,string][] {
         ['קישור נוסף בכתבה',[data.anchor_2,data.target_url_2].filter(Boolean).join(' · ')],
         ['הערות לפרסום',data.client_notes],
         ['הנחיות המנהל לפרסום',data.admin_notes],
-        ['קרדיט לתמונה הראשית',[data.image_credit,data.image_credit_url].filter(Boolean).join(' · ')],
-        ['קרדיט לתמונה נוספת',data.secondary_image_credit],
     ] as [string,unknown][]).filter(([,value])=>String(value||'').trim()).map(([label,value])=>[label,String(value).trim()]);
 }
+// Owner (22.11.2026): one bold line "קרדיטים לתמונות:" with the credit of every image: the main and secondary images
+// and the pictures inside the text (their data-credit). The same credit twice is shown once.
+export function supplierImageCredits(article:Row):string[] {
+    const data=typeof article.data==='string'?JSON.parse(article.data):article.data||article;
+    const decode=(v:string)=>v.replace(/&(#\d+|#x[\da-f]+|amp|lt|gt|quot|apos);/gi,(m,e:string)=>e[0]==='#'?String.fromCodePoint(e[1].toLowerCase()==='x'?parseInt(e.slice(2),16):Number(e.slice(1))):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'"} as Record<string,string>)[e.toLowerCase()]||m);
+    const inline=[...String(article.content||'').matchAll(/<img\b[^>]*\bdata-credit\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)].map(m=>decode(m[1]??m[2]??''));
+    const list=[[data.image_credit,data.image_credit_url].filter(Boolean).join(' · '),data.secondary_image_credit,...inline].map(v=>String(v||'').replace(/\s+/g,' ').trim()).filter(Boolean);
+    return [...new Set(list)];
+}
 export function supplierPublicationNotes(article:Row):string {
-    return supplierPublicationFields(article).map(([label,value])=>label+':\n'+value).join('\n\n');
+    const credits=supplierImageCredits(article);
+    return [...supplierPublicationFields(article).map(([label,value])=>label+':\n'+value),...(credits.length?['קרדיטים לתמונות:\n'+credits.join('\n')]:[])].join('\n\n');
 }
 // Owner decision (11.11.2026): the subject names the site and its package count (3/10); a site without a
 // package gets the article's running number for that site in the current month.
@@ -37,6 +45,8 @@ export function supplierArticleEmailHtml(article:Row,websiteName:string,websiteU
     const ink='#0b1b2f',muted='#4f5d6e',faint='#7b8796',line='#e6ecf2',blue='#1673e6';
     const site=websiteUrl?`<tr><td dir="rtl" style="padding:14px 0;border-top:1px solid ${line};text-align:right"><div style="font-size:13px;color:${faint};font-weight:600;margin-bottom:3px">לפרסום באתר:</div><div style="font-size:15px;line-height:1.6"><a href="${esc(websiteUrl)}" dir="ltr" style="color:${blue};text-decoration:none;font-weight:700">${esc(websiteUrl.replace(/^https?:\/\//,'').replace(/\/$/,''))}</a>${websiteName?` <span style="color:${faint}">· ${esc(websiteName)}</span>`:''}</div></td></tr>`:'';
     const rows=site+supplierPublicationFields(article).map(([label,value])=>`<tr><td dir="rtl" style="padding:14px 0;border-top:1px solid ${line};text-align:right"><div style="font-size:13px;color:${faint};font-weight:600;margin-bottom:3px">${esc(label)}</div><div style="font-size:15px;color:${ink};line-height:1.6;white-space:pre-wrap"><bdi>${richLine(value)}</bdi></div></td></tr>`).join('');
+    const credits=supplierImageCredits(article);
+    const creditRow=credits.length?`<tr><td dir="rtl" style="padding:14px 0;border-top:1px solid ${line};text-align:right"><div style="font-size:15px;color:${ink};font-weight:700;margin-bottom:4px">קרדיטים לתמונות:</div>${credits.map(c=>`<div style="font-size:15px;color:${ink};line-height:1.6"><bdi>${richLine(c)}</bdi></div>`).join('')}</td></tr>`:'';
     const files=mailAttachedHtml(attachments);
     const step=(n:number,text:string)=>`<tr><td style="padding:6px 0;width:34px;vertical-align:top"><div style="width:26px;height:26px;border-radius:50%;background:#eef5ff;color:${blue};font-size:13px;font-weight:700;line-height:26px;text-align:center">${n}</div></td><td dir="rtl" style="padding:6px 0;font-size:15px;color:${ink};line-height:26px;text-align:right">${text}</td></tr>`;
     return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body dir="rtl" style="margin:0;padding:0;background:#f5f7fa;font-family:Heebo,Arial,Helvetica,sans-serif;color:${ink}"><div dir="rtl" style="max-width:560px;margin:0 auto;padding:28px 14px;background:#f5f7fa;font-family:Heebo,Arial,Helvetica,sans-serif;color:${ink};text-align:right">
@@ -48,7 +58,7 @@ export function supplierArticleEmailHtml(article:Row,websiteName:string,websiteU
 <p dir="rtl" style="margin:0 0 22px;font-size:16px;line-height:1.6;color:${muted};text-align:center">${update?'הלקוח סיים את התיקונים. כל הפרטים המעודכנים כאן, וקובץ ה-Word החדש מצורף. אפשר לפרסם.':'כל הפרטים נמצאים כאן, וקובץ ה-Word של הכתבה מצורף למייל. אחרי שהכתבה עולה, שולחים לנו את הקישור בלחיצה אחת.'}</p>
 ${update?`<div dir="rtl" style="margin:0 0 16px;padding:14px 18px;background:#fff7e6;border:1px solid #f6d79b;border-radius:16px;font-size:15px;line-height:1.6;color:#7a4b00;text-align:right"><b>הגרסה הזו מחליפה את הקודמת.</b> אם שמרתם את הקובץ מהמייל הראשון, השתמשו רק בקובץ שמצורף כאן.</div>`:''}
 <div dir="rtl" style="padding:15px 18px;background:#f5f8fc;border-radius:16px;text-align:right"><div style="font-size:13px;color:${faint};font-weight:600">כותרת הכתבה</div><div style="font-size:18px;font-weight:700;line-height:1.45;color:${ink}">${esc(article.title)}</div></div>
-${rows?`<table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin-top:8px">${rows}</table>`:''}
+${rows||creditRow?`<table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse;margin-top:8px">${rows}${creditRow}</table>`:''}
 ${files}
 <div dir="rtl" style="margin-top:22px;padding:16px 18px;border-radius:16px;border:1px solid ${line};text-align:right"><div style="font-size:13px;color:${faint};font-weight:700;margin-bottom:4px">מה עושים עכשיו</div><table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">${step(1,'מפרסמים את הכתבה באתר')}${step(2,'לוחצים על הכפתור ומדביקים את הקישור')}${step(3,'אנחנו בודקים ומאשרים תוך כמה שניות')}</table></div>
 <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px"><tr><td align="center"><a href="${esc(link)}" style="display:block;background:${blue};color:#ffffff;text-decoration:none;font-size:17px;font-weight:700;padding:16px 20px;border-radius:15px;text-align:center">שליחת הקישור לכתבה שפורסמה</a></td></tr></table>

@@ -14,7 +14,16 @@ writeFileSync('.sites-runtime/rich-export.docx',bytes);
 const files=unzipSync(bytes),doc=strFromU8(files['word/document.xml']),rels=strFromU8(files['word/_rels/document.xml.rels']);
 assert.equal(loads,1,'inline and gallery same image is not duplicated');
 assert(doc.includes('w:pStyle w:val="Heading2"'));assert(doc.includes('w:pStyle w:val="Heading3"'));
-assert(doc.includes('<w:b/>'));assert(doc.includes('<w:i/>'));assert(doc.includes('w:bidi w:val="1"'));assert(doc.includes('w:bidi w:val="0"'));
+assert(doc.includes('<w:b/>'));assert(doc.includes('<w:i/>'));assert(doc.includes('<w:bidi/>'));assert(doc.includes('w:bidi w:val="0"'));
+// Owner 22.11.2026: the iPhone preview showed Hebrew paragraphs left-aligned. Every Hebrew paragraph, heading, list item
+// and table cell is RTL the way Word writes it: <w:bidi/>, Hebrew runs <w:rtl/>, no "start"/"left" alignment, RTL table and section.
+{const paras=doc.match(/<w:p>[\s\S]*?<\/w:p>/g),hebrew=paras.filter(p=>/<w:t[^>]*>[^<]*[֐-׿]/.test(p)&&!p.includes('English'));
+ assert(hebrew.length>=10,'Hebrew paragraphs found');for(const p of hebrew){assert(p.includes('<w:bidi/>'),'Hebrew paragraph is RTL: '+p.slice(0,120));assert(!/w:jc w:val="(start|left)"/.test(p),'Hebrew paragraph is not left-aligned');}
+ for(const r of doc.match(/<w:r><w:rPr>[\s\S]*?<\/w:r>/g).filter(r=>/<w:t[^>]*>[^<]*[֐-׿]/.test(r)))assert(r.includes('<w:rtl/>'),'Hebrew run is RTL');
+ const english=paras.find(p=>p.includes('English'));assert(english.includes('w:bidi w:val="0"')&&!english.includes('<w:rtl/>'),'English paragraph stays LTR');
+ assert(doc.includes('<w:tblPr><w:bidiVisual/>'),'table is RTL');assert(/<w:sectPr>[\s\S]*<w:bidi\/><\/w:sectPr>/.test(doc),'section is RTL');
+ assert(strFromU8(files['word/styles.xml']).includes('<w:pPrDefault><w:pPr><w:bidi/>'),'RTL is the document default');
+ assert(!doc.includes('w:val="start"'),'no strict-only alignment value');}
 assert(doc.includes('<w:hyperlink'));assert(rels.includes('https://example.com/one?a=1&amp;b=2'));assert(rels.includes('https://example.com/two'));
 assert(doc.indexOf('<w:drawing>')<doc.indexOf('English'),'image remains in its original position');
 assert(doc.indexOf('צילום: בדיקה')>doc.indexOf('<w:drawing>'));assert.equal(doc.match(/צילום: בדיקה/g).length,1);

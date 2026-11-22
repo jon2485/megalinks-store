@@ -7,9 +7,9 @@ import {realpathSync,mkdirSync,writeFileSync} from 'node:fs';
 import {pathToFileURL} from 'node:url';
 const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
 const server=`export class ApiError extends Error{};export const assert=(ok,m)=>{if(!ok)throw new ApiError(m)};
-export const one=async(sql,...a)=>sql.includes('FROM jobs')?(globalThis.jobs[a[0]]||null):sql.includes('FROM articles')?globalThis.articles[a[0]]:{name:'מאקו',url:'https://www.mako.co.il'};
+export const one=async(sql,...a)=>sql.includes(' LIKE ')?(globalThis.recalled?.[a[0]]||null):sql.includes('FROM jobs')?(globalThis.jobs[a[0]]||null):sql.includes('FROM articles')?globalThis.articles[a[0]]:{name:'מאקו',url:'https://www.mako.co.il'};
 export const mapIn=async()=>new Map();export const parse=r=>r?({...r,...JSON.parse(r.data||'{}')}):null;
-export const connection=async()=>({enabled:true,provider:'resend',url:'https://api.resend.com/emails',secret:'fixture',from:'Mega Links <news@megalinks.example>'});
+export const connection=async()=>({enabled:true,provider:'resend',url:'https://api.resend.com/emails',secret:'fixture',from:'Mega Links <news@megalinks.example>',test_to:globalThis.testTo||''});
 export const stmt=(sql,...a)=>({run:async()=>{globalThis.writes.push({sql,a});if(sql.includes("'$.thread_id'")){const j=globalThis.jobs[a[3]];const d=JSON.parse(j.data);d.thread_id=a[1];d.thread_subject=a[2];j.data=JSON.stringify(d);}return {meta:{changes:1}};}});
 export const now=()=>'2026-11-22T10:00:00.000Z';export const all=async()=>[];
 export const externalFetch=async(url,o)=>{globalThis.sent.push(JSON.parse(o.body));return new Response('{}');};`;
@@ -48,5 +48,24 @@ for(const kind of ['hold','update']){
 globalThis.jobs['email:supplier-hold:old:9']=job({supplier_followup:'hold',supplier_article:'old'});
 await sendQueuedMail('email:supplier-hold:old:9');const old=globalThis.sent.at(-1);
 assert.equal(old.subject,'נא להמתין עם פרסום הכתבה · כתבה לפרסום באתר מאקו 5/10 · כתבה ישנה');assert(!old.headers);
+
+// Test inbox mode (Staging): the test mark comes after "Re:", so Gmail keeps the follow-up in the article's thread.
+globalThis.testTo='owner.inbox@example.test';
+globalThis.jobs['email:supplier:t1']=job({attach_article:'a1'});globalThis.articles.t1=article('t1','כתבה בבדיקה',6);globalThis.jobs['email:supplier:t1'].data=JSON.stringify({...JSON.parse(globalThis.jobs['email:supplier:t1'].data),attach_article:'t1'});
+await sendQueuedMail('email:supplier:t1');const tFirst=globalThis.sent.at(-1);
+assert.equal(tFirst.subject,'[בדיקה · אל: supplier@example.test] כתבה לפרסום באתר מאקו 6/10 · כתבה בבדיקה');assert.deepEqual(tFirst.to,['owner.inbox@example.test']);
+assert.match(tFirst.headers['Message-ID'],/^<supplier-article-t1@megalinks\.example>$/);
+globalThis.jobs['email:supplier-hold:t1:9']=job({supplier_followup:'hold',supplier_article:'t1'});
+await sendQueuedMail('email:supplier-hold:t1:9');const tHold=globalThis.sent.at(-1);
+assert.equal(tHold.subject,'Re: '+tFirst.subject,'test mode: the reply subject is "Re: " + the exact first subject');
+assert.equal(tHold.headers['In-Reply-To'],tFirst.headers['Message-ID']);assert.equal(tHold.headers.References,tFirst.headers['Message-ID']);
+globalThis.testTo='';
+
+// Pulled back from the supplier and approved again (the old first e-mail renamed ":recalled:"): the new first e-mail
+// answers the same thread and does not reuse the Message-ID (Gmail would drop a second message with the same id).
+globalThis.recalled={'email:supplier:a2:recalled:%':{data:JSON.stringify({thread_id:first2.headers['Message-ID'],thread_subject:first2.subject})}};
+globalThis.jobs['email:supplier:a2']=job({attach_article:'a2'});await sendQueuedMail('email:supplier:a2');const again=globalThis.sent.at(-1);
+assert.equal(again.subject,'Re: '+first2.subject);assert.equal(again.headers['In-Reply-To'],first2.headers['Message-ID']);assert(!again.headers['Message-ID'],'no second message with the same Message-ID');
+assert.equal(JSON.parse(globalThis.jobs['email:supplier:a2'].data).thread_id,first2.headers['Message-ID'],'later follow-ups keep answering the same thread');
 
 console.log('SUPPLIER THREAD PASS: one thread per article (fixed id stored with the first e-mail), unique subject per article, hold/update answer only their own article, old articles get fresh e-mails without "Re:".');

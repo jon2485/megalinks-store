@@ -56,7 +56,19 @@ try{
  let files;try{await image('img-mid',4);id=await supplierMail('art-mid','img-mid');s=sent.at(-1);files=(s.body.attachments||[]).map(a=>a.filename);}catch(e){files=null;console.log('supplier fixture skipped:',e.message);}
  if(files){ok(await status(id)==="succeeded","supplier mail with a 4MB image sent");ok(files.includes('article.docx')&&files.some(f=>f.startsWith('image')),'with Resend the Word file and the image are both attached (old 6MB limit linked them): '+files);
   await image('img-big',12);id=await supplierMail('art-big','img-big');s=sent.at(-1);
-  ok(!(s.body.attachments||[]).length&&/image\.jpg/.test(s.body.html)&&/article\.docx/.test(s.body.html),'above 15MB nothing is attached but the image and the Word file both get a link (the image used to be dropped)');}
+  // Owner (22.11.2026): attach what fits (the Word file first); the image that does not fit keeps a link and the mail says so.
+  const big=(s.body.attachments||[]).map(a=>a.filename);
+  ok(big.join()==='article.docx'&&/image-1\.jpg/.test(s.body.html)&&/לא נכנסו למייל בגלל הגודל/.test(s.body.html)&&/גדולים מדי לצירוף/.test(s.body.text),'above 15MB the Word file is still attached and the image gets a link with a note: '+big);
+  // Images inside the text are attached as their own files too, and every credit appears under one bold line.
+  await image('img-a',1);await image('img-b',1);await image('img-c',1);
+  await db.prepare("INSERT INTO articles(id,order_id,user_id,website_id,status,title,content,data,updated) VALUES ('art-inline','o1','owner','w1','sent','כתבה עם תמונות','<p>פתיחה</p><figure><img src=\"/api/files/img-b\" data-credit=\"צילום: דנה &amp; שות׳\" alt=\"\"><figcaption>צילום: דנה &amp; שות׳</figcaption></figure><p>אמצע</p><figure><img src=\"/api/files/img-c\" data-credit=\"צילום: יוסי\" alt=\"\"></figure><figure><img src=\"/api/files/img-a\" data-credit=\"צילום: ראשי\" alt=\"\"></figure>',?,datetime('now'))").bind(JSON.stringify({image_id:'img-a',image_credit:'צילום: ראשי',secondary_image_credit:''})).run();
+  await db.prepare("INSERT INTO jobs(id,user_id,kind,status,data,created,updated) VALUES ('email:supplier:art-inline','owner','email','requested',?,datetime('now'),datetime('now'))").bind(JSON.stringify({to:'supplier@example.test',subject:'',text:'',button:{label:'החזרת קישור',url:'https://megalinks.test/supplier/tok'},attach_article:'art-inline',attach_images:true,origin:'https://megalinks.test'})).run();
+  await call('admin/mail/'+encodeURIComponent('email:supplier:art-inline'),'POST',{});s=sent.at(-1);const names=(s.body.attachments||[]).map(a=>a.filename);
+  ok(names.join()==='article.docx,image-1.jpg,image-2.jpg,image-3.jpg','the Word file and each image (main, then the two inside the text, once each) are attached: '+names);
+  ok(/קרדיטים לתמונות:/.test(s.body.html)&&s.body.html.indexOf('צילום: ראשי')<s.body.html.indexOf('צילום: דנה &amp; שות׳')&&s.body.html.indexOf('צילום: דנה &amp; שות׳')<s.body.html.indexOf('צילום: יוסי'),'one bold credits line with every image credit, in order');
+  ok(s.body.html.match(/צילום: ראשי/g).length===1&&!/קרדיט לתמונה הראשית/.test(s.body.html),'a credit is shown once, under the credits line only');
+  ok(/קרדיטים לתמונות:\nצילום: ראשי\nצילום: דנה & שות׳\nצילום: יוסי/.test(s.body.text),'the plain-text version has the same credits');
+  ok(s.body.headers?.['Message-ID']?.includes('supplier-article-art-inline'),'the thread header is kept');}
  // Back to the webhook: the old format, unchanged.
  await call('admin/integration/email','PATCH',{provider:'webhook',url:'https://hooks.example.test/catch',secret:'webhook-token',secret_storage:'encrypted_server',enabled:true});
  id=await mail('customer@example.test','בדיקת webhook');s=sent.at(-1);
