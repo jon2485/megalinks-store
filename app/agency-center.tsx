@@ -245,7 +245,7 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
      <td data-label="עלות"><bdi>{ils(a.spend)}</bdi></td>
      <td data-label="סטטוס"><span className={'ag-status '+tone}>{label}</span></td>
      {/* The same buttons as "הכתבות שלי" (owner 22.11.2026): content, AI draft, writer instructions, link once published. */}
-     <td data-label="פעולות" className="ag-td-actions">{tone==='off'?<span className="ag-muted">—</span>:<PurchaseActions article={a} ctx={ctx} compact/>}</td>
+     <td data-label="פעולות" className="ag-td-actions">{tone==='off'?<span className="ag-muted">—</span>:<PurchaseActions article={a} ctx={ctx} compact assign={false}/>}</td>
     </tr>;})}</tbody></table>{rows.length>=1000&&<p className="ag-muted">מוצגים 1,000 הראשונים. צמצמו את התקופה.</p>}</div>}
  </>;
 }

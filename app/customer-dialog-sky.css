@@ -1,66 +1,95 @@
-/* Owner 22.11.2026: the customer's payment report ("כבר שילמתי"), balance top-up and balance usage popups were still in the
-   old frosted teal look. They now follow the new customer pages ("ההזמנות שלי", "יתרה וזיכויים"): a white card, dark blue
-   text, the blue gradient main button and light blue tiles. Only dialogs opened with `sky:true` on the customer side get
-   the class `sky-dialog` (app/workspace.tsx); the admin area and every other dialog keep their look. */
+/* Owner 22.11.2026: the customer's payment report ("כבר שילמתי"), balance top-up and balance usage popups in the style
+   of the "יצירת טיוטה בעזרת AI" popup (app/studio-v6.css, .sv-ai-dialog): white card, a white header with the violet-blue
+   icon tile and a thin line under it, light grey fields that turn white with a blue ring, one violet-blue main action,
+   a light grey secondary action, and a footer strip. Only dialogs opened with `sky:true` on the customer side get the
+   class `sky-dialog` (app/workspace.tsx); the admin area and every other dialog keep their look. */
 html body [data-slot=dialog-content].sky-dialog{
- --sky-ink:#0c1d33;--sky-copy:#3a4e66;--sky-mute:#5d6e82;--sky-line:#dfe7f1;--sky-blue:#1467cf;--sky-tile:#eef5ff;
- --payment-glass-ink:var(--sky-ink);--payment-glass-muted:var(--sky-copy);--payment-glass-accent:var(--sky-blue);
- --customer-finance-ink:var(--sky-ink);--customer-finance-muted:var(--sky-copy);--customer-finance-accent:var(--sky-blue);
- --customer-finance-surface:#fff;--customer-finance-line:var(--sky-line);
- background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
- border:0!important;border-radius:24px!important;
- box-shadow:0 0 0 1px rgba(15,40,80,.06),0 2px 6px rgba(15,40,80,.06),0 28px 70px -18px rgba(15,40,80,.35)!important;
- color:var(--sky-ink)!important;font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+ --ai-ink:#0b1b2f;--ai-copy:#33475f;--ai-mute:#5b6b82;--ai-line:#e3e9f1;--ai-field:#f6f8fb;--ai-field-line:#dfe6ef;--ai-blue:#1467cf;--ai-violet:#7c5cff;
+ --payment-glass-ink:var(--ai-ink);--payment-glass-muted:var(--ai-mute);--payment-glass-accent:var(--ai-blue);
+ --customer-finance-ink:var(--ai-ink);--customer-finance-muted:var(--ai-mute);--customer-finance-accent:var(--ai-blue);--customer-finance-surface:#fff;--customer-finance-line:var(--ai-line);
+ display:flex!important;flex-direction:column!important;gap:0!important;padding:0!important;overflow:hidden!important;
+ width:calc(100vw - 32px)!important;max-width:540px!important;max-height:calc(100dvh - 32px)!important;
+ background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:0!important;border-radius:26px!important;
+ box-shadow:0 24px 90px rgba(7,31,75,.2)!important;color:var(--ai-ink)!important;direction:rtl;text-align:right;
+ font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
 }
-body:has([data-slot=dialog-content].sky-dialog) [data-slot=dialog-overlay]{background:rgba(12,29,51,.32)!important;-webkit-backdrop-filter:blur(2px)!important;backdrop-filter:blur(2px)!important}
+body:has([data-slot=dialog-content].sky-dialog) [data-slot=dialog-overlay]{background:rgba(7,22,44,.45)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 
-/* Head: the icon in a light blue tile, like the balance card. */
-html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--sky-tile)!important;color:var(--sky-blue)!important;box-shadow:none!important}
-html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge svg{color:var(--sky-blue)!important;stroke:currentColor}
-html body .sky-dialog [data-slot=dialog-title]{color:var(--sky-ink)!important;font-weight:800!important;letter-spacing:-.01em}
-html body .sky-dialog [data-slot=dialog-description]{color:var(--sky-mute)!important}
-html body .sky-dialog>[data-slot=dialog-close]{background:#f2f6fb!important;border:0!important;box-shadow:none!important;color:var(--sky-copy)!important}
-html body .sky-dialog>[data-slot=dialog-close]:hover{background:#e7eef7!important}
+/* Header: the icon tile, then the title and one line under it; a thin line closes the header. */
+html body .sky-dialog>[data-slot=dialog-header]{position:static!important;width:auto!important;height:auto!important;margin:0!important;overflow:visible!important;clip-path:none!important;white-space:normal!important;
+ display:flex!important;flex-direction:row!important;align-items:center!important;gap:14px!important;flex:none;padding:18px 16px 14px 66px!important;background:#fff!important;border-bottom:1px solid var(--ai-line)!important;text-align:right!important}
+html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge{display:grid!important;place-items:center;flex:none;width:48px!important;height:48px!important;border-radius:15px!important;
+ background:linear-gradient(135deg,var(--ai-blue),var(--ai-violet))!important;color:#fff!important;box-shadow:0 8px 18px -8px #7c5cffaa!important;border:0!important}
+html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge svg{color:#fff!important;stroke:currentColor;width:22px;height:22px}
+html body .sky-dialog .admin-dialog-head-text{display:grid;gap:2px;min-width:0;text-align:right}
+html body .sky-dialog [data-slot=dialog-title]{margin:0!important;color:var(--ai-ink)!important;font:800 22px/1.25 Heebo,Arial,sans-serif!important;letter-spacing:-.01em;text-align:right!important}
+html body .sky-dialog [data-slot=dialog-description]{margin:2px 0 0!important;color:var(--ai-mute)!important;font:500 14px/1.5 Heebo,Arial,sans-serif!important;text-align:right!important}
+html body .sky-dialog>[data-slot=dialog-close]{position:absolute!important;top:22px!important;left:18px!important;right:auto!important;display:grid!important;place-items:center;width:36px!important;height:36px!important;
+ border:0!important;border-radius:12px!important;background:#f1f5fa!important;color:var(--ai-mute)!important;box-shadow:none!important;opacity:1!important}
+html body .sky-dialog>[data-slot=dialog-close]:hover{background:#e6edf5!important}
 
-/* Text and tiles. */
-html body .sky-dialog :is(p,small,dt,dd,time,label,label>span){color:var(--sky-copy)}
-html body .sky-dialog :is(h2,h3,strong,b){color:var(--sky-ink)}
-html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount,.border-cyan-100,.customer-usage-summary,.wallet-usage-summary){background:var(--sky-tile)!important;border:0!important;border-radius:16px!important;box-shadow:none!important}
-html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount){padding:14px 16px!important}
-html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount) strong{color:var(--sky-ink)!important}
+/* Body: the part under the header scrolls; the header stays. */
+html body .sky-dialog>:not([data-slot=dialog-header]):not([data-slot=dialog-close]){flex:1 1 auto;min-height:0;overflow-y:auto;padding:20px 24px 16px!important;margin:0!important;background:#fff!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+/* The payment report keeps its own scrolling body and footer inside the form. */
+html body .sky-dialog>form.payment-report-form{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0!important}
+html body .sky-dialog form.payment-report-form .payment-report-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:20px 24px 12px!important;background:#fff!important}
+html body .sky-dialog form.payment-report-form>.ml-privacy-note{padding:0 24px 14px!important;margin:0!important;background:#fff}
+html body .sky-dialog section.payment-report-glass-confirm{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0!important}
+html body .sky-dialog section.payment-report-glass-confirm .payment-glass-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:20px 24px 12px!important}
 
-/* Fields: white, a thin line, blue when active. */
-html body .sky-dialog :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select){
- background:#fff!important;border:1px solid var(--sky-line)!important;border-radius:14px!important;box-shadow:none!important;color:var(--sky-ink)!important;
-}
-html body .sky-dialog :is(input,textarea,select):focus{border-color:var(--sky-blue)!important;box-shadow:0 0 0 3px rgba(20,103,207,.16)!important;outline:none!important}
-html body .sky-dialog :is(label.rounded-xl.border,.payment-report-proof,.payment-proof){background:#f8fbff!important;border:1px dashed #bcd0ea!important}
-/* A search box is the frame itself; its input has no second frame. */
-html body .sky-dialog .wallet-usage-search{background:#fff!important;border:1px solid var(--sky-line)!important;border-radius:14px!important;box-shadow:none!important}
-html body .sky-dialog .wallet-usage-search:focus-within{border-color:var(--sky-blue)!important;box-shadow:0 0 0 3px rgba(20,103,207,.16)!important}
-html body .sky-dialog .wallet-usage-search input{border:0!important;box-shadow:none!important;background:transparent!important}
-html body .sky-dialog .wallet-usage-search input:focus-visible{outline:none!important}
-html body .sky-dialog [class*=border-dashed]{border-color:#bcd0ea!important}
-html body .sky-dialog input[type=file]::file-selector-button{border:0;border-radius:10px;background:var(--sky-tile);color:var(--sky-blue);font-weight:700;padding:8px 14px;margin-inline-end:10px;cursor:pointer}
+/* Text and the light boxes (amount, bank details, totals). */
+html body .sky-dialog :is(p,small,dt,dd,time){color:var(--ai-mute)}
+html body .sky-dialog :is(h2,h3,strong,b){color:var(--ai-ink)}
+html body .sky-dialog :is(label>span:first-child,.field>span,.sv-label){color:var(--ai-copy)!important;font:600 13px/1.4 Heebo,Arial,sans-serif!important}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount,.border-cyan-100,.wallet-usage-summary,.customer-usage-summary){
+ background:var(--ai-field)!important;border:0!important;border-radius:16px!important;box-shadow:inset 0 0 0 1px var(--ai-field-line)!important;padding:14px 16px!important}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount) strong{color:var(--ai-ink)!important}
 
-/* Choices (bank transfer / card): a light track, the chosen one white with blue text. */
-html body .sky-dialog :is([data-slot=tabs-list],.payment-method-buttons){background:#eef3f9!important;border:0!important;box-shadow:none!important;border-radius:14px!important}
-html body .sky-dialog :is([data-slot=tabs-trigger],.payment-method-buttons button){color:var(--sky-mute)!important;border:0!important;border-radius:11px!important;box-shadow:none!important;background:transparent!important}
-html body .sky-dialog :is([data-slot=tabs-trigger][data-state=active],.payment-method-buttons button[aria-pressed=true]){background:#fff!important;color:var(--sky-blue)!important;box-shadow:0 1px 2px rgba(15,40,80,.1),0 4px 12px -6px rgba(15,40,80,.25)!important}
+/* Fields: light grey with a thin line; white with a blue ring while typing. */
+html body .sky-dialog :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select,button[role=combobox]){
+ min-height:48px;border:0!important;border-radius:14px!important;background:var(--ai-field)!important;box-shadow:inset 0 0 0 1px var(--ai-field-line)!important;
+ color:var(--ai-ink)!important;font:600 15px Heebo,Arial,sans-serif!important;padding:10px 12px!important}
+html body .sky-dialog :is(input,textarea,select):focus{background:#fff!important;box-shadow:0 0 0 2px var(--ai-blue),0 0 0 5px #1673e622!important;outline:none!important}
+html body .sky-dialog :is(.payment-proof-upload,label.rounded-xl.border,[class*=border-dashed]){background:var(--ai-field)!important;border:1px dashed #c9d5e3!important;border-radius:16px!important;box-shadow:none!important}
+html body .sky-dialog input[type=file]{font:500 13px Heebo,Arial,sans-serif;color:var(--ai-mute)}
+html body .sky-dialog input[type=file]::file-selector-button{border:0;border-radius:12px;background:#fff;color:var(--ai-blue);box-shadow:inset 0 0 0 1px var(--ai-field-line);font:700 13.5px Heebo,Arial,sans-serif;padding:9px 14px;margin-inline-end:10px;cursor:pointer}
+/* The usage search box is the frame itself. */
+html body .sky-dialog .wallet-usage-search{background:var(--ai-field)!important;border:0!important;border-radius:14px!important;box-shadow:inset 0 0 0 1px var(--ai-field-line)!important}
+html body .sky-dialog .wallet-usage-search:focus-within{background:#fff!important;box-shadow:0 0 0 2px var(--ai-blue),0 0 0 5px #1673e622!important}
+html body .sky-dialog .wallet-usage-search input:not([type=checkbox]):not([type=radio]):not([type=file]),html body .sky-dialog .wallet-usage-search input:not([type=checkbox]):not([type=radio]):not([type=file]):focus{box-shadow:none!important;background:transparent!important;outline:none!important}
+
+/* Choice of payment way: a light track, the chosen one white with blue text. */
+html body .sky-dialog :is([data-slot=tabs-list],.payment-method-buttons){background:#f1f5fa!important;border:0!important;box-shadow:none!important;border-radius:14px!important;padding:4px!important}
+html body .sky-dialog :is([data-slot=tabs-trigger],.payment-method-buttons button){min-height:42px;color:var(--ai-mute)!important;border:0!important;border-radius:11px!important;box-shadow:none!important;background:transparent!important;font:700 14.5px Heebo,Arial,sans-serif!important}
+html body .sky-dialog :is([data-slot=tabs-trigger][data-state=active],.payment-method-buttons button[aria-pressed=true]){background:#fff!important;color:var(--ai-blue)!important;box-shadow:0 1px 2px rgba(15,40,80,.1),0 4px 12px -6px rgba(15,40,80,.25)!important}
 html body .sky-dialog :is([data-slot=tabs-trigger],.payment-method-buttons button) svg{color:currentColor!important}
 
-/* Buttons: the main action in the blue of "הטענת יתרה"; secondary ones white; plain links blue. */
-html body .sky-dialog :is(button[type=submit],.payment-glass-send,.payment-report-submit,.customer-topup-submit){
- background:linear-gradient(#1072e4,#1467cf)!important;color:#fff!important;border:0!important;border-radius:12px!important;
- box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 1px 2px rgba(10,60,140,.25),0 8px 20px -10px rgba(22,115,230,.7)!important;font-weight:700!important;
-}
-html body .sky-dialog :is(button[type=submit],.payment-glass-send,.payment-report-submit,.customer-topup-submit) :is(svg,span){color:#fff!important}
-html body .sky-dialog :is(button[type=submit],.payment-glass-send):disabled{opacity:.6}
-html body .sky-dialog :is(.payment-glass-back,.payment-report-cancel,button[data-variant=ghost]){background:transparent!important;color:var(--sky-blue)!important;box-shadow:none!important}
-html body .sky-dialog a{color:var(--sky-blue)!important}
-html body .sky-dialog :is(button,a,input,select,textarea,[role=tab]):focus-visible{outline:3px solid #0079cb!important;outline-offset:2px}
+/* Footer strip with the actions, as in the AI popup: main action violet-blue, cancel light grey. */
+html body .sky-dialog :is(.payment-report-footer,.payment-glass-actions){display:flex!important;flex-direction:row!important;align-items:center;gap:10px!important;flex:none;
+ padding:12px 16px 14px!important;margin:0!important;background:#fff!important;border-top:1px solid var(--ai-line)!important;box-shadow:none!important}
+html body .sky-dialog form.customer-topup-glass div:has(>button[type=submit]){position:sticky;bottom:-16px;z-index:1;margin:0 -24px -16px!important;padding:12px 24px 14px!important;background:#fff;border-top:1px solid var(--ai-line)}
+html body .sky-dialog :is(button[type=submit],.payment-glass-send,.payment-report-footer>button:first-child){
+ flex:1 1 auto;min-height:48px!important;height:48px;padding:0 20px!important;border:0!important;border-radius:14px!important;
+ background:linear-gradient(135deg,var(--ai-blue),var(--ai-violet))!important;color:#fff!important;box-shadow:0 10px 22px -10px #5a46dccc!important;font:700 15px Heebo,Arial,sans-serif!important}
+html body .sky-dialog :is(button[type=submit],.payment-glass-send,.payment-report-footer>button:first-child) :is(svg,span){color:#fff!important}
+html body .sky-dialog :is(button[type=submit],.payment-glass-send,.payment-report-footer>button:first-child):disabled{opacity:1!important;background:#e3e9f1!important;color:#64768e!important;box-shadow:none!important}
+html body .sky-dialog :is(.payment-glass-back,.payment-report-footer>button:not(:first-child)){flex:none;min-height:48px!important;height:48px;padding:0 20px!important;border:0!important;border-radius:14px!important;
+ background:#f1f5fa!important;color:var(--ai-ink)!important;box-shadow:none!important;font:700 15px Heebo,Arial,sans-serif!important}
+/* Sizes in the footer row: the main action takes the room, cancel keeps its width. */
+html body .sky-dialog :is(.payment-report-footer,.payment-glass-actions)>button{width:auto!important;max-width:none!important;margin:0!important}
+html body .sky-dialog :is(.payment-report-footer,.payment-glass-actions)>button:first-child{flex:1 1 0!important;min-width:0}
+html body .sky-dialog :is(.payment-report-footer,.payment-glass-actions)>button:not(:first-child){flex:0 0 auto!important}
+html body .sky-dialog a{color:var(--ai-blue)!important}
+html body .sky-dialog :is(button,a,input,select,textarea,[role=tab]):focus-visible{outline:2px solid var(--ai-blue)!important;outline-offset:2px}
 
-/* Usage history: each charge a white card with a thin line; the amount in a light blue tile. */
-html body .sky-dialog .wallet-usage-history :is(article,li,.wallet-usage-row,.customer-usage-row){background:#fff!important;border:1px solid #e7edf5!important;border-radius:16px!important;box-shadow:0 1px 2px rgba(15,40,80,.05)!important}
-html body .sky-dialog .wallet-usage-history :is(.wallet-usage-amount,.customer-usage-amount){background:var(--sky-tile)!important;border:0!important}
+/* Usage history: each charge a white card with a thin line; the amount on the light grey of the fields. */
+html body .sky-dialog .wallet-usage-history :is(article,li,.wallet-usage-row,.customer-usage-row){background:#fff!important;border:0!important;border-radius:16px!important;box-shadow:inset 0 0 0 1px var(--ai-line),0 1px 2px rgba(15,40,80,.05)!important}
+html body .sky-dialog .wallet-usage-history :is(.wallet-usage-amount,.customer-usage-amount){background:var(--ai-field)!important;border:0!important;box-shadow:inset 0 0 0 1px var(--ai-field-line)!important}
+
+@media(max-width:640px){
+ html body [data-slot=dialog-content].sky-dialog{width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;border-radius:24px!important}
+ html body .sky-dialog>:not([data-slot=dialog-header]):not([data-slot=dialog-close]){padding:18px 18px 14px!important}
+ html body .sky-dialog form.payment-report-form .payment-report-body{padding:18px 18px 10px!important}
+ html body .sky-dialog form.customer-topup-glass div:has(>button[type=submit]){margin:0 -18px -14px!important;padding:12px 18px 14px!important;bottom:-14px}
+}
 @media(prefers-reduced-motion:reduce){html body .sky-dialog *{transition:none!important}}

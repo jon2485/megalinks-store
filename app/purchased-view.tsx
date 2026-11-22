@@ -19,7 +19,8 @@ import { type Ctx, Empty, ErrorBox } from './workspace';
 // The article buttons of "הכתבות שלי", shared with the customers centre's publications list (owner 22.11.2026), so both
 // pages offer the same actions on the same article and every change shows on both. `writing_ready` comes from the
 // server when the row carries no article text (customers centre); otherwise it is worked out here as before.
-export function PurchaseActions({ article, ctx, compact=false, canAssign=false }: { article: Row; ctx: Ctx; compact?:boolean; canAssign?:boolean }) {
+// assign=false: no "שיוך ללקוח" (the customers centre, where the article is already under its customer; owner 22.11.2026).
+export function PurchaseActions({ article, ctx, compact=false, canAssign=false, assign=true }: { article: Row; ctx: Ctx; compact?:boolean; canAssign?:boolean; assign?:boolean }) {
     const liveLink = publicationLink(article), stage = purchaseStage(article), editable = stage === 'editing';
     const ready = article.writing_ready ?? writingCustomerEditor(article);
     const actionBase='inline-flex h-auto min-h-11 items-center justify-center gap-2 whitespace-normal rounded-full px-4 py-2.5 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2';
@@ -30,7 +31,7 @@ export function PurchaseActions({ article, ctx, compact=false, canAssign=false }
                 {stage==='published'?liveLink?<a href={liveLink} target="_blank" rel="noreferrer" className={publishedStyle}><ExternalLink size={16}/>קישור לכתבה</a>:<Button disabled className={publishedStyle}>קישור לכתבה</Button>:stage==='demo-completed'?<span className="rounded-full bg-slate-100 px-4 py-2 text-center text-sm font-semibold text-slate-600">הדגמה הושלמה</span>:<Button className={primaryStyle} onClick={()=>ctx.go('article/'+article.id)}>{editable?<FileText size={16}/>:<Eye size={16}/ >}{editable?(article.editorial?(ready?'עריכת המאמר המוכן':article.writing_requested_at?'צפייה בהנחיות ובסטטוס':'מילוי הוראות לכותב התוכן'):compact?'המשך עריכה':'הוספת והמשך עריכת מאמר'):'צפייה בסטטוס'}</Button>}
                 {editable&&!article.editorial&&<div className="purchase-secondary-actions"><Button variant="outline" className={secondaryStyle} onClick={()=>ctx.go('article/'+article.id+'/ai')}><Sparkles size={16}/>יצירת תוכן AI</Button></div>}
                 </div>
-                {(canAssign||!!article.customer_id)&&<ArticleCustomerAssignment article={article} ctx={ctx} compact/>}</div>
+                {assign&&(canAssign||!!article.customer_id)&&<ArticleCustomerAssignment article={article} ctx={ctx} compact/>}</div>
             </div>;
 }
 
