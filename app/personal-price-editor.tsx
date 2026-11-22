@@ -9,13 +9,14 @@ export default function PersonalPriceEditor({ctx,customer,site,version,close}:{c
  const[value,setValue]=useState(String((site.personal_price??site.price_cents)/100)),[busy,setBusy]=useState(false),[error,setError]=useState('');const lock=useRef(false),form=useRef<HTMLFormElement>(null);
  // On a touch phone the keyboard opens only when the field is tapped, not when the sheet opens.
  const[touch]=useState(()=>typeof window!=='undefined'&&window.matchMedia('(pointer:coarse)').matches);
- // iOS does not shrink the page for the keyboard, so a bottom sheet stays behind it. Follow the visible area instead.
+ // Owner 22.11.2026: on a phone the popup opens in the middle and rises with the keyboard.
+ // iOS does not shrink the page for the keyboard, so place it by the visible area: centred, or just above the keyboard.
  useEffect(()=>{
   const dialog=form.current?.closest<HTMLElement>('[data-slot=dialog-content]'),visual=window.visualViewport;
   if(!dialog||!visual)return;
-  const fit=()=>{const keyboard=Math.max(0,window.innerHeight-visual.offsetTop-visual.height);dialog.style.setProperty('--pp-keyboard',keyboard+'px');dialog.style.setProperty('--pp-visible',visual.height+'px');};
+  const fit=()=>{const bottom=visual.offsetTop+visual.height,keyboard=window.innerHeight-bottom>80;dialog.style.setProperty('--pp-top',(keyboard?bottom-10:visual.offsetTop+visual.height/2)+'px');dialog.style.setProperty('--pp-shift',keyboard?'-100%':'-50%');dialog.style.setProperty('--pp-visible',visual.height+'px');};
   fit();visual.addEventListener('resize',fit);visual.addEventListener('scroll',fit);
-  return()=>{visual.removeEventListener('resize',fit);visual.removeEventListener('scroll',fit);dialog.style.removeProperty('--pp-keyboard');dialog.style.removeProperty('--pp-visible');};
+  return()=>{visual.removeEventListener('resize',fit);visual.removeEventListener('scroll',fit);for(const name of ['--pp-top','--pp-shift','--pp-visible'])dialog.style.removeProperty(name);};
  },[]);
  const save=async(remove=false)=>{if(lock.current)return;const amount=Number(value),cents=Math.round(amount*100);if(!remove&&(value.trim()===''||!Number.isFinite(amount)||amount<0||Math.abs(amount*100-cents)>.00001)){setError('יש להזין מחיר תקין בשקלים, עד שתי ספרות אחרי הנקודה.');return;}lock.current=true;setBusy(true);setError('');try{await ctx.run(()=>pricingApi('admin/pricing/overrides','POST',{scope:'user',owner_id:customer.id,version,rows:[remove?{website_id:site.id,action:'remove'}:{website_id:site.id,price_ils:amount}]}),remove?'המחיר האישי הוסר - הלקוח יקבל את מחיר הרמה שלו':'המחיר האישי נשמר ללקוח זה בלבד');close();}catch(e){setError((e as Error).message);}finally{lock.current=false;setBusy(false);}};
  const shown=(price:unknown)=>price==null?'לא הוגדר':money(Number(price));

@@ -242,5 +242,8 @@ body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .
 .personal-price-editor .pp-reset:disabled{opacity:.55;cursor:default}
 @media(max-width:560px){
  .personal-price-editor .pp-more{display:none}
- body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor){bottom:var(--pp-keyboard,0px)!important;max-height:min(92dvh,calc(var(--pp-visible,100dvh) - 12px))!important}
+ /* in the middle of the screen (not a bottom sheet); rises to sit just above the keyboard */
+ body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor){top:var(--pp-top,50%)!important;bottom:auto!important;left:12px!important;right:12px!important;width:auto!important;transform:none!important;translate:0 var(--pp-shift,-50%)!important;max-height:calc(var(--pp-visible,100dvh) - 24px)!important;border-radius:22px!important;box-shadow:0 22px 60px #020c1f73!important;transition:top .28s cubic-bezier(.2,.8,.2,1),translate .28s cubic-bezier(.2,.8,.2,1)}
+ body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor) [data-slot=dialog-header]:before{display:none}
 }
+@media(max-width:560px) and (prefers-reduced-motion:reduce){body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor){transition:none}}
