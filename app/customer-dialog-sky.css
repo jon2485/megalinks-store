@@ -105,10 +105,25 @@ html body .sky-dialog .customer-usage-glass .wallet-usage-summary>span{display:i
 html body .sky-dialog .customer-usage-glass .wallet-usage-summary>strong{font:800 16px Heebo,Arial,sans-serif!important;color:var(--ai-ink)!important}
 html body .sky-dialog .customer-usage-glass .wallet-usage-footer button{border:0!important;border-radius:12px!important;background:#f1f5fa!important;color:var(--ai-ink)!important;box-shadow:none!important;font:700 14px Heebo,Arial,sans-serif!important}
 
+/* Phones (owner 22.11: "the screen is so full, as if there is no X"): a sheet from the bottom that leaves the top of the
+   page visible, a smaller header, and a clear close button. */
 @media(max-width:640px){
- html body [data-slot=dialog-content].sky-dialog{width:calc(100vw - 24px)!important;max-height:calc(100dvh - 24px)!important;border-radius:24px!important}
- html body .sky-dialog>:not([data-slot=dialog-header]):not([data-slot=dialog-close]){padding:18px 18px 14px!important}
- html body .sky-dialog form.payment-report-form .payment-report-body{padding:18px 18px 10px!important}
- html body .sky-dialog form.customer-topup-glass div:has(>button[type=submit]){margin:0 -18px -14px!important;padding:12px 18px 14px!important;bottom:-14px}
+ html body [data-slot=dialog-content].sky-dialog{top:auto!important;bottom:0!important;left:0!important;right:0!important;transform:none!important;translate:0 0!important;--tw-translate-x:0!important;--tw-translate-y:0!important;
+  width:100vw!important;max-width:none!important;max-height:86dvh!important;border-radius:24px 24px 0 0!important;animation:sky-sheet-in .3s cubic-bezier(.22,1,.36,1)!important}
+ html body [data-slot=dialog-content].sky-dialog[data-state=closed]{animation:sky-sheet-out .2s ease-in forwards!important}
+ html body .sky-dialog>[data-slot=dialog-header]{gap:12px!important;padding:16px 16px 12px 64px!important}
+ html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge{width:40px!important;height:40px!important;border-radius:13px!important}
+ html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge svg{width:19px;height:19px}
+ html body .sky-dialog [data-slot=dialog-title]{font-size:19px!important}
+ html body .sky-dialog [data-slot=dialog-description]{font-size:13px!important;line-height:1.45!important}
+ html body .sky-dialog>[data-slot=dialog-close]{top:14px!important;left:14px!important;width:40px!important;height:40px!important;border-radius:50%!important;background:#e9eef5!important;color:var(--ai-ink)!important}
+ html body .sky-dialog>[data-slot=dialog-close] svg{width:18px!important;height:18px!important;stroke-width:2.4}
+ html body .sky-dialog>:not([data-slot=dialog-header]):not([data-slot=dialog-close]){padding:16px 16px 14px!important}
+ html body .sky-dialog form.payment-report-form .payment-report-body{padding:16px 16px 10px!important}
+ html body .sky-dialog :is(.payment-report-footer,.payment-glass-actions){padding:12px 16px max(14px,env(safe-area-inset-bottom))!important}
+ html body .sky-dialog form.customer-topup-glass div:has(>button[type=submit]){margin:0 -16px -14px!important;padding:12px 16px max(14px,env(safe-area-inset-bottom))!important;bottom:-14px}
 }
+@keyframes sky-sheet-in{from{transform:translateY(100%)}to{transform:none}}
+@keyframes sky-sheet-out{to{transform:translateY(100%)}}
+@media(prefers-reduced-motion:reduce){html body [data-slot=dialog-content].sky-dialog{animation:none!important}}
 @media(prefers-reduced-motion:reduce){html body .sky-dialog *{transition:none!important}}
