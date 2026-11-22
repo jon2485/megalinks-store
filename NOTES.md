@@ -1902,3 +1902,14 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Checked locally (fictional data, 390px and 1280px):** both popups, editor open/closed, the email HTML taken from the local job (mail connection off, nothing sent). `tests/fix-request-mail.mjs` new, passes; tsc and build pass. `tests/client-updates.mjs` fails on an old cart assertion about `app/workspace.tsx`, same on `0d0b152` (not related).
 - **Not pushed, not deployed.**
 - **Open:** a writer's article (editorial) that the sibling returns goes to `review`, not `revisions`, so it shows no fix note in the popup or editor. The email still goes out.
+## עורך הכתבה בטלפון: העתקת טקסט וכותרת שלא עולה (22.11.2026, ענף `claude/editor-title-mobile-275888`, לא ב-commit)
+- **באג 1 (העתקה בטלפון):** גוף הכתבה היה תיבת גלילה פנימית של 340px עם `overscroll-behavior:contain`, והסרגל הדביק (106px) כיסה את תחילתה. כשהדף נגלל מתחת לסרגל, הכותרת בראש הכתבה נשארה מוסתרת, וגרירה על הטקסט לא הזיזה את הדף.
+  - **התיקון:** מתחת ל-700px הגוף גדל עם הטקסט והדף גולל אותו. הסרגל נשאר דביק. נוסף `scroll-padding-top` כשהעורך בפוקוס. רק CSS, בסוף `app/studio-v6.css`. במחשב לא השתנה.
+- **באג 2 (הכותרת לא עולה):** בייבוא Word הכותרת נלקחה רק מסגנון "Heading 1" או "Title". כותב שסימן את הכותרת כ-Heading 2 או כשורה מודגשת, קיבל שדה כותרת ריק, והכותרת נשארה בגוף.
+  - **התיקון:** `leadingTitle` ב-`app/article-studio.tsx`. אם אין H1, לוקחים את הבלוק הראשון כשהוא כותרת (H1–H6) או שורה מודגשת כולה, קצרה, בלי נקודה בסוף. הכותרת יורדת מהגוף כמו קודם.
+  - **כתבות שכבר יובאו (לפי משוב הבעלים):** כששדה הכותרת ריק בפתיחת העורך:
+    - **כותרת H1 או H2 בראש הגוף:** עוברת לשדה לבד, פעם אחת לכל כתבה, ונשמרת כמו עריכה רגילה. אין ביטול בחזרה, כי היסטוריית העורך מתאפסת כשהתוכן מוחלף מבחוץ (`rich-editor.tsx`, שלא שיניתי).
+    - **מקרה לא בטוח (H3–H6 או שורה מודגשת):** מופיע הכפתור "העברת הכותרת מהמאמר". העיצוב ב-`app/studio-v4.css` (`.sv-title-suggest`).
+    - **כשמקלידים כותרת:** הכפתור נעלם.
+- **נבדק מקומית ב-390px:** לפני ואחרי, והכפתור עובד. בנייה עברה. `studio-ui` ו-`studio-actions` נכשלות גם בלי השינוי (`refund-dialog` מול fixture של `workspace`).
+- **לפני העלאה:** אין שאריות זמניות. בטיוטה המקומית 2192088b נשמרו שינויי בדיקה בנתונים בדויים בלבד.

@@ -13,7 +13,7 @@ import {writingBriefError} from '@/lib/writing-brief-validation';
 import {writingCode,writingSubmitted,writingCustomerEditor,writingStatus} from '@/lib/writing-workflow';
 import {canWorkOrder} from '@/lib/payment-state';
 import React,{useEffect,useRef,useState} from 'react';
-import { LayoutGrid, ArrowRight, ArrowLeft, Globe2, FileText, Sparkles, MessageSquareText, Download, Upload, Eye, Pencil, Send, Save, ShieldCheck, ImagePlus, Trash2, History, ChevronDown, Link2, Check, LoaderCircle, ExternalLink, Hash, Info, PenLine } from 'lucide-react';
+import { LayoutGrid, ArrowRight, ArrowLeft, Globe2, FileText, Sparkles, MessageSquareText, Download, Upload, Eye, Pencil, Send, Save, ShieldCheck, ImagePlus, Trash2, History, ChevronDown, Link2, Check, LoaderCircle, ExternalLink, Hash, Info, PenLine, ArrowUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -56,6 +56,22 @@ function stripLeadingTitle(html:string,title:string){
     for(const el of Array.from(root.children)){const text=(el.textContent||'').replace(/\s+/g,' ').trim();if(!text&&!el.querySelector('img'))continue;if(text===wanted&&/^(H[1-6]|P)$/.test(el.tagName))el.remove();break;}
     return root.innerHTML;
 }
+/** Writers often style the title as Heading 2/3 or as a short bold line instead of Heading 1; take the document's first block when it looks like a title.
+ *  `sure` (an H1/H2 at the top) moves into the title field by itself; anything else is only offered to the customer. */
+type BodyTitle={text:string;sure:boolean};
+const noTitle:BodyTitle={text:'',sure:false};
+function leadingTitle(html:string):BodyTitle{
+    if(typeof DOMParser==='undefined')return noTitle;
+    const root=new DOMParser().parseFromString('<div>'+html+'</div>','text/html').body.firstElementChild;if(!root)return noTitle;
+    for(const el of Array.from(root.children)){const text=(el.textContent||'').replace(/\s+/g,' ').trim();if(!text){if(el.querySelector('img'))return noTitle;continue;}
+        if(text.length>200)return noTitle;
+        if(/^H[1-6]$/.test(el.tagName))return {text,sure:/^H[12]$/.test(el.tagName)};
+        const bold=Array.from(el.querySelectorAll('strong,b')).map(b=>b.textContent||'').join('').replace(/\s+/g,' ').trim();
+        return el.tagName==='P'&&bold===text&&!/[.:;,]$/.test(text)?{text,sure:false}:noTitle;}
+    return noTitle;
+}
+let bodyTitleCache:[string,BodyTitle]=['',noTitle];
+function bodyTitleOf(html:string){if(bodyTitleCache[0]!==html)bodyTitleCache=[html,leadingTitle(html)];return bodyTitleCache[1];}
 function eventNote(event:Row){try{return (typeof event.data==='string'?JSON.parse(event.data):event.data)?.note||'';}catch{return '';}}
 
 export default function ArticleStudio({ctx,id,initialAi=false}:{ctx:Ctx;id:string;initialAi?:boolean}) {
@@ -79,6 +95,12 @@ export default function ArticleStudio({ctx,id,initialAi=false}:{ctx:Ctx;id:strin
     useEffect(()=>{setAiInFlight(state.data?.ai_generation?.status==='writing'||articleGenerationPending(id));},[id,state.data?.ai_generation?.status]);
     useEffect(()=>{const change=(event:Event)=>{const data=(event as CustomEvent).detail;if(data?.id!==id)return;setAiInFlight(data.status==='writing');if(data.status==='failed'){setError(data.error||'הכנת המאמר נכשלה.');setAiNoticeOpen(false);}if(data.status!=='writing')ctx.refresh();};window.addEventListener('megalinks:ai-generation',change);return()=>window.removeEventListener('megalinks:ai-generation',change);},[id,ctx.refresh]);
     useEffect(()=>{if(initialAi&&a&&!a.editorial&&!locked)setAiOpen(true);},[initialAi,a?.id]);
+    // Owner 22.11.2026: an empty title with a clear heading (H1/H2) at the top of the body moves up by itself, once per opened article,
+    // and is saved like any edit. Unsure cases keep the "העברת הכותרת מהמאמר" button.
+    const autoTitled=useRef('');
+    useEffect(()=>{if(!a||locked||autoTitled.current===a.id||loaded.current!==a.id+':'+a.version||form.content!==(a.content||''))return;autoTitled.current=a.id;
+        if(String(form.title||'').trim())return;const found=leadingTitle(form.content);if(!found.sure)return;
+        setForm(f=>String(f.title||'').trim()?f:{...f,title:found.text.slice(0,300),content:stripLeadingTitle(f.content,found.text)});setDirty(true);},[a?.id,a?.version,locked,form.content,form.title]);
     const field=(key:string,value:any)=>{setForm(f=>({...f,[key]:value}));setDirty(true);};
     const brief=(key:string,value:any)=>{setForm(f=>({...f,brief:{...f.brief,[key]:value}}));setDirty(true);};
     // An article bought for one of the account's customers: a quiet line when the brief holds that customer's defaults.
@@ -110,7 +132,8 @@ export default function ArticleStudio({ctx,id,initialAi=false}:{ctx:Ctx;id:strin
         try{
             const result=await editorImportTask(async signal=>{
                 const raw=await importRichDocument(file);signal.throwIfAborted();
-                const imported={...raw,html:stripLeadingTitle(raw.html,raw.title)};
+                const title=raw.title||leadingTitle(raw.html).text;
+                const imported={...raw,title,html:stripLeadingTitle(raw.html,title)};
                 const next:Picture[]=[];
                 if(imported.images.length){setImageBusy(true);for(const image of imported.images){const saved=await upload(image.file,signal);signal.throwIfAborted();next.push({id:saved.id,credit:'',creditUrl:'',alt:'תמונה ממסמך Word',token:image.token});}}
                 return {imported,next};
@@ -181,7 +204,9 @@ export default function ArticleStudio({ctx,id,initialAi=false}:{ctx:Ctx;id:strin
     const adminS:AdminStudio|null=isAdmin?{ctx,id,a,w,o,busy,dirty,note,setNote,status,act,save,editArticle:()=>{setPreview(false);requestAnimationFrame(()=>document.querySelector('.sv-editor')?.scrollIntoView({behavior:'smooth',block:'start'}));},checks,validated,validate,professionalPending,finishWriting,importFile:(f:File)=>{void importFile(f);},hasContent:!!form.content.trim(),canSend,sendLabel,downloadWord,saving:busy}:null;
     const adminSt=isAdmin?adminStage(a,professionalPending):'customer';
     // Shared pieces: the same markup for the customer and the admin, placed differently in each view.
-    const titleField=<><label htmlFor="studio-title" className="sv-label">כותרת הכתבה (חובה)</label><div className="sv-title-field"><Input id="studio-title" aria-required="true" className="sv-title-input" maxLength={300} value={form.title} disabled={locked||busy} placeholder="נושא המאמר הוא..." onChange={e=>field('title',e.target.value)}/>{!locked&&<Pencil size={17} className="sv-title-pencil" aria-hidden="true"/>}</div></>;
+    // A title left inside the body (older imports) can be moved up with one tap, instead of copying it on a phone.
+    const suggestedTitle=!locked&&!preview&&!String(form.title||'').trim()?bodyTitleOf(form.content).text:'';
+    const titleField=<><label htmlFor="studio-title" className="sv-label">כותרת הכתבה (חובה)</label><div className="sv-title-field"><Input id="studio-title" aria-required="true" className="sv-title-input" maxLength={300} value={form.title} disabled={locked||busy} placeholder="נושא המאמר הוא..." onChange={e=>field('title',e.target.value)}/>{!locked&&<Pencil size={17} className="sv-title-pencil" aria-hidden="true"/>}</div>{suggestedTitle&&<button type="button" className="sv-title-suggest" disabled={busy} onClick={()=>{setForm(f=>({...f,title:suggestedTitle.slice(0,300),content:stripLeadingTitle(f.content,suggestedTitle)}));setDirty(true);}}><ArrowUp size={15} aria-hidden="true"/><span>העברת הכותרת מהמאמר: <b>{suggestedTitle}</b></span></button>}</>;
     const linkHint=linkAdded?<p className="sv-hint sv-hint-ok" role="status"><Check size={17} aria-hidden="true"/>הקישור נוסף</p>:!hasLink&&!locked&&<p className="sv-hint"><Link2 size={17} aria-hidden="true"/>חובה להוסיף קישור בתוך המאמר. סמנו את המילים הרצויות ולחצו על סמל הקישור בסרגל.</p>;
     const imagesCard=<section className="sv-card sv-images studio-images-card" aria-label="תמונות הכתבה"><div className="sv-card-head"><h2>תמונות הכתבה</h2>{!locked&&<Button className="sv-btn sv-btn-tint sv-btn-small" variant="outline" disabled={busy} onClick={()=>openImages('gallery')}><ImagePlus size={17}/>{gallery.length?'ניהול':'הוספה'}</Button>}</div>{gallery.length?<div className="sv-gallery">{gallery.map(p=><figure key={p.id}><div className="sv-thumb"><img src={'/api/files/'+p.id} alt={p.alt}/></div><figcaption><strong>{p.primary?'תמונה ראשית':'תמונה משנית'}</strong><span data-missing={!p.credit}>קרדיט: {p.credit||'חסר קרדיט — יש להשלים לפני שליחה'}</span>{p.creditUrl&&<a dir="ltr" href={p.creditUrl} target="_blank" rel="noreferrer">מקור התמונה</a>}{!locked&&<div className="sv-row"><Button type="button" variant="outline" className="sv-btn sv-btn-secondary sv-btn-small" aria-label={'הסרת '+p.alt} disabled={busy||imageBusy} onClick={()=>removeGalleryPicture(p)}><Trash2 size={15}/>הסרה</Button><label className={'sv-btn sv-btn-secondary sv-btn-small'+(busy||imageBusy?' is-disabled':'')}><Upload size={15}/>החלפה<input type="file" hidden aria-label={'החלפת '+p.alt} accept="image/jpeg,image/png,image/webp,image/gif" disabled={busy||imageBusy} onChange={e=>{const file=e.target.files?.[0];e.target.value='';if(file)void replaceGalleryPicture(p,file);}}/></label></div>}</figcaption></figure>)}</div>:<button type="button" className="sv-dropzone" disabled={locked||busy} onClick={()=>openImages('gallery')}><ImagePlus size={22} aria-hidden="true"/><strong>הוספת תמונה ראשית ומשנית</strong><span>{humanWriting?'אפשר לצרף תמונות וקרדיטים עבור צוות הכתיבה.':'לא חובה: אם לא תבחרו, המערכת תבחר תמונה מתאימה אוטומטית.'}</span></button>}</section>;
     const historyCard=<section className="sv-card sv-history studio-history-card"><details className="studio-details"><summary><span className="sv-history-title"><History size={18}/>היסטוריית שינויים <span className="sv-pill">{activity.length}</span></span>{isAdmin&&<span className="ar-fold-hint"><span>פתיחה</span><span>סגירה</span></span>}<ChevronDown size={18}/></summary><div className="sv-history-list">{activity.length?activity.map(event=><div key={event.id}><div><p>{event.action}</p><time dateTime={event.created}>{new Date(event.created).toLocaleString('he-IL')}</time></div>{eventNote(event)&&<p className="sv-muted">{eventNote(event)}</p>}</div>):<p className="sv-muted">אין עדיין שינויים מתועדים.</p>}</div></details></section>;
