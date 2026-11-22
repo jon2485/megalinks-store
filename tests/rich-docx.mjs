@@ -40,3 +40,11 @@ const links=[...doc2.matchAll(/<w:hyperlink[^>]*>([\s\S]*?)<\/w:hyperlink>/g)].m
 assert.equal(links.length,2,'two links');for(const l of links){assert(l.includes('<w:color w:val="0563c1"/>'),'link is blue');assert(l.includes('<w:u w:val="single"/>'),'link is underlined');assert(!l.includes('w:val="000000"'),'no black inside a link');}
 assert(doc2.includes('<w:color w:val="000000"/>'),'the text around the link keeps its own colour');}
 console.log('rich docx links blue ok');
+// Supplier e-mail (Staging 22.11.2026): an image Word cannot show fails a download (strict) but in lenient mode becomes a
+// short note and is reported, so the e-mail still goes.
+{const webp=new Uint8Array([82,73,70,70,30,0,0,0,87,69,66,80,86,80,56,32,0,0,0,0]);const html3='<p>טקסט</p><figure><img src="/api/files/w1" data-credit="צילום: א"></figure><figure><img src="/api/files/ok" data-credit="צילום: ב"></figure><figure><img src="/api/files/gone"></figure>';
+ const load=async id=>{if(id==='gone')throw Error('missing');return id==='w1'?{bytes:webp,type:'image/webp'}:{bytes:png,type:'image/png'};};
+ await assert.rejects(()=>richArticleDocx('t',html3,{},load),/אינה נתמכת/,'download stays strict');
+ const skipped=[];const doc3=strFromU8(unzipSync(await richArticleDocx('t',html3,{},load,{lenient:true,skipped}))['word/document.xml']);
+ assert.deepEqual(skipped,['w1','gone']);assert.equal(doc3.match(/<w:drawing>/g).length,1,'the good image stays');assert.equal(doc3.match(/התמונה מצורפת למייל כקובץ נפרד/g).length,2);assert(doc3.includes('צילום: א'),'the credit of a skipped image stays');}
+console.log('rich docx lenient images ok');

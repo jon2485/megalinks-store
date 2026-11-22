@@ -15,7 +15,7 @@ export const now=()=>'2026-11-22T10:00:00.000Z';export const all=async()=>[];
 export const externalFetch=async(url,o)=>{globalThis.sent.push(JSON.parse(o.body));return new Response('{}');};`;
 const result=await build({entryPoints:['lib/mail.ts'],bundle:true,platform:'node',format:'esm',write:false,plugins:[{name:'thread-fixtures',setup(b){b.onResolve({filter:/^(cloudflare:workers|\.\/server|\.\/delivery-docx|\.\/order-statement)$/},a=>({path:a.path,namespace:'fixture'}));b.onLoad({filter:/.*/,namespace:'fixture'},a=>({loader:'js',contents:a.path==='cloudflare:workers'?'export const env={};':a.path==='./delivery-docx'?'export const articleDocx=async()=>new Uint8Array([80,75,3,4]);':a.path==='./order-statement'?'export async function storedOrderPdf(){}':server}));}}]});
 mkdirSync('.sites-runtime',{recursive:true});writeFileSync('.sites-runtime/supplier-thread.mjs',result.outputFiles[0].text);
-const {sendQueuedMail}=await import(pathToFileURL(realpathSync('.sites-runtime/supplier-thread.mjs')));
+const {sendQueuedMail,mailFailure}=await import(pathToFileURL(realpathSync('.sites-runtime/supplier-thread.mjs')));
 
 const article=(id,title,seq)=>({id,title,website_id:'w',content:'<p>x</p>',data:JSON.stringify({supplier_sequence:seq,supplier_stock_total:10})});
 const job=(data)=>({status:'requested',data:JSON.stringify({to:'supplier@example.test',subject:'',text:'',button:{label:'x',url:'https://example.test/supplier/tok'},...data})});
@@ -68,4 +68,8 @@ globalThis.jobs['email:supplier:a2']=job({attach_article:'a2'});await sendQueued
 assert.equal(again.subject,'Re: '+first2.subject);assert.equal(again.headers['In-Reply-To'],first2.headers['Message-ID']);assert(!again.headers['Message-ID'],'no second message with the same Message-ID');
 assert.equal(JSON.parse(globalThis.jobs['email:supplier:a2'].data).thread_id,first2.headers['Message-ID'],'later follow-ups keep answering the same thread');
 
+// The admin sees the real cause of a failed e-mail, never a key (Staging 22.11.2026: only the generic text was stored).
+assert.equal(mailFailure(new Error('תמונה אינה תקינה או אינה נתמכת ב־Word.')),'שליחת המייל נכשלה: תמונה אינה תקינה או אינה נתמכת ב־Word.');
+{const m=mailFailure(new TypeError('Cannot read properties of undefined (reading "x") Bearer re_abc123 https://api.resend.com/emails?k=1'));
+ assert(m.startsWith('שליחת המייל נכשלה בהכנת ההודעה')&&m.includes('TypeError')&&!m.includes('re_abc123')&&!m.includes('api.resend.com'),m);}
 console.log('SUPPLIER THREAD PASS: one thread per article (fixed id stored with the first e-mail), unique subject per article, hold/update answer only their own article, old articles get fresh e-mails without "Re:".');

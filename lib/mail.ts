@@ -30,13 +30,16 @@ export async function mailFiles(job:Row):Promise<MailFile[]>{
  if(job.attach_order_statement){const {storedOrderPdf}=await import('./order-statement');const pdf=await storedOrderPdf(job.attach_order_statement,job.origin);files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'סיכום ההזמנה'});}
  if(job.attach_writing_brief){const {writingBriefFile}=await import('./writing-brief-file');const pdf=await writingBriefFile(job.attach_writing_brief,job.origin);files.length=0;files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'פרטי הכתיבה'});}
  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(a){
-  files.length=0;files.push({filename:'article.docx',content_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',bytes:await articleDocx(a),label:'קובץ Word של הכתבה, עם התמונות והקרדיטים'});
+  // Staging 22.11.2026: one image Word cannot show (WEBP, HEIC, a damaged or missing file) failed the whole supplier
+  // e-mail. Now the Word file goes without that image (a short note in its place) and the image travels as its own file.
+  const skipped:string[]=[],docx=await articleDocx(a,{lenient:true,skipped});
+  files.length=0;files.push({filename:'article.docx',content_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',bytes:docx,label:skipped.length?'קובץ Word של הכתבה (חלק מהתמונות מצורפות רק כקבצים נפרדים)':'קובץ Word של הכתבה, עם התמונות והקרדיטים'});
   if(job.attach_images){const d=JSON.parse(a.data||'{}'),images=articleImages(a),fileRows=await mapIn('files','id',[...images.map(i=>i.id),d.document_id]);
    // Owner (22.11.2026): every image of the article travels as its own file too, not only inside the Word file. Images
    // placed inside the text (the editor's pictures) were missing: only the main and secondary fields were attached.
-   for(const img of images){const s=await storedFile(fileRows.get(img.id),MAIL_FILE_MAX);if(s&&String(s.file.type).startsWith('image/'))files.push({filename:'image-'+img.n+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label:img.label,image:true});}
+   for(const img of images){const s=await storedFile(fileRows.get(img.id),MAIL_FILE_MAX).catch(()=>null);if(s&&String(s.file.type).startsWith('image/'))files.push({filename:'image-'+img.n+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label:img.label,image:true});}
    // The page no longer shows the article, so the customer's original document travels with the email too.
-   const doc=await storedFile(fileRows.get(String(d.document_id)),MAIL_FILE_MAX);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
+   const doc=await storedFile(fileRows.get(String(d.document_id)),MAIL_FILE_MAX).catch(()=>null);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
   }}}
  return files;
 }
@@ -118,7 +121,15 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
   const resend=c.provider==='resend';
   const res=await externalFetch(resend?RESEND_URL:c.url,{method:'POST',headers:{Authorization:'Bearer '+c.secret,'Content-Type':'application/json','Idempotency-Key':id},body:JSON.stringify(resend?resendMessage(payload,c):{...payload,thread:undefined})});
   if(!res.ok)throw resend?new ApiError(502,resendFailure(res.status)):new Error('שירות הדיוור החזיר '+res.status);if(payload.thread)await stmt("UPDATE jobs SET status='succeeded',updated=?,data=json_set(data,'$.thread_id',?,'$.thread_subject',?) WHERE id=?",now(),payload.thread.id,payload.thread.subject,id).run();else await stmt("UPDATE jobs SET status='succeeded',updated=? WHERE id=?",now(),id).run();return {status:'succeeded'};
- }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.delivery_error',?),updated=? WHERE id=?",safeFailure(e,'שליחת המייל נכשלה. בדקו את החיבור ונסו שוב.'),now(),id).run();return {status:'failed'};}}
+ }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.delivery_error',?),updated=? WHERE id=?",mailFailure(e),now(),id).run();return {status:'failed'};}}
+// The real cause for the admin (Staging 22.11.2026: only "בדקו את החיבור" was stored). Our own errors are Hebrew and safe to
+// show; anything else is named by its type and a short message, with anything that looks like a key or token removed.
+export function mailFailure(e:unknown){
+ const own=safeFailure(e,'');if(own)return own;
+ const raw=String((e as any)?.message||e||''),msg=raw.replace(/(re_|sk-|Bearer\s+)[\w.-]+/gi,'[מוסתר]').replace(/https?:\/\/\S+/g,'[כתובת]').replace(/\s+/g,' ').trim().slice(0,200);
+ if(/[֐-׿]/.test(raw))return 'שליחת המייל נכשלה: '+msg;
+ return 'שליחת המייל נכשלה בהכנת ההודעה, לפני השליחה לשירות הדיוור. פרטים טכניים: '+(String((e as any)?.name||'Error'))+(msg?': '+msg:'');
+}
 export async function queueMail(id:string,userId:string,data:Row){await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,userId,'email','requested',JSON.stringify(data),now(),now()).run();return sendQueuedMail(id);}
 // pre: what the caller already read for many articles at once (the order, the admin addresses), so a loop of
 // mails does not read them again per article. The customer is only needed when the mail goes to the customer.
