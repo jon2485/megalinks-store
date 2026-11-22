@@ -15,18 +15,28 @@ export function supplierPublicationFields(article:Row):[string,string][] {
         ['הנחיות המנהל לפרסום',data.admin_notes],
     ] as [string,unknown][]).filter(([,value])=>String(value||'').trim()).map(([label,value])=>[label,String(value).trim()]);
 }
-// Owner (22.11.2026): one bold line "קרדיטים לתמונות:" with the credit of every image: the main and secondary images
-// and the pictures inside the text (their data-credit). The same credit twice is shown once.
-export function supplierImageCredits(article:Row):string[] {
-    const data=typeof article.data==='string'?JSON.parse(article.data):article.data||article;
-    const decode=(v:string)=>v.replace(/&(#\d+|#x[\da-f]+|amp|lt|gt|quot|apos);/gi,(m,e:string)=>e[0]==='#'?String.fromCodePoint(e[1].toLowerCase()==='x'?parseInt(e.slice(2),16):Number(e.slice(1))):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'"} as Record<string,string>)[e.toLowerCase()]||m);
-    const inline=[...String(article.content||'').matchAll(/<img\b[^>]*\bdata-credit\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)].map(m=>decode(m[1]??m[2]??''));
-    const list=[[data.image_credit,data.image_credit_url].filter(Boolean).join(' · '),data.secondary_image_credit,...inline].map(v=>String(v||'').replace(/\s+/g,' ').trim()).filter(Boolean);
-    return [...new Set(list)];
+export type ArticleImage={id:string;n:number;label:string;credit:string};
+const decodeAttr=(v:string)=>v.replace(/&(#\d+|#x[\da-f]+|amp|lt|gt|quot|apos);/gi,(m,e:string)=>e[0]==='#'?String.fromCodePoint(e[1].toLowerCase()==='x'?parseInt(e.slice(2),16):Number(e.slice(1))):({amp:'&',lt:'<',gt:'>',quot:'"',apos:"'"} as Record<string,string>)[e.toLowerCase()]||m);
+const attr=(tag:string,name:string)=>{const m=new RegExp('\\b'+name+'\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\')','i').exec(tag);return m?decodeAttr(m[1]??m[2]??''):'';};
+// The article's images in order: main, secondary, then the pictures inside the text; each id once, at most 20.
+// n is the image's number everywhere: the attached file is image-<n>.<ext> and the credit says "קרדיט לתמונה מס׳ <n>".
+export function articleImages(article:Row):ArticleImage[] {
+    const d=typeof article.data==='string'?JSON.parse(article.data||'{}'):article.data||{},out:ArticleImage[]=[],seen=new Set<string>();
+    const add=(id:unknown,label:string,credit:unknown)=>{const v=String(id||'');if(v&&/^[\w-]{1,100}$/.test(v)&&!seen.has(v)&&out.length<20){seen.add(v);const n=out.length+1;out.push({id:v,n,label:'תמונה מס׳ '+n+' ('+label+')',credit:String(credit||'').replace(/\s+/g,' ').trim()});}};
+    add(d.image_id,'הראשית',[d.image_credit,d.image_credit_url].filter(Boolean).join(' · '));add(d.secondary_image_id,'נוספת',d.secondary_image_credit);
+    for(const m of String(article.content||'').matchAll(/<img\b[^>]*>/gi)){const id=/^\/api\/files\/([\w-]{1,100})$/.exec(attr(m[0],'src'))?.[1];if(id)add(id,'מתוך הכתבה',attr(m[0],'data-credit'));}
+    return out;
 }
-export function supplierPublicationNotes(article:Row):string {
-    const credits=supplierImageCredits(article);
-    return [...supplierPublicationFields(article).map(([label,value])=>label+':\n'+value),...(credits.length?['קרדיטים לתמונות:\n'+credits.join('\n')]:[])].join('\n\n');
+// Owner (22.11.2026): per image, in the order of the attachments: "קרדיט לתמונה מס׳ 1:" + the credit, and under it the
+// exact name of the attached file, so the supplier can match them. An image too big to attach says it is in the Word file.
+export function supplierImageCredits(article:Row,attachments:MailFileLink[]=[]){
+    return articleImages(article).map(img=>{const file=attachments.find(f=>f.name.startsWith('image-'+img.n+'.'));
+        return {...img,file:file?.name||'',attached:!!file&&file.attached!==false,url:file?.url||''};});
+}
+const creditFileText=(c:ReturnType<typeof supplierImageCredits>[number])=>c.attached?'קובץ: '+c.file:c.file?'הקובץ '+c.file+' גדול מדי לצירוף: התמונה נמצאת בקובץ ה-Word'+(c.url?' ואפשר להוריד אותה כאן: '+c.url:''):'התמונה נמצאת בקובץ ה-Word';
+export function supplierPublicationNotes(article:Row,attachments:MailFileLink[]=[]):string {
+    const credits=supplierImageCredits(article,attachments);
+    return [...supplierPublicationFields(article).map(([label,value])=>label+':\n'+value),...(credits.length?['קרדיטים לתמונות:\n'+credits.map(c=>'קרדיט לתמונה מס׳ '+c.n+': '+(c.credit||'לא צוין קרדיט')+'\n'+creditFileText(c)).join('\n')]:[])].join('\n\n');
 }
 // Owner decision (11.11.2026): the subject names the site and its package count (3/10); a site without a
 // package gets the article's running number for that site in the current month.
@@ -45,8 +55,9 @@ export function supplierArticleEmailHtml(article:Row,websiteName:string,websiteU
     const ink='#0b1b2f',muted='#4f5d6e',faint='#7b8796',line='#e6ecf2',blue='#1673e6';
     const site=websiteUrl?`<tr><td dir="rtl" style="padding:14px 0;border-top:1px solid ${line};text-align:right"><div style="font-size:13px;color:${faint};font-weight:600;margin-bottom:3px">לפרסום באתר:</div><div style="font-size:15px;line-height:1.6"><a href="${esc(websiteUrl)}" dir="ltr" style="color:${blue};text-decoration:none;font-weight:700">${esc(websiteUrl.replace(/^https?:\/\//,'').replace(/\/$/,''))}</a>${websiteName?` <span style="color:${faint}">· ${esc(websiteName)}</span>`:''}</div></td></tr>`:'';
     const rows=site+supplierPublicationFields(article).map(([label,value])=>`<tr><td dir="rtl" style="padding:14px 0;border-top:1px solid ${line};text-align:right"><div style="font-size:13px;color:${faint};font-weight:600;margin-bottom:3px">${esc(label)}</div><div style="font-size:15px;color:${ink};line-height:1.6;white-space:pre-wrap"><bdi>${richLine(value)}</bdi></div></td></tr>`).join('');
-    const credits=supplierImageCredits(article);
-    const creditRow=credits.length?`<tr><td dir="rtl" style="padding:14px 0;border-top:1px solid ${line};text-align:right"><div style="font-size:15px;color:${ink};font-weight:700;margin-bottom:4px">קרדיטים לתמונות:</div>${credits.map(c=>`<div style="font-size:15px;color:${ink};line-height:1.6"><bdi>${richLine(c)}</bdi></div>`).join('')}</td></tr>`:'';
+    const credits=supplierImageCredits(article,attachments);
+    const fileLine=(c:typeof credits[number])=>c.attached?`קובץ: <span dir="ltr" style="unicode-bidi:isolate;font-weight:700;color:${ink}">${esc(c.file)}</span>`:c.file?`<span dir="ltr" style="unicode-bidi:isolate">${esc(c.file)}</span> גדול מדי לצירוף, התמונה נמצאת בקובץ ה-Word${c.url?` · <a href="${esc(c.url)}" style="color:${blue};text-decoration:none;font-weight:700">הורדה</a>`:''}`:'התמונה נמצאת בקובץ ה-Word';
+    const creditRow=credits.length?`<tr><td dir="rtl" style="padding:14px 0;border-top:1px solid ${line};text-align:right"><div style="font-size:13px;color:${faint};font-weight:600;margin-bottom:3px">קרדיטים לתמונות</div>${credits.map((c,i)=>`<div style="padding:${i?'8px':'2px'} 0 0"><div style="font-size:15px;color:${ink};line-height:1.6"><b>קרדיט לתמונה מס׳ ${c.n}:</b> <bdi>${c.credit?richLine(c.credit):`<span style="color:${faint}">לא צוין קרדיט</span>`}</bdi></div><div style="font-size:13px;color:${muted};line-height:1.6">${fileLine(c)}</div></div>`).join('')}</td></tr>`:'';
     const files=mailAttachedHtml(attachments);
     const step=(n:number,text:string)=>`<tr><td style="padding:6px 0;width:34px;vertical-align:top"><div style="width:26px;height:26px;border-radius:50%;background:#eef5ff;color:${blue};font-size:13px;font-weight:700;line-height:26px;text-align:center">${n}</div></td><td dir="rtl" style="padding:6px 0;font-size:15px;color:${ink};line-height:26px;text-align:right">${text}</td></tr>`;
     return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body dir="rtl" style="margin:0;padding:0;background:#f5f7fa;font-family:Heebo,Arial,Helvetica,sans-serif;color:${ink}"><div dir="rtl" style="max-width:560px;margin:0 auto;padding:28px 14px;background:#f5f7fa;font-family:Heebo,Arial,Helvetica,sans-serif;color:${ink};text-align:right">
