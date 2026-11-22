@@ -80,7 +80,8 @@ export async function closeIssueOnReopen(articleId:string,u:Row){
 }
 
 // The answer goes out in the article's e-mail thread, to the same addresses as the first e-mail, with the same link.
-async function answerSupplier(a:Row,type:IssueType,note:string,stamp:string){
+// Also used for a published link the admin did not approve after the manual check (type 'link', supplier-link-review.ts).
+export async function answerSupplier(a:Row,type:IssueType|'link',note:string,stamp:string){
  const first=parse(await one("SELECT * FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
  if(!first)return 'missing';
  const id='email:supplier-answer:'+a.id+':'+stamp;
