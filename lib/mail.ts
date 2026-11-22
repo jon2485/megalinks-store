@@ -30,13 +30,16 @@ export async function mailFiles(job:Row):Promise<MailFile[]>{
  if(job.attach_order_statement){const {storedOrderPdf}=await import('./order-statement');const pdf=await storedOrderPdf(job.attach_order_statement,job.origin);files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'סיכום ההזמנה'});}
  if(job.attach_writing_brief){const {writingBriefFile}=await import('./writing-brief-file');const pdf=await writingBriefFile(job.attach_writing_brief,job.origin);files.length=0;files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'פרטי הכתיבה'});}
  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(a){
-  files.length=0;files.push({filename:'article.docx',content_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',bytes:await articleDocx(a),label:'קובץ Word של הכתבה, עם התמונות והקרדיטים'});
+  // Staging 22.11.2026: one image Word cannot show (WEBP, HEIC, a damaged or missing file) failed the whole supplier
+  // e-mail. Now the Word file goes without that image (a short note in its place) and the image travels as its own file.
+  const skipped:string[]=[],docx=await articleDocx(a,{lenient:true,skipped});
+  files.length=0;files.push({filename:'article.docx',content_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',bytes:docx,label:skipped.length?'קובץ Word של הכתבה (חלק מהתמונות מצורפות רק כקבצים נפרדים)':'קובץ Word של הכתבה, עם התמונות והקרדיטים'});
   if(job.attach_images){const d=JSON.parse(a.data||'{}'),images=articleImages(a),fileRows=await mapIn('files','id',[...images.map(i=>i.id),d.document_id]);
    // Owner (22.11.2026): every image of the article travels as its own file too, not only inside the Word file. Images
    // placed inside the text (the editor's pictures) were missing: only the main and secondary fields were attached.
-   for(const img of images){const s=await storedFile(fileRows.get(img.id),MAIL_FILE_MAX);if(s&&String(s.file.type).startsWith('image/'))files.push({filename:'image-'+img.n+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label:img.label,image:true});}
+   for(const img of images){const s=await storedFile(fileRows.get(img.id),MAIL_FILE_MAX).catch(()=>null);if(s&&String(s.file.type).startsWith('image/'))files.push({filename:'image-'+img.n+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label:img.label,image:true});}
    // The page no longer shows the article, so the customer's original document travels with the email too.
-   const doc=await storedFile(fileRows.get(String(d.document_id)),MAIL_FILE_MAX);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
+   const doc=await storedFile(fileRows.get(String(d.document_id)),MAIL_FILE_MAX).catch(()=>null);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
   }}}
  return files;
 }
@@ -88,19 +91,28 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    if(attached.some(Boolean))payload.attachments=files.filter((_,i)=>attached[i]).map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
   }
   // Rebuild supplier messages from publication fields on every send (also for retries of older jobs).
-  if(job.attach_article||job.supplier_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article||job.supplier_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');
-   // Owner decision (11.11.2026): the subject names the site and its package count (3/10); without a package, the article's number for that site this month.
+  if(job.attach_article||job.supplier_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article||job.supplier_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url,data FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');
+   // Owner decision (23.11.2026): the article's number for its supplier. A stock supplier: its number within the stock (3/10).
+   // A monthly-billing supplier: how many articles were sent to that supplier (supplier_id, any of its sites) in the same
+   // Israel-time month up to this one; a site without a supplier counts by the site, as before.
    const seq=Number(d.supplier_sequence)||0,total=Number(d.supplier_stock_total)||0,sentAt=String(d.supplier_sent_at||new Date().toISOString());
-   let monthNumber=0;if(!(total&&seq)){const peers=await all("SELECT json_extract(data,'$.supplier_sent_at') AS s FROM articles WHERE website_id=? AND COALESCE(json_extract(data,'$.demo'),0)=? AND json_extract(data,'$.supplier_sent_at')>=? AND json_extract(data,'$.supplier_sent_at')<=?",a.website_id,d.demo?1:0,new Date(Date.parse(sentAt)-32*86400000).toISOString(),sentAt);monthNumber=peers.filter((x:Row)=>x.s&&israelMonth(x.s)===israelMonth(sentAt)).length;}
+   const supplierId=String(d.supplier_id||(()=>{try{return JSON.parse(w?.data||'{}').supplier_id;}catch{return '';}})()||'');
+   let monthNumber=0;if(!(total&&seq)){const peers=await all(`SELECT json_extract(a.data,'$.supplier_sent_at') AS s FROM articles a LEFT JOIN websites w ON w.id=a.website_id WHERE ${supplierId?"COALESCE(NULLIF(json_extract(a.data,'$.supplier_id'),''),json_extract(w.data,'$.supplier_id'))=?":'a.website_id=?'} AND COALESCE(json_extract(a.data,'$.demo'),0)=? AND json_extract(a.data,'$.supplier_sent_at')>=? AND json_extract(a.data,'$.supplier_sent_at')<=?`,supplierId||a.website_id,d.demo?1:0,new Date(Date.parse(sentAt)-32*86400000).toISOString(),sentAt);monthNumber=peers.filter((x:Row)=>x.s&&israelMonth(x.s)===israelMonth(sentAt)).length;}
    const {counter,label:counterLabel}=supplierCounter(seq,total,monthNumber);
    // Owner (22.11.2026): one thread per article, never per supplier or batch. The article's first e-mail carries a fixed
    // id and a subject unique to the article; reminders and follow-ups answer it with "Re:". An article whose first e-mail
    // went out before this (no stored id) gets fresh e-mails with their own unique subject instead.
-   const unique=supplierEmailSubject(site,counter,a.title),firstMail=id==='email:supplier:'+a.id;
+   let unique=supplierEmailSubject(site,siteUrl,total&&seq?seq:Math.max(1,monthNumber),total&&seq?{total}:{sentAt}),firstMail=id==='email:supplier:'+a.id;
    // A first e-mail sent again after the article was pulled back from the supplier (its old job renamed ":recalled:")
    // answers the article's existing thread: same Gmail conversation, and never a second message with the same Message-ID
    // (Gmail drops a message whose Message-ID it already has).
-   const opened=parse(firstMail?await one("SELECT data FROM jobs WHERE kind='email' AND id LIKE ? AND json_extract(data,'$.thread_id') IS NOT NULL ORDER BY created LIMIT 1",'email:supplier:'+a.id+':recalled:%'):await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
+   const ownThread='<supplier-article-'+a.id+'@';
+   const found=parse(firstMail?await one("SELECT data FROM jobs WHERE kind='email' AND id LIKE ? AND json_extract(data,'$.thread_id') IS NOT NULL ORDER BY created LIMIT 1",'email:supplier:'+a.id+':recalled:%'):await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
+   // A thread id is used only if it is this article's own (it carries the article id): never another article's thread.
+   const opened=found&&String(found.thread_id||'').startsWith(ownThread)?found:found?{...found,thread_id:undefined}:null;
+   // A subject another article already used (a stock slot freed by a recall and given to this one) gets the article's
+   // short code, so two articles never share a subject.
+   if(firstMail&&!opened?.thread_id){const taken=await one("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:supplier:%' AND id NOT LIKE ? AND json_extract(data,'$.thread_subject')=? LIMIT 1",'email:supplier:'+a.id+'%',unique);if(taken)unique+=' · '+String(a.id).replace(/[^\w]/g,'').slice(0,6).toUpperCase();}
    if(firstMail&&opened?.thread_id){payload.thread={id:String(opened.thread_id),subject:String(opened.thread_subject||unique)};payload.subject='Re: '+payload.thread.subject;payload.headers={'In-Reply-To':payload.thread.id,References:payload.thread.id};}
    else if(firstMail){payload.thread={id:supplierThreadId(a.id,String(c.from||RESEND_TEST_FROM)),subject:unique};payload.subject=unique;payload.headers={'Message-ID':payload.thread.id};}
    else if(opened?.thread_id){payload.subject='Re: '+opened.thread_subject;payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
@@ -118,7 +130,15 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
   const resend=c.provider==='resend';
   const res=await externalFetch(resend?RESEND_URL:c.url,{method:'POST',headers:{Authorization:'Bearer '+c.secret,'Content-Type':'application/json','Idempotency-Key':id},body:JSON.stringify(resend?resendMessage(payload,c):{...payload,thread:undefined})});
   if(!res.ok)throw resend?new ApiError(502,resendFailure(res.status)):new Error('שירות הדיוור החזיר '+res.status);if(payload.thread)await stmt("UPDATE jobs SET status='succeeded',updated=?,data=json_set(data,'$.thread_id',?,'$.thread_subject',?) WHERE id=?",now(),payload.thread.id,payload.thread.subject,id).run();else await stmt("UPDATE jobs SET status='succeeded',updated=? WHERE id=?",now(),id).run();return {status:'succeeded'};
- }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.delivery_error',?),updated=? WHERE id=?",safeFailure(e,'שליחת המייל נכשלה. בדקו את החיבור ונסו שוב.'),now(),id).run();return {status:'failed'};}}
+ }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.delivery_error',?),updated=? WHERE id=?",mailFailure(e),now(),id).run();return {status:'failed'};}}
+// The real cause for the admin (Staging 22.11.2026: only "בדקו את החיבור" was stored). Our own errors are Hebrew and safe to
+// show; anything else is named by its type and a short message, with anything that looks like a key or token removed.
+export function mailFailure(e:unknown){
+ const own=safeFailure(e,'');if(own)return own;
+ const raw=String((e as any)?.message||e||''),msg=raw.replace(/(re_|sk-|Bearer\s+)[\w.-]+/gi,'[מוסתר]').replace(/https?:\/\/\S+/g,'[כתובת]').replace(/\s+/g,' ').trim().slice(0,200);
+ if(/[֐-׿]/.test(raw))return 'שליחת המייל נכשלה: '+msg;
+ return 'שליחת המייל נכשלה בהכנת ההודעה, לפני השליחה לשירות הדיוור. פרטים טכניים: '+(String((e as any)?.name||'Error'))+(msg?': '+msg:'');
+}
 export async function queueMail(id:string,userId:string,data:Row){await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)',id,userId,'email','requested',JSON.stringify(data),now(),now()).run();return sendQueuedMail(id);}
 // pre: what the caller already read for many articles at once (the order, the admin addresses), so a loop of
 // mails does not read them again per article. The customer is only needed when the mail goes to the customer.

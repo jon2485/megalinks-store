@@ -45,8 +45,18 @@ export function supplierCounter(seq:number,total:number,monthNumber:number){
     if(total>0&&seq>0)return {counter:seq+'/'+total,label:'כתבה '+seq+' מתוך '+total+' בחבילה'};
     const n=Math.max(1,monthNumber);return {counter:String(n),label:'כתבה מס׳ '+n+' החודש'};
 }
-// Owner (22.11.2026): one thread per article, so the subject also names the article; two articles never share a subject.
-export const supplierEmailSubject=(site:string,counter:string,title='')=>('כתבה לפרסום באתר '+site+' '+counter+(String(title).trim()?' · '+String(title).trim().slice(0,90):'')).replace(/\s+/g,' ').trim();
+// Owner (23.11.2026): the subject is only "כתבה מס׳ X לאתר <name> (<domain>)"; X is the article's number for its supplier
+// (supplierCounter's rule). Everything else stays in the body. The thread per article is kept by Message-ID/References.
+export const siteDomain=(url:string)=>{try{return new URL(/^https?:\/\//i.test(url)?url:'https://'+url).hostname.replace(/^www\./i,'').toLowerCase();}catch{return '';}};
+// Owner (23.11.2026): a new month or a new stock package never repeats an older article's subject.
+// Monthly billing: the month is part of the subject ("כתבה מס׳ 3 לנובמבר 2026 לאתר ..."), since the number restarts every month.
+// Stock: "כתבה מס׳ 3 מתוך 10 לאתר ..." The stock number is the site's running count of deliveries
+// (supplier_dispatch_allocations, unique per site), so a new package continues it (11 מתוך 20) and does not restart.
+// The one way it can repeat (a slot freed by a recall and given to another article) is caught in sendQueuedMail.
+export const israelMonthName=(iso:string)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',month:'long',year:'numeric'}).format(new Date(iso));
+export const supplierEmailSubject=(site:string,siteUrl:string,n:number,count:{total?:number;sentAt?:string}={})=>{const domain=siteDomain(String(siteUrl||'').trim()),name=String(site||'').trim()||domain;
+    const which=Number(count.total)>0?' מתוך '+Number(count.total):count.sentAt?' ל'+israelMonthName(count.sentAt):'';
+    return ('כתבה מס׳ '+Math.max(1,Number(n)||1)+which+' לאתר '+name+(domain&&domain!==name.toLowerCase().replace(/^www\./,'')?' ('+domain+')':'')).replace(/\s+/g,' ').trim();};
 const esc=(v:unknown)=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]!));
 // Owner decision (11.11.2026): everything the supplier needs arrives in the email (details + attached files);
 // the link only opens a small page to send back the published address. Same clean white look as that page.

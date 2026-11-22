@@ -71,7 +71,21 @@ try{
   ok(s.body.html.indexOf('מס׳ 1:')<s.body.html.indexOf('מס׳ 2:')&&s.body.html.indexOf('מס׳ 2:')<s.body.html.indexOf('מס׳ 3:')&&s.body.html.match(/צילום: ראשי/g).length===1&&!/קרדיט לתמונה הראשית/.test(s.body.html),'credits in attachment order, each image once');
   ok(s.body.text.includes('קרדיטים לתמונות:\nקרדיט לתמונה מס׳ 1: צילום: ראשי\nקובץ: image-1.jpg\nקרדיט לתמונה מס׳ 2: צילום: דנה & שות׳\nקובץ: image-2.jpg\nקרדיט לתמונה מס׳ 3: צילום: יוסי\nקובץ: image-3.jpg'),'the plain-text version has the same credits and file names');
   ok((s.body.attachments||[]).slice(1).every((a,i)=>a.filename==='image-'+(i+1)+'.jpg'),'attachment names match the credit numbers');
-  ok(s.body.headers?.['Message-ID']?.includes('supplier-article-art-inline'),'the thread header is kept');}
+  ok(s.body.headers?.['Message-ID']?.includes('supplier-article-art-inline'),'the thread header is kept');
+  // Staging 22.11.2026: a supplier e-mail failed with only the generic text. An image that Word cannot take (WEBP) or a
+  // stored image whose file is gone must never stop the e-mail: the Word file goes without it and the image is attached
+  // as its own file when it can be read.
+  const webp=Buffer.concat([Buffer.from('RIFF'),Buffer.from([30,0,0,0]),Buffer.from('WEBPVP8 '),Buffer.alloc(18)]);
+  await bucket.put('k-img-webp',webp);await db.prepare("INSERT INTO files(id,user_id,name,key,type,size,created) VALUES ('img-webp','owner','p.webp','k-img-webp','image/webp',?,datetime('now'))").bind(webp.length).run();
+  await db.prepare("INSERT INTO files(id,user_id,name,key,type,size,created) VALUES ('img-gone','owner','g.jpg','k-img-gone','image/jpeg',1000,datetime('now'))").run();
+  const longTitle='צמחייה מלאכותית איכותית, הפתרון הירוק לעיצוב מודרני במשרדים, במלונות ובמרכזים מסחריים בכל רחבי הארץ ובעולם כולו';
+  await db.prepare("INSERT INTO articles(id,order_id,user_id,website_id,status,title,content,data,updated) VALUES ('art-webp','o1','owner','w1','sent',?,'<p>פתיחה</p><figure><img src=\"/api/files/img-webp\" data-credit=\"צילום: וובפי\" alt=\"\"></figure><p>אמצע</p><figure><img src=\"/api/files/img-gone\" data-credit=\"צילום: חסר\" alt=\"\"></figure>',?,datetime('now'))").bind(longTitle,JSON.stringify({image_id:'img-a',image_credit:'צילום: ראשי'})).run();
+  await db.prepare("INSERT INTO jobs(id,user_id,kind,status,data,created,updated) VALUES ('email:supplier:art-webp','owner','email','requested',?,datetime('now'),datetime('now'))").bind(JSON.stringify({to:'supplier@example.test',subject:'',text:'',button:{label:'החזרת קישור',url:'https://megalinks.test/supplier/tok'},attach_article:'art-webp',attach_images:true,origin:'https://megalinks.test'})).run();
+  const before=sent.length;await call('admin/mail/'+encodeURIComponent('email:supplier:art-webp'),'POST',{});
+  ok(await status('email:supplier:art-webp')==='succeeded'&&sent.length===before+1,'an image Word cannot take, or a missing image file, does not stop the supplier e-mail: '+JSON.stringify((await job('email:supplier:art-webp')).delivery_error||''));
+  s=sent.at(-1);const wn=(s.body.attachments||[]).map(a=>a.filename);
+  ok(wn.join()==='article.docx,image-1.jpg,image-2.webp','the Word file goes, the readable images go as files, the missing one is skipped: '+wn);
+  ok(/קרדיט לתמונה מס׳ 3:<\/b> <bdi>צילום: חסר/.test(s.body.html),'the missing image still has its numbered credit');}
  // Back to the webhook: the old format, unchanged.
  await call('admin/integration/email','PATCH',{provider:'webhook',url:'https://hooks.example.test/catch',secret:'webhook-token',secret_storage:'encrypted_server',enabled:true});
  id=await mail('customer@example.test','בדיקת webhook');s=sent.at(-1);
