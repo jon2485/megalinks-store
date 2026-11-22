@@ -1913,3 +1913,11 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
     - **כשמקלידים כותרת:** הכפתור נעלם.
 - **נבדק מקומית ב-390px:** לפני ואחרי, והכפתור עובד. בנייה עברה. `studio-ui` ו-`studio-actions` נכשלות גם בלי השינוי (`refund-dialog` מול fixture של `workspace`).
 - **לפני העלאה:** אין שאריות זמניות. בטיוטה המקומית 2192088b נשמרו שינויי בדיקה בנתונים בדויים בלבד.
+
+## 22.11.2026: third batch merged into `claude/iphone-fixes-20261122` (owner: "תעלה")
+
+- **Merged:** supplier fix/reject requests (`c06ba45`, already holds the reopen work), link dialog (`e539732`), personal price dialog (`5ebf38b`), fix-request e-mail, popups and editor message (`0b314bc`), editor title on phones (`056eada`). Each session's own NOTES entry is above.
+- **Owner changes during the batch:** both phone popups (link, personal price) open centred and rise above the keyboard; the editor moves the title into its field automatically when sure, shows the message only when unsure, and hides it once the customer types a title.
+- **Merge:** conflicts only in `NOTES.md` (joined by hand).
+- **Checked here:** `tsc` clean, build passes; tests `article-reopen`, `supplier-thread`, `supplier-mail`, `resend-email`, `publication-scheduling`, `fix-request-mail`, `supplier-article-request`, `rich-docx` pass. `client-updates` fails on `app/workspace.tsx` (`notifyCartAdded` outside the slice it reads); it fails the same way on `a098243`, before today's work.
+- **Not checked:** real e-mails (all rendered locally only, including the per-article supplier thread through Resend), a real iPhone keyboard, a full cancel-and-refund started from a supplier rejection.
