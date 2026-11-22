@@ -31,6 +31,12 @@ try{
  ok(s.body.subject==='[בדיקה · אל: customer@example.test] הפנייה שלך טופלה','the subject names the real recipient');
  ok(/dir="rtl"/.test(s.body.html)&&s.body.text.includes('שורה שנייה'),'the designed right-to-left HTML and the text both go');
  ok(!('event' in s.body)&&!('button' in s.body)&&!JSON.stringify(s.body).includes('content_base64'),'only Resend fields are sent');
+ ok(!('reply_to' in s.body),'no reply address set: none is sent');
+ // A reply address (owner, 22.11.2026): a customer's "reply" lands in that inbox as an ordinary email.
+ await call('admin/integration/email','PATCH',{provider:'resend',reply_to:'not-an-email',enabled:true},400);
+ await call('admin/integration/email','PATCH',{provider:'resend',reply_to:' Replies.Inbox@example.test ',enabled:true});
+ ok(JSON.stringify(await call('admin/settings')).includes('replies.inbox@example.test'),'the reply address is saved and shown again');
+ id=await mail('customer@example.test','הכתבה עלתה');s=sent.at(-1);ok(s.body.reply_to==='replies.inbox@example.test','the reply address goes with the message');
  // Errors become clear Hebrew messages for the admin.
  nextStatus=403;id=await mail('supplier@example.test','כתבה לפרסום');ok(await status(id)==='failed'&&/דומיין מאומת/.test((await job(id)).delivery_error),'a blocked send explains the verified-domain rule');
  nextStatus=401;id=await mail('supplier@example.test','כתבה לפרסום');ok(/מפתח/.test((await job(id)).delivery_error),'a refused key says so');
