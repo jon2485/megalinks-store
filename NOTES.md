@@ -1941,3 +1941,13 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Reply-to address for e-mail** (`34c9f71` from `claude/reply-to-20261122`): optional "reply_to" in the e-mail connection, sent to Resend, so a customer's reply reaches the owner's inbox. Merge conflict in `lib/mail.ts` `resendMessage` resolved by keeping both the thread headers line and the reply_to line.
 - **Checked here:** `tsc` clean, build passes, tests `resend-email` (39 checks), `article-reopen`, `supplier-thread`, `supplier-mail`, `publication-scheduling`, `fix-request-mail`, `supplier-article-request`, `rich-docx` pass.
 - **Found (not fixed, waiting for the owner):** order 1018 (notes.co.il) did not reach the supplier because `procurement_verified` is "לא"; every one of the 2,250 sheet rows has "לא" in "הסכם פרסום מאומת", so every non-demo dispatch is blocked the same way. The admin "הכתבה לא הגיעה לספק" box shows a generic text instead of the job's real `error`.
+
+## 22.11.2026: supplier link check ("האתר לא השיב") and the supplier link page
+
+- **Cause (owner's report):** on Staging the check timed out after 8 s (plain server fetch, Range header, no browser User-Agent; the site is behind Cloudflare). It never reached the content checks, so it did not detect the other article.
+- **Fix (`lib/checks.ts`):** one fetch of the page instead of two, browser headers (User-Agent, Accept, Accept-Language he), no Range, 15 s per request, one retry on timeout or network error. Safety unchanged (`externalUrl`, 3 redirects, expected domain).
+- **Messages, one per cause:** site did not answer in time (technical, try again later); page not found (404/410); site refused the check (401/403/429); server error (5xx); other HTTP; another domain or a redirect to one; bad redirect; links missing (list); "נראה שהקישור מוביל לכתבה אחרת" with the page title found and the article title. Topic is now checked before the links. Results carry `reason`.
+- **Supplier page (`app/supplier-report-page.tsx` + css):** card shows "נושא הכתבה" with the full title and "האתר שבו מפרסמים" with name, domain and a link to the site (new `website_url` in `GET /api/supplier/<token>`).
+- **Test:** `tests/supplier-link-check.mjs` (mocked fetch and a small HTMLRewriter stand-in). Local run: a different real pcmag article returns the "another article" message in 0.4 s.
+- **Not built (proposal for the owner):** a site that can never be checked automatically → accept the link as "ממתין לבדיקה ידנית" for the admin to confirm.
+- **Before upload:** nothing temporary in the repo.

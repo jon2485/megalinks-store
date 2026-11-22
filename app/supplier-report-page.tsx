@@ -1,6 +1,6 @@
 'use client';
 import React,{useRef,useState} from 'react';
-import {Check,Clock,Link2,Loader2,Lock,TriangleAlert} from 'lucide-react';
+import {Check,Clock,ExternalLink,Globe,Link2,Loader2,Lock,TriangleAlert} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import BrandLogo from './brand-logo';
 import './supplier-report-page.css';
@@ -10,6 +10,15 @@ import {SupplierIssueChooser,SupplierIssueWaiting,type Issue} from './supplier-i
 // published address, the system checks it, and after a valid link the page (and the link) is closed.
 // Look: the site's Apple-style customer area and the "paid" confirmation screen (same animated tick).
 function Tick(){return <div className="srp-mark" aria-hidden="true"><svg viewBox="0 0 84 84"><circle className="srp-ring" cx="42" cy="42" r="38"/><circle className="srp-disc" cx="42" cy="42" r="30"/><path className="srp-tick" d="M29 43l9 9 17-19"/></svg></div>;}
+// Owner request (22.11.2026): the card shows the full article title and a link to the site where it must be published.
+function siteLink(value:string){try{const u=new URL(/^https?:\/\//i.test(value)?value:'https://'+value);return ['http:','https:'].includes(u.protocol)?{href:u.href,host:u.hostname.replace(/^www\./,'')}:null;}catch{return null;}}
+function ArticleCard({a}:{a:{title?:string,website_name?:string,website_url?:string}}){
+ const site=siteLink(a.website_url||'');
+ return <div className="srp-article"><span>נושא הכתבה</span><strong>{a.title}</strong>
+  {site?<a className="srp-site" href={site.href} target="_blank" rel="noopener noreferrer"><span className="srp-site-icon" aria-hidden="true"><Globe size={18}/></span><span className="srp-site-text"><small>האתר שבו מפרסמים</small><b>{a.website_name||site.host}</b><span dir="ltr">{site.host}</span></span><ExternalLink className="srp-site-go" size={17} aria-hidden="true"/></a>
+  :a.website_name&&<p className="srp-site is-plain"><span className="srp-site-text"><small>האתר שבו מפרסמים</small><b>{a.website_name}</b></span></p>}
+ </div>;
+}
 const checks=['הדף נפתח באתר','הקישורים מהכתבה מופיעים בדף','נושא הדף תואם לכתבה'];
 export default function SupplierReportPage({token}:{token:string}){
  const state=useData('supplier/'+encodeURIComponent(token));
@@ -17,7 +26,7 @@ export default function SupplierReportPage({token}:{token:string}){
  const a=state.data?.article,closed=!!state.data?.closed||!!sent,published=sent||a?.published_url||'';
  const submit=async(e:React.FormEvent)=>{e.preventDefault();if(lock.current)return;const value=url.trim();if(!value){setError('יש להדביק את הקישור לכתבה שפורסמה');return;}lock.current=true;setBusy(true);setError('');try{await api('supplier/'+encodeURIComponent(token),'POST',{url:value});setSent(value);}catch(err){setError((err as Error).message);}finally{lock.current=false;setBusy(false);}};
  const [sentIssue,setSentIssue]=useState<Issue|null>(null),issue:Issue|null=sentIssue||a?.issue||null;
- const article=a&&<div className="srp-article"><span>{a.website_name}</span><strong>{a.title}</strong></div>;
+ const article=a&&<ArticleCard a={a}/>;
  let body:React.ReactNode;
  if(state.loading&&!state.data&&!state.error)body=<p className="srp-loading" role="status"><Loader2 className="srp-spin" size={20} aria-hidden="true"/>טוען…</p>;
  else if(!a&&!sent)body=<div className="srp-hero"><div className="srp-alert-mark" aria-hidden="true"><TriangleAlert size={34}/></div><h1>לא ניתן לפתוח את הקישור</h1><p>{state.error||'הקישור אינו תקין.'}</p></div>;
