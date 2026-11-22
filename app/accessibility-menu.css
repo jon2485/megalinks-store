@@ -103,12 +103,17 @@ body:has(.studio-v2 .sv-actionbar) .ml-a11y-panel { bottom: calc(214px + env(saf
  body:has(.studio-v2 .sv-actionbar) .ml-a11y-panel { bottom: calc(202px + env(safe-area-inset-bottom)); }
 }
 /* Phones: the on-screen keyboard is open over a focused text field (html.ml-keyboard-open, set in accessibility-menu.tsx).
-   Both floating buttons fade out so they do not cover the text being typed, and return when the keyboard closes
+   Both floating buttons (and the admin bars below) fade out so they do not cover the text being typed, and return when the keyboard closes
    (owner, 22.11.2026). Never applied when no field is focused, so the menu stays reachable at all other times. */
 @media (max-width: 767px) {
  .ml-a11y-fab, .floating-whatsapp { transition-property: transform, box-shadow, filter, opacity, visibility; transition-duration: 200ms; }
  html.ml-keyboard-open .ml-a11y-fab, html.ml-keyboard-open .floating-whatsapp { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 160ms ease-out, visibility 0s linear 160ms; }
+ /* Admin article editor (owner, 22.11.2026: "עוד תיקון שיש בעריכת הכתבה בניהול"): the sticky decision bar and the
+    bottom navigation also float over the article while typing. They hide the same way and come straight back,
+    so the decision buttons are reachable the moment the keyboard closes. */
+ html.ml-keyboard-open .ar-bar, html.ml-keyboard-open .admin-mobile-dock { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 160ms ease-out, visibility 0s linear 160ms; }
 }
 @media (max-width: 767px) and (prefers-reduced-motion: reduce) {
- .ml-a11y-fab, .floating-whatsapp, html.ml-keyboard-open .ml-a11y-fab, html.ml-keyboard-open .floating-whatsapp { transition: none; }
+ .ml-a11y-fab, .floating-whatsapp, html.ml-keyboard-open .ml-a11y-fab, html.ml-keyboard-open .floating-whatsapp,
+ html.ml-keyboard-open .ar-bar, html.ml-keyboard-open .admin-mobile-dock { transition: none; }
 }
