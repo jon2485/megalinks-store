@@ -1850,3 +1850,11 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 
 ### Open
 - The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
+
+### Editor link popup, new design (branch `claude/editor-link-dialog-eb0a29`)
+- **Owner (22.11):** "עיצוב חדש לחלון הקופץ של הוספת קישור / שינוי קישור". Mockup approved ("מאשר את כל השאר").
+- **What:** the add / change link popup in the article editor (`app/rich-editor.tsx`, `.sv-link-dialog`) now matches the approved customer popups (white card, violet-blue icon tile, grey close button on the left, light field with a blue ring, one violet-blue main action). The subtitle shows the selected words. Add: "הוספת הקישור" + "ביטול". Change: the current address + "שמירת השינוי" + "הסרת הקישור" (red). Invalid address: red ring + the same message as before. Enter submits. On phones (≤640px) the card sits at the top so the field and button stay above the iPhone keyboard.
+- **Files:** `app/rich-editor.tsx` (link popup only), new `app/studio-link-dialog.css`.
+- **Kept:** the same `editorialUrl` check, internal (absolute megalinks.co.il) links, undo/redo (remove then undo restores the link), the tap-on-link card and the "פרטי הקישור" view are unchanged. The admin knowledge editor uses the same component, so it gets the same popup.
+- **Note:** a site-wide dialog rule forces every dialog `<p>` to 16px dark text, so the small texts in this popup use `!important`.
+- **Checked:** locally, fictional draft, 390px and 1280px: add, invalid, change, save, remove, undo, cancel. `tsc` and build pass. Not checked on a real iPhone keyboard.
