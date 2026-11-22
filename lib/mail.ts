@@ -3,7 +3,7 @@ import {emailList} from './catalog-fields';
 import { one, all, stmt, now, connection, externalFetch, parse, ApiError, mapIn } from './server';
 import { articleDocx } from './delivery-docx';
 import { Row } from './shared';
-import {supplierPublicationNotes,supplierArticleEmailHtml,supplierHoldEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
+import {articleImages,supplierPublicationNotes,supplierArticleEmailHtml,supplierHoldEmailHtml,supplierCounter,supplierEmailSubject,israelMonth} from './supplier-mail-content';
 import {supplierIssueLinkText,supplierAnswerEmailHtml} from './supplier-issue-mail';
 import {brandedEmailHtml,withMailFiles,mailFilesText,MAIL_FILE_DAYS,type MailFileLink} from './mail-template';
 import {safeFailure} from './security';
@@ -11,8 +11,8 @@ import {fixRequestEmailHtml,fixRequestSubject,fixRequestText,publishedEmailHtml,
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
 export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string;image?:boolean};
-// Up to this many article images travel as separate files (the download link allows indexes up to MAIL_FILES_MAX-1).
-const MAIL_IMAGES_MAX=20,MAIL_FILES_MAX=30;
+// The download link allows indexes up to MAIL_FILES_MAX-1 (Word file, up to 20 images, the original document).
+const MAIL_FILES_MAX=30;
 // A webhook service (Zapier and the like) takes about 10MB per message; Resend takes 40MB and Gmail receives 25MB,
 // so with Resend up to 15MB of files are attached (owner, 16.11.2026). Larger sets travel as download links only.
 const INLINE_FILES_LIMIT=6*1024*1024,RESEND_INLINE_LIMIT=15*1024*1024;
@@ -24,14 +24,6 @@ const storedFile=async(f:Row|null|undefined,max:number)=>{if(!f||Number(f.size)>
 // The site address the email belongs to (for the logo and the file links). A button may lead to an outside site, so a stored origin wins.
 const mailOrigin=(job:Row)=>{for(const v of [job.origin,job.button?.url]){try{if(v)return new URL(String(v)).origin;}catch{}}return '';};
 
-// The article's images in order: main, secondary, then the pictures inside the text; each id once.
-export function articleImages(a:Row){
- const d=typeof a.data==='string'?JSON.parse(a.data||'{}'):a.data||{},out:{id:string;label:string}[]=[],seen=new Set<string>();
- const add=(id:unknown,label:string)=>{const v=String(id||'');if(v&&/^[\w-]{1,100}$/.test(v)&&!seen.has(v)&&out.length<MAIL_IMAGES_MAX){seen.add(v);out.push({id:v,label});}};
- add(d.image_id,'התמונה הראשית');add(d.secondary_image_id,'תמונה נוספת');
- let n=0;for(const m of String(a.content||'').matchAll(/<img\b[^>]*\bsrc\s*=\s*["']\/api\/files\/([\w-]{1,100})["']/gi))add(m[1],'תמונה מתוך הכתבה '+(++n));
- return out;
-}
 // Every file an email carries, in one place: used for the attachments and for the download links.
 export async function mailFiles(job:Row):Promise<MailFile[]>{
  const files:MailFile[]=[];
@@ -42,7 +34,7 @@ export async function mailFiles(job:Row):Promise<MailFile[]>{
   if(job.attach_images){const d=JSON.parse(a.data||'{}'),images=articleImages(a),fileRows=await mapIn('files','id',[...images.map(i=>i.id),d.document_id]);
    // Owner (22.11.2026): every image of the article travels as its own file too, not only inside the Word file. Images
    // placed inside the text (the editor's pictures) were missing: only the main and secondary fields were attached.
-   for(const [i,img] of images.entries()){const s=await storedFile(fileRows.get(img.id),MAIL_FILE_MAX);if(s&&String(s.file.type).startsWith('image/'))files.push({filename:'image-'+(i+1)+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label:img.label,image:true});}
+   for(const img of images){const s=await storedFile(fileRows.get(img.id),MAIL_FILE_MAX);if(s&&String(s.file.type).startsWith('image/'))files.push({filename:'image-'+img.n+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label:img.label,image:true});}
    // The page no longer shows the article, so the customer's original document travels with the email too.
    const doc=await storedFile(fileRows.get(String(d.document_id)),MAIL_FILE_MAX);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
   }}}
@@ -117,7 +109,7 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    // The admin's answer to a supplier's request for fixes or rejection (owner, 22.11.2026).
    else if(job.supplier_followup==='answer'){if(!opened?.thread_id)payload.subject='תשובה לבקשה שלכם · '+unique;payload.text=[job.answer_type==='reject'?'הכתבה נשארת לפרסום':'אפשר לפרסם את הכתבה כמו שהיא',a.title,'מה כתבנו לכם:\n'+String(job.answer_note||''),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierAnswerEmailHtml(a,site,counterLabel,link,origin,String(job.answer_type||''),String(job.answer_note||''));}
    else{
-   payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),links.some(l=>l.attached===false)?'חלק מהקבצים גדולים מדי לצירוף למייל, ואפשר להוריד אותם בקישורים כאן. התמונות נמצאות גם בקובץ ה-Word.':'',mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:'',supplierIssueLinkText(link)].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links,job.supplier_followup==='update');if(job.supplier_followup==='update')payload.text='הנחיות מעודכנות לפרסום. הגרסה הזו מחליפה את הקודמת.\n\n'+payload.text;if(links[0]?.url)payload.word_file_url=links[0].url;}}
+   payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a,links),links.some(l=>l.attached===false)?'חלק מהקבצים גדולים מדי לצירוף למייל, ואפשר להוריד אותם בקישורים כאן. התמונות נמצאות גם בקובץ ה-Word.':'',mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:'',supplierIssueLinkText(link)].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links,job.supplier_followup==='update');if(job.supplier_followup==='update')payload.text='הנחיות מעודכנות לפרסום. הגרסה הזו מחליפה את הקודמת.\n\n'+payload.text;if(links[0]?.url)payload.word_file_url=links[0].url;}}
   else{
    // Every other message goes out as a designed right-to-left page: its own design when it has one, the standard one otherwise.
    payload.html=job.html?withMailFiles(String(job.html),links):brandedEmailHtml({subject:String(job.subject||''),text:String(job.text||''),button:job.button,origin,files:links});
