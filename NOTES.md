@@ -1850,3 +1850,14 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 
 ### Open
 - The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
+
+## החזרה לעריכה של כתבה מאושרת (22.11.2026, branch `claude/reopen-approved-article-a85857`)
+- **מה הוחלט (הבעלים):** מנהל יכול להחזיר ללקוח לעריכה כתבה שאושרה ועוד לא פורסמה. כשהיא כבר אצל הספק, הקישור שלו לא מבוטל אלא מציג "נא להמתין עם פרסום הכתבה", המלאי נשאר תפוס, והספק מקבל מייל באותו שרשור. אחרי אישור חוזר הספק מקבל "הנחיות מעודכנות לפרסום" על אותו קישור (תוקף מוארך ב-30 יום). אם הספק כבר פרסם את הגרסה הקודמת, המנהל מטפל בזה מולו בנפרד.
+- **זמין:** אושרה וממתינה לתאריך, לא הגיעה לספק, אצל הספק. **לא זמין:** פורסמה, הדגמה, בוטלה, בקשת ביטול.
+- **קבצים:** `lib/article-reopen.ts` (חדש: `reopenApprovedArticle`, `supplierFollowUp`), `lib/publication.ts` (`resumeHeldArticle` בתוך `dispatchArticle`), `lib/mail.ts` (`supplierThreadId`, כותרות שרשור ב-`sendQueuedMail` וב-`resendMessage`), `lib/supplier-mail-content.ts` (`supplierHoldEmailHtml` חדשה, פרמטר `update` ב-`supplierArticleEmailHtml`), `app/api/[...path]/route.ts` (`POST articles/:id/reopen`, `waiting_fixes` בעמוד הספק), `app/supplier-report-page.tsx/.css` (`SupplierHold`), `app/admin-article-decision.tsx` (`ReopenAction`), `tests/article-reopen.mjs`.
+- **שימו לב:** שדה עם המילה supplier מסונן בתשובות ללא מנהל (`customer-privacy.ts`), ולכן בעמוד הספק השדה נקרא `waiting_fixes`.
+- **כתבת עורך (editorial):** חוזרת ל-`review` ולא ל-`revisions`, כדי שלא תיכנס לתור הכותב.
+- **שרשור (הבעלים):** שרשור אחד לכל כתבה, לעולם לא לפי ספק או משלוח. נושא המייל הראשון ייחודי לכתבה: "כתבה לפרסום באתר <אתר> <מונה> · <כותרת>". המזהה `<supplier-article-<id>@<דומיין השולח>>` נשמר במשימת המייל הראשון (`thread_id`, `thread_subject`). המתנה, עדכון ותזכורת נשלחים עם "Re:" ו-In-Reply-To. כתבה שנשלחה לפני השינוי (אין מזהה שמור) מקבלת מייל חדש בלי "Re:", עם נושא ייחודי ("נא להמתין עם פרסום הכתבה · ..." / "הנחיות מעודכנות · ..."). בדיקה: `tests/supplier-thread.mjs`.
+- **לא נבדק:** ש-Resend מכבד `Message-ID` מותאם. לבדוק ב-Staging עם תיבת הבדיקה.
+- **בדיקות:** `tests/article-reopen.mjs` עוברת (ב-Windows דרך עותק harness עם `pathToFileURL`), וגם `publication-scheduling`, `supplier-mail`, `resend-email`. בדיקה מקומית מלאה עם נתוני דמה: החזרה, עמוד ספק בהמתנה, שליחה מחדש, אישור חוזר, הארכת תוקף. המיילים נחסמו מקומית (אין חיבור דיוור).
+- **לפני העלאה:** אין שאריות זמניות ב-repo. לא בוצע commit.
