@@ -1,7 +1,8 @@
 'use client';
 import {AdminResponsiveTable} from '@/components/ui/table';
 import React, { useEffect, useRef, useState } from 'react';
-import { Plus, Search, Gift, ShoppingCart, Pencil, X, Check, Globe, Tag, Wallet, Percent, Calendar, Users } from 'lucide-react';
+import { Plus, Search, Gift, ShoppingCart, Pencil, X, Check, Globe, Tag, Wallet, Percent, Calendar, Users, MessageSquareText } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,6 +39,26 @@ export function SiteOffers({ ctx, managing = false }: { ctx: Ctx; managing?: boo
 }
 const offerCardStyle = 'min-w-0 gap-0 overflow-hidden rounded-2xl border-orange-200/70 bg-white py-0 shadow-[0_0_0_1px_#fed7aa66,0_0_18px_2px_#fb923c24,0_8px_24px_#fb923c12]';
 const offerButtonStyle = 'min-h-12 h-auto rounded-full bg-orange-400 px-5 py-3 text-base font-bold text-slate-950 shadow-lg shadow-orange-500/25 hover:bg-orange-300';
+// Owner 22.11.2026: each site in a package shows its DR, UR and publishing notes, the same facts and notes window
+// as the catalog card, so a customer can judge the package without leaving the offers page.
+function BundleSiteMeta({ site }: { site: Row }) {
+    const [open, setOpen] = useState(false), titleId = React.useId();
+    const notes = [site.public_notes].filter(Boolean) as string[];
+    const metric = (value: unknown) => value === null || value === undefined || value === '' ? '—' : String(value);
+    return <span className="ba-meta">
+        <span className="ba-chip" aria-label={'DR ' + metric(site.dr)}><small aria-hidden="true">DR</small><bdi aria-hidden="true">{metric(site.dr)}</bdi></span>
+        <span className="ba-chip" aria-label={'UR ' + metric(site.ur)}><small aria-hidden="true">UR</small><bdi aria-hidden="true">{metric(site.ur)}</bdi></span>
+        {notes.length ? <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild><button type="button" className="ba-notes" aria-label={'הערות לפרסום — ' + site.name}><MessageSquareText size={14} aria-hidden="true"/>הערות לפרסום</button></PopoverTrigger>
+            <PopoverContent dir="rtl" side="top" align="end" sideOffset={10} collisionPadding={12} className="publication-notes-popover" aria-labelledby={titleId}>
+                <header><h3 id={titleId}>הערות לפרסום</h3><button type="button" className="publication-notes-close" aria-label="סגירת הערות לפרסום" onClick={() => setOpen(false)}><X size={18} aria-hidden="true"/></button></header>
+                <div className="publication-notes-copy">{notes.map((note, index) => <p key={index}>{note}</p>)}</div>
+                <button type="button" className="publication-notes-done" onClick={() => setOpen(false)}>הבנתי</button>
+            </PopoverContent>
+        </Popover> : <span className="ba-notes is-empty"><MessageSquareText size={14} aria-hidden="true"/>אין הערות</span>}
+    </span>;
+}
+
 function BundleCard({ bundle, ctx, managing = false, edit }: { bundle: Row; ctx: Ctx; managing?: boolean; edit?: () => void }) {
     const [busy, setBusy] = useState(false);
     const mounted=useRef(true),adding=useRef(false),navigationTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -54,7 +75,7 @@ function BundleCard({ bundle, ctx, managing = false, edit }: { bundle: Row; ctx:
     const displayPrice = (cents: number) => new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(cents / 100);
     return <article data-design="bundle-apple-v1" className={'bundle-apple'+(saving>0?' is-on-sale':'')}>
         <header className="ba-head"><div className="ba-chips">{saving > 0 && <span className="ba-chip ba-chip-deal"><Percent size={12} aria-hidden="true"/>מבצע</span>}<span className="ba-chip ba-chip-count"><Gift size={12} aria-hidden="true"/>{sites.length} אתרים בחבילה</span>{managing && <span className={'ba-chip ba-chip-status' + (bundle.active === false ? ' is-hidden' : '')}>{bundle.active === false ? 'מוסתרת' : 'פעילה'}</span>}</div><h3>{bundle.name}</h3>{bundle.description && <p>{bundle.description}</p>}</header>
-        <ul className="ba-sites" aria-label="האתרים בחבילה">{sites.map(site => <li key={site.id} className="ba-site"><span className="ba-logo">{site.logo_url ? <img src={site.logo_url} alt="" loading="lazy"/> : <Globe size={22} aria-hidden="true"/>}</span><span className="ba-site-name"><strong>{site.name}</strong><a href={site.url} target="_blank" rel="noreferrer" dir="ltr">{site.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a></span><span className="ba-site-unit">כתבה אחת</span></li>)}</ul>
+        <ul className="ba-sites" aria-label="האתרים בחבילה">{sites.map(site => <li key={site.id} className="ba-site"><span className="ba-logo">{site.logo_url ? <img src={site.logo_url} alt="" loading="lazy"/> : <Globe size={22} aria-hidden="true"/>}</span><span className="ba-site-name"><strong>{site.name}</strong><a href={site.url} target="_blank" rel="noreferrer" dir="ltr">{site.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}</a><BundleSiteMeta site={site}/></span><span className="ba-site-unit">כתבה אחת</span></li>)}</ul>
         <div className="ba-buy"><span className="ba-price-label">מחיר לכל החבילה</span>{saving > 0 && <div className="ba-sale"><s>{displayPrice(original)}</s><span className="ba-off">{percent}%−</span></div>}<div className="ba-price"><strong>{displayPrice(price)}</strong><small>{saving > 0 && <><span className="ba-saving">חיסכון של <bdi className="saving-amount">{displayPrice(saving)}</bdi></span> · </>}לפני מע״מ</small></div>
         {managing ? <Button variant="outline" className="ba-edit" onClick={edit}><Pencil size={17}/>עריכת החבילה</Button> : <CartFeedbackButton websiteId={'bundle:'+bundle.id} className="ba-add" enabled={available} disabled={!available||busy} onClick={add} label={busy?'מוסיף לסל…':available?'הוספת החבילה לסל':'החבילה אינה זמינה'} icon={<ShoppingCart size={18}/>}/>}</div>
     </article>;

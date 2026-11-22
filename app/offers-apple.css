@@ -66,3 +66,15 @@
 @media(prefers-reduced-motion:reduce){.bundle-apple,.bundle-apple *,.offers-page.azure-page-theme .offers-type-tabs button{animation:none!important;transition-duration:.01ms!important}.bundle-apple:hover{transform:none}}
 @media(forced-colors:active){.bundle-apple{border:1px solid CanvasText}.offers-page.azure-page-theme .offers-type-tabs button[aria-pressed=true]{outline:2px solid Highlight}}
 .ba-saving .saving-amount{font-size:1.15em;font-weight:800;letter-spacing:-.01em}
+
+/* Owner 22.11.2026: DR, UR and publishing notes under each site of a package (same facts as the catalog card) */
+.bundle-apple .ba-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:8px}
+.bundle-apple .ba-chip{display:inline-flex;align-items:baseline;gap:5px;height:26px;padding:0 9px;border-radius:9px;background:#fff;box-shadow:inset 0 0 0 1px var(--ba-line);font-size:13px;font-weight:800;line-height:26px;color:var(--ba-ink);font-variant-numeric:tabular-nums}
+.bundle-apple .ba-chip small{font-size:11px;font-weight:700;color:#5d6e82}
+.bundle-apple .ba-notes{display:inline-flex;align-items:center;gap:5px;height:26px;padding:0 10px;border:0;border-radius:9px;background:#eef5ff;color:#1460c4;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;transition:background-color .2s}
+.bundle-apple .ba-notes.is-empty{background:#f3f5f8;color:#5d6e82;cursor:default}
+.bundle-apple button.ba-notes:focus-visible{outline:3px solid #0079cb;outline-offset:2px}
+@media(hover:hover){.bundle-apple button.ba-notes:hover{background:#e0ecfd}}
+/* a square logo (PC MAG) was cut at the bottom: the image height did not resolve inside the grid tile */
+.bundle-apple .ba-logo{display:flex;align-items:center;justify-content:center}
+.bundle-apple .ba-logo img{width:100%;height:100%;object-fit:contain}
