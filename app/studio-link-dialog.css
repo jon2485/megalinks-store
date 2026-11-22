@@ -1,7 +1,8 @@
 /* Owner 22.11.2026: the article editor's link popup (add / change / remove a link) in the look of the approved customer popups
    ("יצירת טיוטה בעזרת AI", app/studio-v6.css; payments, app/customer-dialog-sky.css): white card, violet-blue icon tile, grey close
-   button on the left, a light field with a blue ring and one violet-blue main action. On phones the card sits at the top of the
-   screen so the field and the button stay above the iPhone keyboard. Only `.sv-link-dialog` (app/rich-editor.tsx) uses it. */
+   button on the left, a light field with a blue ring and one violet-blue main action. The card opens centred in the
+   screen; on a phone, while the keyboard is open, app/rich-editor.tsx sets --ld-top / --ld-ty from the visual viewport so the
+   whole card rides just above the keyboard, and removes them when it closes (owner 22.11: "שהם ייפתחו באמצע, ויעלו עם המקלדת"). Only `.sv-link-dialog` (app/rich-editor.tsx) uses it. */
 html body [data-slot=dialog-content].sv-link-dialog{
  --ld-ink:#0b1b2f;--ld-mute:#5b6b82;--ld-line:#e3e9f1;--ld-field:#f6f8fb;--ld-field-line:#dfe6ef;--ld-blue:#1467cf;--ld-violet:#7c5cff;--ld-red:#b42343;
  display:flex;flex-direction:column;gap:0;padding:0;overflow:hidden;
@@ -9,6 +10,8 @@ html body [data-slot=dialog-content].sv-link-dialog{
  background:#fff;border:0;border-radius:26px;box-shadow:0 24px 90px rgba(7,31,75,.2);
  color:var(--ld-ink);direction:rtl;text-align:right;font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
 }
+/* Centred by default (same as the base dialog); the keyboard values move it smoothly. */
+html body [data-slot=dialog-content].sv-link-dialog{top:var(--ld-top,50%);translate:-50% var(--ld-ty,-50%);transition:top .28s cubic-bezier(.2,.7,.3,1),translate .28s cubic-bezier(.2,.7,.3,1)}
 body:has([data-slot=dialog-content].sv-link-dialog) [data-slot=dialog-overlay]{background:rgba(7,22,44,.45);-webkit-backdrop-filter:none;backdrop-filter:none}
 
 html body .sv-link-dialog .sv-link-head{display:flex;flex-direction:row;align-items:center;gap:13px;margin:0;padding:20px 24px 16px 70px;border-bottom:1px solid var(--ld-line);text-align:right}
@@ -43,9 +46,9 @@ html body .sv-link-dialog :is(.sv-link-primary,.sv-link-secondary):focus-visible
 @media(hover:hover) and (pointer:fine){html body .sv-link-dialog .sv-link-primary:hover:not(:disabled){filter:brightness(1.07)}html body .sv-link-dialog .sv-link-secondary:hover:not(:disabled){background:#e6edf5}html body .sv-link-dialog>[data-slot=dialog-close]:hover{background:#e6edf5}}
 
 /* `!important` on the small texts only: a site-wide dialog rule forces every dialog <p> to 16px dark text. */
-/* Phones: pin the card to the top so the iPhone keyboard never covers the field or the button. */
+/* Phones: same centred card, a little narrower. */
 @media(max-width:640px){
- html body [data-slot=dialog-content].sv-link-dialog{top:calc(env(safe-area-inset-top,0px) + 12px);translate:-50% 0;width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}
+ html body [data-slot=dialog-content].sv-link-dialog{width:calc(100vw - 24px);max-height:calc(100dvh - 24px)}
  html body .sv-link-dialog .sv-link-head{padding:16px 16px 13px 62px}
  html body .sv-link-dialog>[data-slot=dialog-close]{top:21px;left:16px}
  html body .sv-link-dialog .sv-link-tile{width:44px;height:44px;border-radius:14px}
@@ -54,4 +57,4 @@ html body .sv-link-dialog :is(.sv-link-primary,.sv-link-secondary):focus-visible
  html body .sv-link-dialog .sv-link-foot{padding:12px 16px 16px}
  html body .sv-link-dialog .sv-link-primary{flex:1;padding:0 16px}
 }
-@media(prefers-reduced-motion:reduce){html body .sv-link-dialog :is(.sv-link-input,.sv-link-primary,.sv-link-secondary){transition:none}}
+@media(prefers-reduced-motion:reduce){html body [data-slot=dialog-content].sv-link-dialog,html body .sv-link-dialog :is(.sv-link-input,.sv-link-primary,.sv-link-secondary){transition:none}}
