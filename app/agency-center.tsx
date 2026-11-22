@@ -10,6 +10,7 @@ import {purchaseStage,purchaseStages} from '@/lib/purchased-history';
 import type {Ctx} from './workspace';
 import {setBuyingFor,BriefDefaultsFields,emptyBriefDefaults} from './agency-buying';
 import './agency-center.css';
+import {PurchaseActions} from './purchased-view';
 import {hasAgencyCentre,agencyCentreName} from '@/lib/agency-shared';
 import {budgetState,safeCell} from '@/lib/agency-shared';
 import {exportSpreadsheet} from '@/lib/office';
@@ -65,7 +66,7 @@ export default function AgencyCenter({ctx,view,viewAs}:{ctx:Ctx;view:string;view
  return <section className={'ag'+(viewAs?' readonly':'')} dir="rtl" aria-labelledby="ag-title">
   {viewAs&&<div className="ag-viewas" role="status"><Eye size={17} aria-hidden="true"/><span><b>צפייה בלבד</b> · כך <bdi>{who.company||who.name}</bdi> רואה את {name}. אי אפשר לשנות דבר, והצפייה נרשמה ביומן הפעולות.</span><Link ctx={ctx} to={'admin-customer-account/'+encodeURIComponent(viewAs)+'/agency'} className="ag-btn ghost sm"><ArrowRight size={15} aria-hidden="true"/>חזרה לכרטיס</Link></div>}
   <header className="ag-band">
-   {!viewAs&&<><Link ctx={ctx} to="purchased" className="ag-btn ghost sm"><ArrowRight size={16}/>לאזור האישי</Link><span className="sep"/></>}
+   {!viewAs&&<><Link ctx={ctx} to="purchased" className="ag-btn ghost sm ag-back" aria-label="חזרה לאזור האישי"><ArrowRight size={16} aria-hidden="true"/><span className="ag-back-text">לאזור האישי</span></Link><span className="sep"/></>}
    <img src="/brand/megalinks-logo-dark.png" alt="Mega Links" width={140} height={30}/>
    <span className="sep"/>
    <div className="grow"><h1 id="ag-title">{name}</h1><p><bdi>{who?.company||who?.name}</bdi></p></div>
@@ -234,7 +235,7 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
   {state.error&&<p className="ag-alert" role="alert">{state.error}</p>}
   {state.loading&&!state.data?<div className="ag-skel" style={{height:120}}/>
    :!rows.length?<div className="ag-empty"><Globe size={30}/><h3>אין פרסומים בתקופה הזו</h3><p>{customer?'אפשר לבחור תקופה אחרת, או לרכוש פרסום עבור הלקוח.':'אפשר לבחור תקופה או לקוח אחר.'}</p></div>
-   :<div className="ag-table-wrap"><table className="ag-table"><thead><tr>{!customer&&<th scope="col">לקוח</th>}<th scope="col">אתר</th><th scope="col">פורסם</th><th scope="col">עוגן</th><th scope="col">קישור יעד</th><th scope="col">עלות</th><th scope="col">סטטוס</th><th scope="col"><span className="sr-only">קישור</span></th></tr></thead>
+   :<div className="ag-table-wrap"><table className="ag-table"><thead><tr>{!customer&&<th scope="col">לקוח</th>}<th scope="col">אתר</th><th scope="col">פורסם</th><th scope="col">עוגן</th><th scope="col">קישור יעד</th><th scope="col">עלות</th><th scope="col">סטטוס</th><th scope="col">פעולות</th></tr></thead>
     <tbody>{rows.map(a=>{const [label,tone]=statusOf(a);return <tr key={a.id}>
      {!customer&&<td data-label="לקוח">{a.customer_name||<span className="ag-muted">ללא לקוח</span>}</td>}
      <td className="ag-td-site"><div className="ag-site"><SiteLogo src={a.website_logo} name={a.website_name}/><span><b>{a.website_name}</b><small>{String(a.website_url||'').replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,'')}</small></span></div></td>
@@ -243,7 +244,8 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
      <td data-label="קישור יעד"><span className="ag-ltr ag-muted">{String(a.target_url||'').replace(/^https?:\/\/(www\.)?/,'')||'—'}</span></td>
      <td data-label="עלות"><bdi>{ils(a.spend)}</bdi></td>
      <td data-label="סטטוס"><span className={'ag-status '+tone}>{label}</span></td>
-     <td data-label="קישור">{a.published_url?<a className="ag-link" href={a.published_url} target="_blank" rel="noreferrer">לכתבה<ExternalLink size={14}/></a>:<span className="ag-muted">—</span>}</td>
+     {/* The same buttons as "הכתבות שלי" (owner 22.11.2026): content, AI draft, writer instructions, link once published. */}
+     <td data-label="פעולות" className="ag-td-actions">{tone==='off'?<span className="ag-muted">—</span>:<PurchaseActions article={a} ctx={ctx} compact/>}</td>
     </tr>;})}</tbody></table>{rows.length>=1000&&<p className="ag-muted">מוצגים 1,000 הראשונים. צמצמו את התקופה.</p>}</div>}
  </>;
 }

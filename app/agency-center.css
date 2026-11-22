@@ -97,6 +97,9 @@
 @media(max-width:760px){
  .ag{padding:12px 12px 40px}
  .ag-band{padding:12px 14px;border-radius:18px;gap:10px}.ag-band img,.ag-band .sep,.ag-band .ghost{display:none}.ag-band h1{font-size:19px}.ag-band p{font-size:12.5px}
+ /* Owner 22.11: a small way back to the personal area on phones, the arrow only (the name stays for screen readers). */
+ .ag-band a.ag-back{display:inline-grid;place-items:center;flex:none;width:36px;height:36px;min-height:36px;padding:0;border-radius:50%;background:#f2f6fb;box-shadow:none;color:#3a4e66}
+ .ag-band a.ag-back .ag-back-text{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
  .ag-btn.buy{padding:0 12px}
  .ag-tabs{margin:10px -12px 12px;border-radius:0;padding:6px 12px;box-shadow:none;background:transparent}
  .ag-tabs button{min-height:40px;padding:0 13px;background:#fff;box-shadow:inset 0 0 0 1px #dfe7f0;font-size:14px}
@@ -168,6 +171,9 @@
  .ag-table td[data-label="עלות"]{order:9;font-size:15px;font-weight:800;color:var(--ink)}
  .ag-table td[data-label="סטטוס"]{order:10}
  .ag-table td[data-label="קישור"]{order:11;margin-inline-start:auto}
+ /* The article buttons take the full row under the details, as on the "הכתבות שלי" card. */
+ .ag-table td.ag-td-actions{order:12;flex-basis:100%;padding-top:6px!important}
+ .ag-table td.ag-td-actions::before{display:none}
  .ag-filters{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px}
  .ag-filters>*{flex:none}
 }
@@ -401,3 +407,13 @@ a.ag-task{text-decoration:none;color:inherit}
 .agc-link:disabled{opacity:.6;cursor:default}
 .agc-link:focus-visible{outline:3px solid #1467cf;outline-offset:2px}
 @media(hover:hover){.agc-link:not(.on):not(:disabled):hover{background:#eaf1f8}}
+/* Article buttons inside the publications table (shared with "הכתבות שלי", owner 22.11.2026). */
+.ag-table td.ag-td-actions{min-width:210px}
+.ag-table td.ag-td-actions .purchase-modern-actions,.ag-table td.ag-td-actions .purchase-action-row,.ag-table td.ag-td-actions .purchase-action-buttons{display:grid;grid-template-columns:minmax(0,1fr);justify-content:stretch;gap:8px;width:100%;justify-items:stretch;justify-self:stretch}
+/* Same look as the buttons on "הכתבות שלי" (app/personal-apple.css): blue main action, white secondary one. */
+.ag .ag-td-actions .purchase-action-buttons :is(button,a){display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%!important;min-height:46px!important;height:auto!important;padding:10px 14px!important;border-radius:12px!important;font:650 14px/1.3 Heebo,Arial,sans-serif!important;text-decoration:none}
+.ag .ag-td-actions .purchase-action-buttons :is(button,a):not([data-variant=outline]){border:0!important;color:#fff!important;background:linear-gradient(180deg,#1072e4,#1467cf)!important;box-shadow:inset 0 1px 0 #ffffff59,0 1px 2px #0a3c8c40,0 8px 20px -10px #1673e6b3!important}
+.ag .ag-td-actions .purchase-action-buttons [data-variant=outline]{border:0!important;color:#0b1b2f!important;background:linear-gradient(180deg,#fff,#f5f9fd)!important;box-shadow:inset 0 0 0 1px #0b28501a,inset 0 1px 0 #fff,0 1px 2px #0b28500f!important}
+.ag .ag-td-actions .purchase-action-buttons :is(button,a) svg{color:currentColor}
+.ag .ag-td-actions .purchase-action-buttons :is(button,a):focus-visible{outline:3px solid #0079cb;outline-offset:2px}
+.ag .ag-td-actions .purchase-secondary-actions{display:contents}

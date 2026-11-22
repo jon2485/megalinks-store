@@ -16,18 +16,32 @@ import { type Row, stages } from '@/lib/shared';
 import { displayPurchaseDate, groupPurchasesByMonth, publicationDate, publicationLink, purchaseStage, purchaseStages, type PurchaseStage } from '@/lib/purchased-history';
 import { type Ctx, Empty, ErrorBox } from './workspace';
 
+// The article buttons of "הכתבות שלי", shared with the customers centre's publications list (owner 22.11.2026), so both
+// pages offer the same actions on the same article and every change shows on both. `writing_ready` comes from the
+// server when the row carries no article text (customers centre); otherwise it is worked out here as before.
+export function PurchaseActions({ article, ctx, compact=false, canAssign=false }: { article: Row; ctx: Ctx; compact?:boolean; canAssign?:boolean }) {
+    const liveLink = publicationLink(article), stage = purchaseStage(article), editable = stage === 'editing';
+    const ready = article.writing_ready ?? writingCustomerEditor(article);
+    const actionBase='inline-flex h-auto min-h-11 items-center justify-center gap-2 whitespace-normal rounded-full px-4 py-2.5 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2';
+    const primaryStyle=actionBase+' w-full min-w-0 bg-teal-400 text-slate-950 shadow-sm shadow-teal-500/20 hover:bg-teal-300';
+    const publishedStyle=actionBase+' w-full min-w-0 bg-orange-400 text-slate-950 shadow-sm shadow-orange-500/20 hover:bg-orange-300';
+    const secondaryStyle=actionBase+' w-full min-w-0 border border-slate-500 bg-white text-slate-950 shadow-none hover:border-teal-500 hover:bg-teal-50';
+    return <div className="purchase-modern-actions"><div className="purchase-action-row"><div className="purchase-action-buttons">
+                {stage==='published'?liveLink?<a href={liveLink} target="_blank" rel="noreferrer" className={publishedStyle}><ExternalLink size={16}/>קישור לכתבה</a>:<Button disabled className={publishedStyle}>קישור לכתבה</Button>:stage==='demo-completed'?<span className="rounded-full bg-slate-100 px-4 py-2 text-center text-sm font-semibold text-slate-600">הדגמה הושלמה</span>:<Button className={primaryStyle} onClick={()=>ctx.go('article/'+article.id)}>{editable?<FileText size={16}/>:<Eye size={16}/ >}{editable?(article.editorial?(ready?'עריכת המאמר המוכן':article.writing_requested_at?'צפייה בהנחיות ובסטטוס':'מילוי הוראות לכותב התוכן'):compact?'המשך עריכה':'הוספת והמשך עריכת מאמר'):'צפייה בסטטוס'}</Button>}
+                {editable&&!article.editorial&&<div className="purchase-secondary-actions"><Button variant="outline" className={secondaryStyle} onClick={()=>ctx.go('article/'+article.id+'/ai')}><Sparkles size={16}/>יצירת תוכן AI</Button></div>}
+                </div>
+                {(canAssign||!!article.customer_id)&&<ArticleCustomerAssignment article={article} ctx={ctx} compact/>}</div>
+            </div>;
+}
+
 export function PurchaseRow({ article, site, ctx, compact=false,canAssign=false }: { article: Row; site?: Row; ctx: Ctx; compact?:boolean;canAssign?:boolean }) {
     const [logoFailed, setLogoFailed] = useState(false);
     const logo = article.website_logo || site?.logo_url;
     const websiteUrl = article.website_url || site?.url || '';
     const siteName=article.website_name||site?.name||'אתר לפרסום';
-    const publishedDate = publicationDate(article), liveLink = publicationLink(article);
-    const stage = purchaseStage(article), editable = stage === 'editing';
+    const publishedDate = publicationDate(article);
+    const stage = purchaseStage(article);
     const shortUrl = (url: string) => url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-    const actionBase='inline-flex h-auto min-h-11 items-center justify-center gap-2 whitespace-normal rounded-full px-4 py-2.5 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:ring-offset-2';
-    const primaryStyle=actionBase+' w-full min-w-0 bg-teal-400 text-slate-950 shadow-sm shadow-teal-500/20 hover:bg-teal-300';
-    const publishedStyle=actionBase+' w-full min-w-0 bg-orange-400 text-slate-950 shadow-sm shadow-orange-500/20 hover:bg-orange-300';
-    const secondaryStyle=actionBase+' w-full min-w-0 border border-slate-500 bg-white text-slate-950 shadow-none hover:border-teal-500 hover:bg-teal-50';
     const statusStyle=stage==='approval'?'bg-orange-100 text-orange-900':stage==='publication'?'bg-cyan-100 text-cyan-900':stage==='demo-completed'?'bg-slate-100 text-slate-700':'bg-teal-100 text-teal-900';
     const progress=stage==='approval'?'הכתבה נשלחה לבדיקת המנהל.':stage==='publication'?'הכתבה אושרה וממתינה לפרסום אצל הספק.':stage==='demo-completed'?'הדגמה בלבד · ללא פרסום חיצוני.':article.status==='revisions'?'הכתבה הוחזרה לתיקון. אפשר להמשיך בעריכה.':article.editorial?(article.writing_requested_at?writingStatus(article)||writingWaitingLabel:'שלחו פרטים לכותב כדי להתחיל.'):'טרם נשלחה לאישור.';
     return <Card className="purchase-modern-card">
@@ -45,12 +59,7 @@ export function PurchaseRow({ article, site, ctx, compact=false,canAssign=false 
                 {!!article.editorial&&<p className="purchase-writing-info"><FileText size={15}/>נרכשה כתיבה בידי כותב מקצועי · {article.editorial_words} מילים</p>}
             </div>
             <div className="purchase-order-column"><span aria-label={'מספר הזמנה '+(article.number||'לא זמין')} dir="ltr" className="purchase-order-pill"><FileText size={14}/>{article.number||'—'}</span></div>
-            <div className="purchase-modern-actions"><div className="purchase-action-row"><div className="purchase-action-buttons">
-                {stage==='published'?liveLink?<a href={liveLink} target="_blank" rel="noreferrer" className={publishedStyle}><ExternalLink size={16}/>קישור לכתבה</a>:<Button disabled className={publishedStyle}>קישור לכתבה</Button>:stage==='demo-completed'?<span className="rounded-full bg-slate-100 px-4 py-2 text-center text-sm font-semibold text-slate-600">הדגמה הושלמה</span>:<Button className={primaryStyle} onClick={()=>ctx.go('article/'+article.id)}>{editable?<FileText size={16}/>:<Eye size={16}/ >}{editable?(article.editorial?(writingCustomerEditor(article)?'עריכת המאמר המוכן':article.writing_requested_at?'צפייה בהנחיות ובסטטוס':'מילוי הוראות לכותב התוכן'):compact?'המשך עריכה':'הוספת והמשך עריכת מאמר'):'צפייה בסטטוס'}</Button>}
-                {editable&&!article.editorial&&<div className="purchase-secondary-actions"><Button variant="outline" className={secondaryStyle} onClick={()=>ctx.go('article/'+article.id+'/ai')}><Sparkles size={16}/>יצירת תוכן AI</Button></div>}
-                </div>
-                {(canAssign||!!article.customer_id)&&<ArticleCustomerAssignment article={article} ctx={ctx} compact/>}</div>
-            </div>
+            <PurchaseActions article={article} ctx={ctx} compact={compact} canAssign={canAssign}/>
         </CardContent>
     </Card>;
 

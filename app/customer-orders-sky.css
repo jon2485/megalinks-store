@@ -89,6 +89,10 @@
 @media(max-width:860px){
  .cos{padding:16px;border-radius:22px}
  .cos-top h2{display:none}
+ /* Owner 22.11: the four tiles were each a different width on phones. Two equal columns, label and number at the two ends. */
+ .cos-chips{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));width:100%}
+ .cos-chip{justify-content:space-between;align-items:center;gap:6px;min-width:0;padding:11px 12px;font-size:13px;line-height:1.2;white-space:nowrap;text-align:right}
+ .cos-chip b{font-size:18px}
  .cos-cols{display:none}
  .cos-row{grid-template-columns:1fr auto;grid-template-areas:"num pay" "sites sites" "prog amt";gap:10px;padding:14px 16px}
  .cos-num{grid-area:num}.cos-paycell{grid-area:pay;justify-self:end}.cos-sites{grid-area:sites}.cos-prog{grid-area:prog}.cos-amt{grid-area:amt;text-align:left}.cos-act{display:none}

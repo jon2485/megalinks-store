@@ -1,0 +1,66 @@
+/* Owner 22.11.2026: the customer's payment report ("כבר שילמתי"), balance top-up and balance usage popups were still in the
+   old frosted teal look. They now follow the new customer pages ("ההזמנות שלי", "יתרה וזיכויים"): a white card, dark blue
+   text, the blue gradient main button and light blue tiles. Only dialogs opened with `sky:true` on the customer side get
+   the class `sky-dialog` (app/workspace.tsx); the admin area and every other dialog keep their look. */
+html body [data-slot=dialog-content].sky-dialog{
+ --sky-ink:#0c1d33;--sky-copy:#3a4e66;--sky-mute:#5d6e82;--sky-line:#dfe7f1;--sky-blue:#1467cf;--sky-tile:#eef5ff;
+ --payment-glass-ink:var(--sky-ink);--payment-glass-muted:var(--sky-copy);--payment-glass-accent:var(--sky-blue);
+ --customer-finance-ink:var(--sky-ink);--customer-finance-muted:var(--sky-copy);--customer-finance-accent:var(--sky-blue);
+ --customer-finance-surface:#fff;--customer-finance-line:var(--sky-line);
+ background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+ border:0!important;border-radius:24px!important;
+ box-shadow:0 0 0 1px rgba(15,40,80,.06),0 2px 6px rgba(15,40,80,.06),0 28px 70px -18px rgba(15,40,80,.35)!important;
+ color:var(--sky-ink)!important;font-family:Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+}
+body:has([data-slot=dialog-content].sky-dialog) [data-slot=dialog-overlay]{background:rgba(12,29,51,.32)!important;-webkit-backdrop-filter:blur(2px)!important;backdrop-filter:blur(2px)!important}
+
+/* Head: the icon in a light blue tile, like the balance card. */
+html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge{display:grid;place-items:center;width:44px;height:44px;border-radius:14px;background:var(--sky-tile)!important;color:var(--sky-blue)!important;box-shadow:none!important}
+html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge svg{color:var(--sky-blue)!important;stroke:currentColor}
+html body .sky-dialog [data-slot=dialog-title]{color:var(--sky-ink)!important;font-weight:800!important;letter-spacing:-.01em}
+html body .sky-dialog [data-slot=dialog-description]{color:var(--sky-mute)!important}
+html body .sky-dialog>[data-slot=dialog-close]{background:#f2f6fb!important;border:0!important;box-shadow:none!important;color:var(--sky-copy)!important}
+html body .sky-dialog>[data-slot=dialog-close]:hover{background:#e7eef7!important}
+
+/* Text and tiles. */
+html body .sky-dialog :is(p,small,dt,dd,time,label,label>span){color:var(--sky-copy)}
+html body .sky-dialog :is(h2,h3,strong,b){color:var(--sky-ink)}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount,.border-cyan-100,.customer-usage-summary,.wallet-usage-summary){background:var(--sky-tile)!important;border:0!important;border-radius:16px!important;box-shadow:none!important}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount){padding:14px 16px!important}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount) strong{color:var(--sky-ink)!important}
+
+/* Fields: white, a thin line, blue when active. */
+html body .sky-dialog :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select){
+ background:#fff!important;border:1px solid var(--sky-line)!important;border-radius:14px!important;box-shadow:none!important;color:var(--sky-ink)!important;
+}
+html body .sky-dialog :is(input,textarea,select):focus{border-color:var(--sky-blue)!important;box-shadow:0 0 0 3px rgba(20,103,207,.16)!important;outline:none!important}
+html body .sky-dialog :is(label.rounded-xl.border,.payment-report-proof,.payment-proof){background:#f8fbff!important;border:1px dashed #bcd0ea!important}
+/* A search box is the frame itself; its input has no second frame. */
+html body .sky-dialog .wallet-usage-search{background:#fff!important;border:1px solid var(--sky-line)!important;border-radius:14px!important;box-shadow:none!important}
+html body .sky-dialog .wallet-usage-search:focus-within{border-color:var(--sky-blue)!important;box-shadow:0 0 0 3px rgba(20,103,207,.16)!important}
+html body .sky-dialog .wallet-usage-search input{border:0!important;box-shadow:none!important;background:transparent!important}
+html body .sky-dialog .wallet-usage-search input:focus-visible{outline:none!important}
+html body .sky-dialog [class*=border-dashed]{border-color:#bcd0ea!important}
+html body .sky-dialog input[type=file]::file-selector-button{border:0;border-radius:10px;background:var(--sky-tile);color:var(--sky-blue);font-weight:700;padding:8px 14px;margin-inline-end:10px;cursor:pointer}
+
+/* Choices (bank transfer / card): a light track, the chosen one white with blue text. */
+html body .sky-dialog :is([data-slot=tabs-list],.payment-method-buttons){background:#eef3f9!important;border:0!important;box-shadow:none!important;border-radius:14px!important}
+html body .sky-dialog :is([data-slot=tabs-trigger],.payment-method-buttons button){color:var(--sky-mute)!important;border:0!important;border-radius:11px!important;box-shadow:none!important;background:transparent!important}
+html body .sky-dialog :is([data-slot=tabs-trigger][data-state=active],.payment-method-buttons button[aria-pressed=true]){background:#fff!important;color:var(--sky-blue)!important;box-shadow:0 1px 2px rgba(15,40,80,.1),0 4px 12px -6px rgba(15,40,80,.25)!important}
+html body .sky-dialog :is([data-slot=tabs-trigger],.payment-method-buttons button) svg{color:currentColor!important}
+
+/* Buttons: the main action in the blue of "הטענת יתרה"; secondary ones white; plain links blue. */
+html body .sky-dialog :is(button[type=submit],.payment-glass-send,.payment-report-submit,.customer-topup-submit){
+ background:linear-gradient(#1072e4,#1467cf)!important;color:#fff!important;border:0!important;border-radius:12px!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 1px 2px rgba(10,60,140,.25),0 8px 20px -10px rgba(22,115,230,.7)!important;font-weight:700!important;
+}
+html body .sky-dialog :is(button[type=submit],.payment-glass-send,.payment-report-submit,.customer-topup-submit) :is(svg,span){color:#fff!important}
+html body .sky-dialog :is(button[type=submit],.payment-glass-send):disabled{opacity:.6}
+html body .sky-dialog :is(.payment-glass-back,.payment-report-cancel,button[data-variant=ghost]){background:transparent!important;color:var(--sky-blue)!important;box-shadow:none!important}
+html body .sky-dialog a{color:var(--sky-blue)!important}
+html body .sky-dialog :is(button,a,input,select,textarea,[role=tab]):focus-visible{outline:3px solid #0079cb!important;outline-offset:2px}
+
+/* Usage history: each charge a white card with a thin line; the amount in a light blue tile. */
+html body .sky-dialog .wallet-usage-history :is(article,li,.wallet-usage-row,.customer-usage-row){background:#fff!important;border:1px solid #e7edf5!important;border-radius:16px!important;box-shadow:0 1px 2px rgba(15,40,80,.05)!important}
+html body .sky-dialog .wallet-usage-history :is(.wallet-usage-amount,.customer-usage-amount){background:var(--sky-tile)!important;border:0!important}
+@media(prefers-reduced-motion:reduce){html body .sky-dialog *{transition:none!important}}

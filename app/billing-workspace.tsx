@@ -116,8 +116,8 @@ export default function BillingWorkspace({ctx,monthly=false,balanceOnly=false}:{
     const hasCreditAccount=ctx.user?.monthly_account?.enabled===1||ctx.user?.monthly_account?.enabled===true;
     const credit=useData('credits',ctx.revision,!monthly,5000), orders=useData('orders',ctx.revision,!monthly,15000), packages=useData('records/package',ctx.revision,!monthly);
     const viewOrder=(order:Row)=>ctx.open({kind:'bulk',title:(orderCancellation(order)==='full'?'פרטי הביטול - ':'פרטי הזמנה ')+order.number,description:'האתרים שנרכשו, סיכום התשלום ומסמכי ההזמנה.',render:()=> <><OrderBreakdown id={order.id} ctx={ctx}/><PaymentOrderActions ctx={ctx} order={order}/></>});
-    const loadBalance=()=>ctx.open({kind:'wallet-topup',title:'הטענת יתרה לחשבון',description:'בחרו אמצעי תשלום וסכום להטענה.',render:(close:()=>void)=><BalanceTopUp ctx={ctx} close={close}/>});
-    const usageHistory=()=>ctx.open({kind:'admin-finance',title:'היסטוריית שימושים ביתרה',description:'תאריך, הזמנה, אתר וסכום שנוכה מהיתרה',render:()=> <WalletUsageHistory ctx={ctx}/>});
+    const loadBalance=()=>ctx.open({kind:'wallet-topup',sky:true,title:'הטענת יתרה לחשבון',description:'בחרו אמצעי תשלום וסכום להטענה.',render:(close:()=>void)=><BalanceTopUp ctx={ctx} close={close}/>});
+    const usageHistory=()=>ctx.open({kind:'admin-finance',sky:true,title:'היסטוריית שימושים ביתרה',description:'תאריך, הזמנה, אתר וסכום שנוכה מהיתרה',render:()=> <WalletUsageHistory ctx={ctx}/>});
     const allOrders:Row[]=orders.data?.orders||[];
     const ledger:Row[]=credit.data?.transactions||[];
     // Order payments are shown once in the order list; other ledger entries remain visible.
