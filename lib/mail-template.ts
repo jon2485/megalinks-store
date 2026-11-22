@@ -2,7 +2,8 @@
 // Mail clients drop <html>, <head> and <body>, so the direction is set on every block
 // and all styles are inline. Addresses, amounts and file names are isolated as
 // left-to-right runs so they never reorder inside Hebrew lines.
-export type MailFileLink={label:string;name:string;size:number;url:string};
+// attached: false when the file was too big to attach and travels only as a download link.
+export type MailFileLink={label:string;name:string;size:number;url:string;attached?:boolean;image?:boolean};
 export const MAIL_FILES_MARK='<!--MAIL:FILES-->';
 export const MAIL_FILE_DAYS=45;
 const ink='#0b1b2f',muted='#4f5d6e',faint='#7b8796',line='#e6ecf2',blue='#1673e6',soft='#f5f8fc';
@@ -25,12 +26,16 @@ export function mailFilesHtml(files:MailFileLink[]){
 }
 // For a message whose files arrive as real attachments (the article sent to a supplier): a plain list of
 // what is attached, without buttons, and one quiet line of direct addresses in case a file did not arrive.
-export function mailAttachedHtml(files:MailFileLink[]){
-    if(!files.length)return '';
+export function mailAttachedHtml(all:MailFileLink[]){
+    if(!all.length)return '';
+    const files=all.filter(f=>f.attached!==false),left=all.filter(f=>f.attached===false&&f.url);
+    // Files too big to attach (owner, 22.11.2026): each keeps a download link; images are also inside the Word file.
+    const leftHtml=left.length?`<div dir="rtl" style="margin-top:${files.length?'10px':'0'};padding:10px 0 8px;${files.length?`border-top:1px solid ${line};`:''}font-size:13px;color:${ink};line-height:1.7"><b>לא נכנסו למייל בגלל הגודל${left.some(f=>f.image)&&files.some(f=>!f.image)?' (התמונות נמצאות גם בקובץ ה-Word)':''}:</b><br>${left.map(f=>`<a href="${esc(f.url)}" style="color:${blue};text-decoration:none;font-weight:700;white-space:nowrap">${esc(f.label.split(',')[0])}</a> <span style="color:${faint};white-space:nowrap" dir="ltr">${fileSize(f.size)}</span>`).join(' · ')}</div>`:'';
+    if(!files.length)return `<div dir="rtl" style="margin-top:18px;padding:14px 18px 6px;border-radius:16px;border:1px solid ${line};text-align:right;font-family:${font}">${leftHtml}</div>`;
     const rows=files.map((f,i)=>`<tr><td dir="rtl" style="padding:10px 0;${i?`border-top:1px solid ${line};`:''}text-align:right"><div style="font-size:15px;font-weight:700;color:${ink};line-height:1.5">${esc(f.label)}</div><div style="font-size:12px;color:${faint};line-height:1.5"><span dir="ltr" style="unicode-bidi:isolate">${esc(f.name)}</span> · <span dir="ltr" style="unicode-bidi:isolate;white-space:nowrap">${fileSize(f.size)}</span></div></td></tr>`).join('');
     const linked=files.filter(f=>f.url);
     const backup=linked.length?`<div style="padding:8px 0;border-top:1px solid ${line};font-size:12px;color:${faint};line-height:1.7">קובץ לא הגיע? אפשר לפתוח אותו גם כאן: ${linked.map(f=>`<a href="${esc(f.url)}" style="color:${blue};text-decoration:none;white-space:nowrap">${esc(f.label.split(',')[0])}</a>`).join(' · ')}</div>`:'';
-    return `<div dir="rtl" style="margin-top:18px;padding:14px 18px 6px;border-radius:16px;border:1px solid ${line};text-align:right;font-family:${font}"><div style="font-size:13px;color:${faint};font-weight:700">מצורף למייל (${files.length})</div><table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">${rows}</table>${backup}</div>`;
+    return `<div dir="rtl" style="margin-top:18px;padding:14px 18px 6px;border-radius:16px;border:1px solid ${line};text-align:right;font-family:${font}"><div style="font-size:13px;color:${faint};font-weight:700">מצורף למייל (${files.length})</div><table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">${rows}</table>${leftHtml}${backup}</div>`;
 }
 export function mailFilesText(files:MailFileLink[]){
     return files.length?'קבצים להורדה:\n'+files.map(f=>f.label+': '+f.url).join('\n'):'';

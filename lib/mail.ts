@@ -10,7 +10,9 @@ import {safeFailure} from './security';
 import {fixRequestEmailHtml,fixRequestSubject,fixRequestText} from './fix-request-mail';
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
-export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string};
+export type MailFile={filename:string;content_type:string;bytes:Uint8Array;label:string;image?:boolean};
+// Up to this many article images travel as separate files (the download link allows indexes up to MAIL_FILES_MAX-1).
+const MAIL_IMAGES_MAX=20,MAIL_FILES_MAX=30;
 // A webhook service (Zapier and the like) takes about 10MB per message; Resend takes 40MB and Gmail receives 25MB,
 // so with Resend up to 15MB of files are attached (owner, 16.11.2026). Larger sets travel as download links only.
 const INLINE_FILES_LIMIT=6*1024*1024,RESEND_INLINE_LIMIT=15*1024*1024;
@@ -22,6 +24,14 @@ const storedFile=async(f:Row|null|undefined,max:number)=>{if(!f||Number(f.size)>
 // The site address the email belongs to (for the logo and the file links). A button may lead to an outside site, so a stored origin wins.
 const mailOrigin=(job:Row)=>{for(const v of [job.origin,job.button?.url]){try{if(v)return new URL(String(v)).origin;}catch{}}return '';};
 
+// The article's images in order: main, secondary, then the pictures inside the text; each id once.
+export function articleImages(a:Row){
+ const d=typeof a.data==='string'?JSON.parse(a.data||'{}'):a.data||{},out:{id:string;label:string}[]=[],seen=new Set<string>();
+ const add=(id:unknown,label:string)=>{const v=String(id||'');if(v&&/^[\w-]{1,100}$/.test(v)&&!seen.has(v)&&out.length<MAIL_IMAGES_MAX){seen.add(v);out.push({id:v,label});}};
+ add(d.image_id,'התמונה הראשית');add(d.secondary_image_id,'תמונה נוספת');
+ let n=0;for(const m of String(a.content||'').matchAll(/<img\b[^>]*\bsrc\s*=\s*["']\/api\/files\/([\w-]{1,100})["']/gi))add(m[1],'תמונה מתוך הכתבה '+(++n));
+ return out;
+}
 // Every file an email carries, in one place: used for the attachments and for the download links.
 export async function mailFiles(job:Row):Promise<MailFile[]>{
  const files:MailFile[]=[];
@@ -29,8 +39,10 @@ export async function mailFiles(job:Row):Promise<MailFile[]>{
  if(job.attach_writing_brief){const {writingBriefFile}=await import('./writing-brief-file');const pdf=await writingBriefFile(job.attach_writing_brief,job.origin);files.length=0;files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'פרטי הכתיבה'});}
  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(a){
   files.length=0;files.push({filename:'article.docx',content_type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',bytes:await articleDocx(a),label:'קובץ Word של הכתבה, עם התמונות והקרדיטים'});
-  if(job.attach_images){const d=JSON.parse(a.data||'{}'),fileRows=await mapIn('files','id',[d.image_id,d.secondary_image_id,d.document_id]);
-   for(const [fid,name,label] of [[d.image_id,'image','התמונה הראשית'],[d.secondary_image_id,'image-2','תמונה נוספת']]){const s=await storedFile(fileRows.get(String(fid)),MAIL_FILE_MAX);if(s)files.push({filename:name+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label});}
+  if(job.attach_images){const d=JSON.parse(a.data||'{}'),images=articleImages(a),fileRows=await mapIn('files','id',[...images.map(i=>i.id),d.document_id]);
+   // Owner (22.11.2026): every image of the article travels as its own file too, not only inside the Word file. Images
+   // placed inside the text (the editor's pictures) were missing: only the main and secondary fields were attached.
+   for(const [i,img] of images.entries()){const s=await storedFile(fileRows.get(img.id),MAIL_FILE_MAX);if(s&&String(s.file.type).startsWith('image/'))files.push({filename:'image-'+(i+1)+'.'+(String(s.file.type).split('/')[1]||'jpg').replace('jpeg','jpg'),content_type:s.file.type,bytes:s.bytes,label:img.label,image:true});}
    // The page no longer shows the article, so the customer's original document travels with the email too.
    const doc=await storedFile(fileRows.get(String(d.document_id)),MAIL_FILE_MAX);if(doc)files.push({filename:'original-'+String(doc.file.name||'document').replace(/[^\w.\-֐-׿ ]/g,'_').slice(-80),content_type:doc.file.type||'application/octet-stream',bytes:doc.bytes,label:'המסמך המקורי של הכתבה'});
   }}}
@@ -43,7 +55,7 @@ async function fileToken(id:string,job:Row){
 }
 // A download link from an email: the personal token of that email and the file's place in it.
 export async function mailFileByToken(token:string,index:number):Promise<MailFile|null>{
- if(!/^[0-9a-f]{48}$/.test(token)||!Number.isInteger(index)||index<0||index>9)return null;
+ if(!/^[0-9a-f]{48}$/.test(token)||!Number.isInteger(index)||index<0||index>=MAIL_FILES_MAX)return null;
  const job=parse(await one("SELECT * FROM jobs WHERE kind='email' AND json_extract(data,'$.file_token')=?",token));
  if(!job||!(Date.parse(job.created)>Date.now()-MAIL_FILE_DAYS*86400000))return null;
  // An article that was pulled back from the supplier closes its files as well.
@@ -73,7 +85,12 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
   const files=await mailFiles(job);let links:MailFileLink[]=files.map(f=>({label:f.label,name:f.filename,size:f.bytes.length,url:''}));
   if(files.length){
    if(origin){const token=await fileToken(id,job);links=links.map((l,i)=>({...l,url:origin+'/api/mail-file/'+token+'/'+i+'/'+encodeURIComponent(l.name)}));payload.attachment_urls=links.map(l=>l.url);payload.attachment_names=links.map(l=>l.name);links.forEach((l,i)=>{payload['attachment_'+(i+1)+'_url']=l.url;payload['attachment_'+(i+1)+'_name']=l.name;});}
-   if(!origin||files.reduce((n,f)=>n+f.bytes.length,0)<=(c.provider==='resend'?RESEND_INLINE_LIMIT:INLINE_FILES_LIMIT))payload.attachments=files.map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
+   // Owner (22.11.2026): attach what fits, in order (the Word file first, then the images), instead of all or nothing;
+   // a file that does not fit keeps its download link and the message says so.
+   const limit=c.provider==='resend'?RESEND_INLINE_LIMIT:INLINE_FILES_LIMIT;let used=0;
+   const attached=files.map(f=>{if(!origin)return true;if(used+f.bytes.length>limit)return false;used+=f.bytes.length;return true;});
+   links=links.map((l,i)=>({...l,attached:attached[i],image:!!files[i].image}));
+   if(attached.some(Boolean))payload.attachments=files.filter((_,i)=>attached[i]).map(f=>({filename:f.filename,content_type:f.content_type,content_base64:base64(f.bytes)}));
   }
   // Rebuild supplier messages from publication fields on every send (also for retries of older jobs).
   if(job.attach_article||job.supplier_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article||job.supplier_article);if(!a)throw new Error('הכתבה אינה זמינה לשליחה');const d=JSON.parse(a.data||'{}');const w=await one('SELECT name,url FROM websites WHERE id=?',a.website_id),site=d.website_name||w?.name||'',siteUrl=String(d.website_url||w?.url||''),link=String(job.button?.url||'');
@@ -93,7 +110,7 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    // The admin's answer to a supplier's request for fixes or rejection (owner, 22.11.2026).
    else if(job.supplier_followup==='answer'){if(!opened?.thread_id)payload.subject='תשובה לבקשה שלכם · '+unique;payload.text=[job.answer_type==='reject'?'הכתבה נשארת לפרסום':'אפשר לפרסם את הכתבה כמו שהיא',a.title,'מה כתבנו לכם:\n'+String(job.answer_note||''),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:''].filter(Boolean).join('\n\n');payload.html=supplierAnswerEmailHtml(a,site,counterLabel,link,origin,String(job.answer_type||''),String(job.answer_note||''));}
    else{
-   payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:'',supplierIssueLinkText(link)].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links,job.supplier_followup==='update');if(job.supplier_followup==='update')payload.text='הנחיות מעודכנות לפרסום. הגרסה הזו מחליפה את הקודמת.\n\n'+payload.text;if(links[0]?.url)payload.word_file_url=links[0].url;}}
+   payload.text=['כתבה חדשה לפרסום',a.title,siteUrl?'לפרסום באתר: '+siteUrl:site?'אתר: '+site:'',supplierPublicationNotes(a),links.some(l=>l.attached===false)?'חלק מהקבצים גדולים מדי לצירוף למייל, ואפשר להוריד אותם בקישורים כאן. התמונות נמצאות גם בקובץ ה-Word.':'',mailFilesText(links.filter(l=>l.url)),link?'אחרי הפרסום, שלחו את הקישור לכתבה כאן: '+link:'',supplierIssueLinkText(link)].filter(Boolean).join('\n\n');payload.html=supplierArticleEmailHtml(a,site,siteUrl,counterLabel,link,origin,links,job.supplier_followup==='update');if(job.supplier_followup==='update')payload.text='הנחיות מעודכנות לפרסום. הגרסה הזו מחליפה את הקודמת.\n\n'+payload.text;if(links[0]?.url)payload.word_file_url=links[0].url;}}
   else{
    // Every other message goes out as a designed right-to-left page: its own design when it has one, the standard one otherwise.
    payload.html=job.html?withMailFiles(String(job.html),links):brandedEmailHtml({subject:String(job.subject||''),text:String(job.text||''),button:job.button,origin,files:links});
