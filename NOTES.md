@@ -1851,6 +1851,7 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 ### Open
 - The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
 
+<<<<<<< HEAD
 ## החזרה לעריכה של כתבה מאושרת (22.11.2026, branch `claude/reopen-approved-article-a85857`)
 - **מה הוחלט (הבעלים):** מנהל יכול להחזיר ללקוח לעריכה כתבה שאושרה ועוד לא פורסמה. כשהיא כבר אצל הספק, הקישור שלו לא מבוטל אלא מציג "נא להמתין עם פרסום הכתבה", המלאי נשאר תפוס, והספק מקבל מייל באותו שרשור. אחרי אישור חוזר הספק מקבל "הנחיות מעודכנות לפרסום" על אותו קישור (תוקף מוארך ב-30 יום). אם הספק כבר פרסם את הגרסה הקודמת, המנהל מטפל בזה מולו בנפרד.
 - **זמין:** אושרה וממתינה לתאריך, לא הגיעה לספק, אצל הספק. **לא זמין:** פורסמה, הדגמה, בוטלה, בקשת ביטול.
@@ -1883,3 +1884,12 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **במסד המקומי בלבד:** שלוש רשומות יומן ישנות שנרשמו על הכתבה עצמה בניסיון הראשון (לפני תיקון הפרטיות). אין שאריות זמניות ב-repo.
 - **לא נבדק:** השלמת ביטול וזיכוי מלאה מתוך בקשת דחייה (רק פתיחת החלון), ומייל אמיתי ב-Staging.
 >>>>>>> claude/supplier-fix-or-reject-7c9a90
+=======
+### Editor link popup, new design (branch `claude/editor-link-dialog-eb0a29`)
+- **Owner (22.11):** "עיצוב חדש לחלון הקופץ של הוספת קישור / שינוי קישור". Mockup approved ("מאשר את כל השאר").
+- **What:** the add / change link popup in the article editor (`app/rich-editor.tsx`, `.sv-link-dialog`) now matches the approved customer popups (white card, violet-blue icon tile, grey close button on the left, light field with a blue ring, one violet-blue main action). The subtitle shows the selected words. Add: "הוספת הקישור" + "ביטול". Change: the current address + "שמירת השינוי" + "הסרת הקישור" (red). Invalid address: red ring + the same message as before. Enter submits. Position (owner 22.11: "שהם ייפתחו באמצע, ויעלו עם המקלדת"): the card opens centred, also on phones; while the keyboard is open, `window.visualViewport` moves the whole card to 12px above the keyboard (smooth, off with reduced motion) and it returns to the centre when the keyboard closes. Desktop unchanged.
+- **Files:** `app/rich-editor.tsx` (link popup only), new `app/studio-link-dialog.css`.
+- **Kept:** the same `editorialUrl` check, internal (absolute megalinks.co.il) links, undo/redo (remove then undo restores the link), the tap-on-link card and the "פרטי הקישור" view are unchanged. The admin knowledge editor uses the same component, so it gets the same popup.
+- **Note:** a site-wide dialog rule forces every dialog `<p>` to 16px dark text, so the small texts in this popup use `!important`.
+- **Checked:** locally, fictional draft, 390px and 1280px: add, invalid, change, save, remove, undo, cancel; at 390px with an emulated 336px keyboard (visual viewport shrunk): card bottom 12px above the keyboard, back to centre when closed. `tsc` and build pass. Not checked on a real iPhone keyboard.
+>>>>>>> claude/editor-link-dialog-eb0a29
