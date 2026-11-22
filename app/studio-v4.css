@@ -26,6 +26,7 @@ html body .studio-v2 .sv-title-input:hover:not(:disabled){border-color:#9fbbe0!i
 html body .studio-v2 .sv-title-input:focus{border-color:var(--sv-blue)!important;background:#fff!important;box-shadow:0 0 0 4px #1673e622!important}
 .studio-v2 .sv-title-pencil{position:absolute;inset-inline-end:16px;top:50%;transform:translateY(-50%);color:#64768e;pointer-events:none}
 .studio-v2 .sv-title-field:focus-within .sv-title-pencil{color:var(--sv-blue)}
+.studio-v2 .sv-title-suggest{display:flex;align-items:flex-start;gap:8px;width:100%;margin-top:8px;padding:10px 14px;min-height:44px;border:1.5px dashed #9fbbe0;border-radius:14px;background:#f3f8ff;color:#123a6b;font:500 15px/1.45 Heebo,Arial,sans-serif;text-align:right;cursor:pointer}.studio-v2 .sv-title-suggest svg{flex:none;margin-top:3px;color:var(--sv-blue)}.studio-v2 .sv-title-suggest b{font-weight:700}.studio-v2 .sv-title-suggest:hover:not(:disabled){background:#e7f1ff;border-color:var(--sv-blue)}.studio-v2 .sv-title-suggest:focus-visible{outline:3px solid #1467cf;outline-offset:2px}
 
 /* Sources: big while the article is empty, neat compact pills once there is text */
 html body .studio-v2 .sv-sources[data-compact=true]{gap:10px}

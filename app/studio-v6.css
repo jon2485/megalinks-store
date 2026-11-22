@@ -225,3 +225,11 @@ html body .studio-v2 .pr-notice dd{margin:2px 0 0;font:700 14.5px Heebo,Arial,sa
    the phone toolbar and the borderless body used to hide it. */
 html body .studio-v2 .studio-toolbar :is(.studio-tool,.studio-more-toggle,.studio-history-tool,.studio-history-tools>*):focus-visible{outline:3px solid #1467cf!important;outline-offset:2px!important}
 html body .studio-v2 .studio-document:focus-visible{box-shadow:inset 0 0 0 2px #1467cf!important}
+
+/* Phone, selecting/copying text (22.11.2026): the body used to be its own 340px scroll box with overscroll "contain",
+   so once the page slid under the sticky toolbar the first lines (the H1) stayed hidden and dragging could not reveal them.
+   On phones the body grows with the text and the page scrolls it clear of the sticky toolbar; the caret also keeps clear of it. */
+@media(max-width:699px){
+ html body .studio-v2 .studio-rich-editor>.studio-document{height:auto!important;min-height:300px;overflow:visible!important;overscroll-behavior:auto!important}
+ html:has(.studio-v2 .studio-document:focus){scroll-padding-top:calc(var(--sv-sticky-top,70px) + 120px)}
+}
