@@ -24,3 +24,10 @@ await assert.rejects(()=>richArticleDocx('t','<p><img src="/api/files/missing"><
 console.log('Rich DOCX: headings, bold/italic, RTL/LTR, anchored links, image placement/credit/dedup, numbering, tables and missing-image failures passed.');
 
 const notesBundle=await build({entryPoints:['lib/supplier-mail-content.ts'],bundle:true,platform:'node',format:'esm',write:false});writeFileSync('.sites-runtime/supplier-mail-test.mjs',notesBundle.outputFiles[0].text);const {supplierPublicationNotes}=await import(pathToFileURL(realpathSync('.sites-runtime/supplier-mail-test.mjs')));const notes=supplierPublicationNotes({data:JSON.stringify({meta_description:'תיאור מטא',client_notes:'הנחיות פרסום',admin_notes:'הנחיות מנהל'})});assert(notes.includes('תיאור מטא'));assert(notes.includes('הנחיות פרסום'));assert(notes.includes('הנחיות מנהל'));assert.equal(supplierPublicationNotes({data:'{}'}),'');console.log('Supplier email receives metadata and publication notes separately from article DOCX');
+// Owner 22.11.2026: a link inside black text (pasted content) is still blue and underlined in the Word file.
+{const html2='<p style="color:#000000">טקסט <span style="color:#000000"><a href="https://example.com/black">קישור בתוך טקסט שחור</a></span> ו<a href="https://example.com/inner"><span style="color:#000000">קישור עם צבע פנימי</span></a></p>';
+const doc2=strFromU8(unzipSync(await richArticleDocx('קישורים',html2,{},async()=>({bytes:png,type:'image/png'})))['word/document.xml']);
+const links=[...doc2.matchAll(/<w:hyperlink[^>]*>([\s\S]*?)<\/w:hyperlink>/g)].map(m=>m[1]);
+assert.equal(links.length,2,'two links');for(const l of links){assert(l.includes('<w:color w:val="0563c1"/>'),'link is blue');assert(l.includes('<w:u w:val="single"/>'),'link is underlined');assert(!l.includes('w:val="000000"'),'no black inside a link');}
+assert(doc2.includes('<w:color w:val="000000"/>'),'the text around the link keeps its own colour');}
+console.log('rich docx links blue ok');
