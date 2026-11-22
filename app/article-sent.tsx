@@ -39,3 +39,16 @@ export default function ArticleSent({article:a,site:w,sentAt,scheduled,onView,on
   </div>
  </section>;
 }
+
+// The same green "sent" check at the top of the read-only article view, while the article waits for approval or
+// publication (owner 23.11.2026), so the customer sees it is already being handled.
+const inProcess:Record<string,[string,string]>={
+ admin_review:['הכתבה נשלחה ונמצאת בבדיקה','הצוות שלנו בודק אותה לפני הפרסום. נעדכן אתכם במייל ובאזור האישי.'],
+ approved:['הכתבה אושרה וממתינה לפרסום','בקרוב היא תישלח לאתר לפרסום. נעדכן אתכם במייל ובאזור האישי.'],
+ sent:['הכתבה אצל האתר לפרסום','כשהכתבה תעלה לאוויר, תקבלו מייל עם הקישור.'],
+ scheduled:['הכתבה נקבעה לפרסום','היא שמורה ותעבור לבדיקה של הצוות שלנו בתאריך שבחרתם.'],
+};
+export function ArticleInProcess({status}:{status:string}){
+ const text=inProcess[status];if(!text)return null;
+ return <div className="article-in-process" role="status"><span className="article-in-process-check" aria-hidden="true"><Check size={22} strokeWidth={3}/></span><div><strong>{text[0]}</strong><p>{text[1]}</p></div></div>;
+}
