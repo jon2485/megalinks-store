@@ -244,8 +244,9 @@ function Publications({ctx,customer}:{ctx:Ctx;customer:string}){
      <td data-label="קישור יעד"><span className="ag-ltr ag-muted">{String(a.target_url||'').replace(/^https?:\/\/(www\.)?/,'')||'—'}</span></td>
      <td data-label="עלות"><bdi>{ils(a.spend)}</bdi></td>
      <td data-label="סטטוס"><span className={'ag-status '+tone}>{label}</span></td>
-     {/* The same buttons as "הכתבות שלי" (owner 22.11.2026): content, AI draft, writer instructions, link once published. */}
-     <td data-label="פעולות" className="ag-td-actions">{tone==='off'?<span className="ag-muted">—</span>:<PurchaseActions article={a} ctx={ctx} compact assign={false}/>}</td>
+     {/* The same buttons as "הכתבות שלי" (owner 22.11.2026): content, AI draft, writer instructions, link once published.
+         "שיוך ללקוח" only in the general list; inside one customer the article is already under that customer. */}
+     <td data-label="פעולות" className="ag-td-actions">{tone==='off'?<span className="ag-muted">—</span>:<PurchaseActions article={a} ctx={ctx} compact assign={!customer} canAssign={!customer}/>}</td>
     </tr>;})}</tbody></table>{rows.length>=1000&&<p className="ag-muted">מוצגים 1,000 הראשונים. צמצמו את התקופה.</p>}</div>}
  </>;
 }

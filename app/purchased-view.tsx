@@ -19,7 +19,7 @@ import { type Ctx, Empty, ErrorBox } from './workspace';
 // The article buttons of "הכתבות שלי", shared with the customers centre's publications list (owner 22.11.2026), so both
 // pages offer the same actions on the same article and every change shows on both. `writing_ready` comes from the
 // server when the row carries no article text (customers centre); otherwise it is worked out here as before.
-// assign=false: no "שיוך ללקוח" (the customers centre, where the article is already under its customer; owner 22.11.2026).
+// assign=false: no "שיוך ללקוח" (one customer's page in the customers centre, where the article is already under that customer; owner 22.11.2026).
 export function PurchaseActions({ article, ctx, compact=false, canAssign=false, assign=true }: { article: Row; ctx: Ctx; compact?:boolean; canAssign?:boolean; assign?:boolean }) {
     const liveLink = publicationLink(article), stage = purchaseStage(article), editable = stage === 'editing';
     const ready = article.writing_ready ?? writingCustomerEditor(article);
