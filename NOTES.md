@@ -1852,6 +1852,7 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - The shared admin field rule (`.admin-design-v172 … input/textarea/select` white background) can hide fields on any screen whose card is white. Fixed screen by screen here; a shared fix needs the owner's OK.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## החזרה לעריכה של כתבה מאושרת (22.11.2026, branch `claude/reopen-approved-article-a85857`)
 - **מה הוחלט (הבעלים):** מנהל יכול להחזיר ללקוח לעריכה כתבה שאושרה ועוד לא פורסמה. כשהיא כבר אצל הספק, הקישור שלו לא מבוטל אלא מציג "נא להמתין עם פרסום הכתבה", המלאי נשאר תפוס, והספק מקבל מייל באותו שרשור. אחרי אישור חוזר הספק מקבל "הנחיות מעודכנות לפרסום" על אותו קישור (תוקף מוארך ב-30 יום). אם הספק כבר פרסם את הגרסה הקודמת, המנהל מטפל בזה מולו בנפרד.
 - **זמין:** אושרה וממתינה לתאריך, לא הגיעה לספק, אצל הספק. **לא זמין:** פורסמה, הדגמה, בוטלה, בקשת ביטול.
@@ -1893,3 +1894,11 @@ The owner sent four iPhone screenshots and asked for each fix in its own session
 - **Note:** a site-wide dialog rule forces every dialog `<p>` to 16px dark text, so the small texts in this popup use `!important`.
 - **Checked:** locally, fictional draft, 390px and 1280px: add, invalid, change, save, remove, undo, cancel; at 390px with an emulated 336px keyboard (visual viewport shrunk): card bottom 12px above the keyboard, back to centre when closed. `tsc` and build pass. Not checked on a real iPhone keyboard.
 >>>>>>> claude/editor-link-dialog-eb0a29
+=======
+## חלון "מחיר אישי" ללקוח (22.11.2026, ענף claude/personal-price-dialog-afcd59)
+- **מה הוחלט:** הבעלים אישר הדמיה. שדה המחיר בראש החלון, ארבעת המחירים לעיון בכרטיס אחד, הערת מע״מ קצרה, שמירה וביטול בסגנון "עריכה מהירה".
+- **באג האייפון:** החלון נצמד לתחתית המסך, והמקלדת כיסתה אותו. לבקשת הבעלים, בנייד החלון נפתח באמצע המסך, ועולה בתנועה רכה אל מעל המקלדת כשהיא נפתחת (לפי `visualViewport`). כשהמקלדת נסגרת, הוא חוזר לאמצע. בנייד המקלדת לא נפתחת לבד (דגל `touchCalm` ב-`ctx.open`).
+- **קבצים:** `app/personal-price-editor.tsx`, `app/pricing-admin.tsx` (כותרת ודגל), `app/workspace.tsx` (דגל `touchCalm`), `app/admin-dialogs.css` (עיצוב חדש), `app/globals.css` ו-`app/admin-reviewed-controls.css` (הוסר עיצוב ישן).
+- **נבדק מקומית:** 390 ומחשב. נבדקו מחיר לא תקין, שמירה (כולל אזהרת עלות חסרה), והסרת מחיר אישי. המקלדת נבדקה בהדמיה בלבד. עוד צריך בדיקה באייפון אמיתי.
+- **זמני:** אין.
+>>>>>>> claude/personal-price-dialog-afcd59

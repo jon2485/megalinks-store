@@ -1,14 +1,37 @@
 'use client';
-import React,{useRef,useState} from 'react';
-import {Pencil,RotateCcw} from 'lucide-react';
-import {Button} from '@/components/ui/button';
+import React,{useEffect,useRef,useState} from 'react';
 import {Input} from '@/components/ui/input';
 import {pricingApi} from '@/lib/client';
 import {money,type Row} from '@/lib/shared';
-import {Field,ErrorBox,type Ctx} from './workspace';
-import SiteReference from './site-reference';
+import {ErrorBox,type Ctx} from './workspace';
+// Owner 22.11.2026: the price field first, the reference prices as one compact card, and on a phone the sheet sits above the keyboard.
 export default function PersonalPriceEditor({ctx,customer,site,version,close}:{ctx:Ctx;customer:Row;site:Row;version:number;close:()=>void}){
- const[value,setValue]=useState(String((site.personal_price??site.price_cents)/100)),[busy,setBusy]=useState(false),[error,setError]=useState('');const lock=useRef(false);
+ const[value,setValue]=useState(String((site.personal_price??site.price_cents)/100)),[busy,setBusy]=useState(false),[error,setError]=useState('');const lock=useRef(false),form=useRef<HTMLFormElement>(null);
+ // On a touch phone the keyboard opens only when the field is tapped, not when the sheet opens.
+ const[touch]=useState(()=>typeof window!=='undefined'&&window.matchMedia('(pointer:coarse)').matches);
+ // Owner 22.11.2026: on a phone the popup opens in the middle and rises with the keyboard.
+ // iOS does not shrink the page for the keyboard, so place it by the visible area: centred, or just above the keyboard.
+ useEffect(()=>{
+  const dialog=form.current?.closest<HTMLElement>('[data-slot=dialog-content]'),visual=window.visualViewport;
+  if(!dialog||!visual)return;
+  const fit=()=>{const bottom=visual.offsetTop+visual.height,keyboard=window.innerHeight-bottom>80;dialog.style.setProperty('--pp-top',(keyboard?bottom-10:visual.offsetTop+visual.height/2)+'px');dialog.style.setProperty('--pp-shift',keyboard?'-100%':'-50%');dialog.style.setProperty('--pp-visible',visual.height+'px');};
+  fit();visual.addEventListener('resize',fit);visual.addEventListener('scroll',fit);
+  return()=>{visual.removeEventListener('resize',fit);visual.removeEventListener('scroll',fit);for(const name of ['--pp-top','--pp-shift','--pp-visible'])dialog.style.removeProperty(name);};
+ },[]);
  const save=async(remove=false)=>{if(lock.current)return;const amount=Number(value),cents=Math.round(amount*100);if(!remove&&(value.trim()===''||!Number.isFinite(amount)||amount<0||Math.abs(amount*100-cents)>.00001)){setError('יש להזין מחיר תקין בשקלים, עד שתי ספרות אחרי הנקודה.');return;}lock.current=true;setBusy(true);setError('');try{await ctx.run(()=>pricingApi('admin/pricing/overrides','POST',{scope:'user',owner_id:customer.id,version,rows:[remove?{website_id:site.id,action:'remove'}:{website_id:site.id,price_ils:amount}]}),remove?'המחיר האישי הוסר - הלקוח יקבל את מחיר הרמה שלו':'המחיר האישי נשמר ללקוח זה בלבד');close();}catch(e){setError((e as Error).message);}finally{lock.current=false;setBusy(false);}};
- return <form className="personal-price-editor" dir="rtl" onSubmit={e=>{e.preventDefault();void save();}}><div className="price-editor-identity">{site.logo_url&&<img src={site.logo_url} alt={'לוגו '+site.name}/>}<div><SiteReference name={site.name} url={site.url}/><p>עריכת מחיר עבור <strong>{customer.name}</strong></p></div></div><dl className="price-editor-values">{[['מחיר מחירון רגיל',site.base_price],['מחיר לפי רמת הלקוח',site.tier_price],['המחיר המוצג ללקוח כרגע',site.price_cents],['מחיר עלות',site.cost_cents]].map(([label,price])=><div key={String(label)}><dt>{label}</dt><dd>{price==null?'לא הוגדר':money(Number(price))}</dd></div>)}</dl><p>כל המחירים לפני מע״מ. המחיר האישי שתשמרו הוא המחיר הקובע ללקוח הזה, גם אם יש מחיר רמה או מבצע אחר.</p><div className="personal-price-input"><Field label="מחיר חדש ללקוח זה בלבד (₪)"><Input autoFocus required type="number" min="0" step="0.01" value={value} onChange={e=>setValue(e.target.value)}/></Field><p>השינוי יחול על רכישות עתידיות של {customer.name}. המחירון הכללי והמחירים של לקוחות אחרים יישארו כפי שהם.</p></div><ErrorBox error={error}/><div className="price-editor-actions"><Button type="submit" disabled={busy}><Pencil size={18}/>{busy?'שומר…':'שמירת המחיר ללקוח זה'}</Button>{site.personal_price!=null&&<Button type="button" variant="outline" disabled={busy} onClick={()=>save(true)}><RotateCcw size={18}/>חזרה למחיר לפי רמה</Button>}</div></form>;
+ const shown=(price:unknown)=>price==null?'לא הוגדר':money(Number(price));
+ return <form ref={form} className="personal-price-editor om-pay-form" dir="rtl" onSubmit={e=>{e.preventDefault();void save();}}>
+  <label className="pp-field">מחיר ללקוח זה בלבד<span className="pp-input"><Input autoFocus={!touch} required type="number" inputMode="decimal" min="0" step="0.01" value={value} disabled={busy} onChange={e=>setValue(e.target.value)} aria-describedby="pp-hint"/><span aria-hidden="true">₪</span></span></label>
+  <p id="pp-hint" className="pp-hint">יחול על הזמנות חדשות של {customer.name} בלבד.<span className="pp-more"> המחירון הכללי ולקוחות אחרים לא משתנים.</span></p>
+  <dl className="pp-summary">
+   <div><dt>מחירון</dt><dd><bdi>{shown(site.base_price)}</bdi></dd></div>
+   <div><dt>לפי רמה</dt><dd><bdi>{shown(site.tier_price)}</bdi></dd></div>
+   <div className="is-now"><dt>מוצג כרגע</dt><dd><bdi>{shown(site.price_cents)}</bdi>{site.personal_price!=null&&<small> (אישי)</small>}</dd></div>
+   <div><dt>עלות</dt><dd><bdi>{shown(site.cost_cents)}</bdi></dd></div>
+  </dl>
+  <p className="pp-vat">כל המחירים לפני מע״מ.<span className="pp-more"> מחיר אישי גובר על מחיר רמה ומבצעים.</span></p>
+  {site.personal_price!=null&&<button type="button" className="pp-reset" disabled={busy} onClick={()=>void save(true)}>הסרת המחיר האישי וחזרה למחיר לפי רמה</button>}
+  <ErrorBox error={error}/>
+  <div className="om-pay-actions"><button type="submit" className="om-btn is-primary" disabled={busy}>{busy?'שומר…':'שמירת המחיר'}</button><button type="button" className="om-btn" disabled={busy} onClick={close}>ביטול</button></div>
+ </form>;
 }
