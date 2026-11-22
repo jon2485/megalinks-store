@@ -8,6 +8,7 @@ import {customerInput,customerErrors} from './customer-fields';
 import {normalizeDomain,articleSpend,usedSiteKey,usedSiteMatches,parseUsedSites,hasAgencyCentre,budgetState} from './agency-shared';
 export {normalizeDomain,articleSpend};
 import {briefDefaultsInput} from './agency-shared';
+import {writingCustomerEditor} from './writing-workflow';
 
 export function assertAgency(u:Row){assert(hasAgencyCentre(u),'ניהול הלקוחות פתוח לחשבונות לקוח בלבד',403);}
 
@@ -48,7 +49,7 @@ const israelMonth=(iso:string)=>iso?new Intl.DateTimeFormat('en-CA',{timeZone:'A
 
 // All the agency's articles with what the centre needs. One query; numbers are summed here.
 async function agencyArticles(u:Row,where='',...args:unknown[]){
- return await all(`SELECT a.id,a.status,a.title,a.published_url,a.updated,a.data,a.website_id,a.order_id,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,o.status AS order_status,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo
+ return await all(`SELECT a.id,a.status,a.title,a.published_url,a.updated,a.data,(COALESCE(a.content,'')<>'') AS has_content,a.website_id,a.order_id,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,o.status AS order_status,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo
   FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id ${articleCustomerJoins}
   WHERE a.user_id=? ${where} ORDER BY COALESCE(json_extract(a.data,'$.published_at'),o.created) DESC`,u.id,...args);
 }
@@ -60,7 +61,10 @@ export function agencyArticleRow(a:Row){
   order_id:a.order_id,number:a.number,paid:!!Number(a.paid),demo:!!d.demo,on_account:!!d.on_account,
   purchased_at:d.purchased_at||a.purchased_at||'',published_at:a.status==='published'?d.published_at||a.updated:'',published_url:a.status==='published'?a.published_url||'':'',
   scheduled:d.scheduled||'',anchor:d.anchor||'',target_url:d.target_url||'',anchor_2:d.anchor_2||'',target_url_2:d.target_url_2||'',
-  spend:articleSpend(a),publication_refunded:!!d.publication_refunded,writing_refunded:!!d.writing_refunded,updated:a.updated};
+  spend:articleSpend(a),publication_refunded:!!d.publication_refunded,writing_refunded:!!d.writing_refunded,updated:a.updated,
+  // What the article buttons need (shared with "הכתבות שלי", owner 22.11.2026). Only whether text exists, never the text.
+  editorial:!!d.editorial,editorial_words:d.editorial_words||'',writing_requested_at:d.writing_requested_at||'',
+  writing_ready:writingCustomerEditor({...d,status:a.status,content:Number(a.has_content)?'1':(d.content?'1':'')})};
 }
 
 export async function agencyCustomers(u:Row){
