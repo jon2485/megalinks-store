@@ -579,7 +579,9 @@ if (p[0] === 'cart') {
             const data = JSON.parse(order.data);
             if(data.on_account){const col=data.demo?'demo_balance':'balance';const charge=await one('SELECT * FROM monthly_charges WHERE order_id=?',order.id);assert(!charge?.settled,'הזמנה בחשבון חודשי שכבר שולמה דורשת טיפול זיכוי נפרד',409);if(charge)assert(!await one("SELECT id FROM records WHERE id=?",'monthly:'+charge.month+':'+order.user_id+':'+charge.demo),'החשבון החודשי כבר נסגר; נדרש טיפול זיכוי נפרד',409);ops.push(stmt(`UPDATE credit_accounts SET ${col}=${col}-(SELECT COALESCE(SUM(amount),0) FROM monthly_charges WHERE order_id=? AND settled=0) WHERE user_id=?`,order.id,order.user_id),stmt('DELETE FROM monthly_charges WHERE order_id=? AND settled=0',order.id));}
             if (data.coupon && !data.demo)
-                ops.push(stmt('UPDATE coupons SET uses=MAX(0,uses-1) WHERE code=?', data.coupon));
+                // The coupon may have been deleted since (no row: nothing changes). Orders that keep the coupon's id only
+                // give the use back to that same coupon, not to a new one that reuses the code.
+                ops.push(stmt('UPDATE coupons SET uses=MAX(0,uses-1) WHERE code=? AND (? IS NULL OR id=?)', data.coupon, data.coupon_id || null, data.coupon_id || null));
             await db().batch(ops);
             await refreshOrderStatement(order.id);
             await audit(u, order.id, 'הזמנה בוטלה', { reason: b.reason || '', reference: b.reference || '' });
@@ -1156,8 +1158,29 @@ if (p[0] === 'cart') {
             }
         }
         if (p[1] === 'coupons') {
-            if (method === 'GET')
-                return response({ coupons: await all('SELECT * FROM coupons ORDER BY code') });
+            if (method === 'GET') {
+                // Who used each coupon, for all coupons in ONE query (no query per coupon). Same rule as the `uses`
+                // counter: a real (not demo) order that holds the code, and not cancelled (a full cancel gives the use back).
+                // Newer orders also keep the coupon's id, so a coupon re-created later with the same code does not
+                // inherit the customers of the one that was deleted.
+                const used = await all("SELECT c.id AS coupon_id,o.id AS order_id,o.number,o.created,o.status,COALESCE(NULLIF(u.name,''),json_extract(o.data,'$.name'),'') AS name,COALESCE(NULLIF(u.email,''),json_extract(o.data,'$.email'),'') AS email FROM orders o JOIN coupons c ON c.code=json_extract(o.data,'$.coupon') AND (json_extract(o.data,'$.coupon_id') IS NULL OR json_extract(o.data,'$.coupon_id')=c.id) LEFT JOIN users u ON u.id=o.user_id WHERE json_extract(o.data,'$.coupon')<>'' AND o.status<>'cancelled' AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created,o.number");
+                const byCoupon = new Map<string, Row[]>();
+                for (const row of used) { const { coupon_id, ...order } = row; byCoupon.set(coupon_id, [...(byCoupon.get(coupon_id) || []), order]); }
+                return response({ coupons: (await all('SELECT * FROM coupons ORDER BY code')).map(c => ({ ...c, customers: byCoupon.get(c.id) || [] })) });
+            }
+            // Permanent delete (owner, 23.11.2026): the row goes away so the list does not fill up with old coupons.
+            // Orders keep the code and the discount they already got in their own data, so totals, refunds and reports
+            // do not change; a cancel later only lowers `uses` on a coupon that still exists (no row, nothing happens).
+            if (method === 'DELETE' && p[2] && p[3] === 'permanent') {
+                const c = await one('SELECT * FROM coupons WHERE id=?', p[2]);
+                assert(c, 'הקופון לא נמצא. ייתכן שכבר נמחק', 404);
+                // A bundle sends its buyers to the cart with its coupon code; deleting the coupon would break that link.
+                const bundle = await one("SELECT json_extract(data,'$.name') AS name FROM records WHERE kind='bundle' AND upper(COALESCE(json_extract(data,'$.coupon'),''))=? AND COALESCE(json_extract(data,'$.active'),1)<>0 LIMIT 1", c.code);
+                assert(!bundle, 'הקופון משויך לחבילה "' + (bundle?.name || '') + '". יש להסיר אותו מהחבילה לפני המחיקה, או להשבית אותו במקום.', 409);
+                await stmt('DELETE FROM coupons WHERE id=?', c.id).run();
+                await audit(u, c.id, 'קופון נמחק', { code: c.code, percent: c.percent, uses: c.uses, max_uses: c.max_uses });
+                return response({ ok: true });
+            }
             const b = method === 'DELETE' ? {} : await json(r);
             if (method === 'DELETE') {
                 await stmt('UPDATE coupons SET active=0 WHERE id=?', p[2]).run();
