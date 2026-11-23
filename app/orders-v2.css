@@ -645,3 +645,7 @@
  .sv2-orders:not(.cfo) :is(.sv2-th:has(+.sv2-olist),.sv2-olist .sv2-orow){grid-template-columns:76px minmax(0,1.5fr) minmax(0,1fr) 140px 64px 100px 132px!important;gap:8px!important}
  .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-pubcell{min-width:0;overflow:hidden}
 }
+/* 24.11.2026 Area tabs (orders, suppliers, content, system): with count badges on several tabs the row was wider than the screen at 1366px and pushed the whole page sideways. The row never grows past its box, and on laptops the tabs are a little tighter. */
+.sv2 nav.sv2-areas{min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.sv2 nav.sv2-areas::-webkit-scrollbar{display:none}
+@media(min-width:901px) and (max-width:1500px){.sv2 nav.sv2-areas>a,.sv2 nav.sv2-areas>span{padding-inline:8px!important;gap:5px!important;font-size:14px!important}}

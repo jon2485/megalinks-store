@@ -258,8 +258,9 @@ body:has(.admin-design-v172) [data-slot=dialog-content]:has(.order-trash-confirm
    and a window or menu opened from it (move to trash, attach invoice) opened behind it. While a sheet is open, they go above. */
 body:has(.om-sheet-layer) :is([data-slot=dialog-overlay],[data-slot=dialog-content],[data-slot=alert-dialog-overlay],[data-slot=alert-dialog-content],[data-slot=dropdown-menu-content],[data-slot=select-content],[data-slot=popover-content],[data-sonner-toaster]){z-index:120!important}
 /* 24.11.2026 Admin windows whose header has a title and a description side by side (no icon wrapper): stack them, so the title does not wrap word by word. */
-body:has(.admin-design-v172) [data-slot=dialog-header]:not(:has(.admin-dialog-head-text,.sv-ai-badge,.sv-img-head-icon,.cv7-head-icon,.publication-date-badge,.customer-details-identity)){flex-direction:column!important;align-items:stretch!important;gap:4px!important}
+body:has(.admin-design-v172) [data-slot=dialog-header]:not(:has(.admin-dialog-head-text,.sv-ai-badge,.sv-img-head-icon,.cv7-head-icon,.customer-details-identity)){flex-direction:column!important;align-items:stretch!important;gap:4px!important}
 /* 24.11.2026 Main button of the small admin windows (bank details and others with .om-dialog-actions): the same blue as the other new windows, not dark navy. */
 body:has(.admin-design-v172) [data-slot=dialog-content] .om-dialog-actions>:is(a,button).om-btn.is-primary{background:#1467cf!important;border-color:#1467cf!important;color:#fff!important;border-radius:14px;min-height:48px;box-shadow:0 6px 16px rgba(22,115,230,.26)}
 body:has(.admin-design-v172) [data-slot=dialog-content] .om-dialog-actions>:is(a,button).om-btn.is-primary:hover:not(:disabled){background:#0f66d4!important}
 body:has(.admin-design-v172) [data-slot=dialog-content] .om-dialog-actions>:is(a,button).om-btn.is-primary:disabled{background:#dbe5f0!important;border-color:#dbe5f0!important;box-shadow:none}
+body:has(.admin-design-v172) [data-slot=dialog-title]:has(>.publication-date-badge){display:flex!important;align-items:center;gap:12px}

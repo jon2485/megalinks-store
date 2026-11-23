@@ -2279,3 +2279,35 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Supplier e-mail failed on Staging** ("LIKE or GLOB pattern too complex"): D1 refuses a LIKE pattern over 50 bytes and two lookups in `lib/mail.ts` put the article id (36 chars) in the pattern. Now `substr(id,1,?)=?`. `tests/supplier-thread.mjs` follows (`a8b20bc`). After upload, press "ניסיון שליחה" on the failed e-mail.
 - **Site card (owner: "באלגן בעין")** (`f42a04d` + this commit): inputs are white framed boxes, right-aligned, blue focus ring, no number spinners; logo upload one row; profit line under the prices; exchange option one row; every section a white card with a coloured icon square (`app/catalog-v2-editors.css` end, `app/admin-supplier-new.css` end, `app/catalog-website-form.tsx`).
 - **Open:** a site with "קישור אחד בלבד" counts distinct URLs, so two links to the same address pass. Asked the owner; not changed yet.
+## 24.11.2026: Admin button and popup review (no code changed)
+- **Owner asked:** go over every admin screen in the built-in browser: buttons in place, each one really does something and leads to the right place, popups in the new design, RTL. Findings first, fixes only after his approval. Customers side next, then both together.
+- **How:** local QA server, admin test user, 1366px (also 1680px for one check). An in-page script clicked every button and link in the content area and recorded the result (page change, popup, request). Every non-GET request was blocked during the run, so nothing was saved; "works" means the right request was sent, not that the save was checked end to end. Phones not checked. Pending payment reports and top-ups had no local rows, so their approve windows were not opened.
+- **Screens covered (all buttons respond unless listed):** lobby, orders, month close, payment reports, invoices, top-ups, monthly accounts, articles, instructions, blog list and editor, users, customer file, catalog (sites, tiers, Sheets), suppliers (overview, list, requests, finance, supplier page), promotions, tickets list and ticket page, connections, reports, mailing, jobs, audit, single order, single article.
+- **Findings, waiting for approval:**
+  1. Supplier page: the "פרטים" tab does nothing from the "אתרים" tab (`app/supplier-v2.tsx:53`, `toTab('details')` goes to the address it is already on).
+  2. At 1366px the row action buttons leave the card and are cut: "פעולות" (all suppliers), "פתיחת ההזמנה" / "דיווח תשלום" / "פירוט" (finance, requests and invoices), "⋯" on the supplier page. Fine at 1680px.
+  3. Popups without the icon header (title wraps, description squeezed beside it): new/edit/delete instruction; add/edit/delete customer tier; "חיפוש כמה אתרים"; blog editor (back to draft, cover image, image in article, publish date, preview); article page (publish date, article images).
+  4. Catalog tabs do not change the address (stays `/admin-websites`): refresh returns to the first tab, Back leaves the catalog.
+  5. Direct load or refresh of any admin screen shows the customer header and "נדרשת הרשאת מנהל" for about 10 seconds locally (known M32; it waits for the catalog).
+  6. Articles list: Hebrew article titles sit in an LTR span (`.om-site`).
+  7. Coupon "השבתה" sends at once, no confirmation (known M27).
+  8. Small: report file named `postflow-reports.xlsx`; browser title "ניהול המערכת" on the customer file and tiers screen; bank details popup has a dark main button; month close "הצגת סיכום" with no dates gives no message; site links 20px high; the owner's real e-mail appears as a supplier in the local test data.
+- **Next:** owner picks what to fix; then the customers side, then both.
+
+## 24.11.2026 (2): Admin fixes and inner screens review (branch `claude/admin-qa-fixes-20261124`, from 34c9f71)
+- **Owner:** fix every finding, and also go over the inner screens (expanded rows, windows, buttons inside them).
+- **Fixed (commit fb2126b and the next one):**
+  - Supplier page: "פרטים" tab works from "אתרים" (`app/supplier-v2.tsx`, local tab state; both share one address).
+  - Supplier tables: narrower columns so row buttons fit at 1366px (`app/supplier-v2.tsx`, `app/supplier-pages.tsx`).
+  - Area tabs row (orders, suppliers...): with count badges it pushed the page sideways at 1366px (seen with a pending payment report and top-up); now it never grows past its box and is a little tighter on laptops (`app/orders-v2.css`).
+  - Admin windows without the icon header now use the shared header (instructions, tiers, list search, blog editor, add supplier, blog publish date); other headers stack title over description; the article page scheduling window too (`app/dialog-badge.tsx` more icons, `app/admin-dialogs.css`).
+  - Small admin windows: blue main button (bank details).
+  - Catalog tabs have their own address; Sheets is `/admin-websites#sheets`, also when reached from another tab; "מחירים לבדיקה" goes to `/admin-pricing` (`app/catalog-pricing-workspace.tsx`).
+  - Admin addresses show the brand loader until the account is known (M32, `app/workspace.tsx`). Note: the ~10 s delay seen locally comes from the hidden browser pane (background throttling), /api/me itself answers in ~130 ms.
+  - Articles list: Hebrew title and supplier name read right to left (`app/orders-sky.css`).
+  - Confirmation before: coupon "השבתה" (M27, `app/commerce.tsx`), turning off a customer's monthly account (`app/customer-account-admin.tsx`).
+  - Lobby: each "באיחור אצל הספק" item opens its article, not the general list (`lib/admin-updates.ts`).
+  - Browser titles: customer file, price lists, tiers, agency view (`lib/seo.ts`); reports file `megalinks-reports.xlsx`.
+- **Inner screens checked (1366px, saving blocked, local fictional data):** expanded order rows (orders, month close, payment reports, invoices, monthly, customer file) and every button in them; inline cancel and refund form; monthly close and payment windows (filled: sends); payment report approve and reject, top-up approve and reject (a fictional pending report QA-LOCAL-REPORT-24 and top-up QA-LOCAL-TOPUP-24 were created locally as the test customer, still pending in local data only); lobby queues opened; customer file tabs (details, price list, agency); users list windows (new order, details, limit, credit); catalog site row and tier prices window; pricebook pages; supplier articles, billing, order, stock, new supplier, seller page and their windows; promotions windows (native browser validation on empty forms); 6 connection setup windows and the Resend fields; jobs send window; article page in writing, failed delivery and cancellation states; blog new article; agency view.
+- **Not changed, for the owner:** saving a user's role still has no separate confirmation (M26); "שינוי רמת לקוח" in a price list opens the general price lists screen, not this customer's row; promotion forms use the browser's own required-field bubbles; customer side shows "המרחב שלך מתחיל כאן" until the account loads (customer round).
+- **Not checked:** phones; real saves (all writes were blocked; checked that the right request is sent).
