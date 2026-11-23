@@ -2057,3 +2057,73 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Merged:** coupons (`1b8002b`) and the customer's phone payment report (`e9efc5f`). NOTES conflicts: both sides kept.
 - **Order trash, spec agreed with the owner (buttons, 23.11.2026):** (1) only abandoned orders (unpaid, no payment report, 14+ days); (2) a trashed order disappears for the customer, its payment link stops working, no e-mail, and it comes back on restore; (3) only by the admin's click: per order and "העברת כל הנזנחות לפח"; (4) in the trash: only restore, no permanent delete. The trash is a "פח" filter at the top of the orders screen; trashed orders are hidden from every other list and count.
 - **In progress (agent, orders branch):** Option A compact order cards (owner chose A), the new payment-report box (owner approved, incl. "ניהול הזמנה" white while a report is pending), month-close screenshots, then the trash.
+## 23.11.2026: compact admin order cards on the phone (owner chose proposal A)
+- **Branch:** `claude/admin-orders-proposal-20261123` (from `0e81158`). Local commit only, no push.
+- **What changed (CSS only):** at the end of `app/orders-v2.css`, a phone block (`max-width:640px`) for `.sv2-orders:not(.cfo) .sv2-olist .sv2-orow`. The card is a 4-column grid: avatar · name and "#number · date · site" · amount · "…" in the corner. Line 3 holds the payment pill, "פורסם 0/1" and the chevron, or the action button ("בדיקת הדיווח" / "טיפול בביטול"). `.sv2-who` and `.sv2-rowact` use `display:contents`. The small note under the pill (`.sv2-sub`, e.g. "אסמכתא 111") is hidden on the phone. At 374px and below, line 3 starts under the avatar.
+- **`app/admin-mobile-fixes.css`:** dropped the grid-column numbers of `.sv2-paycell` (1/3) and `.sv2-pubcell` (3); the rest of those rules stays.
+- **Why:** the owner said the order cards had too much empty space. Cards went from 161–181px to 101–123px, showing 4–5 orders instead of about 2.5.
+- **Unchanged (checked pixel for pixel):** the desktop list at 1280 and the customer file's orders tab (`.cfo`) at 390 and 1280.
+- **Checked locally (fictional data, ports 8840/5240):** 390x844 and 360x800 with no horizontal scroll. The "…" menu, the chevron (opens the sheet), "בדיקת הדיווח" (opens the report dialog) and "טיפול בביטול" (opens the order) all work. `tsc` and build pass. `cart-checkout-actions`, `checkout-phone-actions` and `cart-add-feedback` pass. The tests that mention the orders screens (`admin-complete-preservation`, `admin-foundation-stage-a`, `admin-glass-actions`, `admin-order-history`, `admin-orders-navigation-contract`, `finance-siblings-browser`, `orders-approved-browser`) fail before and after with the same errors (.gitignore check, UserSettings check, `./workspace` import, missing package path). They fail before reaching these styles.
+- **Images:** scratchpad `admin-orders/final-orders-list.png` (outside the repo).
+- **Before upload:** nothing temporary in the repo.
+
+## 23.11.2026: the customer's payment report in the admin order (owner approved the proposal)
+- **Branch:** `claude/admin-orders-proposal-20261123`, separate local commit after the compact cards. No push.
+- **What changed:**
+  - **`app/orders-modern.css`:** a block at the end, scoped to `.om-report-part.om-decision`, so only a report that is waiting changes. The block is a white card with a thin frame. The reported amount is large, then a framed list (payment date, report time, reference) and the note as a quiet info line. "איך הלקוח שילם?" is a segmented control, and the check is a framed row that turns blue. "אישור קבלת התשלום" is the one main button and "לא לאשר" is quiet. In the decline step, "דחיית הדיווח" is the main red button and "חזרה לאישור" is quiet.
+  - **"ניהול הזמנה":** while a report waits, it becomes a white second-level button (`.om-panel:has(.om-report-part.om-decision)`).
+  - **`app/payment-reports.tsx`:** in `ReportDecision` only, the pending heading got `<span className="om-report-state">ממתין לאישור</span>`.
+- **Kept:** every field and action. That includes "אחר" with its text field, the decline reason, the proof-file link and the duplicate-reference warning.
+- **Unchanged (pixel-compared at 390 and 1280):**
+  - the "דיווחי תשלום" list
+  - the refund dialog (its `.om-method` is not touched)
+  - the "בדיקת הדיווח" dialog from the orders list (`ReportReview`)
+  - a report that was already approved
+- **Checked locally (fictional data):** 390 and 1280 in four states: pending, ticked, "אחר" and the decline step. `tsc` and build pass. `payment-reports` passes. The three Railway tests pass. The seven orders/admin tests fail with the same errors as on `0e81158`.
+- **Seen, not changed:** at 1280 the opened order in "דיווחי תשלום" is cut at the left edge of the screen. This was the same before the change.
+- **Images:** scratchpad `admin-orders/final-payment-report.png`.
+
+## 23.11.2026: trash for abandoned orders ("פח", owner's spec)
+- **What it does:**
+  - Only an abandoned order can go to the trash. That means unpaid, regular, no pending payment report, created at least `ORDER_ABANDONED_DAYS` (14) days ago, and also no open cancel request.
+  - The server re-checks this with the same SQL as the "נזנחו" group (`trashableSql` in `lib/admin-order-data.ts`), inside the UPDATE itself.
+  - It happens only by the admin's click. There are three places:
+    - the row "…" menu
+    - the order sheet footer
+    - "העברת כל הנזנחות לפח (N)" on the abandoned group header (in "לתשלום" and in the lobby's "abandoned" view)
+  - Every move first opens a confirmation window (title "העברה לפח…", trash-can badge, red button).
+  - Restore is "שחזור" on the new "פח" tile, plus "שחזור מהפח" in the "…" menu and the sheet. Nothing is ever deleted.
+- **Storage:** `trashed_at` and `trashed_by` in the order's `data` JSON, with no migration. This is the same pattern as `demo`/`on_account`; restore removes both keys. SQL helper: `liveOrderSql()` in `lib/order-trash-sql.ts`.
+- **API (`lib/order-trash.ts`, wired in `app/api/[...path]/route.ts`):**
+  - `POST admin/orders/trash {ids}` or `{all_abandoned:true,expected:N}`. Bulk is one request: one SELECT, then one batch with a set-based activity INSERT and a set-based UPDATE (`json_each`). It refuses if the count shown is no longer true.
+  - `POST admin/orders/restore {id}`.
+  - Audit lines: "הועברה לפח" / "שוחזרה מהפח".
+- **Hidden everywhere except the trash view:**
+  - **Admin:**
+    - `adminOrderCte()`, which now excludes the trash by default, so orders, counts, export, month close, pulse and reports all follow it. Only the orders list asks for `withTrash` (bucket `trash`).
+    - the lobby "bank" lane and the "abandoned" counter (`lib/admin-updates.ts`)
+    - the control-center "תשלומים לבדיקה" badge
+    - the admin payments badge and `payment-alerts`
+    - lobby search
+    - invoices list and summary (`lib/finance.ts`)
+    - the customer file (`lib/account-management.ts`)
+    - the users list order count
+    - the reports totals
+    - the content lists (`lib/admin-content.ts`)
+  - **Customer:**
+    - "ההזמנות שלי" and the orders counter (`me`)
+    - the order page, statement, payment link and payment report all answer 404 "ההזמנה אינה זמינה"
+    - article lists and the agency unpaid list
+  - The admin can still open a trashed order read-only. Any action on it answers 409 until it is restored.
+- **What an unpaid order holds:**
+  - A split order (balance + card) reserves balance. The reservation is released while the order is in the trash (`walletAvailable`). Restore is refused if that balance was used meanwhile.
+  - A real payment that arrives anyway (a card started earlier) takes the order out of the trash and logs it (`completeOrderPayment`).
+  - No stock slot or writing job exists before payment (articles can't be worked until paid), so there is nothing to release.
+  - A coupon use counted at checkout stays counted, because the trash is reversible. Customer cancel decrements it; trash does not. **Open question for the owner.**
+- **Checked locally (fictional data):**
+  - Screenshots at 390, 1280 and 1440: scratchpad `order-trash/`.
+  - New test `tests/order-trash.mjs` passes (137 checks).
+  - `tsc` and build pass.
+  - Orders/admin/payment/customer/agency tests give the same results as on `0e81158` (same failures, same reasons).
+- **Seen, not changed:** at 1280 the desktop orders list (and the opened order in "דיווחי תשלום") is cut on the left, and the action column is outside the screen. This was the same on `0e81158`. At 1440 it is fine.
+- **Before upload:** nothing temporary in the repo. Local test data only: 9 orders (#1300–#1308 of the fictional customer) were aged to 20–28 days in the scratchpad database.

@@ -41,9 +41,9 @@ export async function accountManagementRoutes(r:Request,p:string[],actor:Row){
 
 
  if(r.method==='GET'){
-  const orders=(await all(`SELECT o.*,${orderSummarySql()},c.month,c.settled FROM orders o LEFT JOIN monthly_charges c ON c.order_id=o.id WHERE o.user_id=? ORDER BY o.created DESC LIMIT 1000`,target.id)).map(parse);
+  const orders=(await all(`SELECT o.*,${orderSummarySql()},c.month,c.settled FROM orders o LEFT JOIN monthly_charges c ON c.order_id=o.id WHERE o.user_id=? AND COALESCE(json_extract(o.data,'$.trashed_at'),'')='' ORDER BY o.created DESC LIMIT 1000`,target.id)).map(parse);
   const receipts=await paymentEvidenceRows(target.id);for(const order of orders){if(order)order.payment_confirmation=orderPaymentEvidence(order,receipts);}
-  const articles=(await all('SELECT a.*,w.name AS website_name,w.url AS website_url,o.number,json_extract(o.data,"$.vat_percent") AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE a.user_id=? ORDER BY a.updated DESC LIMIT 3000',target.id)).map(parse);
+  const articles=(await all('SELECT a.*,w.name AS website_name,w.url AS website_url,o.number,json_extract(o.data,"$.vat_percent") AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE a.user_id=? AND COALESCE(json_extract(o.data,\'$.trashed_at\'),\'\')=\'\' ORDER BY a.updated DESC LIMIT 3000',target.id)).map(parse);
   const history=(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource IN (SELECT id FROM orders WHERE user_id=? UNION SELECT id FROM articles WHERE user_id=? UNION SELECT ?) ORDER BY a.created DESC LIMIT 300',target.id,target.id,target.id)).map(parse);
   const pricing=await pricingContext(target.id);return res({customer:target,account:await one('SELECT * FROM credit_accounts WHERE user_id=?',target.id),orders,articles,history,tier:pricing.tier,open_order:await openMonthlyOrder(target.id),websites:(await all('SELECT * FROM websites WHERE active=1 ORDER BY name')).map(w=>{const x=pricedSite(w,pricing);return {id:x.id,name:x.name,url:x.url,price_cents:x.price_cents,dr:x.dr??null,category:x.category||'',logo_url:(x as Row).logo_url||''};})});
  }

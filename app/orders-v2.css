@@ -586,3 +586,45 @@
 .admin-workspace-body.sv2-body.sv2-inner [data-slot=button][data-variant=default]{background:#0071e3!important;background-image:none!important;border:0!important;box-shadow:none!important;color:#fff!important}
 .admin-workspace-body.sv2-body.sv2-inner [data-slot=button][data-variant=default]:hover:not(:disabled){background:#0077ed!important}
 @media(prefers-reduced-motion:reduce){.admin-workspace-body.sv2-body.sv2-inner [data-slot=button]{transition:none!important}.admin-workspace-body.sv2-body.sv2-inner [data-slot=button]:active{transform:none}}
+
+/* ---- 23.11.2026: compact order cards on the phone (owner chose proposal A).
+   About 105px instead of 160-180px. Line 1: customer + amount + "…" in the corner. Line 2: #number · date · site.
+   Line 3: payment pill, "פורסם 0/1", chevron (or the action button when the order needs one).
+   The customer file's orders tab (.cfo) keeps its own layout. ---- */
+@media(max-width:640px){
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow{display:grid!important;grid-template-columns:36px minmax(0,1fr) auto 36px!important;grid-template-areas:"av txt num dots" "av pay pub act"!important;align-items:center!important;gap:6px 10px!important;padding:12px 14px 12px 10px!important;min-height:0!important}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>*{order:0!important;margin:0!important}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-ord,.sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-favs{display:none!important}
+ /* the customer cell and the actions cell lend their children to the card grid */
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-who,.sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-rowact{display:contents!important}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-who>.sv2-av{grid-area:av;align-self:start;width:36px!important;height:36px!important;font-size:15px}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-who>span:last-child{grid-area:txt;display:block;min-width:0;line-height:1.25}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:15.5px}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-who small.sv2-mob{margin-top:2px;font-size:12.5px;color:#6e6e73}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-num{grid-area:num!important;align-self:start;justify-self:end!important;font-size:16px!important;font-weight:700;line-height:1.35;white-space:nowrap}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-paycell{grid-area:pay!important;display:flex;align-items:center;min-width:0;justify-self:start}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-paycell .sv2-sub{display:none}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-pubcell{grid-area:pub!important;justify-self:end!important;font-size:12.5px;white-space:nowrap}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-rowact>.sv2-dots{grid-area:dots;align-self:start;justify-self:end;width:36px;height:32px;margin:-6px 0 0!important;color:#86868b}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-rowact>.sv2-chevbtn{grid-area:act;justify-self:end;width:36px;height:36px}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-rowact>.sv2-btn{grid-row:2;grid-column:3/5;justify-self:end;width:auto!important;height:34px!important;padding:0 14px;font-size:13.5px!important;box-shadow:none!important}
+}
+/* narrow phones (360px): the third line starts under the avatar so the longest pill and the action button fit */
+@media(max-width:374px){
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow{column-gap:8px!important}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-who>.sv2-av{grid-row:1}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-paycell{grid-column:1/3!important}
+}
+
+/* ---- 23.11.2026: trash for abandoned orders. The abandoned group header carries "העברת כל הנזנחות לפח";
+   the order sheet has a red "העברה לפח" (or "שחזור מהפח" for an order in the trash). ---- */
+.sv2-orders .sv2-grp-trash{justify-content:space-between;flex-wrap:wrap;row-gap:6px}
+.sv2-orders .sv2-grp-trash .sv2-trash-all{color:#c4281c!important;font-weight:700}
+.sv2-orders .sv2-grp-trash .sv2-trash-all svg{color:#c4281c}
+.sv2-orders .om-panel .om-btn.om-trash-btn{color:#c4281c!important}
+.sv2-orders .sv2-sumbtn.is-trash:not(.on) .big{color:#86868b}
+@media(max-width:640px){
+ .sv2-orders .sv2-grp-trash{padding:10px 12px;border-radius:14px;margin:4px 0 8px}
+ .sv2-orders .sv2-grp-trash .sv2-trash-all{height:36px}
+}
+.sv2-orders .sv2-olist .sv2-order.is-trashed.is-trashed{--oc:#c7c7cc}

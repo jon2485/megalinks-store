@@ -28,6 +28,8 @@ import {writingBriefDocx} from '@/lib/writing-brief-docx';
 import {writingSubmitted,writingCustomerEditor} from '@/lib/writing-workflow';
 import {storedOrderPdf} from '@/lib/order-statement';
 import {paymentReports} from '@/lib/payment-reports';
+import {orderTrash} from '@/lib/order-trash';
+import {liveOrderSql} from '@/lib/order-trash-sql';
 import {assertAgency,agencyCustomers,agencyCustomer,saveAgencyCustomer,agencyCustomerArticles,agencyPublications,agencyUsedSites,importUsedSites,removeUsedSite,setUsedMode,usedSitesOf,usedSiteHitIn,agencyOverview,agencyTasks,adminAgencyView,agencyLinks,agencyNotes,addAgencyNote,changeAgencyNote,agencySettings,saveAgencySettings,agencyCalendar} from '@/lib/agency';
 import {marketingStatus,setMarketing,marketingList,marketingCsv,marketingRemove} from '@/lib/marketing-consent';
 import {requireUnusedReference} from '@/lib/payment-reference';
@@ -331,8 +333,11 @@ async function handle(r: Request,access:ResponseAccess) {
             const publication=publicationPeriod();await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?,'$.published_at',?) WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,publication.stamp,publication.month,publication.stamp,article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
             if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':u.role==='admin'?'מנהל דיווח על פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
     }
+    const trashMove=await orderTrash(r,p,u,json);if(trashMove)return response(trashMove);
+    // An order in the trash is gone for the customer: no payment report either way.
+    if(p[0]==='orders'&&p[2]==='payment-report'&&u.role!=='admin')assert(!(await one("SELECT id FROM orders WHERE id=? AND NOT "+liveOrderSql('orders'),p[1]||'')),'ההזמנה אינה זמינה',404);
     const reportedPayment=await paymentReports(r,p,u,json);if(reportedPayment)return response(reportedPayment);
-    if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND NOT "+fullyCancelledOrderSql()+" AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
+    if(p[0]==='payment-alerts'&&method==='GET'){admin(u);return response({orders:(await all("SELECT o.*,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE o.paid=0 AND "+liveOrderSql()+" AND NOT "+fullyCancelledOrderSql()+" AND o.status IN ('pending','awaiting_approval') AND o.payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(o.data,'$.demo'),0)=0 ORDER BY o.created")).map(parse)});}
     // The admin views a customer's centre as that customer (owner's decision 4, 12.11.2026): read only, each opening logged.
     if (p[0] === 'admin' && p[1] === 'agency-view' && p[2]) {
         admin(u); assert(method === 'GET', 'צפייה בלבד: אי אפשר לשנות דבר מכאן', 403);
@@ -386,8 +391,8 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     if (p[0] === 'me') {
         if (method === 'GET') {
-            const payments=u.role==='admin'?(await one("SELECT COUNT(*) AS n FROM orders o WHERE paid=0 AND status<>'cancelled' AND NOT "+fullyCancelledOrderSql()+" AND ((status IN ('pending','awaiting_approval') AND payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(data,'$.demo'),0)=0) OR EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending'))"))!.n+await unappliedPaymentCount():0;
-            return response({ user: {...u,credits_available:await walletAvailable(u),marketing:await marketingStatus(u.id),monthly_account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id)}, counts: {...await one('SELECT (SELECT COUNT(*) FROM orders WHERE user_id=?) AS orders,(SELECT COUNT(*) FROM articles WHERE (?=1 OR user_id=?) AND status=?) AS approvals,(SELECT COUNT(*) FROM cart WHERE user_id=?) AS cart', u.id, u.role==='admin'?1:0, u.id, 'admin_review', u.id),payments} });
+            const payments=u.role==='admin'?(await one("SELECT COUNT(*) AS n FROM orders o WHERE paid=0 AND status<>'cancelled' AND "+liveOrderSql()+" AND NOT "+fullyCancelledOrderSql()+" AND ((status IN ('pending','awaiting_approval') AND payment IN ('invoice','bank_transfer') AND COALESCE(json_extract(data,'$.demo'),0)=0) OR EXISTS(SELECT 1 FROM records r WHERE r.id='payment-report:'||o.id AND json_extract(r.data,'$.status')='pending'))"))!.n+await unappliedPaymentCount():0;
+            return response({ user: {...u,credits_available:await walletAvailable(u),marketing:await marketingStatus(u.id),monthly_account:await one('SELECT * FROM credit_accounts WHERE user_id=?',u.id)}, counts: {...await one("SELECT (SELECT COUNT(*) FROM orders o WHERE o.user_id=? AND "+liveOrderSql()+") AS orders,(SELECT COUNT(*) FROM articles WHERE (?=1 OR user_id=?) AND status=?) AS approvals,(SELECT COUNT(*) FROM cart WHERE user_id=?) AS cart", u.id, u.role==='admin'?1:0, u.id, 'admin_review', u.id),payments} });
         }
         if (method === 'PATCH') {
             const b = await json(r);
@@ -475,10 +480,11 @@ if (p[0] === 'cart') {
     }
     if (p[0] === 'orders') {
         if (method === 'GET' && !p[1]) {
-            const rows = await all(u.role === 'admin' && query.get('scope') === 'all' ? `SELECT o.*,${orderSummarySql()},(SELECT settled FROM monthly_charges c WHERE c.order_id=o.id) AS payment_settled,(SELECT COUNT(*) FROM articles a WHERE a.order_id=o.id) AS item_count,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id ORDER BY o.created DESC LIMIT 1000` : `SELECT o.*,${orderSummarySql()},(SELECT settled FROM monthly_charges c WHERE c.order_id=o.id) AS payment_settled,(SELECT COUNT(*) FROM articles a WHERE a.order_id=o.id) AS item_count FROM orders o WHERE o.user_id=? ORDER BY o.created DESC LIMIT 1000`, ...(u.role === 'admin' && query.get('scope') === 'all' ? [] : [u.id]));
+            const rows = await all(u.role === 'admin' && query.get('scope') === 'all' ? `SELECT o.*,${orderSummarySql()},(SELECT settled FROM monthly_charges c WHERE c.order_id=o.id) AS payment_settled,(SELECT COUNT(*) FROM articles a WHERE a.order_id=o.id) AS item_count,u.name AS user_name,u.email FROM orders o JOIN users u ON u.id=o.user_id WHERE ${liveOrderSql()} ORDER BY o.created DESC LIMIT 1000` : `SELECT o.*,${orderSummarySql()},(SELECT settled FROM monthly_charges c WHERE c.order_id=o.id) AS payment_settled,(SELECT COUNT(*) FROM articles a WHERE a.order_id=o.id) AS item_count FROM orders o WHERE o.user_id=? AND ${liveOrderSql()} ORDER BY o.created DESC LIMIT 1000`, ...(u.role === 'admin' && query.get('scope') === 'all' ? [] : [u.id]));
             const receipts=u.role==='admin'?await paymentEvidenceRows():[];return response({orders:rows.map(raw=>{const o=parse(raw)!;return u.role==='admin'?{...o,payment_confirmation:orderPaymentEvidence(o,receipts)}:o;})});
         }
         const order = owns(u, await one(`SELECT o.*,${orderSummarySql()},(SELECT name FROM users WHERE id=o.user_id) AS user_name,(SELECT settled FROM monthly_charges c WHERE c.order_id=o.id) AS payment_settled FROM orders o WHERE id=?`, p[1]));
+        if(order.data&&JSON.parse(order.data).trashed_at){assert(u.role==='admin','ההזמנה אינה זמינה',404);assert(method==='GET','ההזמנה בפח. יש לשחזר אותה לפני כל פעולה',409);}
         if(p[2]==='statement.pdf'&&method==='GET'){const pdf=await storedOrderPdf(order.id,new URL(r.url).origin);return new Response(pdf.bytes,{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="'+pdf.filename+'"','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});}
         if (p[2] === 'invoice') {
             if (method === 'POST') {
@@ -593,7 +599,7 @@ if (p[0] === 'cart') {
         if(p[1]==='customer-options'&&method==='GET')return response(await articleCustomerList(u));
         if (method === 'GET' && !p[1]) {
             const scope = u.role === 'admin' && query.get('scope') === 'all';
-            return response({ articles: (await all(`SELECT a.*,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo,u.name AS user_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id JOIN users u ON u.id=a.user_id ${articleCustomerJoins} ${scope ? '' : 'WHERE a.user_id=?'} ORDER BY a.updated DESC LIMIT 2000`, ...(scope ? [] : [u.id]))).map(a=>customerArticle(a,u)) });
+            return response({ articles: (await all(`SELECT a.*,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo,u.name AS user_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id JOIN users u ON u.id=a.user_id ${articleCustomerJoins} WHERE ${liveOrderSql()}${scope ? '' : ' AND a.user_id=?'} ORDER BY a.updated DESC LIMIT 2000`, ...(scope ? [] : [u.id]))).map(a=>customerArticle(a,u)) });
         }
         const a = owns(u, await one(`SELECT a.*,${articleCustomerColumns} FROM articles a ${articleCustomerJoins} WHERE a.id=?`, p[1]));
         if(p[2]==='customer'&&method==='POST')return response(await assignArticleCustomer(a,u,await json(r)));
@@ -945,7 +951,7 @@ if (p[0] === 'cart') {
             admin(u);
         if(kind==='customer' && p[2] && p[3]==='articles' && method==='GET'){
             const customer=owns(u,await one('SELECT * FROM records WHERE id=? AND kind=?',p[2],'customer'));
-            const articles=await all(`SELECT a.*,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id ${articleCustomerJoins} WHERE a.user_id=? AND assigned_customer.id=? ORDER BY a.updated DESC`,customer.user_id,customer.id);
+            const articles=await all(`SELECT a.*,${articleCustomerColumns},o.number,o.paid,o.created AS purchased_at,w.name AS website_name,w.url AS website_url,json_extract(w.data,'$.logo_url') AS website_logo FROM articles a JOIN orders o ON o.id=a.order_id JOIN websites w ON w.id=a.website_id ${articleCustomerJoins} WHERE a.user_id=? AND assigned_customer.id=? AND ${liveOrderSql()} ORDER BY a.updated DESC`,customer.user_id,customer.id);
             return response({articles:articles.map(a=>customerArticle(a,u))});
         }
         if (method === 'GET' && p[2] && kind==='ticket') {
@@ -1106,7 +1112,7 @@ if (p[0] === 'cart') {
         if(p[1]==='sheets')return response(await sheetsGoogleAdmin(r,p,u,json)??await sheetsAdmin(r,p,u,json));
         if (p[1] === 'users') {
             if (method === 'GET')
-                return response({ users: await all("SELECT u.*,COALESCE(m.tier_id,'regular') AS tier_id,COALESCE(c.balance,0) AS monthly_balance,COALESCE(c.credit_limit,0) AS credit_limit,COALESCE(c.enabled,0) AS monthly_enabled,(SELECT COUNT(*) FROM records r JOIN orders po ON po.id=json_extract(r.data,'$.order_id') WHERE r.user_id=u.id AND r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND po.paid=0 AND po.status<>'cancelled') AS pending_payment_reports,(SELECT name FROM pricing_tiers t WHERE t.id=COALESCE(m.tier_id,'regular')) AS tier_name,(SELECT supplier_id FROM seller_profiles s WHERE s.user_id=u.id) AS supplier_id,(SELECT COUNT(*) FROM orders o WHERE o.user_id=u.id AND COALESCE(json_extract(o.data,'$.demo'),0)=0) AS order_count,(SELECT MAX(o.created) FROM orders o WHERE o.user_id=u.id AND COALESCE(json_extract(o.data,'$.demo'),0)=0) AS last_order_at FROM users u LEFT JOIN pricing_members m ON m.user_id=u.id LEFT JOIN credit_accounts c ON c.user_id=u.id ORDER BY u.name") });
+                return response({ users: await all("SELECT u.*,COALESCE(m.tier_id,'regular') AS tier_id,COALESCE(c.balance,0) AS monthly_balance,COALESCE(c.credit_limit,0) AS credit_limit,COALESCE(c.enabled,0) AS monthly_enabled,(SELECT COUNT(*) FROM records r JOIN orders po ON po.id=json_extract(r.data,'$.order_id') WHERE r.user_id=u.id AND r.kind='customer_payment_report' AND json_extract(r.data,'$.status')='pending' AND po.paid=0 AND po.status<>'cancelled') AS pending_payment_reports,(SELECT name FROM pricing_tiers t WHERE t.id=COALESCE(m.tier_id,'regular')) AS tier_name,(SELECT supplier_id FROM seller_profiles s WHERE s.user_id=u.id) AS supplier_id,(SELECT COUNT(*) FROM orders o WHERE o.user_id=u.id AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND COALESCE(json_extract(o.data,'$.trashed_at'),'')='') AS order_count,(SELECT MAX(o.created) FROM orders o WHERE o.user_id=u.id AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND COALESCE(json_extract(o.data,'$.trashed_at'),'')='') AS last_order_at FROM users u LEFT JOIN pricing_members m ON m.user_id=u.id LEFT JOIN credit_accounts c ON c.user_id=u.id ORDER BY u.name") });
             if (method === 'PATCH' && p[2]) {
                 const b = await json(r);
                 const target = await one('SELECT * FROM users WHERE id=?', p[2]);
@@ -1288,7 +1294,7 @@ if (p[0] === 'cart') {
             }
         }
         if (p[1] === 'reports' && method === 'GET') {
-            const totals = await one("SELECT COUNT(*) AS count,COALESCE(SUM(CASE WHEN paid=1 AND status<>'cancelled' AND COALESCE(json_extract(data,'$.demo'),0)=0 THEN MAX(0,total-COALESCE(json_extract(data,'$.paid_refund_total'),0)) ELSE 0 END),0) AS revenue,SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending FROM orders");
+            const totals = await one("SELECT COUNT(*) AS count,COALESCE(SUM(CASE WHEN paid=1 AND status<>'cancelled' AND COALESCE(json_extract(data,'$.demo'),0)=0 THEN MAX(0,total-COALESCE(json_extract(data,'$.paid_refund_total'),0)) ELSE 0 END),0) AS revenue,SUM(CASE WHEN status='pending' THEN 1 ELSE 0 END) AS pending FROM orders o WHERE "+liveOrderSql()+"");
             const statuses = await all('SELECT status,COUNT(*) AS count FROM articles GROUP BY status');
             const bySite = await all("SELECT w.name,COUNT(*) AS count,SUM(MAX(0,CAST(json_extract(a.data,'$.paid_amount') AS INTEGER)-COALESCE(json_extract(a.data,'$.refund_total'),0))) AS total FROM articles a JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id WHERE o.paid=1 AND a.status<>'cancelled' AND COALESCE(json_extract(o.data,'$.demo'),0)=0 GROUP BY w.id ORDER BY count DESC LIMIT 15");
             const confirmedRows=await all(`WITH ${adminOrderCte()} SELECT confirmed_date,total,data FROM classified WHERE paid=1 AND fully_cancelled=0 AND confirmed_date IS NOT NULL AND COALESCE(json_extract(data,'$.demo'),0)=0`),groups=new Map<string,Row>();for(const row of confirmedRows){const month=israelDate(row.confirmed_date).slice(0,7);if(!month)continue;const group=groups.get(month)||{month,count:0,total:0};group.count++;group.total+=Math.max(0,row.total-Number(JSON.parse(row.data).paid_refund_total||0));groups.set(month,group);}const byMonth=[...groups.values()].sort((a,b)=>a.month.localeCompare(b.month));

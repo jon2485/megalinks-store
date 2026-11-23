@@ -75,7 +75,7 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   const delivery=await safeMail(mailId,row.user_id,mail);return output({ok:true,decision,mail_status:delivery?.status,balance:(await one('SELECT credits FROM users WHERE id=?',row.user_id))?.credits,handled_at:stamp});
  }
  if(p[0]==='admin'&&p[1]==='invoices'){
-  admin(u);assert(r.method==='GET','פעולה לא נתמכת',405);const filters:string[]=[],args:any[]=[];
+  admin(u);assert(r.method==='GET','פעולה לא נתמכת',405);const filters:string[]=["COALESCE(json_extract(o.data,'$.trashed_at'),'')=''"],args:any[]=[];
   const search=text(query.get('search'));if(search){filters.push("(o.number||' '||u.name||' '||u.email||' '||COALESCE(json_extract(o.data,'$.invoice_name'),'')) LIKE ? ESCAPE '\\'");args.push('%'+search.replace(/[\\%_]/g,'\\$&')+'%');}
   const status=query.get('status')||'missing';assert(['all','missing','attached','unpaid'].includes(status),'סטטוס לא תקין');
   const eligible="(o.paid=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1 AND c.demo=0)) AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND o.status<>'cancelled'"+' AND NOT '+fullyCancelledOrderSql();
@@ -85,7 +85,7 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   const where=filters.length?' WHERE '+filters.join(' AND '):'',page=Math.max(1,Math.floor(Number(query.get('page'))||1));
   const base=' FROM orders o JOIN users u ON u.id=o.user_id';const total=await one('SELECT COUNT(*) AS n'+base+where,...args);
   const rows=await all('SELECT o.*,'+orderSummarySql()+',u.name AS user_name,u.email,actor.name AS attached_by_name,f.name AS invoice_filename'+base+" LEFT JOIN users actor ON actor.id=json_extract(o.data,'$.invoice_attached_by') LEFT JOIN files f ON f.id=json_extract(o.data,'$.invoice_file_id')"+where+' ORDER BY o.created DESC LIMIT ? OFFSET ?',...args,query.get('all')==='1'?5000:30,(page-1)*30);
-  const summary=await one(`SELECT SUM(CASE WHEN ${eligible} AND NOT (${has}) THEN 1 ELSE 0 END) AS missing,SUM(CASE WHEN ${has} THEN 1 ELSE 0 END) AS attached,SUM(CASE WHEN NOT (${eligible}) AND NOT (${has}) THEN 1 ELSE 0 END) AS unpaid,COUNT(*) AS total FROM orders o${month?' WHERE '+month.sql:''}`,...(month?month.args:[]));
+  const summary=await one(`SELECT SUM(CASE WHEN ${eligible} AND NOT (${has}) THEN 1 ELSE 0 END) AS missing,SUM(CASE WHEN ${has} THEN 1 ELSE 0 END) AS attached,SUM(CASE WHEN NOT (${eligible}) AND NOT (${has}) THEN 1 ELSE 0 END) AS unpaid,COUNT(*) AS total FROM orders o WHERE COALESCE(json_extract(o.data,'$.trashed_at'),'')=''${month?' AND '+month.sql:''}`,...(month?month.args:[]));
   return output({orders:rows.map(parse),total:total?.n||0,page,summary});
  }
  return null;

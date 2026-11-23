@@ -1,7 +1,7 @@
 import {all,assert,parse} from './server';
 export async function adminLobbySearch(input:string){const q=input.trim().slice(0,120);if(q.length<2)return {matches:[]};const like='%'+q+'%';const sources=await Promise.all([
- all("SELECT a.id,a.title,a.status,a.order_id,o.number,u.name AS user_name,w.name AS website_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id LEFT JOIN websites w ON w.id=a.website_id WHERE (a.title||' '||u.name||' '||COALESCE(w.name,'')||' '||o.number) LIKE ? ORDER BY a.updated DESC LIMIT 20",like),
- all("SELECT o.id,o.number,u.name AS user_name FROM orders o JOIN users u ON u.id=o.user_id WHERE (o.number||' '||u.name||' '||u.email) LIKE ? ORDER BY o.created DESC LIMIT 20",like),
+ all("SELECT a.id,a.title,a.status,a.order_id,o.number,u.name AS user_name,w.name AS website_name FROM articles a JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id LEFT JOIN websites w ON w.id=a.website_id WHERE COALESCE(json_extract(o.data,'$.trashed_at'),'')='' AND (a.title||' '||u.name||' '||COALESCE(w.name,'')||' '||o.number) LIKE ? ORDER BY a.updated DESC LIMIT 20",like),
+ all("SELECT o.id,o.number,u.name AS user_name FROM orders o JOIN users u ON u.id=o.user_id WHERE COALESCE(json_extract(o.data,'$.trashed_at'),'')='' AND (o.number||' '||u.name||' '||u.email) LIKE ? ORDER BY o.created DESC LIMIT 20",like),
  all("SELECT id,name,email FROM users WHERE role IN ('customer','agency') AND (name||' '||email) LIKE ? ORDER BY name LIMIT 20",like),
  all("SELECT r.*,u.name AS user_name FROM records r JOIN users u ON u.id=r.user_id WHERE r.kind IN ('ticket','wallet_topup','customer_payment_report') AND (r.data||' '||u.name) LIKE ? ORDER BY r.updated DESC LIMIT 20",like),
  all("SELECT id,name,url FROM websites WHERE (name||' '||url) LIKE ? AND json_extract(data,'$.archived_at') IS NULL ORDER BY name LIMIT 20",like),
