@@ -2274,3 +2274,8 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Not checked:** a real iPhone keyboard (needs Staging); the server-refusal popup was not seen locally because the local check passed.
 - **Before upload:** nothing temporary in the repo.
 - **Staging deployed 23.11.2026 20:41 UTC (owner clicked Deploy):** Railway deployment `ac410b84` = `ddd044b` on `claude/supplier-types-20261123`, status SUCCESS. Start log: migration `0010_image_search_cache.sql` ✅, "Ready on 8787", the scheduled maintenance calls and `GET /` return 200, no errors. Next for the owner: enter the Pixabay key in חיבורים והגדרות and press "בדיקה".
+
+## 24.11.2026: supplier e-mail fix and the site card (same branch)
+- **Supplier e-mail failed on Staging** ("LIKE or GLOB pattern too complex"): D1 refuses a LIKE pattern over 50 bytes and two lookups in `lib/mail.ts` put the article id (36 chars) in the pattern. Now `substr(id,1,?)=?`. `tests/supplier-thread.mjs` follows (`a8b20bc`). After upload, press "ניסיון שליחה" on the failed e-mail.
+- **Site card (owner: "באלגן בעין")** (`f42a04d` + this commit): inputs are white framed boxes, right-aligned, blue focus ring, no number spinners; logo upload one row; profit line under the prices; exchange option one row; every section a white card with a coloured icon square (`app/catalog-v2-editors.css` end, `app/admin-supplier-new.css` end, `app/catalog-website-form.tsx`).
+- **Open:** a site with "קישור אחד בלבד" counts distinct URLs, so two links to the same address pass. Asked the owner; not changed yet.
