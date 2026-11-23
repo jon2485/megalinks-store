@@ -16,9 +16,11 @@ export const freeSlotSql=(site:string,demo:string)=>`(SELECT CASE WHEN NOT EXIST
 export function releaseSlotStatements(articleId:string,actorId:string,reason:string){
  const stamp=now();
  return [
-  stmt(`INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) SELECT 'stock-release:'||article_id,'stock_release',?,json_object('article_id',article_id,'website_id',website_id,'demo',demo,'sequence',sequence,'stock_total',stock_total,'reason',?,'released_at',?),?,? FROM supplier_dispatch_allocations WHERE article_id=?`,actorId,reason,stamp,stamp,stamp,articleId),
+  stmt(`INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) SELECT 'stock-release:'||d.article_id,'stock_release',?,json_object('article_id',d.article_id,'website_id',d.website_id,'demo',d.demo,'sequence',d.sequence,'stock_total',d.stock_total,'pool_supplier_id',p.supplier_id,'pool_sequence',p.sequence,'reason',?,'released_at',?),?,? FROM supplier_dispatch_allocations d LEFT JOIN supplier_pool_allocations p ON p.article_id=d.article_id WHERE d.article_id=?`,actorId,reason,stamp,stamp,stamp,articleId),
   stmt('UPDATE supplier_dispatch_counters SET sent_count=sent_count-1 WHERE sent_count>0 AND (website_id,demo)=(SELECT website_id,demo FROM supplier_dispatch_allocations WHERE article_id=?)',articleId),
   stmt('DELETE FROM supplier_dispatch_allocations WHERE article_id=?',articleId),
+  // The supplier pool place goes back too (supplier stock pool, 23.11.2026).
+  stmt('DELETE FROM supplier_pool_allocations WHERE article_id=?',articleId),
   stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",articleId),
   stmt("UPDATE jobs SET status='cancelled',updated=? WHERE id=? AND status IN ('requested','blocked','failed','succeeded')",stamp,'publication:'+articleId),
  ];
@@ -63,8 +65,11 @@ const cents=(v:any)=>{if(v===''||v===null||v===undefined)return null;const n=Mat
 // Stock only grows. A package starts after the current capacity (or after what
 // was already sent, when the site moves from monthly billing to packages).
 export async function addStockPackage(actor:Row,websiteId:string,b:Row){
- const w=await one('SELECT id,name,data FROM websites WHERE id=?',websiteId);assert(w,'האתר לא נמצא',404);
+ const w=await one("SELECT w.id,w.name,w.data,json_extract(s.data,'$.stock_pool') AS supplier_pool FROM websites w LEFT JOIN records s ON s.id=json_extract(w.data,'$.supplier_id') AND s.kind='supplier' WHERE w.id=?",websiteId);assert(w,'האתר לא נמצא',404);
  const d=JSON.parse(w.data||'{}'),quantity=Number(b.quantity);
+ // A package for one site of a supplier with a pool makes that site's stock separate from the pool (owner, 23.11.2026:
+ // only for a site with a stock number of its own).
+ const own=w.supplier_pool!==null&&w.supplier_pool!==undefined;
  // Per-site billing (16.11.2026): adding a package is what makes a monthly site a stock site.
  assert(Number.isSafeInteger(quantity)&&quantity>0&&quantity<=100000,'יש להזין כמות פרסומים שלמה וחיובית');
  const totalCents=cents(b.total_ils);let unit=cents(b.unit_ils);
@@ -74,11 +79,11 @@ export async function addStockPackage(actor:Row,websiteId:string,b:Row){
  const method=String(b.method||'');assert(!method||method in supplierPaymentMethods,'אמצעי תשלום לא תקין');
  const note=String(b.note||'').trim().slice(0,1000);
  const counter=await one('SELECT sent_count FROM supplier_dispatch_counters WHERE website_id=? AND demo=0',websiteId);
- const before=d.stock_total===null||d.stock_total===undefined?null:Number(d.stock_total),base=before??Number(counter?.sent_count||0),after=base+quantity;
+ const before=d.stock_total===null||d.stock_total===undefined?null:Number(d.stock_total),base=before===null||own&&!d.stock_own?Number(counter?.sent_count||0):before,after=base+quantity; // a pool site that becomes separate starts after what was already sent
  const id='stock-package:'+uid(),stamp=now(),record={website_id:websiteId,quantity,total_cents:total,unit_cents:unit,paid_on:paidOn,method,note,start_slot:base+1,end_slot:after,stock_before:before,stock_after:after,actor_name:actor.name||''};
  const guard=before===null?"json_extract(data,'$.stock_total') IS NULL":"json_extract(data,'$.stock_total')=?";
  const write=await db().batch([
-  stmt(`UPDATE websites SET data=json_set(data,'$.stock_total',?),updated=? WHERE id=? AND ${guard}`,...[after,stamp,websiteId,...(before===null?[]:[before])]),
+  stmt(`UPDATE websites SET data=json_set(data,'$.stock_total',?${own?",'$.stock_own',1":''}),updated=? WHERE id=? AND ${guard}`,...[after,stamp,websiteId,...(before===null?[]:[before])]),
   stmt("INSERT INTO records(id,kind,user_id,data,created,updated) SELECT ?,'stock_package',?,?,?,? WHERE changes()=1",id,actor.id,JSON.stringify(record),stamp,stamp),
  ]);
  assert(write[0].meta.changes===1,'המלאי השתנה בזמן הפעולה. רעננו ונסו שוב.',409);

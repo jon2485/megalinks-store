@@ -7,6 +7,7 @@ import {publicationPeriod} from './publication-period';
 import {queueMail} from './mail';
 import {sendSupplierMonth} from './supplier-month';
 import {supplierPaymentMethods} from './supplier-presentation';
+import {poolPackages} from './supplier-pool';
 
 // A supplier's billing seen as orders: every month with publications is one
 // order (monthly billing), and every stock package bought is one order.
@@ -51,6 +52,8 @@ async function stockPackages(supplierId:string){
    out.push({site_id:w.id,site_name:st.site.name,number:p.number,id:p.id,opening:!!p.opening,quantity:qty,used:u,left:qty-u,published:inP.filter((s:Row)=>s.status==='published').length,created:p.created||'',paid_on:p.paid_on||'',method:p.method||'',total_cents:p.total_cents??null,unit_cents:p.unit_cents??null,status,paid:!!p.paid_on,code:p.opening?'מלאי קודם':'STK-'+String(p.id).replace('stock-package:','').slice(0,4).toUpperCase()});
   }
  }
+ // Packages of the supplier's pool (23.11.2026) are orders too; they belong to no single site.
+ out.push(...await poolPackages(supplierId));
  out.sort((a,b)=>String(b.created||'0').localeCompare(String(a.created||'0'))||a.site_name.localeCompare(b.site_name,'he')||b.number-a.number);
  return {sites:sites.length,total,used,left:Math.max(0,total-used),packages:out};
 }

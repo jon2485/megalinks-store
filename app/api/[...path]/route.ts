@@ -72,6 +72,7 @@ import { closeMonth } from '@/lib/monthly';
 import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-content';
 import { dispatchArticle,adminArticleExtras } from '@/lib/publication';
 import { siteStock, addStockPackage, linkOrphanSites, releaseSlotStatements } from '@/lib/supplier-stock';
+import { addPoolStock } from '@/lib/supplier-pool';
 import { supplierBilling, supplierOrder, supplierPackage, sendOrderSummary, sendPackageStatus, updatePackagePayment } from '@/lib/supplier-orders';
 import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManualSupplierMonths } from '@/lib/supplier-month';
 import { DEFAULT_SUPPLIER_EMAIL } from '@/lib/supplier-presentation';
@@ -979,6 +980,7 @@ if (p[0] === 'cart') {
                 b.name=String(b.name||'').trim();assert(b.name&&b.name.length<=200,'יש להזין שם ספק תקין');
                 b.email=String(b.email||'').trim().toLowerCase()||DEFAULT_SUPPLIER_EMAIL;assert(!b.email||/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(b.email)&&b.email.length<=254,'דוא״ל הספק אינו תקין');
                 delete b.billing; // billing is per site since 16.11.2026; older clients may still send it
+                delete b.stock_pool; // the supplier stock pool changes only through "הוספת מלאי" (admin/supplier-pool)
                 for(const key of ['contact','phone','url','notes','workflow'])if(b[key]!==undefined)assert(typeof b[key]==='string'&&b[key].length<=(['notes','workflow'].includes(key)?6000:1000),'פרט ספק ארוך מדי');
                 if(b.url)b.url=httpUrl(b.url);
                 if(b.email&&b.email!==DEFAULT_SUPPLIER_EMAIL){const existing=await one("SELECT id FROM records WHERE kind='supplier' AND lower(json_extract(data,'$.email'))=? AND lower(trim(COALESCE(json_extract(data,'$.name'),'')))=?",b.email,String(b.name||'').trim().toLowerCase());if(existing)return response({id:existing.id,existing:true});} // one address may serve several suppliers by name (owner, 20.11.2026)
@@ -1038,7 +1040,7 @@ if (p[0] === 'cart') {
                 if(b.reply!==undefined&&replyText&&replyText!==String(current.reply||'').trim())b={...b,reply:replyText,replied_at:now(),messages:[...ticketFollowUps(current,item.updated),{id:uid(),from:'team',text:replyText,at:now(),author:'צוות מגה לינקס'}]};
             }
             if(kind==='ticket')for(const key of ['payment_method','amount','amount_cents','reference','proof_file_id','decision','handled_by','handled_at','ledger_id'])delete b[key];
-            if(kind==='supplier'){delete b.billing;const expected=b.expected_updated_at;delete b.expected_updated_at;if(expected!==undefined){const write=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify({...JSON.parse(item.data),...b}),now(),item.id,expected).run();assert(write.meta.changes,'פרטי הספק השתנו במקביל. טענו מחדש לפני שמירה.',409);await audit(u,item.id,'עודכנה רשומת supplier');return response({ok:true});}}
+            if(kind==='supplier'){delete b.billing;delete b.stock_pool;const expected=b.expected_updated_at;delete b.expected_updated_at;if(expected!==undefined){const write=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify({...JSON.parse(item.data),...b}),now(),item.id,expected).run();assert(write.meta.changes,'פרטי הספק השתנו במקביל. טענו מחדש לפני שמירה.',409);await audit(u,item.id,'עודכנה רשומת supplier');return response({ok:true});}}
             if(kind==='instruction'){const expected=b.expected_updated_at;const prompt={name:String(b.name||'').trim(),text:String(b.text||'').trim()};assert(prompt.name&&prompt.name.length<=200&&prompt.text&&prompt.text.length<=20000,'יש למלא שם ותוכן הנחיה תקינים');const changed=await stmt('UPDATE records SET data=?,updated=? WHERE id=? AND updated=?',JSON.stringify(prompt),now(),item.id,expected||item.updated).run();assert(changed.meta.changes,'ההנחיה עודכנה במקביל. פתחו אותה מחדש לפני עריכה.',409);await audit(u,item.id,'רשומה עודכנה',{kind});return response({ok:true});}
             const write=stmt('UPDATE records SET data=?,updated=? WHERE id=?', JSON.stringify({ ...JSON.parse(item.data), ...b }), now(), item.id);if(bundleVersion!==null)await db().batch([pricingGuard(bundleVersion),write]);else await write.run();
             await audit(u, item.id, 'עודכנה רשומת ' + kind,kind==='bundle'?{pricing_warning_acknowledged:b.acknowledge===true}:{});
@@ -1083,6 +1085,8 @@ if (p[0] === 'cart') {
             for(const id of ids){const a=articles.get(id);assert(a,'הכתבה לא נמצאה',404);assert(a.status==='sent','הכתבה אינה ממתינה לספק');const original=parse(originals.get('email:supplier:'+id)||null);assert(original,'לא נוצר מייל ספק',409);sends.push({a,original});}
             const day=now().slice(0,10);let sent=0;for(const {a,original} of sends){await queueMail('reminder:'+a.id+':'+day,a.user_id,{...original.data,subject:'תזכורת לפרסום: '+a.title});sent++;}
             return response({sent});}
+        // Supplier stock pool (owner, 23.11.2026): stock added to the supplier, then the articles that waited for it are sent.
+        if(p[1]==='supplier-pool'&&p[2]&&method==='POST'){const result=await addPoolStock(u,decodeURIComponent(p[2]),await json(r));let resent=0;const retryRows=await mapIn('articles','id',result.retry);for(const id of result.retry){const a=parse(retryRows.get(String(id))||null);if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;else if(job?.status==='blocked')break;}catch{}}return response({...result,resent});}
         if(p[1]==='supplier-stock'&&p[2]){const site=decodeURIComponent(p[2]);if(method==='GET')return response(await siteStock(site));assert(method==='POST','פעולה לא נתמכת',405);const result=await addStockPackage(u,site,await json(r));let resent=0;const retryRows=await mapIn('articles','id',result.retry);for(const id of result.retry){const a=parse(retryRows.get(String(id))||null);if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;}catch{}}return response({...result,resent});}
         if(p[1]==='supplier-billing'&&p[2]&&method==='GET')return response(await supplierBilling(decodeURIComponent(p[2])));
         if(p[1]==='supplier-order'){if(method==='GET')return response(await supplierOrder(String(query.get('key')||'')));if(p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendOrderSummary(new URL(r.url).origin,String(b.key||''),u));}}

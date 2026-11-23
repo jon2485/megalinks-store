@@ -7,6 +7,7 @@ import {one,stmt,parse,db,now,assert,audit,uid,hash} from './server';
 import {Row} from './shared';
 import {dispatchDue} from './scheduled-approval';
 import {freeSlotSql} from './supplier-stock';
+import {poolFreeSlotSql,poolUsedSql,poolEndedError,sitePoolOf} from './supplier-pool';
 import {DEFAULT_SUPPLIER_EMAIL} from './supplier-presentation';
 import {supplierFollowUp} from './article-reopen';
 export function supplierSequenceLabel(sequence:number,total:number|null){return total===null?`כתבה מספר ${sequence}`:`כתבה ${sequence} מתוך ${total}`;}
@@ -41,24 +42,33 @@ export async function dispatchArticle(article:Row,actor:Row,origin:string){
  }
  const token=demo?'':uid()+uid(),link=demo?origin+'/supplier-workspace':origin+'/supplier/'+token;
  const mailId='email:supplier:'+article.id,mail={to:email,subject:'',text:'',button:{label:'החזרת קישור הכתבה שפורסמה',url:link},attach_article:article.id,attach_images:true,demo:!!demo};
+ // Supplier stock pool (owner, 23.11.2026): a site of a supplier with a pool takes a place in the supplier's pool
+ // instead of the site's own stock. The site allocation is still written (site numbering and history), with the
+ // pool size as its stock snapshot, so the article is never billed monthly.
+ const pool=sitePoolOf(supplier,w);
  try{
+  const seqFrom=pool?'supplier_pool_allocations':'supplier_dispatch_allocations',totalCol=pool?'pool_total':'stock_total';
   const statements=[articleGuard(article),
    // Existing deliveries seed the counter once, so adding this feature does
    // not restart a site's previously sent article count at zero.
    stmt(`INSERT OR IGNORE INTO supplier_dispatch_counters(website_id,demo,sent_count) SELECT ?,?,COUNT(*) FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') WHERE j.kind='supplier_publication' AND j.status IN ('succeeded','demo','completed','demo_completed') AND a.website_id=? AND COALESCE(json_extract(j.data,'$.demo'),0)=?`,w.id,demo,w.id,demo),
-   stmt(`INSERT OR IGNORE INTO supplier_dispatch_allocations(article_id,website_id,demo,sequence,stock_total,supplier_email,created) SELECT ?,c.website_id,c.demo,${freeSlotSql('c.website_id','c.demo')},json_extract(w.data,'$.stock_total'),?,? FROM supplier_dispatch_counters c JOIN websites w ON w.id=c.website_id JOIN articles a ON a.website_id=w.id WHERE a.id=? AND a.status='approved' AND c.website_id=? AND c.demo=? AND (json_extract(w.data,'$.stock_total') IS NULL OR c.sent_count<CAST(json_extract(w.data,'$.stock_total') AS INTEGER))`,article.id,email,stamp,article.id,w.id,demo),
+   ...(pool?[stmt(`INSERT OR IGNORE INTO supplier_pool_allocations(article_id,supplier_id,demo,sequence,pool_total,created) SELECT a.id,s.id,${demo},${poolFreeSlotSql('s.id',demo)},CAST(json_extract(s.data,'$.stock_pool') AS INTEGER),? FROM records s JOIN articles a ON a.id=? WHERE s.id=? AND s.kind='supplier' AND a.status='approved' AND json_extract(s.data,'$.stock_pool') IS NOT NULL AND ${poolUsedSql('s.id',demo)}<CAST(json_extract(s.data,'$.stock_pool') AS INTEGER)`,stamp,article.id,supplier!.id)]:[]),
+   pool
+    ?stmt(`INSERT OR IGNORE INTO supplier_dispatch_allocations(article_id,website_id,demo,sequence,stock_total,supplier_email,created) SELECT ?,c.website_id,c.demo,${freeSlotSql('c.website_id','c.demo')},p.pool_total,?,? FROM supplier_dispatch_counters c JOIN supplier_pool_allocations p ON p.article_id=? AND p.created=? WHERE c.website_id=? AND c.demo=?`,article.id,email,stamp,article.id,stamp,w.id,demo)
+    :stmt(`INSERT OR IGNORE INTO supplier_dispatch_allocations(article_id,website_id,demo,sequence,stock_total,supplier_email,created) SELECT ?,c.website_id,c.demo,${freeSlotSql('c.website_id','c.demo')},json_extract(w.data,'$.stock_total'),?,? FROM supplier_dispatch_counters c JOIN websites w ON w.id=c.website_id JOIN articles a ON a.website_id=w.id WHERE a.id=? AND a.status='approved' AND c.website_id=? AND c.demo=? AND (json_extract(w.data,'$.stock_total') IS NULL OR c.sent_count<CAST(json_extract(w.data,'$.stock_total') AS INTEGER))`,article.id,email,stamp,article.id,w.id,demo),
    stmt('UPDATE supplier_dispatch_counters SET sent_count=sent_count+1 WHERE website_id=? AND demo=? AND EXISTS(SELECT 1 FROM supplier_dispatch_allocations a WHERE a.article_id=? AND a.created=?)',w.id,demo,article.id,stamp),
-   stmt(`UPDATE jobs SET status=?,data=json_set(?,'$.delivery','supplier_portal','$.supplier_sequence',(SELECT sequence FROM supplier_dispatch_allocations WHERE article_id=?),'$.supplier_stock_total',(SELECT stock_total FROM supplier_dispatch_allocations WHERE article_id=?)),updated=? WHERE id=? AND EXISTS(SELECT 1 FROM supplier_dispatch_allocations WHERE article_id=?)`,demo?'demo':'succeeded',JSON.stringify(data),article.id,article.id,stamp,id,article.id),
-   stmt(`UPDATE articles SET status='sent',version=version+1,updated=?,data=json_set(data,'$.supplier_sent_at',COALESCE(json_extract(data,'$.supplier_sent_at'),(SELECT created FROM supplier_dispatch_allocations WHERE article_id=articles.id)),'$.supplier_id',?,'$.supplier_name',?,'$.supplier_email',?,'$.supplier_sequence',(SELECT sequence FROM supplier_dispatch_allocations WHERE article_id=?),'$.supplier_stock_total',(SELECT stock_total FROM supplier_dispatch_allocations WHERE article_id=?)) WHERE id=? AND status='approved' AND EXISTS(SELECT 1 FROM supplier_dispatch_allocations WHERE article_id=?)`,stamp,data.supplier_id,data.supplier_name,email,article.id,article.id,article.id,article.id),
+   // The number the supplier sees: the pool place ("3 מתוך 100") for a pool site, else the site's stock place.
+   stmt(`UPDATE jobs SET status=?,data=json_set(?,'$.delivery','supplier_portal','$.supplier_sequence',(SELECT sequence FROM ${seqFrom} WHERE article_id=?),'$.supplier_stock_total',(SELECT ${totalCol} FROM ${seqFrom} WHERE article_id=?),'$.supplier_pool',${pool?1:0}),updated=? WHERE id=? AND EXISTS(SELECT 1 FROM supplier_dispatch_allocations WHERE article_id=?)`,demo?'demo':'succeeded',JSON.stringify(data),article.id,article.id,stamp,id,article.id),
+   stmt(`UPDATE articles SET status='sent',version=version+1,updated=?,data=json_set(data,'$.supplier_sent_at',COALESCE(json_extract(data,'$.supplier_sent_at'),(SELECT created FROM supplier_dispatch_allocations WHERE article_id=articles.id)),'$.supplier_id',?,'$.supplier_name',?,'$.supplier_email',?,'$.supplier_sequence',(SELECT sequence FROM ${seqFrom} WHERE article_id=?),'$.supplier_stock_total',(SELECT ${totalCol} FROM ${seqFrom} WHERE article_id=?),'$.supplier_pool',${pool?1:0}) WHERE id=? AND status='approved' AND EXISTS(SELECT 1 FROM supplier_dispatch_allocations WHERE article_id=?)`,stamp,data.supplier_id,data.supplier_name,email,article.id,article.id,article.id,article.id),
    stmt(`INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) SELECT ?,?,'email','requested',json_set(?,'$.subject',?,'$.text',?),?,? FROM supplier_dispatch_allocations WHERE article_id=?`,mailId,article.user_id,JSON.stringify(mail),'מאמר חדש לפרסום: '+article.title,article.title+'\nאתר: '+w.name+(sellerOwner?'\n\nאפשר לעקוב אחרי כל הכתבות, היתרות והמלאי באזור שלכם באתר: '+origin+'/purchased/selling':''),stamp,stamp,article.id)
   ];
   if(!demo)statements.push(stmt(`INSERT INTO tokens(id,hash,kind,user_id,resource,expires,used) SELECT ?,?,'supplier',?,?,?,0 WHERE EXISTS(SELECT 1 FROM supplier_dispatch_allocations WHERE article_id=?)`,uid(),await hash(token),actor.id,article.id,new Date(Date.now()+30*86400000).toISOString(),article.id));
   await db().batch(statements);
  }catch(e){await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.error',?),updated=? WHERE id=? AND status='writing'",'המסירה לא הושלמה; אפשר לנסות שוב',now(),id).run();throw e;}
  const allocation=await one('SELECT * FROM supplier_dispatch_allocations WHERE article_id=?',article.id);
- if(!allocation){data.error='מלאי הפרסומים באתר הסתיים, או שהכתבה אינה מאושרת. הגדילו את סה״כ המלאי ונסו שוב.';await stmt("UPDATE jobs SET status='blocked',data=?,updated=? WHERE id=?",JSON.stringify(data),now(),id).run();return {...data,status:'blocked'};}
+ if(!allocation){data.error=pool?poolEndedError(supplier?.name||''):'מלאי הפרסומים באתר הסתיים, או שהכתבה אינה מאושרת. הגדילו את סה״כ המלאי ונסו שוב.';await stmt("UPDATE jobs SET status='blocked',data=?,updated=? WHERE id=?",JSON.stringify(data),now(),id).run();return {...data,status:'blocked'};}
  await sendQueuedMail(mailId);
- await audit(actor,article.id,demo?'הכתבה הועברה לתור הדגמה של הספק':'הכתבה הועברה אוטומטית לפורטל הספק',{supplier_name:data.supplier_name,supplier_sequence:allocation.sequence,stock_total:allocation.stock_total});
+ await audit(actor,article.id,demo?'הכתבה הועברה לתור הדגמה של הספק':'הכתבה הועברה אוטומטית לפורטל הספק',{supplier_name:data.supplier_name,supplier_sequence:allocation.sequence,stock_total:allocation.stock_total,supplier_pool:pool});
  return parse(await one('SELECT * FROM jobs WHERE id=?',id));
 }
 
