@@ -2236,3 +2236,8 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **New supplier screen:** the same price group in every site card; sale fields go with the site create, tier prices right after; a site created in an earlier try keeps its id so a retry never creates it twice; summary chips "מבצע ₪150" / "מחיר ידני לרמה".
 - **Checked locally (fictional data, local tiers set to 10% / 20% for the demo):** new site saved with sale ₪150 + VIP ₪170 (DB checked); existing site pcmag: manual regular price ₪333 saved after the price warning was confirmed. Screenshots scratchpad `new-supplier/prices-*.png`, `edit-*.png`.
 - **Tests:** tsc, build, pricing-integration, exchanges, supplier-stock-pool, the 3 Railway tests pass. admin-pricing-save-contract, admin-website-save-contract (stops at "סה״כ מלאי"), catalog-review-actions, catalog-workspace-actions, personal-price-editor-actions fail the same way without this change.
+
+## 23.11.2026: "העברה לפח" did nothing on the phone (on `claude/supplier-types-20261123`)
+- **Cause:** on the phone an admin order opens as a sheet (`.om-sheet-layer`, z-index 95 in `orders-sky.css`), and windows open at z-index 50, so the trash confirmation (and "צירוף חשבונית" from the same sheet) opened behind it.
+- **Fix (`app/admin-dialogs.css`):** while a sheet is open (`body:has(.om-sheet-layer)`), windows, menus, selects, popovers and toasts go to z-index 120. Nothing else changes.
+- **Checked locally (fictional abandoned order #1007, backdated 30 days):** phone and desktop: the window opens on top, the button is reachable, the order moves to the trash (trash 1); restored and checked again on desktop. Screenshot scratchpad `trash/fixed-phone.png`. order-trash and the 3 Railway tests pass.
