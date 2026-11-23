@@ -17,7 +17,8 @@ const testable=['ai','wordpress','images','pixabay','invoices'];
 const providerLabels:Record<string,string>={openai:'OpenAI',gemini:'Google Gemini',groq:'Groq',grok:'xAI / Grok',resend:'Resend',webhook:'Webhook'};
 const ready=(c:Row)=>!!(c.enabled&&c.has_secret);
 const shortUrl=(raw:string)=>{try{const u=new URL(raw);return u.host+(u.pathname==='/'?'':u.pathname.replace(/\/$/,''));}catch{return raw;}};
-const cols={gridTemplateColumns:'minmax(240px,1.7fr) minmax(140px,1fr) minmax(150px,1fr) 120px 200px'};
+// Flexible columns so "הגדרה" and "בדיקה" stay inside the card from 1100px up (owner 23.11.2026).
+const cols={gridTemplateColumns:'minmax(180px,1.7fr) minmax(90px,.9fr) minmax(120px,1fr) 104px auto'};
 type Filter='all'|'need'|'ok';
 
 export function AdminConnectionsPage({ctx}:{ctx:Ctx}){

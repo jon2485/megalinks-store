@@ -39,6 +39,8 @@
 .sys-connections.sys-connections.sv2-fin .scx-field input{width:100%;height:40px!important;min-height:40px!important;padding:0 12px!important;border:0!important;border-radius:10px!important;background:var(--sv-well)!important;box-shadow:inset 0 0 0 1px #d2d2d7!important;font:inherit;font-size:15px;color:var(--sv-ink)}
 .sys-connections.sys-connections.sv2-fin .scx-field input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--sv-blue)!important;background:#fff!important}
 .sys-connections.sys-connections.sv2-fin .scx-row .sv2-rowact{justify-content:flex-start}
+.sys-connections.sys-connections.sv2-fin .scx-row>*{min-width:0}
+.sys-connections.sys-connections.sv2-fin .scx-row .sv2-rowact{flex-wrap:wrap}
 .sys-connections.sys-connections.sv2-fin .scx-suffix{position:relative;display:block}
 .sys-connections.sys-connections.sv2-fin .scx-suffix input{padding-inline-end:30px}
 .sys-connections.sys-connections.sv2-fin .scx-suffix i{position:absolute;inset-block:0;inset-inline-end:12px;display:grid;place-items:center;font-style:normal;font-size:14px;color:var(--sv-mute);pointer-events:none}

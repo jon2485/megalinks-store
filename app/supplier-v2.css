@@ -338,3 +338,12 @@ select.sv2-native{display:block;width:100%;height:44px;margin-top:6px;padding:0 
 .sv2-pill.p-exch{background:#f1edff;color:#5b21b6}
 .sv2-billcell{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .sv2-billcell .sv2-ml{flex-basis:100%}
+.sv2-billcell .sv2-pill{white-space:normal;max-width:100%;line-height:1.35}
+/* phone and narrow screens: supplier type and sites side by side, the payment type on its own full line */
+@media(max-width:1100px){.sv2-hub .sv2-billcell{grid-column:1/-1;order:1}.sv2-hub .sv2-actcell{order:2}.sv2-hub .sv2-billcell .sv2-pill{white-space:nowrap}}
+.sv2-hub .sv2-tr>*{min-width:0}
+
+/* the sites and articles tables of one supplier: cells may shrink, the edit button and the menu wrap before they leave the card */
+.sv2-sitestable :is(.sv2-tr,.sv2-th)>*{min-width:0}
+.sv2-sitestable .sv2-tr>*{overflow-wrap:anywhere}
+.sv2-sitestable .sv2-rowact{flex-wrap:wrap}

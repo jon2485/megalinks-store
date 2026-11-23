@@ -81,8 +81,9 @@ function SitesTab({ctx,supplier:s,guard,kit}:{ctx:Ctx;supplier:Row;guard:Guard;k
  const close=()=>{guard.mark('supplier-site',false);saveAdminViewState('supplier-editor:'+s.id,{site:'',tab:'sites',all:false});setEditing('');ctx.refresh();};
  if(editing){const site=editing==='new'?null:state.data?.selected_site||sites.find(w=>w.id===editing);return <section className="sv2-card sv2-editor"><header><h3>{editing==='new'?'אתר חדש לספק':'עריכה מלאה · '+(site?.name||'')}</h3><button type="button" className="sv2-btn quiet" onClick={()=>guard.confirm(close)}><ArrowRight size={16} aria-hidden="true"/>חזרה לאתרים</button></header>{editing!=='new'&&!site?<p className="sv2-loading" role="status">טוען…</p>:<kit.CatalogWebsiteForm key={editing} ctx={ctx} site={site} defaultSupplier={s.id} presentation="supplier" onDirtyChange={(dirty:boolean)=>guard.mark('supplier-site',dirty)} close={close}/>}</section>;}
  const quick=(w:Row)=>ctx.open({kind:'admin-finance',title:'עריכה מהירה',description:w.name+' · המחירים לפני מע״מ',render:(c:()=>void)=><kit.SiteQuickEdit ctx={ctx} site={w} close={c}/>});
- const cols={gridTemplateColumns:'minmax(220px,2fr) 110px 110px 100px 120px 96px 150px'};
- return <section className="sv2-card">
+ // Flexible columns so "עריכה" and the menu stay inside the card from 1100px up (owner 23.11.2026).
+ const cols={gridTemplateColumns:'minmax(150px,2fr) minmax(64px,1fr) minmax(64px,1fr) minmax(64px,1fr) 76px 64px auto'};
+ return <section className="sv2-card sv2-sitestable">
   <div className="sv2-tools"><label className="sv2-search"><Search size={17} aria-hidden="true"/><input value={query} placeholder="חיפוש באתרי הספק" aria-label="חיפוש באתרי הספק" onChange={e=>{setQuery(e.target.value);setPage(1);}}/></label><button type="button" className="sv2-btn tint" onClick={()=>ctx.open({kind:'admin-finance',title:'צירוף אתרים לספק',description:'בחר אתרים מהקטלוג שיעברו לספק '+s.name+'.',render:(c:()=>void)=><kit.SiteAttach ctx={ctx} supplier={s} close={c}/>})}><Link2 size={16} aria-hidden="true"/>צירוף אתרים</button><button type="button" className="sv2-btn primary" onClick={()=>edit('new')}><Plus size={16} aria-hidden="true"/>אתר חדש</button></div>
   {!current?<p className="sv2-loading" role="status">טוען אתרים…</p>:!sites.length?<div className="sv2-empty"><h3>{query?'לא נמצאו אתרים לחיפוש':'עדיין אין אתרים אצל הספק'}</h3><p>אפשר לצרף אתרים קיימים מהקטלוג או להוסיף אתר חדש.</p></div>:<>
    <div className="sv2-th" style={cols} aria-hidden="true"><span>אתר</span><span>מחיר באתר</span><span>עלות</span><span>רווח</span><span>כתבות החודש</span><span>מצב</span><span/></div>
@@ -118,7 +119,7 @@ function ArticlesTab({ctx,supplier:s,state}:{ctx:Ctx;supplier:Row;state:Row}){
  const term=q.trim().toLowerCase(),rows=all.filter(a=>(site==='all'||a.website_id===site)&&(!term||[a.title,a.topic,a.anchor,a.number,a.website_name].join(' ').toLowerCase().includes(term)));
  const waiting=rows.filter(a=>a.stage!=='published'),published=rows.filter(a=>a.stage==='published');
  const open=(a:Row)=>(e:React.MouseEvent)=>{if(!plain(e))return;e.preventDefault();saveAdminViewState('content-parent','admin-articles');ctx.go('admin-article/'+a.id);};
- const cols={gridTemplateColumns:'36px minmax(220px,2fr) 110px 100px minmax(170px,1.3fr) minmax(170px,1.3fr) 100px'};
+ const cols={gridTemplateColumns:'24px minmax(120px,2fr) minmax(70px,1fr) 76px minmax(100px,1.3fr) minmax(100px,1.3fr) 76px'};
  const row=(a:Row,n:number)=>{const pairs=[[a.anchor,a.target_url],[a.anchor_2,a.target_url_2]].filter(([t,u])=>t||u);return <div key={a.id} className="sv2-tr" style={cols}>
   <span className="sv2-n">{n}</span>
   <div className="sv2-title"><a href={'/admin-article/'+a.id} onClick={open(a)} title="פתיחת הכתבה המלאה בעורך">{a.title||a.topic||'כתבה ללא כותרת'}</a><small>הזמנה <bdi>{orderNo(a.number)}</bdi></small></div>
@@ -131,7 +132,7 @@ function ArticlesTab({ctx,supplier:s,state}:{ctx:Ctx;supplier:Row;state:Row}){
  if(state.error&&!state.data)return <section className="sv2-card"><div className="sv2-empty"><h3>הכתבות לא נטענו</h3><p>{state.error}</p></div></section>;
  if(!state.data)return <section className="sv2-card"><p className="sv2-loading" role="status">טוען כתבות…</p></section>;
  const shownPublished=published.slice(0,more);
- return <section className="sv2-card">
+ return <section className="sv2-card sv2-sitestable">
   <div className="sv2-tools"><div className="sv2-seg" role="tablist" aria-label="סינון לפי אתר"><button type="button" role="tab" aria-selected={site==='all'} className={site==='all'?'on':''} onClick={()=>setSite('all')}>כל האתרים<b>{all.length}</b></button>{sites.map(([id,name])=><button key={id} type="button" role="tab" aria-selected={site===id} className={site===id?'on':''} onClick={()=>setSite(id)}>{name}<b>{all.filter(a=>a.website_id===id).length}</b></button>)}</div><label className="sv2-search"><Search size={17} aria-hidden="true"/><input value={q} placeholder="חיפוש כתבה" aria-label="חיפוש כתבה" onChange={e=>setQ(e.target.value)}/></label></div>
   {!rows.length?<div className="sv2-empty"><h3>אין כתבות{site!=='all'||term?' לסינון הזה':' שנשלחו לספק'}</h3><p>כתבות יופיעו כאן מרגע שהן נשלחות לספק לפרסום.</p></div>:<>
    <div className="sv2-th" style={cols} aria-hidden="true"><span>#</span><span>כתבה</span><span>אתר</span><span>נשלחה</span><span>ביטוי וקישור</span><span>הכתבה שפורסמה</span><span>פורסמה</span></div>
