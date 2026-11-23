@@ -2016,3 +2016,13 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Checked here:** `tsc`, build, tests resend-email, article-reopen, supplier-thread, supplier-mail, publication-scheduling, fix-request-mail, supplier-article-request, rich-docx, delivery-reason, supplier-link-check, writing-workflow pass.
 - **Sheet (23.11):** all 150 Leos Media rows (H2102:H2251) now "לאוס מדיה - ספונסרד", column AH = its supplier id; the "לאוס מדיה" card is left with no sites. Best Links is "להשלמה" because its e-mail is the owner's address and it has no contact name.
 - **To check on Staging:** a real supplier e-mail (subject, attachments), the categories search with a real iPhone keyboard, a manual-review link end to end.
+
+## 23.11.2026: compact admin order cards on the phone (owner chose proposal A)
+- **Branch:** `claude/admin-orders-proposal-20261123` (from `0e81158`). Local commit only, no push.
+- **What changed (CSS only):** at the end of `app/orders-v2.css`, a phone block (`max-width:640px`) for `.sv2-orders:not(.cfo) .sv2-olist .sv2-orow`. The card is a 4-column grid: avatar · name and "#number · date · site" · amount · "…" in the corner. Line 3 holds the payment pill, "פורסם 0/1" and the chevron, or the action button ("בדיקת הדיווח" / "טיפול בביטול"). `.sv2-who` and `.sv2-rowact` use `display:contents`. The small note under the pill (`.sv2-sub`, e.g. "אסמכתא 111") is hidden on the phone. At 374px and below, line 3 starts under the avatar.
+- **`app/admin-mobile-fixes.css`:** dropped the grid-column numbers of `.sv2-paycell` (1/3) and `.sv2-pubcell` (3); the rest of those rules stays.
+- **Why:** the owner said the order cards had too much empty space. Cards went from 161–181px to 101–123px, showing 4–5 orders instead of about 2.5.
+- **Unchanged (checked pixel for pixel):** the desktop list at 1280 and the customer file's orders tab (`.cfo`) at 390 and 1280.
+- **Checked locally (fictional data, ports 8840/5240):** 390x844 and 360x800 with no horizontal scroll. The "…" menu, the chevron (opens the sheet), "בדיקת הדיווח" (opens the report dialog) and "טיפול בביטול" (opens the order) all work. `tsc` and build pass. `cart-checkout-actions`, `checkout-phone-actions` and `cart-add-feedback` pass. The tests that mention the orders screens (`admin-complete-preservation`, `admin-foundation-stage-a`, `admin-glass-actions`, `admin-order-history`, `admin-orders-navigation-contract`, `finance-siblings-browser`, `orders-approved-browser`) fail before and after with the same errors (.gitignore check, UserSettings check, `./workspace` import, missing package path). They fail before reaching these styles.
+- **Images:** scratchpad `admin-orders/final-orders-list.png` (outside the repo).
+- **Before upload:** nothing temporary in the repo.
