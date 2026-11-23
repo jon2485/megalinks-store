@@ -249,3 +249,5 @@ body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .
  body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor) [data-slot=dialog-header]:before{display:none}
 }
 @media(max-width:560px) and (prefers-reduced-motion:reduce){body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor){transition:none}}
+/* Owner 23.11.2026: a delete confirmation shows a red trash can instead of the blue-violet badge. */
+body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]):has([data-variant=destructive]):not(:has(form,input,textarea,select)) .admin-dialog-badge{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 8px 20px rgba(220,38,38,.28)}
