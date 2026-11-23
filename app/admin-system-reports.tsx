@@ -35,7 +35,7 @@ const siteCols={gridTemplateColumns:'minmax(0,1.5fr) 92px 118px minmax(0,1fr)'};
 
 export function AdminReportsPage({ctx}:{ctx:Ctx}){
  const state=useData('admin/reports',ctx.revision),data=state.data;
- const exportReport=()=>exportSpreadsheet('postflow-reports.xlsx',[['חודש','הזמנות','תשלומים בש״ח'],...(data?.byMonth||[]).map((r:Row)=>[r.month,r.count,r.total/100])]);
+ const exportReport=()=>exportSpreadsheet('megalinks-reports.xlsx',[['חודש','הזמנות','תשלומים בש״ח'],...(data?.byMonth||[]).map((r:Row)=>[r.month,r.count,r.total/100])]);
  return <section className="orders-match-screen om-finance sys-reports sv2 sv2-orders sv2-fin" dir="rtl">
   <OrdersAreaHead ctx={ctx} current="admin-reports" title="דוחות וביצועים" sub="הכנסות, הזמנות וכתבות מתוך הפעילות במערכת." action={<div className="om-top-actions"><OrderExport run={exportReport} label="הורדת דוח" disabled={!data}/></div>}/>
   {!data?(state.error

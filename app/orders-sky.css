@@ -434,3 +434,5 @@ html:not([data-admin-theme=light]) .orders-sky .orders-match-screen .om-summary>
  .orders-sky .orders-match-screen:is(.om-sup-directory,.om-sup-requests) .om-row>:nth-child(2){justify-self:start}
  .orders-sky .orders-match-screen:is(.om-sup-directory,.om-sup-requests) .om-row>.om-expand{grid-row:4}
 }
+/* 24.11.2026 Articles list: the article title and the supplier name are Hebrew text, not addresses; read them right to left (each line still follows its own language). */
+.orders-sky .orders-match-screen.om-content .om-sites-text>.om-site,.orders-sky .orders-match-screen.om-content .om-amount.om-content-side{direction:rtl;unicode-bidi:plaintext}

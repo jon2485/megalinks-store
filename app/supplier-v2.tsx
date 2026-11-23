@@ -46,14 +46,16 @@ const packPill=(p:Row)=>p.status==='done'?<span className="sv2-pill p-paid"><i/>
 
 /* ---------- Supplier page shell: crumb, hero, four tabs ---------- */
 export type SupplierTab='sites'|'articles'|'billing'|'details';
-export function SupplierV2({ctx,id,tab,guard,kit}:{ctx:Ctx;id:string;tab:SupplierTab;guard:Guard;kit:SupplierKit}){
+export function SupplierV2({ctx,id,tab:startTab,guard,kit}:{ctx:Ctx;id:string;tab:SupplierTab;guard:Guard;kit:SupplierKit}){
+ // 24.11.2026 'sites' and 'details' share one address, so switching between them changes the tab here instead of navigating to the same address.
+ const[tab,setTab]=useState<SupplierTab>(startTab);
  const params=new URLSearchParams({page:'1',q:'',all:'0',selected:''}),state=useData('admin/suppliers/'+encodeURIComponent(id)+'?'+params,ctx.revision),s:Row|undefined=state.data?.supplier;
  const bill=useData('admin/supplier-billing/'+encodeURIComponent(id),ctx.revision),b:Row|undefined=bill.data;
  const arts=useData('admin/suppliers/'+encodeURIComponent(id)+'/articles',ctx.revision),articles:Row[]=arts.data?.articles||[];
  // Exchange suppliers (owner 23.11.2026): "החלפות" takes the place of "התחשבנות", since they are never paid.
  const ex=useData('admin/exchanges?supplier='+encodeURIComponent(id),ctx.revision),exchange=!!ex.data?.is_exchange;
  const go=(page:string,before?:()=>void)=>guard.confirm(()=>{before?.();ctx.go(page);});
- const toTab=(t:SupplierTab)=>t==='articles'?go('admin-supplier-articles/'+id):t==='billing'?go('admin-supplier-billing/'+id):go('admin-supplier/'+id,()=>saveAdminViewState('supplier-editor:'+id,{site:'',tab:t,all:false}));
+ const toTab=(t:SupplierTab)=>t==='articles'?go('admin-supplier-articles/'+id):t==='billing'?go('admin-supplier-billing/'+id):(tab==='sites'||tab==='details')?guard.confirm(()=>{saveAdminViewState('supplier-editor:'+id,{site:'',tab:t,all:false});setTab(t);}):go('admin-supplier/'+id,()=>saveAdminViewState('supplier-editor:'+id,{site:'',tab:t,all:false}));
  if(state.error&&!s)return <div className="sv2"><div className="sv2-empty"><h3>הספק לא נטען</h3><p>{state.error}</p><button type="button" className="sv2-btn quiet" onClick={()=>ctx.go('admin-suppliers')}>חזרה לכל הספקים</button></div></div>;
  if(!s)return <div className="sv2"><p className="sv2-loading" role="status">טוען את הספק…</p></div>;
  const month=new Date().toISOString().slice(0,7),sentMonth=articles.filter(a=>String(a.supplier_sent_at||'').startsWith(month)).length,orders=b?(s.billing==='stock'?b.stock.packages.length:s.billing==='mixed'||s.billing==='pool'?b.stock.packages.length+b.orders.length:b.orders.length):0,pool:Row|undefined=state.data?.pool,billing=s.billing;
@@ -358,7 +360,7 @@ export function SettlementsV2({ctx,guard,kit,invoices=false,embedded=false}:{ctx
  const params=new URLSearchParams({q:v.q,month:v.month,status:'all',stage:v.stage||'all',supplier:v.supplier,history:'0',invoices:invoices?'1':'0',pay:invoices?'all':v.pay||'unpaid',page:String(v.page)}),state=useData('admin/supplier-settlements?'+params,ctx.revision),current=state.data?.request_key===params.toString(),rows:Row[]=current?state.data.rows:[],sum:Row=state.data?.summary||{},names:Row=state.data?.supplier_options||{};
  const go=(page:string)=>guard.confirm(()=>ctx.go(page));
  const cards:[string,string,Row|undefined,string][]=[['invoice','לתשלום עכשיו',sum.invoice,'התקבלה חשבונית'],['awaiting','ממתינים לחשבונית',sum.awaiting,'החודש נסגר, אין חשבונית'],['open','הזמנות פתוחות',sum.open,'החודש עדיין רץ'],['paid','שולמו',sum.paid_stage,'כל התשלומים שבוצעו']];
- const cols={gridTemplateColumns:'minmax(200px,1.6fr) 100px 130px minmax(140px,1fr) 170px 210px'};
+ const cols={gridTemplateColumns:'minmax(150px,1.6fr) 90px 120px minmax(110px,1fr) 150px 200px'};
  const body=<>
   {!invoices&&<div className="sv2-sum is-4">{cards.map(([k,label,c,hint])=><button key={k} type="button" className={'sv2-card sv2-pad sv2-sumbtn'+(v.stage===k?' on':'')} aria-pressed={v.stage===k} onClick={()=>set({stage:v.stage===k?'all':k,pay:'all',page:1})}><span className="lbl">{label}</span><b className="big">{money(Number(c?.amount||0))}</b><span className="hint">{Number(c?.count||0)} הזמנות · {hint}</span></button>)}</div>}
   <section className="sv2-card">
