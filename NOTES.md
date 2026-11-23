@@ -2127,3 +2127,10 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
   - Orders/admin/payment/customer/agency tests give the same results as on `0e81158` (same failures, same reasons).
 - **Seen, not changed:** at 1280 the desktop orders list (and the opened order in "דיווחי תשלום") is cut on the left, and the action column is outside the screen. This was the same on `0e81158`. At 1440 it is fine.
 - **Before upload:** nothing temporary in the repo. Local test data only: 9 orders (#1300–#1308 of the fictional customer) were aged to 20–28 days in the scratchpad database.
+
+## 23.11.2026: orders work merged (`94ae83f`)
+- **Merged `a0c2414`** (agent branch `claude/admin-orders-proposal-20261123`): Option A compact phone order cards (`5ab3d62`), the new payment-report box (`d460ed5`), the trash for abandoned orders (`a0c2414`, `trashed_at`/`trashed_by` in order data, no migration; `liveOrderSql()` in `lib/order-trash-sql.ts`, endpoints in `lib/order-trash.ts`; test `tests/order-trash.mjs`). Conflicts: `app/dialog-badge.tsx` (kept the agent's pattern `/הסר[הת]|מחיק[הת]|לפח/`), NOTES (both kept).
+- **Trash confirmations** look like the coupon delete: red trash can, centred card on phones (`order-trash-confirm` class in `app/order-trash-dialog.tsx`, rules at the end of `app/admin-dialogs.css`).
+- **Checked on the merged branch:** tsc, build, order-trash, coupons-admin, payment-reports, monthly-order-lifecycle, the 3 Railway tests, supplier-mail, supplier-thread, catalog-home-layout, catalog-home-actions pass.
+- **Open for the owner:** month close order cards on phones are still ~180px (different component `.om-row`); a coupon use counted at checkout stays counted while its order is in the trash (restore keeps it consistent); at 1280px the desktop orders list is cut on the left (pre-existing, same on 8d6d630).
+- Not pushed, not deployed.

@@ -251,3 +251,6 @@ body:has(.admin-design-v172) [data-slot=dialog-content] .personal-price-editor .
 @media(max-width:560px) and (prefers-reduced-motion:reduce){body:has(.admin-design-v172) [data-slot=dialog-content]:has(.personal-price-editor){transition:none}}
 /* Owner 23.11.2026: a delete confirmation shows a red trash can instead of the blue-violet badge. */
 body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]):has([data-variant=destructive]):not(:has(form,input,textarea,select)) .admin-dialog-badge{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 8px 20px rgba(220,38,38,.28)}
+/* Owner 23.11.2026: "העברה לפח" confirmations look like the other delete confirmations: red trash can, and a centred card on phones. */
+body:has(.admin-design-v172) [data-slot=dialog-content]:has(.order-trash-confirm) .admin-dialog-badge{background:linear-gradient(135deg,#ef4444,#dc2626);box-shadow:0 8px 20px rgba(220,38,38,.28)}
+@media(max-width:640px){body:has(.admin-design-v172) [data-slot=dialog-content]:has(.order-trash-confirm):not(#dlg-x){inset:auto!important;left:50%!important;top:50%!important;translate:none!important;transform:translate(-50%,-50%)!important;width:calc(100vw - 32px)!important;max-width:400px!important;max-height:calc(100dvh - 32px)!important;margin:0!important;border-radius:22px!important}}

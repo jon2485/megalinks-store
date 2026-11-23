@@ -19,7 +19,7 @@ function OrderTrashConfirm({ctx,order,count,close,done}:{ctx:Ctx;order:Row|null;
  const move=async()=>{if(lock.current)return;lock.current=true;setBusy(true);setError('');
   try{await ctx.run(()=>api('admin/orders/trash','POST',order?{ids:[order.id]}:{all_abandoned:true,expected:count}),order?'ההזמנה הועברה לפח':many(count)+' הועברו לפח');close();done?.();}
   catch(e){setError((e as Error).message);}finally{lock.current=false;setBusy(false);}};
- return <section className="om-dialog" dir="rtl" aria-busy={busy}>
+ return <section className="om-dialog order-trash-confirm" dir="rtl" aria-busy={busy}>
   <section className="om-dialog-part">
    {order?<p className="om-note">ההזמנה <bdi>{String(order.number)}</bdi>{order.user_name?<> של {String(order.user_name)}</>:null} תעבור לפח.</p>
     :<p className="om-note">{many(count)} שלא שולמו ואין להן דיווח תשלום כבר יותר מ-{ORDER_ABANDONED_DAYS} ימים יעברו לפח.</p>}
