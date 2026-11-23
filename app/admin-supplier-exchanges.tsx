@@ -26,7 +26,7 @@ export function AdminSupplierExchanges({ctx,supplierId,state}:{ctx:Ctx;supplierI
    <button type="button" className="sv2-btn quiet sm" onClick={()=>adjust(-1)} disabled={d.balance<1}><Minus size={15} aria-hidden="true"/>הסרת החלפה</button>
    <button type="button" className="sv2-btn quiet sm" onClick={settings}>ברירת מחדל: {money(d.default_cents)}</button></div>
   <div className="axc-tiles">
-   <div><small>פרסם אצלו</small><b>{d.published}</b><i>כתבות שאומתו</i></div>
+   <div><small>פורסמו אצל הספק</small><b>{d.published}</b><i>כתבות שאומתו</i></div>
    <div><small>לקח בתמורה</small><b>{d.taken}</b><i>{rows.filter(r=>r.target_status==='published').length} פורסמו</i></div>
    <div className="is-blue"><small>יתרה פתוחה</small><b>{d.balance}</b><i>עוד לא בחר אתר</i></div>
    <div><small>עלות ממוצעת להחלפה</small><b>{d.average_cents==null?'—':money(d.average_cents)}</b><i>רק למנהל</i></div>
