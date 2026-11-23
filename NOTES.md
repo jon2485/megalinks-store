@@ -2026,3 +2026,19 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Checked locally (fictional data, ports 8840/5240):** 390x844 and 360x800 with no horizontal scroll. The "…" menu, the chevron (opens the sheet), "בדיקת הדיווח" (opens the report dialog) and "טיפול בביטול" (opens the order) all work. `tsc` and build pass. `cart-checkout-actions`, `checkout-phone-actions` and `cart-add-feedback` pass. The tests that mention the orders screens (`admin-complete-preservation`, `admin-foundation-stage-a`, `admin-glass-actions`, `admin-order-history`, `admin-orders-navigation-contract`, `finance-siblings-browser`, `orders-approved-browser`) fail before and after with the same errors (.gitignore check, UserSettings check, `./workspace` import, missing package path). They fail before reaching these styles.
 - **Images:** scratchpad `admin-orders/final-orders-list.png` (outside the repo).
 - **Before upload:** nothing temporary in the repo.
+
+## 23.11.2026: the customer's payment report in the admin order (owner approved the proposal)
+- **Branch:** `claude/admin-orders-proposal-20261123`, separate local commit after the compact cards. No push.
+- **What changed:**
+  - **`app/orders-modern.css`:** a block at the end, scoped to `.om-report-part.om-decision`, so only a report that is waiting changes. The block is a white card with a thin frame. The reported amount is large, then a framed list (payment date, report time, reference) and the note as a quiet info line. "איך הלקוח שילם?" is a segmented control, and the check is a framed row that turns blue. "אישור קבלת התשלום" is the one main button and "לא לאשר" is quiet. In the decline step, "דחיית הדיווח" is the main red button and "חזרה לאישור" is quiet.
+  - **"ניהול הזמנה":** while a report waits, it becomes a white second-level button (`.om-panel:has(.om-report-part.om-decision)`).
+  - **`app/payment-reports.tsx`:** in `ReportDecision` only, the pending heading got `<span className="om-report-state">ממתין לאישור</span>`.
+- **Kept:** every field and action. That includes "אחר" with its text field, the decline reason, the proof-file link and the duplicate-reference warning.
+- **Unchanged (pixel-compared at 390 and 1280):**
+  - the "דיווחי תשלום" list
+  - the refund dialog (its `.om-method` is not touched)
+  - the "בדיקת הדיווח" dialog from the orders list (`ReportReview`)
+  - a report that was already approved
+- **Checked locally (fictional data):** 390 and 1280 in four states: pending, ticked, "אחר" and the decline step. `tsc` and build pass. `payment-reports` passes. The three Railway tests pass. The seven orders/admin tests fail with the same errors as on `0e81158`.
+- **Seen, not changed:** at 1280 the opened order in "דיווחי תשלום" is cut at the left edge of the screen. This was the same before the change.
+- **Images:** scratchpad `admin-orders/final-payment-report.png`.
