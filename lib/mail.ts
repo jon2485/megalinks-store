@@ -109,12 +109,13 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    // answers the article's existing thread: same Gmail conversation, and never a second message with the same Message-ID
    // (Gmail drops a message whose Message-ID it already has).
    const ownThread='<supplier-article-'+a.id+'@';
-   const found=parse(firstMail?await one("SELECT data FROM jobs WHERE kind='email' AND id LIKE ? AND json_extract(data,'$.thread_id') IS NOT NULL ORDER BY created LIMIT 1",'email:supplier:'+a.id+':recalled:%'):await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
+   // D1 refuses a LIKE pattern longer than 50 bytes (an article id alone is 36), so prefixes are compared with substr.
+   const found=parse(firstMail?await one("SELECT data FROM jobs WHERE kind='email' AND substr(id,1,?)=? AND json_extract(data,'$.thread_id') IS NOT NULL ORDER BY created LIMIT 1",('email:supplier:'+a.id+':recalled:').length,'email:supplier:'+a.id+':recalled:'):await one("SELECT data FROM jobs WHERE id=? AND kind='email'",'email:supplier:'+a.id));
    // A thread id is used only if it is this article's own (it carries the article id): never another article's thread.
    const opened=found&&String(found.thread_id||'').startsWith(ownThread)?found:found?{...found,thread_id:undefined}:null;
    // A subject another article already used (a stock slot freed by a recall and given to this one) gets the article's
    // short code, so two articles never share a subject.
-   if(firstMail&&!opened?.thread_id){const taken=await one("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:supplier:%' AND id NOT LIKE ? AND json_extract(data,'$.thread_subject')=? LIMIT 1",'email:supplier:'+a.id+'%',unique);if(taken)unique+=' · '+String(a.id).replace(/[^\w]/g,'').slice(0,6).toUpperCase();}
+   if(firstMail&&!opened?.thread_id){const taken=await one("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:supplier:%' AND substr(id,1,?)<>? AND json_extract(data,'$.thread_subject')=? LIMIT 1",('email:supplier:'+a.id).length,'email:supplier:'+a.id,unique);if(taken)unique+=' · '+String(a.id).replace(/[^\w]/g,'').slice(0,6).toUpperCase();}
    if(firstMail&&opened?.thread_id){payload.thread={id:String(opened.thread_id),subject:String(opened.thread_subject||unique)};payload.subject='Re: '+payload.thread.subject;payload.headers={'In-Reply-To':payload.thread.id,References:payload.thread.id};}
    else if(firstMail){payload.thread={id:supplierThreadId(a.id,String(c.from||RESEND_TEST_FROM)),subject:unique};payload.subject=unique;payload.headers={'Message-ID':payload.thread.id};}
    else if(opened?.thread_id){payload.subject='Re: '+opened.thread_subject;payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
