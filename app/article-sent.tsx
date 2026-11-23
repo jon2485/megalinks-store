@@ -45,7 +45,7 @@ export default function ArticleSent({article:a,site:w,sentAt,scheduled,onView,on
 const inProcess:Record<string,[string,string]>={
  admin_review:['הכתבה נשלחה ונמצאת בבדיקה','הצוות שלנו בודק אותה לפני הפרסום. נעדכן אתכם במייל ובאזור האישי.'],
  approved:['הכתבה אושרה וממתינה לפרסום','בקרוב היא תישלח לאתר לפרסום. נעדכן אתכם במייל ובאזור האישי.'],
- sent:['הכתבה אצל האתר לפרסום','כשהכתבה תעלה לאוויר, תקבלו מייל עם הקישור.'],
+ sent:['הכתבה נשלחה לפרסום','כשהכתבה תעלה לאוויר, תקבלו מייל עם הקישור.'],
  scheduled:['הכתבה נקבעה לפרסום','היא שמורה ותעבור לבדיקה של הצוות שלנו בתאריך שבחרתם.'],
 };
 export function ArticleInProcess({status}:{status:string}){
