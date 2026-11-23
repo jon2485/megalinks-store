@@ -143,7 +143,7 @@ export function SupplierHub({ctx,confirm}:{ctx:Ctx;confirm:(run:()=>void)=>void}
   <SupplierAreaHead current="admin-suppliers" title="כל הספקים" sub='לחיצה על ספק פותחת את האתרים שלו. כל השאר בכפתור "פעולות".' go={go} action={<button type="button" className="sv2-btn primary lg" onClick={()=>go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button>}/>
   <section className="sv2-card">
    <div className="sv2-tools">
-    <div className="sv2-seg" role="tablist" aria-label="סוג ספק">{([['all','הכול',counts.all],['account','עם חשבון',counts.account],['manual','ידניים',counts.manual],['partial','להשלמה',counts.partial]] as [string,string,number][]).map(([k,l,n])=><button key={k} type="button" role="tab" aria-selected={v.type===k} className={v.type===k?'on':''} onClick={()=>set({type:k,page:1})}>{l}{n!=null&&<b>{n}</b>}</button>)}</div>
+    <div className="sv2-seg" role="tablist" aria-label="סוג ספק">{([['all','הכול',counts.all],['account','עם חשבון',counts.account],['manual','ידניים',counts.manual],['partial','להשלמה',counts.partial],['exchange','החלפות',counts.exchange]] as [string,string,number][]).map(([k,l,n])=><button key={k} type="button" role="tab" aria-selected={v.type===k} className={v.type===k?'on':''} onClick={()=>set({type:k,page:1})}>{l}{n!=null&&<b>{n}</b>}</button>)}</div>
     <label className="sv2-search"><Search size={17} aria-hidden="true"/><input value={v.search} placeholder="חיפוש ספק, מייל או אתר" aria-label="חיפוש ספק, מייל או אתר" onChange={e=>set({search:e.target.value,q:e.target.value.trim(),page:1})}/></label>
     <div className="sv2-seg" role="tablist" aria-label="סוג תשלום">{([['all','כל סוגי התשלום'],['monthly','חודשי'],['stock','מלאי']] as [string,string][]).map(([k,l])=><button key={k} type="button" role="tab" aria-selected={v.billing===k} className={v.billing===k?'on':''} onClick={()=>set({billing:k,page:1})}>{l}</button>)}</div>
    </div>
@@ -152,7 +152,7 @@ export function SupplierHub({ctx,confirm}:{ctx:Ctx;confirm:(run:()=>void)=>void}
     {rows.map(s=><div key={s.id} className="sv2-tr" style={cols}>
      <a className="sv2-who" href={'/admin-supplier/'+s.id} onClick={open(s)}><Av name={s.name}/><span><b dir="auto">{s.name}</b><small>{s.contact?<>{s.contact} · </>:s.kind==='partial'?'חסרים שם ואיש קשר · ':''}<bdi>{s.email}</bdi></small></span></a>
      <span><small className="sv2-ml">סוג ספק</small>{kindPill(s.kind)}</span>
-     <span><small className="sv2-ml">סוג תשלום</small>{billingPill(s.billing)}</span>
+     <span className="sv2-billcell"><small className="sv2-ml">סוג תשלום</small>{billingPill(s.billing)}{s.exchange&&s.billing!=='exchange'&&<span className="sv2-pill p-exch"><i/>+ אתרי החלפות</span>}</span>
      <span className="sv2-sites"><small className="sv2-ml">אתרים</small><b>{s.site_count}</b><small>{!s.site_count?'אין אתרים':s.paused_count?<><bdi>{s.active_count}</bdi> פעילים</>:s.site_count===1?'פעיל':'כולם פעילים'}</small></span>
      <span className="sv2-actcell"><DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="sv2-act" aria-label={'פעולות עבור '+s.name}>פעולות<span className="chev" aria-hidden="true"><ChevronLeft size={15}/></span></button></DropdownMenuTrigger><DropdownMenuContent className="sv2-menu" align="end" sideOffset={8}>
       <DropdownMenuItem className="is-first" onSelect={tab(s,'sites')}><Globe size={17}/>האתרים של הספק<small>{s.site_count}</small></DropdownMenuItem>

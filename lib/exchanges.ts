@@ -19,7 +19,7 @@ async function startedAt(){let s=String(await setting('exchange_started_at','')|
 // Is this user an exchange supplier? Their seller account is linked to a supplier that has an exchange site.
 export async function exchangeSupplierOf(userId:string){
  return (await one(`SELECT p.supplier_id,r.data AS supplier_data FROM seller_profiles p JOIN records r ON r.id=p.supplier_id AND r.kind='supplier'
-  WHERE p.user_id=? AND EXISTS(SELECT 1 FROM websites w WHERE json_extract(w.data,'$.supplier_id')=p.supplier_id AND ${exchangeSiteSql()})`,userId))?.supplier_id as string|undefined;
+  WHERE p.user_id=? AND (json_extract(r.data,'$.billing_default')='exchange' OR EXISTS(SELECT 1 FROM websites w WHERE json_extract(w.data,'$.supplier_id')=p.supplier_id AND ${exchangeSiteSql()}))`,userId))?.supplier_id as string|undefined;
 }
 
 // Brings the exchanges up to date in a few set-based statements (no query per row). Safe to run often.
@@ -127,7 +127,7 @@ export async function adminSupplierExchanges(supplierId:string){
   WHERE x.supplier_id=? ORDER BY x.earned_at DESC,x.id DESC`,supplierId);
  const live=rows.filter(r=>r.status!=='void'),costs=live.map(r=>Number(r.booked_cents)+Number(r.adjustments));
  const monthAdj=Number((await one('SELECT COALESCE(SUM(j.amount_cents),0) AS s FROM exchange_adjustments j JOIN exchanges x ON x.id=j.exchange_id WHERE x.supplier_id=? AND j.month=?',supplierId,month))?.s||0);
- const isExchange=!!(await one(`SELECT 1 AS y FROM websites w WHERE json_extract(w.data,'$.supplier_id')=? AND ${exchangeSiteSql()} LIMIT 1`,supplierId));
+ const isExchange=!!(await one(`SELECT 1 AS y FROM records r WHERE r.id=? AND r.kind='supplier' AND (json_extract(r.data,'$.billing_default')='exchange' OR EXISTS(SELECT 1 FROM websites w WHERE json_extract(w.data,'$.supplier_id')=r.id AND ${exchangeSiteSql()}))`,supplierId));
  return {is_exchange:isExchange,default_cents:def,month,balance:live.filter(r=>r.status==='open').length-live.filter(r=>r.status==='debt').length,
   published:live.filter(r=>r.source_article_id&&r.status!=='debt').length,taken:live.filter(r=>['taken','debt'].includes(r.status)).length,
   average_cents:costs.length?Math.round(costs.reduce((s,c)=>s+c,0)/costs.length):null,month_adjustments:monthAdj,

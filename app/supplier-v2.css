@@ -334,3 +334,7 @@ select.sv2-native{display:block;width:100%;height:44px;margin-top:6px;padding:0 
  .sv2-pool .acts{justify-content:stretch}.sv2-pool .acts .sv2-btn{flex:1 1 100%;white-space:normal}
  .sv2-pool .sv2-stock span,.sv2-pool .sv2-stock i{font-size:22px}.sv2-pool .sv2-stock b{font-size:32px}
 }
+/* Exchange suppliers (owner 23.11.2026): paid in links, not money. */
+.sv2-pill.p-exch{background:#f1edff;color:#5b21b6}
+.sv2-billcell{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.sv2-billcell .sv2-ml{flex-basis:100%}

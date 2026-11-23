@@ -277,3 +277,16 @@
  .orders-sky .om-art .om-phone-label{display:block;font-size:11.5px;color:#86868b}
  .orders-sky .om-stock-table .om-art-row{grid-template-areas:"n title title" "n site sent" "n pub pub"}
 }
+/* Payment type of a supplier (owner 23.11.2026): four choices, the default for its new sites. */
+.supplier-billing{display:grid;gap:6px}
+.supplier-billing-title{font-size:14px;font-weight:700;color:#0c1d33}
+.supplier-billing-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media(max-width:640px){.supplier-billing-options{grid-template-columns:1fr}}
+.supplier-billing-option{display:flex!important;align-items:flex-start;gap:10px;padding:11px 12px;border:1px solid #dbe4ef;border-radius:14px;background:#fff;cursor:pointer;font-weight:400}
+.supplier-billing-option input{flex:none;width:18px;height:18px;margin-top:2px;accent-color:#1467cf}
+.supplier-billing-option b{display:block;font-size:14px;font-weight:700;color:#0c1d33}
+.supplier-billing-option small{display:block;font-size:12.5px;line-height:1.45;color:#5d6e82}
+.supplier-billing-option.is-on{border-color:#1467cf;background:#f3f8ff;box-shadow:0 0 0 1px #1467cf inset}
+.supplier-billing-option:focus-within{outline:3px solid #0079cb;outline-offset:2px}
+.supplier-profile-form .supplier-billing{grid-column:1/-1}
+@media(min-width:900px){.supplier-billing-options{grid-template-columns:repeat(4,minmax(0,1fr))}}

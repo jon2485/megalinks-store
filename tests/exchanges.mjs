@@ -86,5 +86,17 @@ try{
  // The default cost is a setting.
  await req('admin/exchanges/settings','PATCH',{default_ils:60});check((await req('admin/exchanges/settings')).default_cents===6000,'the default cost can be changed');
  await req('admin/exchanges','GET',undefined,'buyer',403);
+ // Payment type chosen when a supplier is added (owner 23.11.2026): the default for its new sites; a filter in the list.
+ await req('records/supplier','POST',{name:'ספק שגוי',billing_default:'cash'},'owner',400);check(true,'an unknown payment type is refused');
+ const swap=(await req('records/supplier','POST',{name:'רשת החלפות חדשה',contact:'איש קשר',email:'swap-new@example.test',phone:'0500000009',billing_default:'exchange'},'owner',201)).id;
+ let dir=await req('admin/suppliers?type=exchange');check(dir.suppliers.some(s=>s.id===swap&&s.billing==='exchange'&&s.exchange),'an exchange supplier with no sites yet is in the "החלפות" filter');
+ check(dir.counts.exchange>=1&&dir.suppliers.every(s=>s.exchange),'the filter lists exchange suppliers only, with a count');
+ const swapSite=(await req('admin/websites','POST',{name:'אתר החלפה חדש',url:'https://swap-new.example.com',category:'general',price_ils:300,cost_ils:100,supplier_id:swap,procurement_verified:true,acknowledge:true})).id;
+ const swapRow=await db.prepare('SELECT data FROM websites WHERE id=?').bind(swapSite).first();check(JSON.parse(swapRow.data).stock_mode==='exchange','a new site of an exchange supplier is an exchange site');
+ check((await req('admin/exchanges?supplier='+swap)).is_exchange===true,'the supplier card shows the exchanges tab');
+ const monthlyS=(await req('records/supplier','POST',{name:'ספק חודשי חדש',contact:'איש קשר',email:'monthly-new@example.test',phone:'0500000008',billing_default:'monthly'},'owner',201)).id;
+ const mSite=(await req('admin/websites','POST',{name:'אתר חודשי חדש',url:'https://monthly-new.example.com',category:'general',price_ils:300,cost_ils:100,supplier_id:monthlyS,procurement_verified:true,acknowledge:true})).id;
+ check(!JSON.parse((await db.prepare('SELECT data FROM websites WHERE id=?').bind(mSite).first()).data).stock_mode,'a new site of a monthly supplier has no stock word');
+ dir=await req('admin/suppliers?type=exchange');check(!dir.suppliers.some(s=>s.id===monthlyS),'a monthly supplier is not in the exchange filter');
  console.log('PASS exchange suppliers:',checks,'checks');
 }finally{await mf.dispose();}
