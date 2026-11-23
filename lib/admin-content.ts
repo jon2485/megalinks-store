@@ -26,7 +26,7 @@ export const contentSource=`WITH history AS (
  COALESCE(NULLIF(json_extract(a.data,'$.topic'),''),'') AS topic,json_extract(a.data,'$.editorial_words') AS editorial_words,json_extract(a.data,'$.keywords') AS keywords,json_extract(a.data,'$.brand') AS brand,json_extract(a.data,'$.audience') AS audience,json_extract(a.data,'$.style') AS style,json_extract(a.data,'$.target_url') AS target_url,json_extract(a.data,'$.anchor') AS anchor,json_extract(a.data,'$.target_url_2') AS target_url_2,json_extract(a.data,'$.anchor_2') AS anchor_2,json_extract(a.data,'$.notes') AS notes,
  json_extract(a.data,'$.dispatch_at') AS dispatch_at,j.status AS delivery_status,json_extract(j.data,'$.error') AS delivery_error,w.active AS website_active,
  CASE WHEN lr.id IS NOT NULL AND a.status='sent' THEN 1 ELSE 0 END AS link_review,
- CASE WHEN o.status<>'cancelled' AND (o.paid=1 OR json_extract(o.data,'$.demo')=1 OR json_extract(o.data,'$.on_account')=1 OR json_extract(o.data,'$.payment_settled')=1) THEN 1 ELSE 0 END AS workable
+ CASE WHEN o.status<>'cancelled' AND (o.paid=1 OR json_extract(o.data,'$.demo')=1 OR json_extract(o.data,'$.on_account')=1 OR json_extract(o.data,'$.payment_settled')=1) THEN 1 ELSE 0 END AS workable,COALESCE(json_extract(o.data,'$.trashed_at'),'') AS order_trashed_at
  FROM articles a JOIN orders o ON o.id=a.order_id JOIN users u ON u.id=a.user_id JOIN websites w ON w.id=a.website_id
  LEFT JOIN history h ON h.resource=a.id
  LEFT JOIN jobs j ON j.id='publication:'||a.id AND j.kind='supplier_publication'
@@ -69,7 +69,7 @@ export const contentSource=`WITH history AS (
    WHEN 'customer_review' THEN COALESCE(writing_returned_at,updated)
    ELSE updated END AS waiting_since
  FROM staged
-), visible AS (SELECT * FROM rated WHERE stage<>'awaiting_brief' AND (workable=1 OR submitted_at IS NOT NULL OR status IN ('admin_review','approved','sent','published','revisions','demo_completed')))`;
+), visible AS (SELECT * FROM rated WHERE order_trashed_at='' AND stage<>'awaiting_brief' AND (workable=1 OR submitted_at IS NOT NULL OR status IN ('admin_review','approved','sent','published','revisions','demo_completed')))`;
 
 const publicationStages="stage IN ('delivery_failed','dispatch_scheduled','with_supplier')";
 const writingStages="stage IN ('awaiting_interview','writing_new','writing_fix','customer_review')";

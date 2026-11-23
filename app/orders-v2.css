@@ -615,3 +615,16 @@
  .sv2-orders:not(.cfo) .sv2-olist .sv2-who>.sv2-av{grid-row:1}
  .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-paycell{grid-column:1/3!important}
 }
+
+/* ---- 23.11.2026: trash for abandoned orders. The abandoned group header carries "העברת כל הנזנחות לפח";
+   the order sheet has a red "העברה לפח" (or "שחזור מהפח" for an order in the trash). ---- */
+.sv2-orders .sv2-grp-trash{justify-content:space-between;flex-wrap:wrap;row-gap:6px}
+.sv2-orders .sv2-grp-trash .sv2-trash-all{color:#c4281c!important;font-weight:700}
+.sv2-orders .sv2-grp-trash .sv2-trash-all svg{color:#c4281c}
+.sv2-orders .om-panel .om-btn.om-trash-btn{color:#c4281c!important}
+.sv2-orders .sv2-sumbtn.is-trash:not(.on) .big{color:#86868b}
+@media(max-width:640px){
+ .sv2-orders .sv2-grp-trash{padding:10px 12px;border-radius:14px;margin:4px 0 8px}
+ .sv2-orders .sv2-grp-trash .sv2-trash-all{height:36px}
+}
+.sv2-orders .sv2-olist .sv2-order.is-trashed.is-trashed{--oc:#c7c7cc}

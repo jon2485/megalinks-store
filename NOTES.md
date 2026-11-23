@@ -2042,3 +2042,48 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Checked locally (fictional data):** 390 and 1280 in four states: pending, ticked, "אחר" and the decline step. `tsc` and build pass. `payment-reports` passes. The three Railway tests pass. The seven orders/admin tests fail with the same errors as on `0e81158`.
 - **Seen, not changed:** at 1280 the opened order in "דיווחי תשלום" is cut at the left edge of the screen. This was the same before the change.
 - **Images:** scratchpad `admin-orders/final-payment-report.png`.
+
+## 23.11.2026: trash for abandoned orders ("פח", owner's spec)
+- **What it does:**
+  - Only an abandoned order can go to the trash. That means unpaid, regular, no pending payment report, created at least `ORDER_ABANDONED_DAYS` (14) days ago, and also no open cancel request.
+  - The server re-checks this with the same SQL as the "נזנחו" group (`trashableSql` in `lib/admin-order-data.ts`), inside the UPDATE itself.
+  - It happens only by the admin's click. There are three places:
+    - the row "…" menu
+    - the order sheet footer
+    - "העברת כל הנזנחות לפח (N)" on the abandoned group header (in "לתשלום" and in the lobby's "abandoned" view)
+  - Every move first opens a confirmation window (title "העברה לפח…", trash-can badge, red button).
+  - Restore is "שחזור" on the new "פח" tile, plus "שחזור מהפח" in the "…" menu and the sheet. Nothing is ever deleted.
+- **Storage:** `trashed_at` and `trashed_by` in the order's `data` JSON, with no migration. This is the same pattern as `demo`/`on_account`; restore removes both keys. SQL helper: `liveOrderSql()` in `lib/order-trash-sql.ts`.
+- **API (`lib/order-trash.ts`, wired in `app/api/[...path]/route.ts`):**
+  - `POST admin/orders/trash {ids}` or `{all_abandoned:true,expected:N}`. Bulk is one request: one SELECT, then one batch with a set-based activity INSERT and a set-based UPDATE (`json_each`). It refuses if the count shown is no longer true.
+  - `POST admin/orders/restore {id}`.
+  - Audit lines: "הועברה לפח" / "שוחזרה מהפח".
+- **Hidden everywhere except the trash view:**
+  - **Admin:**
+    - `adminOrderCte()`, which now excludes the trash by default, so orders, counts, export, month close, pulse and reports all follow it. Only the orders list asks for `withTrash` (bucket `trash`).
+    - the lobby "bank" lane and the "abandoned" counter (`lib/admin-updates.ts`)
+    - the control-center "תשלומים לבדיקה" badge
+    - the admin payments badge and `payment-alerts`
+    - lobby search
+    - invoices list and summary (`lib/finance.ts`)
+    - the customer file (`lib/account-management.ts`)
+    - the users list order count
+    - the reports totals
+    - the content lists (`lib/admin-content.ts`)
+  - **Customer:**
+    - "ההזמנות שלי" and the orders counter (`me`)
+    - the order page, statement, payment link and payment report all answer 404 "ההזמנה אינה זמינה"
+    - article lists and the agency unpaid list
+  - The admin can still open a trashed order read-only. Any action on it answers 409 until it is restored.
+- **What an unpaid order holds:**
+  - A split order (balance + card) reserves balance. The reservation is released while the order is in the trash (`walletAvailable`). Restore is refused if that balance was used meanwhile.
+  - A real payment that arrives anyway (a card started earlier) takes the order out of the trash and logs it (`completeOrderPayment`).
+  - No stock slot or writing job exists before payment (articles can't be worked until paid), so there is nothing to release.
+  - A coupon use counted at checkout stays counted, because the trash is reversible. Customer cancel decrements it; trash does not. **Open question for the owner.**
+- **Checked locally (fictional data):**
+  - Screenshots at 390, 1280 and 1440: scratchpad `order-trash/`.
+  - New test `tests/order-trash.mjs` passes (137 checks).
+  - `tsc` and build pass.
+  - Orders/admin/payment/customer/agency tests give the same results as on `0e81158` (same failures, same reasons).
+- **Seen, not changed:** at 1280 the desktop orders list (and the opened order in "דיווחי תשלום") is cut on the left, and the action column is outside the screen. This was the same on `0e81158`. At 1440 it is fine.
+- **Before upload:** nothing temporary in the repo. Local test data only: 9 orders (#1300–#1308 of the fictional customer) were aged to 20–28 days in the scratchpad database.

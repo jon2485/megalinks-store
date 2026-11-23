@@ -221,7 +221,7 @@ function lastMonths(n:number){const now=new Date(),[y,m]=israelMonth(now.toISOSt
 // What waits for the agency: an action it has to take, or something it should know about soon.
 export async function agencyTasks(u:Row,loaded?:Row[]){
  assertAgency(u);
- const [articles,unpaid]=await Promise.all([agencyArticles(u),all("SELECT id,number,created,data FROM orders WHERE user_id=? AND paid=0 AND status IN ('pending','awaiting_approval') AND COALESCE(json_extract(data,'$.demo'),0)=0 AND COALESCE(json_extract(data,'$.on_account'),0)=0 ORDER BY created DESC",u.id)]);
+ const [articles,unpaid]=await Promise.all([agencyArticles(u),all("SELECT id,number,created,data FROM orders o WHERE user_id=? AND COALESCE(json_extract(o.data,'$.trashed_at'),'')='' AND paid=0 AND status IN ('pending','awaiting_approval') AND COALESCE(json_extract(data,'$.demo'),0)=0 AND COALESCE(json_extract(data,'$.on_account'),0)=0 ORDER BY created DESC",u.id)]);
  const rows=articles.map(agencyArticleRow).filter(a=>!a.demo&&a.status!=='cancelled'),nowMs=Date.now(),tasks:Row[]=[];
  for(const a of rows){
   const base={article_id:a.id,customer_id:a.customer_id,customer_name:a.customer_name,title:a.title||a.topic,website_name:a.website_name,number:a.number};
