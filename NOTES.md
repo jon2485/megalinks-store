@@ -2273,3 +2273,4 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Checked locally (fictional data, port 5203):** phone 390 and desktop 1280, both popups, send after the fix. tsc and build pass; writing-workflow and article-reopen pass; studio-actions, studio-ui and editor-import-recovery fail identically on the base `ddd044b` (import build errors, not from this change).
 - **Not checked:** a real iPhone keyboard (needs Staging); the server-refusal popup was not seen locally because the local check passed.
 - **Before upload:** nothing temporary in the repo.
+- **Staging deployed 23.11.2026 20:41 UTC (owner clicked Deploy):** Railway deployment `ac410b84` = `ddd044b` on `claude/supplier-types-20261123`, status SUCCESS. Start log: migration `0010_image_search_cache.sql` ✅, "Ready on 8787", the scheduled maintenance calls and `GET /` return 200, no errors. Next for the owner: enter the Pixabay key in חיבורים והגדרות and press "בדיקה".
