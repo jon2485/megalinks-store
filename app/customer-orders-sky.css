@@ -55,18 +55,23 @@
 .cos-card{background:#fff;border-radius:18px;box-shadow:inset 0 0 0 1px var(--c-line),0 6px 18px -14px #1e508c55;padding:18px}
 .cos-card h3{margin:0 0 12px;font-size:16px!important;font-weight:800;display:flex;justify-content:space-between;align-items:baseline;gap:8px;color:var(--c-ink)}
 .cos-card h3 small{font-weight:600;color:var(--c-mute);font-size:13px}
-.cos-items-head,.cos-item{display:grid;grid-template-columns:minmax(0,1fr) 170px 110px;gap:12px}
-.cos-items-head{color:var(--c-mute);font-size:12px;font-weight:600;padding:0 4px 8px;border-bottom:1px solid var(--c-line)}
-.cos-items-head span:last-child,.cos-price{text-align:left}
-.cos-item{align-items:center;padding:13px 4px;border-bottom:1px solid var(--c-line)}
-.cos-item.is-gone .cos-item-site a,.cos-item.is-gone .cos-item-title{opacity:.6}
-.cos-item-site{min-width:0;display:grid;gap:3px;justify-items:start}
-.cos-item-site a{display:inline-flex;align-items:center;gap:5px;color:var(--c-link);font-weight:700;text-decoration:none;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-.cos-item-title{display:inline-flex;align-items:center;gap:5px;padding:0;border:0;background:none;color:var(--c-copy);font-size:13px;cursor:pointer;text-align:right}
-.cos-item-title:hover{color:var(--c-link);text-decoration:underline}
-.cos-item-note{color:var(--c-mute);font-size:12px}
-.cos-live{display:inline-flex;align-items:center;gap:4px;margin-top:6px;color:var(--c-link);font-size:12px;font-weight:700;text-decoration:none}
-.cos-price{font-weight:800}.cos-price del{color:#64768e}
+/* The items of an order (owner 23.11.2026): only a row number, the site and its price; the site name in black on desktop. */
+.cos-li{border:1px solid #d9e3ee;border-radius:14px;overflow:hidden;background:#fff}
+.cos-li-h,.cos-li-r{display:grid;grid-template-columns:40px minmax(0,1fr) 140px;align-items:center;column-gap:10px;padding:0 14px}
+.cos-li-h{height:36px;background:#f2f6fb;color:var(--c-mute);font-size:12.5px;font-weight:700;border-bottom:1px solid #d9e3ee}
+.cos-li-h span:last-child,.cos-li-p{text-align:left}
+.cos-li-r{min-height:52px}.cos-li-r+.cos-li-r{border-top:1px solid #e3eaf2}.cos-li-r:nth-child(odd){background:#f9fbfd}
+.cos-li-n{width:26px;height:26px;border-radius:8px;background:#e9f0f8;color:#2b4260;display:grid;place-items:center;font-size:13px;font-weight:800}
+.cos-li-s{min-width:0;display:grid;justify-items:start;gap:1px;padding:8px 0}
+.cos-li-name,.cos-li-only{max-width:100%;font-size:15px;font-weight:800;color:var(--c-ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cos-li-u{min-width:0;max-width:100%;display:inline-flex;align-items:center;gap:5px;color:var(--c-link);font-weight:600;font-size:14px;text-decoration:none}
+.cos-li-u span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cos-li-u svg{flex:none}
+.cos-li-u:hover span{text-decoration:underline}
+.cos-li-note{color:var(--c-mute);font-size:12px;font-weight:600}
+.cos-li-p{font-size:15px;font-weight:800;white-space:nowrap;color:var(--c-ink)}.cos-li-p del{color:#64768e}
+.cos-li-r.is-gone .cos-li-name,.cos-li-r.is-gone .cos-li-u{opacity:.6}
+/* The order row: the date and the number of sites where the first site was. */
+.cos-when small{color:var(--c-mute)!important}
 .cos-sum{margin:14px 0 0;border-radius:14px;background:#f6f9fd;padding:4px 14px}
 .cos-sum div{display:flex;justify-content:space-between;padding:9px 0;font-size:14px;color:var(--c-copy)}
 .cos-sum div+div{border-top:1px solid var(--c-line)}.cos-sum dd{margin:0;font-weight:700;color:var(--c-ink);white-space:nowrap}
@@ -98,8 +103,10 @@
  .cos-num{grid-area:num}.cos-paycell{grid-area:pay;justify-self:end}.cos-sites{grid-area:sites}.cos-prog{grid-area:prog}.cos-amt{grid-area:amt;text-align:left}.cos-act{display:none}
  .cos-amt small{display:none}
  .cos-panel{padding:12px}
- .cos-items-head{display:none}.cos-item{grid-template-columns:1fr auto;grid-template-areas:"site price" "pill pill"}
- .cos-item-site{grid-area:site}.cos-item>div:nth-child(2){grid-area:pill}.cos-price{grid-area:price}
+ .cos-li-h{grid-template-columns:28px minmax(0,1fr) auto;padding:0 12px}
+ .cos-li-r{grid-template-columns:28px minmax(0,1fr);grid-template-areas:"n s" "n p";row-gap:1px;padding:9px 12px}
+ .cos-li-n{grid-area:n}.cos-li-s{grid-area:s;padding:0}.cos-li-p{grid-area:p;justify-self:end}
+ .cos-li-name{display:none}.cos-li-u{font-size:15px;font-weight:700}
 }
 @media(prefers-reduced-motion:reduce){.cos *{transition:none!important}}
 /* Payment box in the open order (approved mockup 11.11.2026) */

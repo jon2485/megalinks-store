@@ -1,12 +1,11 @@
 'use client';
 import React,{useMemo,useState} from 'react';
-import {ArrowLeft,CalendarDays,ChevronDown,ChevronUp,Download,ExternalLink,FileText,Search,X} from 'lucide-react';
+import {CalendarDays,ChevronDown,ChevronUp,Download,ExternalLink,FileText,Search,X} from 'lucide-react';
 import {useData} from '@/lib/client';
 import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue} from '@/components/ui/select';
 import {money,type Row} from '@/lib/shared';
 import {effectiveOrderAmounts,orderCancellation,remainingArticleNet} from '@/lib/order-finance';
 import {paymentMethodLabel} from '@/lib/payment-state';
-import {publicationLink} from '@/lib/purchased-history';
 import {exportSpreadsheet} from '@/lib/office';
 import {CustomerPaymentReport} from './payment-reports';
 import {CustomerCancelRequest,cancelOptions,openCancelRequest} from './customer-cancel-request';
@@ -71,12 +70,14 @@ function OrderPanel({ctx,order}:{ctx:Ctx;order:Row}){
  return <div className="cos-panel">
   {o.cancel_request_status==='pending'&&<div className="cos-banner" role="status"><X size={16} aria-hidden="true"/>{o.cancel_request_scope==='article'?'בקשת ביטול ל־'+(o.cancel_request_target||'אתר'):'בקשת ביטול להזמנה'} נשלחה ב־{day(o.cancel_requested_at)} ומחכה לאישור. נעדכן אותך כאן ובמייל.</div>}
   <div className="cos-grid">
-   <section className="cos-card cos-items" aria-label="הפריטים בהזמנה"><h3>הפריטים בהזמנה <small>{items.length===1?'אתר אחד':items.length+' אתרים'} · {prog.done} פורסמו</small></h3>
-    <div className="cos-items-head" aria-hidden="true"><span>אתר וכתבה</span><span>מצב</span><span>לפני מע״מ</span></div>
-    {items.map(a=>{const p=articlePill(a,o),gone=p.tone==='off',url=a.website_url||a.data?.website_url,live=a.status==='published'?publicationLink(a):'';return <div key={a.id} className={'cos-item'+(gone?' is-gone':'')}>
-     <div className="cos-item-site">{url?<a href={url} target="_blank" rel="noopener noreferrer" dir="ltr">{host(url)}<ExternalLink size={13} aria-hidden="true"/></a>:<b>{a.website_name||'אתר'}</b>}<button type="button" className="cos-item-title" onClick={()=>ctx.go('article/'+encodeURIComponent(a.id))}><FileText size={13} aria-hidden="true"/>{a.title||a.topic||'פתיחת הכתבה'}</button>{(a.refund_history||[]).map((h:Row,i:number)=><small key={i} className="cos-item-note">{day(h.at)} · {h.destination==='wallet'?'זוכה ליתרה':h.destination==='external'?'הוחזר מחוץ למערכת':'הוסר מהחיוב'}</small>)}</div>
-     <div><PillView p={p}/>{live&&<a className="cos-live" href={live} target="_blank" rel="noopener noreferrer">צפייה בכתבה<ArrowLeft size={13} aria-hidden="true"/></a>}</div>
-     <strong className="cos-price">{gone?<del><bdi>{money(Number(a.publication_price||0)+Number(a.editorial_price||0))}</bdi></del>:<bdi>{money(remainingArticleNet(a,o))}</bdi>}</strong></div>;})}
+   <section className="cos-card cos-items" aria-label="הפריטים בהזמנה"><h3>הפריטים בהזמנה <small>{items.length===1?'אתר אחד':items.length+' אתרים'}</small></h3>
+    {items.length>0&&<div className="cos-li" role="table" aria-label="האתרים בהזמנה"><div className="cos-li-h" role="row"><span role="columnheader">#</span><span role="columnheader">אתר</span><span role="columnheader">לפני מע״מ</span></div>
+    {items.map((a,i)=>{const p=articlePill(a,o),gone=p.tone==='off',url=a.website_url||a.data?.website_url,name=String(a.website_name||a.data?.website_name||'');return <div key={a.id} className={'cos-li-r'+(gone?' is-gone':'')} role="row">
+     <span className="cos-li-n" role="cell">{i+1}</span>
+     <span className="cos-li-s" role="cell">{url?<>{name&&<b className="cos-li-name">{name}</b>}<a className="cos-li-u" href={url} target="_blank" rel="noopener noreferrer" dir="ltr"><span>{host(url)}</span><ExternalLink size={14} aria-hidden="true"/></a></>:<b className="cos-li-only">{name||'אתר'}</b>}
+      {gone&&<small className="cos-li-note">{p.text}</small>}{(a.refund_history||[]).map((h:Row,k:number)=><small key={k} className="cos-li-note">{day(h.at)} · {h.destination==='wallet'?'זוכה ליתרה':h.destination==='external'?'הוחזר מחוץ למערכת':'הוסר מהחיוב'}</small>)}</span>
+     <strong className="cos-li-p" role="cell">{gone?<del><bdi>{money(Number(a.publication_price||0)+Number(a.editorial_price||0))}</bdi></del>:<bdi>{money(remainingArticleNet(a,o))}</bdi>}</strong></div>;})}
+    </div>}
     {!items.length&&<p className="cos-muted">אין פריטים להצגה בהזמנה זו.</p>}
     <dl className="cos-sum"><div><dt>לפני מע״מ</dt><dd><bdi>{money(amounts.net)}</bdi></dd></div><div><dt>מע״מ {o.vat_percent??18}%</dt><dd><bdi>{money(amounts.vat)}</bdi></dd></div><div className="is-total"><dt>{paid(o)?'סה״כ שולם, כולל מע״מ':'סה״כ לתשלום, כולל מע״מ'}</dt><dd><bdi>{money(amounts.total)}</bdi></dd></div>{refunded>0&&<div><dt>זוכה ליתרה</dt><dd><bdi>{money(refunded)}</bdi></dd></div>}</dl>
    </section>
@@ -116,12 +117,12 @@ export default function CustomerOrdersSky({ctx,providedOrders}:{ctx:Ctx;provided
   <div className="cos-tools"><label className="cos-search"><Search size={17} aria-hidden="true"/><input type="search" placeholder="חיפוש מספר הזמנה או אתר" aria-label="חיפוש מספר הזמנה או אתר" value={q} onChange={e=>setQ(e.target.value)}/>{q&&<button type="button" aria-label="ניקוי החיפוש" onClick={()=>setQ('')}><X size={15}/></button>}</label><Select dir="rtl" value={month||'all'} onValueChange={v=>setMonth(v==='all'?'':v)}><SelectTrigger className="cos-select" aria-label="סינון לפי חודש"><CalendarDays size={16} aria-hidden="true"/><SelectValue/></SelectTrigger><SelectContent position="popper" align="start" sideOffset={6} className="cos-select-menu"><SelectItem value="all">כל החודשים</SelectItem>{months.map(m=><SelectItem key={m} value={m}>{monthName(m)}</SelectItem>)}</SelectContent></Select></div>
   <ErrorBox error={state.error}/>
   {state.loading&&!providedOrders&&!state.data?<p className="cos-muted" role="status">טוען הזמנות…</p>:!orders.length?<p className="cos-empty">ההזמנות שלך יופיעו כאן לאחר הרכישה.</p>:<>
-   <div className="cos-cols" aria-hidden="true"><span>הזמנה</span><span>אתרים</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span/></div>
-   <div className="cos-list">{shown.map(o=>{const items=byOrder.get(o.id)||[],sites=sitesOf(o,items),first=sites[0]||{name:'',url:''},p=progress(o,items),pill=payPill(o),isOpen=open===o.id,amounts=effectiveOrderAmounts(o),gone=orderCancellation(o)==='full',need=kind(o)==='pay'||o.cancel_request_status==='pending',toggle=()=>setOpen(isOpen?'':o.id);
+   <div className="cos-cols" aria-hidden="true"><span>הזמנה</span><span>תאריך</span><span>תשלום</span><span>פרסום</span><span>סכום</span><span/></div>
+   <div className="cos-list">{shown.map(o=>{const items=byOrder.get(o.id)||[],sites=sitesOf(o,items),count=sites.length||Number(o.article_count||0),p=progress(o,items),pill=payPill(o),isOpen=open===o.id,amounts=effectiveOrderAmounts(o),gone=orderCancellation(o)==='full',need=kind(o)==='pay'||o.cancel_request_status==='pending',toggle=()=>setOpen(isOpen?'':o.id);
     return <article key={o.id} className={'cos-order'+(isOpen?' is-open':'')+(need?' is-need':'')}>
      <div className="cos-row" role="button" tabIndex={0} aria-expanded={isOpen} onClick={toggle} onKeyDown={e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle();}}}>
-      <div className="cos-num"><b><span className="sr-only">הזמנה </span><bdi>{String(o.number||'')}</bdi></b><small>{day(o.created)}</small></div>
-      <div className="cos-sites"><span className="cos-fav" aria-hidden="true">{(first.name||host(first.url)||'א').trim().charAt(0)}</span><div><b>{first.name||host(first.url)||'אתר'}</b>{first.url&&<small dir="ltr">{host(first.url)}</small>}</div>{sites.length>1&&<span className="cos-more">+{sites.length-1}</span>}</div>
+      <div className="cos-num"><b><span className="sr-only">הזמנה </span><bdi>{String(o.number||'')}</bdi></b></div>
+      <div className="cos-sites cos-when"><span className="cos-fav" aria-hidden="true"><CalendarDays size={19}/></span><div><b><span className="sr-only">תאריך ההזמנה </span><bdi>{day(o.created)}</bdi></b><small>{count===1?'אתר אחד':count?count+' אתרים':''}</small></div></div>
       <div className="cos-paycell"><PillView p={pill}/></div>
       <div className="cos-prog" aria-label={'פורסמו '+p.done+' מתוך '+p.total}><span className="cos-bar"><span style={{width:(p.total?Math.round(p.done/p.total*100):0)+'%'}}/></span>{gone?'—':p.total?(p.done+'/'+p.total+(p.done?' פורסמו':'')):'—'}</div>
       <div className="cos-amt"><b>{gone?<del><bdi>{money(Number(o.total||0))}</bdi></del>:<bdi>{money(amounts.total)}</bdi>}</b><small>כולל מע״מ</small></div>

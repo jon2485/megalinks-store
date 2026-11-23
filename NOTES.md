@@ -2190,3 +2190,10 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Needed from the owner:** which sites open for exchanges (the "זמין להחלפה" box in the catalog); each exchange supplier needs an account linked to its supplier card.
 - **Owner (23.11.2026):** admin tile "פרסם אצלו" renamed "פורסמו אצל הספק"; the picker popup shows a swap icon (ArrowLeftRight) instead of the AI sparkle (`app/dialog-badge.tsx`, any title with "החלפ"/"בתמורה" that is not a removal). Then "תפרסם".
 - **לפני העלאה:** the migration runs on Staging start (additive). Local QA data only in `/home/user/qa-state-ex`.
+
+## 23.11.2026: customer order card, items and date (owner approved the mockups, "מאושר")
+- **Order row:** the date and the number of sites ("5 אתרים" / "אתר אחד") with a calendar icon, where the first site's name and "+4" were; the date no longer sits under the order number; desktop column header "תאריך" instead of "אתרים". Search by site name still works.
+- **"הפריטים בהזמנה":** a numbered list in one frame: row number, the site (Hebrew name in black above the address on desktop; address only on the phone, with the price on a second line because a long address does not fit next to it at 390px), price before VAT. Removed from this list: the per-site status, the article title, "צפייה בכתבה", "X פורסמו". A cancelled site keeps its row with the price struck through and a small "בוטל" note (and the refund notes).
+- **Files:** `app/customer-orders-sky.tsx`, `app/customer-orders-sky.css` (old `.cos-item*` rules replaced by `.cos-li*`). The Excel export is unchanged.
+- **Tests:** tsc, build, the 3 Railway tests, exchanges pass. order-display-consistency, financial-history-ui, page-crash-regression, client-hub fail the same without this change (checked with the change stashed).
+- **Mockups:** scratchpad `order-items/mock2-phone.png`, `mock2-desktop.png`; real screen `real-phone.png`, `real-desktop.png`.
