@@ -2016,3 +2016,10 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Checked here:** `tsc`, build, tests resend-email, article-reopen, supplier-thread, supplier-mail, publication-scheduling, fix-request-mail, supplier-article-request, rich-docx, delivery-reason, supplier-link-check, writing-workflow pass.
 - **Sheet (23.11):** all 150 Leos Media rows (H2102:H2251) now "לאוס מדיה - ספונסרד", column AH = its supplier id; the "לאוס מדיה" card is left with no sites. Best Links is "להשלמה" because its e-mail is the owner's address and it has no contact name.
 - **To check on Staging:** a real supplier e-mail (subject, attachments), the categories search with a real iPhone keyboard, a manual-review link end to end.
+
+## 23.11.2026: owner round (branch `claude/owner-round-20261123`, from the owner's newest `claude/iphone-fixes-20261122` 8d6d630)
+- **Sent article title:** the green sign now reads "הכתבה נשלחה לפרסום" (was "הכתבה אצל האתר לפרסום"), `app/article-sent.tsx`.
+- **Main image in the supplier e-mail:** the credits name it "קרדיט לתמונה מס׳ 1 - ראשית:" in the text and HTML (`imageName` in `lib/supplier-mail-content.ts`; `ArticleImage.main`). Other images keep "תמונה מס׳ N". `tests/resend-email.mjs` updated; it already fails on 8d6d630 at "admin/integration/email … שדה שאינו נתמך" before reaching the credits, so the text was checked directly with sample data.
+- Committed `0e81158`. Not pushed, not deployed.
+- **In progress (agents, separate branches from 0e81158):** coupons (delete + numbered list of customers who used each one), the customer's phone payment report (keyboard jump + new look, both steps), and a proposal with images for the admin orders list on the phone and the admin's payment-report box.
+- **Before upload:** nothing temporary in the repo.
