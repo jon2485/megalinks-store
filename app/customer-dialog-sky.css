@@ -33,9 +33,40 @@ html body .sky-dialog>:not([data-slot=dialog-header]):not([data-slot=dialog-clos
 /* The payment report keeps its own scrolling body and footer inside the form. */
 html body .sky-dialog>form.payment-report-form{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0!important}
 html body .sky-dialog form.payment-report-form .payment-report-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:20px 24px 12px!important;background:#fff!important}
-html body .sky-dialog form.payment-report-form>.ml-privacy-note{padding:0 24px 14px!important;margin:0!important;background:#fff}
 html body .sky-dialog section.payment-report-glass-confirm{display:flex!important;flex-direction:column!important;overflow:hidden!important;padding:0!important}
 html body .sky-dialog section.payment-report-glass-confirm .payment-glass-body{flex:1 1 auto;min-height:0;overflow-y:auto;padding:20px 24px 12px!important}
+
+/* Payment report, both steps (owner 23.11.2026: "the old design, and the screen after it too"). The form: the amount to
+   report as one light row, the payment way as a full-width switch, the fields in one column, the note and the privacy line
+   at the end of the scrolling body (only the actions stay pinned). The confirmation: the order tag, a plain title, the
+   amount row, a short list of what is being sent, the explanation in a light blue box, then the actions. */
+html body .sky-dialog :is(.payment-report-body,.payment-glass-body){display:grid!important;align-content:start;grid-auto-rows:max-content;gap:16px!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount){display:flex!important;align-items:center;justify-content:space-between;gap:12px;margin:0!important;text-align:right!important}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount)>span{font:600 14px/1.4 Heebo,Arial,sans-serif!important;color:var(--ai-copy)!important}
+html body .sky-dialog :is(.payment-report-amount,.payment-glass-amount)>strong{margin:0!important;font:800 24px/1.2 Heebo,Arial,sans-serif!important;letter-spacing:-.01em!important;font-variant-numeric:tabular-nums;white-space:nowrap}
+html body .sky-dialog .payment-method-buttons{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:4px!important}
+html body .sky-dialog .payment-method-buttons button{display:flex!important;align-items:center;justify-content:center;gap:8px!important;padding:8px 12px!important;filter:none!important}
+html body .sky-dialog .payment-report-fields{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:14px!important;margin:0!important}
+html body .sky-dialog .payment-report-form .field{display:grid!important;gap:6px!important;margin:0!important;color:var(--ai-copy)!important;font:600 13.5px/1.4 Heebo,Arial,sans-serif!important}
+/* 16px in the fields: below that iPhone zooms the page in when a field is tapped, which is part of the jump. */
+html body .sky-dialog .payment-report-form :is(input:not([type=checkbox]):not([type=radio]):not([type=file])){height:48px;font-size:16px!important}
+html body .sky-dialog .payment-proof-upload{display:grid!important;gap:10px!important;padding:14px 16px!important;margin:0!important;color:var(--ai-copy)!important;font:600 14px/1.4 Heebo,Arial,sans-serif!important}
+html body .sky-dialog .payment-proof-upload>span:first-child{display:inline-flex;align-items:center;gap:6px}
+html body .sky-dialog .payment-proof-upload>span:first-child svg{color:var(--ai-blue)}
+html body .sky-dialog .payment-proof-upload>span+input+span{color:var(--ai-ink);font-weight:600;overflow-wrap:anywhere}
+html body .sky-dialog .payment-report-note{margin:0!important;padding:0!important;background:none!important;text-align:right!important;color:var(--ai-mute)!important;font:500 13.5px/1.6 Heebo,Arial,sans-serif!important}
+html body .sky-dialog .payment-report-body>.ml-privacy-note{margin:-6px 0 0!important;padding:0!important;text-align:right}
+html body .sky-dialog .payment-glass-order{justify-self:start;margin:0!important;padding:3px 12px!important;border-radius:999px;background:#edf3fc;color:var(--ai-blue)!important;font:700 13px/1.6 Heebo,Arial,sans-serif!important}
+html body .sky-dialog .payment-report-glass-confirm .payment-glass-title{margin:0!important;text-align:right!important;color:var(--ai-ink)!important;font:800 20px/1.35 Heebo,Arial,sans-serif!important;letter-spacing:-.01em!important}
+html body .sky-dialog .payment-glass-title br{display:none}
+html body .sky-dialog .payment-glass-facts{display:grid!important;gap:0!important;padding:0!important;margin:0!important;border-radius:16px;box-shadow:inset 0 0 0 1px var(--ai-line)}
+html body .sky-dialog .payment-glass-facts>div{display:flex!important;align-items:center;min-height:0!important;height:auto!important;justify-content:space-between;gap:14px;margin:0!important;padding:11px 16px!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+html body .sky-dialog .payment-glass-facts>div+div{border-top:1px solid var(--ai-line)!important}
+html body .sky-dialog .payment-glass-facts dt{flex:none;color:var(--ai-mute)!important;font:500 13.5px/1.5 Heebo,Arial,sans-serif!important}
+html body .sky-dialog .payment-glass-facts dd{min-width:0;margin:0;color:var(--ai-ink)!important;font:700 14.5px/1.5 Heebo,Arial,sans-serif!important;text-align:left;overflow-wrap:anywhere}
+html body .sky-dialog .payment-glass-explanation{margin:0!important;padding:12px 14px!important;border-radius:14px;background:#f2f7ff;color:var(--ai-copy)!important;font:500 14.5px/1.7 Heebo,Arial,sans-serif!important}
+html body .sky-dialog .payment-glass-note{margin:0!important;color:var(--ai-mute)!important;font:500 13px/1.6 Heebo,Arial,sans-serif!important}
+html body .sky-dialog .payment-glass-actions .payment-glass-send{display:inline-flex!important;align-items:center;justify-content:center;gap:10px!important}
 
 /* Text and the light boxes (amount, bank details, totals). */
 html body .sky-dialog :is(p,small,dt,dd,time){color:var(--ai-mute)}
@@ -110,6 +141,9 @@ html body .sky-dialog .customer-usage-glass .wallet-usage-footer button{border:0
 @media(max-width:640px){
  html body [data-slot=dialog-content].sky-dialog{top:auto!important;bottom:0!important;left:0!important;right:0!important;transform:none!important;translate:0 0!important;--tw-translate-x:0!important;--tw-translate-y:0!important;
   width:100vw!important;max-width:none!important;max-height:86dvh!important;border-radius:24px 24px 0 0!important;animation:sky-sheet-in .3s cubic-bezier(.22,1,.36,1)!important}
+ /* With the keyboard open (app/keyboard-sheet.ts writes the free height and the keyboard height): the sheet sits right on
+    top of the keyboard and is never taller than the free part of the screen, so the header and the field stay in view. */
+ html body [data-slot=dialog-content].sky-dialog[style*="--kb-room"]{bottom:var(--kb-bottom,0px)!important;max-height:min(86dvh,calc(var(--kb-room) - 12px))!important}
  html body [data-slot=dialog-content].sky-dialog[data-state=closed]{animation:sky-sheet-out .2s ease-in forwards!important}
  html body .sky-dialog>[data-slot=dialog-header]{gap:12px!important;padding:16px 16px 12px 64px!important}
  html body .sky-dialog [data-slot=dialog-header] .admin-dialog-badge{width:40px!important;height:40px!important;border-radius:13px!important}
@@ -122,6 +156,13 @@ html body .sky-dialog .customer-usage-glass .wallet-usage-footer button{border:0
  html body .sky-dialog form.payment-report-form .payment-report-body{padding:16px 16px 10px!important}
  html body .sky-dialog :is(.payment-report-footer,.payment-glass-actions){padding:12px 16px max(14px,env(safe-area-inset-bottom))!important}
  html body .sky-dialog form.customer-topup-glass div:has(>button[type=submit]){margin:0 -16px -14px!important;padding:12px 16px max(14px,env(safe-area-inset-bottom))!important;bottom:-14px}
+ /* While typing on a short screen: a one-line header (no icon, no subtitle) and a slimmer action strip. */
+ html body .sky-dialog[data-typing]>[data-slot=dialog-header]{padding:12px 16px 12px 60px!important}
+ html body .sky-dialog[data-typing] [data-slot=dialog-header] .admin-dialog-badge,html body .sky-dialog[data-typing] [data-slot=dialog-description]{display:none!important}
+ html body .sky-dialog[data-typing] [data-slot=dialog-title]{font-size:17px!important}
+ html body .sky-dialog[data-typing]>[data-slot=dialog-close]{top:5px!important;width:36px!important;height:36px!important}
+ html body .sky-dialog[data-typing] :is(.payment-report-footer,.payment-glass-actions){padding:8px 16px!important}
+ html body .sky-dialog section.payment-report-glass-confirm .payment-glass-body{padding:16px 16px 10px!important}
 }
 @keyframes sky-sheet-in{from{transform:translateY(100%)}to{transform:none}}
 @keyframes sky-sheet-out{to{transform:translateY(100%)}}
