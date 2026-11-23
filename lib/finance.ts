@@ -7,6 +7,7 @@ import {Row,money} from './shared';
 import {admin,assert,all,one,stmt,db,parse,uid,now,setting,saveSetting,audit,hash,owns} from './server';
 import {requireUnusedReference} from './payment-reference';
 import {queueMail} from './mail';
+import {issueInvoiceSafely} from './auto-invoice';
 
 export const isTopUp = (row:Row) => row.kind==='wallet_topup'||(row.kind==='ticket'&&row.payment_method==='bank_transfer'&&Number(row.amount_cents)>0);
 const topupWhere="(r.kind='wallet_topup' OR (r.kind='ticket' AND json_extract(r.data,'$.payment_method')='bank_transfer' AND json_extract(r.data,'$.amount_cents')>0))";
@@ -72,6 +73,8 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   const mail={to:target.email,subject:decision==='approved'?'בקשת הטענת היתרה אושרה':'בקשת הטענת היתרה נסגרה',text:decision==='approved'?money(amount)+' נוספו ליתרה שלכם.\nאסמכתא: '+row.reference:'הבקשה לא אושרה: '+note,button:{label:'לארנק שלי',url:origin+'/wallet'}};
   ops.push(stmt("INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) SELECT ?,?,'email','requested',?,?,? WHERE EXISTS(SELECT id FROM records WHERE id=? AND json_extract(data,'$.decision_event')=?)",mailId,row.user_id,JSON.stringify(mail),stamp,stamp,row.id,eventId));
   try{await db().batch(ops);}catch(error){const current=parse(await one('SELECT * FROM records WHERE id=?',row.id));if(current?.decision===decision)return output({ok:true,decision,duplicate:true});if(String(error).includes('ledger.reference'))assert(false,'אסמכתא זו כבר זוכתה. יש לבדוק את תנועות הארנק',409);throw error;}const result=parse(await one('SELECT * FROM records WHERE id=?',row.id));assert(result?.decision===decision,'הבקשה טופלה במקביל בהחלטה אחרת',409);
+  // Owner 23.11.2026: an approved transfer top-up gets its חשבונית מס/קבלה from Green Invoice.
+  if(decision==='approved')await issueInvoiceSafely('greeninvoice:topup:'+row.id,{kind:'topup',target:row.id,user_id:row.user_id,method:'bank',amount_cents:amount,reference:text(row.reference)},new URL(r.url).origin);
   const delivery=await safeMail(mailId,row.user_id,mail);return output({ok:true,decision,mail_status:delivery?.status,balance:(await one('SELECT credits FROM users WHERE id=?',row.user_id))?.credits,handled_at:stamp});
  }
  if(p[0]==='admin'&&p[1]==='invoices'){

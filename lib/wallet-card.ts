@@ -1,6 +1,9 @@
 import {one,parse,stmt,db,assert,now,connection,externalFetch,externalUrl} from './server';
 import {financialGuard} from './monthly-order';
 import type {Row} from './shared';
+import {env} from 'cloudflare:workers';
+import {issueInvoiceSafely} from './auto-invoice';
+const siteOrigin=()=>{for(const v of [(env as any).POSTFLOW_PUBLIC_ORIGIN,(env as any).POSTFLOW_STAGING_ORIGIN]){try{if(v)return new URL(String(v)).origin;}catch{}}return '';};
 
 // Credit is granted only by a signed, amount-checked provider callback, never a browser return.
 export async function createWalletCard(r:Request,u:Row,b:Row){
@@ -24,5 +27,7 @@ export async function completeWalletCard(b:Row){
  if(b.status!=='paid'){await stmt("UPDATE records SET data=json_set(data,'$.gateway_last_status',?,'$.gateway_last_at',?),updated=? WHERE id=? AND json_extract(data,'$.decision')='awaiting_gateway'",b.status,now(),now(),id).run();return {ok:true,credited:false};}
  const user=await one('SELECT * FROM users WHERE id=?',row.user_id);assert(user,'לקוח לא נמצא',404);const stamp=now();
  try{await db().batch([financialGuard(user),stmt("UPDATE records SET data=CASE WHEN data=? THEN json_set(data,'$.decision','approved','$.status','closed','$.handled_at',?,'$.approved_at',?,'$.reference',?,'$.approval_type','gateway') ELSE NULL END,updated=? WHERE id=?",raw!.data,stamp,stamp,String(b.event_id),stamp,id),stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)','wallet-credit:'+id,row.user_id,row.amount_cents,'הטענת יתרה באשראי','wallet-card:'+id,stamp),stmt('UPDATE users SET credits=credits+? WHERE id=?',row.amount_cents,row.user_id),stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',event,'payment_event',row.user_id,JSON.stringify({topup_id:id,amount_cents:row.amount_cents}),stamp,stamp)]);}catch(e){if(parse(await one('SELECT * FROM records WHERE id=?',id))?.decision==='approved')return {ok:true,duplicate:true};throw e;}
+ // Owner 23.11.2026: a top-up gets its חשבונית מס/קבלה when the card payment is confirmed (a later purchase from the balance gets none).
+ await issueInvoiceSafely('greeninvoice:topup:'+id,{kind:'topup',target:id,user_id:row.user_id,method:'card',amount_cents:row.amount_cents,reference:String(b.event_id)},siteOrigin());
  return {ok:true,credited:true};
 }

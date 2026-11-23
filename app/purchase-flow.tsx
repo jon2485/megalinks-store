@@ -121,6 +121,7 @@ ctx.go(result.id?'order-confirmed/'+result.id:'purchased');}catch(e){setError((e
             {checkoutOnly&&<section className="checkout-form-surface" aria-label="פרטי החשבונית ואמצעי התשלום">
                 <Card className="checkout-customer-card"><CardHeader><CardTitle>פרטי החשבונית</CardTitle></CardHeader><CardContent><div className="form-grid">
                     <Field label="שם לחשבונית (חובה)"><Input id="checkout-invoice-name" autoComplete="organization" aria-required="true" value={form.invoice_name} onChange={e=>setForm({...form,invoice_name:e.target.value})}/></Field>
+                    <Field label="ח.פ / ת.ז לחשבונית (לא חובה)"><Input id="checkout-company-id" inputMode="numeric" dir="ltr" autoComplete="off" maxLength={12} value={form.company_id||''} onChange={e=>setForm({...form,company_id:e.target.value.replace(/[^\d\s-]/g,'')})}/></Field>
                     <div className="checkout-name-field"><Field label="שם מלא"><Input autoComplete="name" value={form.name} onChange={e=>setForm({...form,name:e.target.value})}/></Field></div>
                     <div className="checkout-phone-field"><Field label="טלפון ליצירת קשר (חובה)"><Input id="checkout-phone" type="tel" dir="ltr" autoComplete="tel" aria-required="true" value={form.phone} onChange={e=>{const phone=e.target.value;setForm(current=>({...current,phone}));setError('');}}/></Field></div>
                 </div></CardContent></Card>

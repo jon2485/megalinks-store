@@ -13,7 +13,7 @@ import './admin-system-connections.css';
 // 22.11.2026 (owner: "like the other admin pages"): "חיבורים והגדרות" in the same look as the suppliers,
 // orders and content lists: one white card with filter chips, a table of rows and a blue action per row.
 // Same data (admin/settings), same dialogs (ConnectionForm, BankSettings) and the same API calls as before.
-const testable=['ai','wordpress','images'];
+const testable=['ai','wordpress','images','invoices'];
 const providerLabels:Record<string,string>={openai:'OpenAI',gemini:'Google Gemini',groq:'Groq',grok:'xAI / Grok',resend:'Resend',webhook:'Webhook'};
 const ready=(c:Row)=>!!(c.enabled&&c.has_secret);
 const shortUrl=(raw:string)=>{try{const u=new URL(raw);return u.host+(u.pathname==='/'?'':u.pathname.replace(/\/$/,''));}catch{return raw;}};
@@ -63,6 +63,7 @@ function facts(name:string,c:Row){
  if(name==='ai'&&c.model)list.push(<bdi key="m" dir="ltr">{c.model}</bdi>);
  if(name==='email'&&c.provider==='resend'&&c.from)list.push(<span key="f">שולח <bdi dir="ltr">{c.from}</bdi></span>);
  if(c.url&&!(name==='email'&&c.provider==='resend'))list.push(<bdi key="u" dir="ltr" title={c.url}>{shortUrl(c.url)}</bdi>);
+ if(name==='invoices'&&c.environment)list.push(<span key="e">{c.environment==='sandbox'?'סביבת ניסיון':'חשבון אמיתי'}</span>);
  if(name==='wordpress'&&c.username)list.push(<span key="n">משתמש <bdi dir="ltr">{c.username}</bdi></span>);
  if(name==='wordpress'&&c.url&&c.auto_publish!==undefined)list.push(<span key="a">{c.auto_publish?'פרסום חי אחרי אישור':'נשמר כטיוטה ב־WordPress'}</span>);
  return list;

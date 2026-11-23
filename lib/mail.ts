@@ -27,6 +27,8 @@ const mailOrigin=(job:Row)=>{for(const v of [job.origin,job.button?.url]){try{if
 // Every file an email carries, in one place: used for the attachments and for the download links.
 export async function mailFiles(job:Row):Promise<MailFile[]>{
  const files:MailFile[]=[];
+ // A stored document (the Green Invoice PDF of a payment, 23.11.2026).
+ if(job.attach_file_id){const s=await storedFile(await one('SELECT * FROM files WHERE id=?',job.attach_file_id),MAIL_FILE_MAX);if(s)files.push({filename:String(s.file.name||'document.pdf'),content_type:String(s.file.type||'application/pdf'),bytes:s.bytes,label:'חשבונית מס/קבלה'});}
  if(job.attach_order_statement){const {storedOrderPdf}=await import('./order-statement');const pdf=await storedOrderPdf(job.attach_order_statement,job.origin);files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'סיכום ההזמנה'});}
  if(job.attach_writing_brief){const {writingBriefFile}=await import('./writing-brief-file');const pdf=await writingBriefFile(job.attach_writing_brief,job.origin);files.length=0;files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'פרטי הכתיבה'});}
  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(a){

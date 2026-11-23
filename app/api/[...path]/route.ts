@@ -3,6 +3,8 @@ import {supplierArticles} from '@/lib/admin-content';
 import {adminContent} from '@/lib/admin-content';
 import {prepareOrderStatement,refreshOrderStatement} from '@/lib/order-statement';
 import {completeWalletCard} from '@/lib/wallet-card';
+import {issueInvoiceSafely,invoiceJobs,retryInvoice} from '@/lib/auto-invoice';
+import {greenInvoiceToken,resetGreenInvoiceToken} from '@/lib/green-invoice';
 import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
 import {publicationPeriod} from '@/lib/publication-period';
 import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
@@ -251,6 +253,8 @@ async function handle(r: Request,access:ResponseAccess) {
         // Nothing was applied (the order was settled in the meantime): record it instead of reporting a verified payment.
         if ((done as Row).duplicate) { await recordUnappliedPayment(order, eventId, got, 'order_already_paid'); return response({ ok: true, unapplied: true }); }
         await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
+        // Owner 23.11.2026: a card payment gets its חשבונית מס/קבלה from Green Invoice at once (only the card part of a split).
+        await issueInvoiceSafely('greeninvoice:'+event,{kind:'order',target:order.id,user_id:order.user_id,method:'card',amount_cents:got,reference:eventId,split:order.payment==='credits_card'},new URL(r.url).origin);
         return response({ ok: true });
     }
     // A file from an email: the address carries the personal token of that message, so no sign-in is needed.
@@ -1204,7 +1208,7 @@ if (p[0] === 'cart') {
         }
         if (p[1] === 'settings') {
             if (method === 'GET') {
-                const keys = ['ai', 'wordpress', 'payments', 'email', 'whatsapp', 'images'];
+                const keys = ['ai', 'wordpress', 'payments', 'invoices', 'email', 'whatsapp', 'images'];
                 const connections: Row = {};
                 const stored = await settingsByKey([...keys.map(k => 'integration_' + k), 'vat', 'brand'], { ...Object.fromEntries(keys.map(k => ['integration_' + k, {}])), vat: 18, brand: 'פוסטפלואו' });
                 for (const k of keys) {
@@ -1227,9 +1231,14 @@ if (p[0] === 'cart') {
                 return response({ ok: true });
             }
         }
+        // Green Invoice documents of one order or top-up, and issuing one again after a failure (owner 23.11.2026).
+        if (p[1] === 'green-invoice') {
+            if (method === 'GET') return response({ jobs: await invoiceJobs(String(new URL(r.url).searchParams.get('target') || '')) });
+            if (method === 'POST' && p[2] && p[3] === 'retry') { const result = await retryInvoice(decodeURIComponent(p[2]), new URL(r.url).origin); assert(result.status !== 'missing', 'המסמך לא נמצא', 404); await audit(u, decodeURIComponent(p[2]), 'הפקת חשבונית ירוקה נוסתה שוב', { status: result.status }); return response(result); }
+        }
         if (p[1] === 'integration' && p[2]) {
             const key = p[2];
-            assert(['ai', 'wordpress', 'payments', 'email', 'whatsapp', 'images'].includes(key), 'חיבור אינו נתמך');
+            assert(['ai', 'wordpress', 'payments', 'invoices', 'email', 'whatsapp', 'images'].includes(key), 'חיבור אינו נתמך');
             if(p[3]==='models'){
                 assert(key==='ai'&&method==='POST','פעולה אינה נתמכת',405);
                 const b=await json(r),prev=await setting('integration_ai',{});
@@ -1267,6 +1276,7 @@ if (p[0] === 'cart') {
             if (p[3] === 'test' && method === 'POST') {
                 const c = await connection(key);
                 assert(c.secret, 'לא הוגדר מפתח');
+                if (key === 'invoices') { resetGreenInvoiceToken(); await greenInvoiceToken(c); return response({ ok: true }); }
                 if (key === 'wordpress') {
                     const res = await externalFetch(new URL('/wp-json/wp/v2/users/me', c.url).href, { headers: { Authorization: basicAuth(c.username, c.secret) } });
                     assert(res.ok, 'החיבור נכשל. בדקו כתובת, משתמש וסיסמת אפליקציה', 502);
