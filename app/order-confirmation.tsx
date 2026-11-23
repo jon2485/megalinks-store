@@ -55,7 +55,7 @@ export default function OrderConfirmation({ ctx, id }: { ctx: Ctx; id: string })
     const sites = live || articles.length || Number(order.article_count) || 0, siteWord = sites === 1 ? 'אתר אחד' : sites + ' אתרים';
     const net = left ? left.net : Number(order.subtotal || 0) - Number(order.discount || 0), due = effectiveOrderTotal(order);
     const payByCard = async () => { if (busy) return; setBusy(true); setError(''); try { const result = await api('orders/' + order.id + '/payment-link', 'POST', {}); window.location.assign(result.payment_url); } catch (e) { setError((e as Error).message); setBusy(false); } };
-    const reportPayment = () => ctx.open({ kind: 'payment-report', title: 'דיווח תשלום להזמנה ' + number, description: 'הדיווח יועבר לאישור מנהל', render: (close: () => void) => <PaymentReportForm ctx={ctx} order={order} amount={due} close={close}/> });
+    const reportPayment = () => ctx.open({ kind: 'payment-report', sky: true, title: 'דיווח תשלום להזמנה ' + number, description: 'הדיווח יועבר לאישור מנהל', render: (close: () => void) => <PaymentReportForm ctx={ctx} order={order} amount={due} close={close}/> });
     const toContent = <button type="button" className="oc-btn1" onClick={() => ctx.go('purchased/articles')}><PenLine size={18}/>להכנת התוכן לכתבות</button>;
     const cancelled = orderCancellation(order) === 'full';
     const hero = cancelled

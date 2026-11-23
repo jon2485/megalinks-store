@@ -103,3 +103,9 @@ body:has(.payment-report-glass-confirm,.payment-report-glass-form,.catalog-site-
  .payment-report-glass-form .payment-method-buttons button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-2px;color:Highlight;}
  .payment-report-glass-form .payment-report-footer .payment-glass-send,.publication-catalog-card .catalog-site-notes-trigger{background:ButtonFace;color:ButtonText;border:2px solid ButtonText;box-shadow:none;}
 }
+
+/* What is being sent, on the confirmation (23.11.2026). The customer popups restyle it in customer-dialog-sky.css. */
+.payment-glass-facts{display:grid;gap:6px;margin:0 0 18px;}
+.payment-glass-facts>div{display:flex;justify-content:space-between;gap:12px;font-size:14px;}
+.payment-glass-facts dt{color:var(--payment-glass-muted);}
+.payment-glass-facts dd{margin:0;font-weight:600;overflow-wrap:anywhere;text-align:left;}

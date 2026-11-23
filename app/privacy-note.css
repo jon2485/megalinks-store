@@ -3,5 +3,5 @@
 html body .ml-privacy-note.ml-privacy-note { margin: 10px 0 0 !important; font-size: 13px !important; line-height: 1.5 !important; font-weight: 400 !important; color: #4B5A70 !important; text-align: start; }
 html body .ml-privacy-note.ml-privacy-note a { color: inherit !important; font-weight: 400 !important; text-decoration: underline; text-underline-offset: 2px; }
 html body .ml-privacy-note.ml-privacy-note a:focus-visible { outline: 2px solid #1467CF; outline-offset: 2px; border-radius: 4px; }
-/* Inside the payment report dialog the line sits under the footer, outside its padding: same inner spacing as the footer. */
-html body .payment-report-form > .ml-privacy-note.ml-privacy-note { margin: 0 !important; padding: 0 22px 18px; text-align: center; }
+/* Inside the payment report dialog the line is the last thing in the scrolling body, above the actions (23.11.2026). */
+html body .payment-report-body > .ml-privacy-note.ml-privacy-note { margin: 0 !important; }
