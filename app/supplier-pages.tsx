@@ -62,7 +62,7 @@ function AddStock({ctx,site,close}:{ctx:Ctx;site:Row;close:()=>void}){
 }
 
 /* ---------- Add stock to the supplier's pool (owner, 23.11.2026): shared by all its sites, no site to pick ---------- */
-export const openAddPoolStock=(ctx:Ctx,supplier:Row,pickSite?:()=>void)=>ctx.open({kind:'admin-finance',title:'הוספת מלאי',description:supplier.name+' · מלאי משותף לכל האתרים של הספק',render:(close:()=>void)=><AddPoolStock ctx={ctx} supplier={supplier} close={close} pickSite={pickSite?()=>{close();setTimeout(pickSite,50);}:undefined}/>});
+export const openAddPoolStock=(ctx:Ctx,supplier:Row,pickSite?:()=>void)=>ctx.open({kind:'admin-finance',title:'הוספת מלאי',description:supplier.name+' · מלאי · חבילה מראש: חבילה אחת לכל האתרים של הספק',render:(close:()=>void)=><AddPoolStock ctx={ctx} supplier={supplier} close={close} pickSite={pickSite?()=>{close();setTimeout(pickSite,50);}:undefined}/>});
 function AddPoolStock({ctx,supplier:s,close,pickSite}:{ctx:Ctx;supplier:Row;close:()=>void;pickSite?:()=>void}){
  const state=useData('admin/suppliers/'+encodeURIComponent(s.id)+'?'+new URLSearchParams({page:'1',q:'',all:'0',selected:''}),ctx.revision),pool:Row|undefined=state.data?.pool;
  const[f,setF]=useState({quantity:'',total_ils:'',unit_ils:'',paid_on:todayLocal(),method:'bank_transfer',note:''}),[merge,setMerge]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),lock=useRef(false);

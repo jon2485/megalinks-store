@@ -39,7 +39,7 @@ const avatarColors=['#0071e3','#30a46c','#bf5af2','#ff9f0a','#ff375f','#0a84ff',
 const avatarColor=(s:string)=>avatarColors[[...String(s||'')].reduce((n,c)=>n+c.charCodeAt(0),0)%avatarColors.length];
 export function Av({name,size}:{name?:string;size?:'lg'}){return <span className={'sv2-av'+(size?' is-lg':'')} style={{background:avatarColor(name||'')}} aria-hidden="true">{String(name||'?').trim().slice(0,1)}</span>;}
 function Stock({used,total,tone}:{used:number;total:number;tone?:string}){return <span className={'sv2-stock'+(tone?' is-'+tone:'')}><span>{used}</span><i>/</i><b>{total}</b></span>;}
-export const billingPill=(b:string)=>b==='exchange'?<span className="sv2-pill p-exch"><i/>החלפות · קישור תמורת קישור</span>:b==='pool'?<span className="sv2-pill p-stock"><i/>מלאי ספק משותף</span>:b==='stock'?<span className="sv2-pill p-stock"><i/>מלאי · חבילה מראש</span>:b==='monthly'?<span className="sv2-pill p-month"><i/>התחשבנות חודשית</span>:b==='mixed'?<span className="sv2-pill p-month"><i/>חודשי + מלאי לפי אתר</span>:<span className="sv2-muted">אין אתרים</span>;
+export const billingPill=(b:string)=>b==='exchange'?<span className="sv2-pill p-exch"><i/>החלפות · קישור תמורת קישור</span>:b==='pool'?<span className="sv2-pill p-stock"><i/>מלאי · חבילה מראש</span>:b==='stock'?<span className="sv2-pill p-stock"><i/>מלאי משתנה פר אתר</span>:b==='monthly'?<span className="sv2-pill p-month"><i/>התחשבנות חודשית</span>:b==='mixed'?<span className="sv2-pill p-month"><i/>חודשי + מלאי לפי אתר</span>:<span className="sv2-muted">אין אתרים</span>;
 export const kindPill=(k:string)=><span className={'sv2-pill '+(k==='account'?'p-acc':k==='partial'?'p-part':'p-man')}>{supplierKinds[k]||'ספק ידני'}</span>;
 const orderPill:Record<string,[string,string]>={open:['p-open','הזמנה פתוחה'],awaiting:['p-wait','ממתינה לחשבונית'],invoice:['p-inv','התקבלה חשבונית'],paid:['p-paid','שולמה']};
 const packPill=(p:Row)=>p.status==='done'?<span className="sv2-pill p-paid"><i/>נוצלה במלואה</span>:p.status==='queued'?<span className="sv2-pill p-man"><i/>ממתינה לשימוש</span>:p.status==='low'?<span className="sv2-pill p-inv"><i/>עומדת להיגמר · {p.left}</span>:<span className="sv2-pill p-open"><i/>בשימוש{p.paid?' · שולמה':''}</span>;
@@ -213,7 +213,7 @@ function BillingTab({ctx,supplier:s,state,pool}:{ctx:Ctx;supplier:Row;state:Row;
 // Owner (23.11.2026): stock belongs to the supplier, for every stock supplier. "הוספת מלאי" adds to the supplier's pool;
 // a site with a stock number of its own is picked only through the small link in that dialog.
 export function openAddStockFor(ctx:Ctx,s:Row){openAddPoolStock(ctx,s,()=>openSiteStockFor(ctx,s));}
-function openSiteStockFor(ctx:Ctx,s:Row){ctx.open({kind:'admin-finance',title:'מלאי נפרד לאתר אחד',description:'לאתר שיש לו מספר מלאי משלו. המלאי שלו לא יורד ממלאי הספק · '+s.name,render:(close:()=>void)=><PickSite ctx={ctx} supplier={s} close={close}/>});}
+function openSiteStockFor(ctx:Ctx,s:Row){ctx.open({kind:'admin-finance',title:'מלאי משתנה פר אתר',description:'לאתר שיש לו מספר מלאי משלו. המלאי שלו לא יורד ממלאי הספק · '+s.name,render:(close:()=>void)=><PickSite ctx={ctx} supplier={s} close={close}/>});}
 
 /* ---------- The supplier's stock pool on the supplier page (owner, 23.11.2026) ---------- */
 function PoolBlock({ctx,supplier:s,pool:p}:{ctx:Ctx;supplier:Row;pool:Row}){
