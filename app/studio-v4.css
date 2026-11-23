@@ -150,3 +150,20 @@ body.sv-typing .floating-whatsapp{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){.studio-v2 .sv-flash,.studio-v2 .sv-hint-ok,.studio-link-menu{animation:none}}
 @media(max-width:699px){html body .studio-v2 .sv-actionbar-missing{display:none!important}.studio-link-menu{min-width:280px}.studio-link-menu-actions button{font-size:13px;padding:0 10px}}
+/* Owner 23.11.2026: the send button stays; a popup says what is missing and leads there */
+.sv-missing-dialog{border-radius:26px!important;padding:22px 18px 16px!important}
+.sv-missing-dialog [data-slot=dialog-title]{font:800 21px/1.3 Heebo,Arial,sans-serif;color:#0b1b2f}
+.sv-missing-dialog [data-slot=dialog-description]{font:400 15px/1.6 Heebo,Arial,sans-serif;color:#5b6b82}
+.sv-missing-badge{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:#fff3e2;color:#a5480a;margin-bottom:6px}
+.sv-missing-acts{display:grid;gap:8px}
+.sv-missing-dialog .sv-missing-acts button{height:48px;border-radius:14px;font:700 15px Heebo,Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:none}
+.sv-missing-dialog .sv-missing-a1{background:#1467cf!important;color:#fff!important;border:0}
+.sv-missing-dialog .sv-missing-a2{background:#e8f1ff!important;color:#0b5bc4!important;border:0!important}
+.sv-missing-quiet{display:block;margin:4px auto 0;padding:8px;border:0;background:none;color:#5b6b82;font:500 14px Heebo,Arial,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.sv-missing-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.sv-missing-list li{border-radius:18px;box-shadow:inset 0 0 0 1px #e3e9f1;padding:12px 14px}
+.sv-missing-row{display:flex;align-items:center;gap:10px;font:700 16px Heebo,Arial,sans-serif;color:#0b1b2f}
+.sv-missing-num{width:24px;height:24px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;background:#fff3e2;color:#a5480a;font:800 13px Heebo,Arial,sans-serif}
+.sv-missing-list small{display:block;margin:4px 34px 10px 0;color:#5b6b82;font:400 14px/1.5 Heebo,Arial,sans-serif}
+.sv-missing-list .sv-missing-acts{margin-right:34px}
+html body .sv-missing-dialog [data-slot=dialog-close],html body .sv-missing-dialog>button.absolute{left:14px!important;right:auto!important;top:14px!important;width:36px;height:36px;border-radius:50%;background:#f1f4f8;display:grid;place-items:center;opacity:1}
