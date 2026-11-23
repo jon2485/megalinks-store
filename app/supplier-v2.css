@@ -347,3 +347,5 @@ select.sv2-native{display:block;width:100%;height:44px;margin-top:6px;padding:0 
 .sv2-sitestable :is(.sv2-tr,.sv2-th)>*{min-width:0}
 .sv2-sitestable .sv2-tr>*{overflow-wrap:anywhere}
 .sv2-sitestable .sv2-rowact{flex-wrap:wrap}
+/* 1101-1300px: a little less space between columns so the tables above fit the narrower card */
+@media(min-width:1101px) and (max-width:1300px){:is(.sv2-hub,.sv2-sitestable) :is(.sv2-th,.sv2-tr){gap:10px;padding-inline:16px}}

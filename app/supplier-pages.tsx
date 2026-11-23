@@ -138,8 +138,9 @@ export function SupplierHub({ctx,confirm}:{ctx:Ctx;confirm:(run:()=>void)=>void}
  const go=(page:string,before?:()=>void)=>confirm(()=>{before?.();ctx.go(page);});
  const tab=(s:Row,t:string)=>()=>go('admin-supplier/'+s.id,()=>saveAdminViewState('supplier-editor:'+s.id,{site:'',tab:t,all:false}));
  const open=(s:Row)=>(e:React.MouseEvent)=>{if(!plain(e))return;e.preventDefault();tab(s,'sites')();};
- // Flexible columns so the "פעולות" button stays inside the card from 1100px up (owner 23.11.2026).
- const cols={gridTemplateColumns:'minmax(170px,2fr) minmax(96px,1fr) minmax(150px,1.4fr) 84px auto'};
+ // Flexible columns so the "פעולות" button stays inside the card from 1100px up (owner 23.11.2026). The buttons column
+ // has a fixed width: the header is a separate grid and an auto column would move its titles away from the values.
+ const cols={gridTemplateColumns:'minmax(170px,2fr) minmax(104px,1fr) minmax(150px,1.5fr) 84px 108px'};
  return <div className="orders-match-screen om-finance om-content om-suppliers sv2 sv2-hub" dir="rtl">
   <SupplierAreaHead current="admin-suppliers" title="כל הספקים" sub='לחיצה על ספק פותחת את האתרים שלו. כל השאר בכפתור "פעולות".' go={go} action={<button type="button" className="sv2-btn primary lg" onClick={()=>go('admin-supplier/new')}><Plus size={17} aria-hidden="true"/>הוספת ספק</button>}/>
   <section className="sv2-card">

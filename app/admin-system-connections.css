@@ -41,6 +41,7 @@
 .sys-connections.sys-connections.sv2-fin .scx-row .sv2-rowact{justify-content:flex-start}
 .sys-connections.sys-connections.sv2-fin .scx-row>*{min-width:0}
 .sys-connections.sys-connections.sv2-fin .scx-row .sv2-rowact{flex-wrap:wrap}
+@media(min-width:1101px) and (max-width:1300px){.sys-connections.sys-connections.sv2-fin :is(.sv2-th,.scx-row){gap:10px;padding-inline:16px}}
 .sys-connections.sys-connections.sv2-fin .scx-suffix{position:relative;display:block}
 .sys-connections.sys-connections.sv2-fin .scx-suffix input{padding-inline-end:30px}
 .sys-connections.sys-connections.sv2-fin .scx-suffix i{position:absolute;inset-block:0;inset-inline-end:12px;display:grid;place-items:center;font-style:normal;font-size:14px;color:var(--sv-mute);pointer-events:none}

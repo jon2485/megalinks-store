@@ -18,7 +18,8 @@ const providerLabels:Record<string,string>={openai:'OpenAI',gemini:'Google Gemin
 const ready=(c:Row)=>!!(c.enabled&&c.has_secret);
 const shortUrl=(raw:string)=>{try{const u=new URL(raw);return u.host+(u.pathname==='/'?'':u.pathname.replace(/\/$/,''));}catch{return raw;}};
 // Flexible columns so "הגדרה" and "בדיקה" stay inside the card from 1100px up (owner 23.11.2026).
-const cols={gridTemplateColumns:'minmax(180px,1.7fr) minmax(90px,.9fr) minmax(120px,1fr) 104px auto'};
+// The buttons column has a fixed width so the header titles stay above their values.
+const cols={gridTemplateColumns:'minmax(170px,1.7fr) minmax(80px,.9fr) minmax(120px,1fr) 100px 172px'};
 type Filter='all'|'need'|'ok';
 
 export function AdminConnectionsPage({ctx}:{ctx:Ctx}){
