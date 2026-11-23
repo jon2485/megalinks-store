@@ -628,3 +628,19 @@
  .sv2-orders .sv2-grp-trash .sv2-trash-all{height:36px}
 }
 .sv2-orders .sv2-olist .sv2-order.is-trashed.is-trashed{--oc:#c7c7cc}
+
+/* Owner 23.11.2026: on a 1280px screen the orders page grew wider than its column (the one grid track took the width of
+   the areas bar), so the end of each row ("…" and the chevron) was off screen. The track now fits the page and the areas
+   bar scrolls sideways when it does not fit. */
+.sv2.sv2-orders{grid-template-columns:minmax(0,1fr)!important}
+.sv2.sv2-orders>*{min-width:0}
+.sv2 nav.sv2-areas{overflow-x:auto;scrollbar-width:none}
+.sv2 nav.sv2-areas::-webkit-scrollbar{display:none}
+/* Between phone and wide desktop the fixed columns give back some room so the customer name and the sites stay readable. */
+@media(min-width:1101px) and (max-width:1400px){
+ .sv2-orders:not(.cfo) :is(.sv2-th,.sv2-olist .sv2-orow){grid-template-columns:84px minmax(0,1.5fr) minmax(0,1fr) 150px 90px 108px 140px!important;gap:10px!important}
+}
+@media(min-width:1101px) and (max-width:1250px){
+ .sv2-orders:not(.cfo) :is(.sv2-th,.sv2-olist .sv2-orow){grid-template-columns:76px minmax(0,1.5fr) minmax(0,1fr) 140px 64px 100px 132px!important;gap:8px!important}
+ .sv2-orders:not(.cfo) .sv2-olist .sv2-orow>.sv2-pubcell{min-width:0;overflow:hidden}
+}
