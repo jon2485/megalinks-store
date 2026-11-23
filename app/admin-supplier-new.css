@@ -125,3 +125,21 @@ html body .nsp .srl-words .nsp-money input{padding-left:60px!important}
 .nsp-known-text .is-good{font-weight:800;color:#117c4c}.nsp-known-text .is-bad{font-weight:800;color:#b4233a}
 .nsp-known-act{display:flex;flex-wrap:wrap;gap:8px}
 .nsp-btn.is-quiet{background:#fff;color:var(--blue);box-shadow:inset 0 0 0 1px #cfe0f5;text-decoration:none}
+/* Owner 23.11.2026: two fields side by side start at the same height. The label row is shared by the pair (subgrid), so a
+   hint under one label no longer pushes its field below its neighbour; a short hint stays on the label's own line. */
+.nsp-lbl small.nsp-inline{flex-basis:auto}
+@media(min-width:761px){
+ .nsp-grid>.nsp-f:not(.is-wide):not(:has(>:nth-child(3))){grid-row:span 2;grid-template-rows:subgrid;row-gap:6px}
+ .nsp-grid>.nsp-f:not(.is-wide):not(:has(>:nth-child(3)))>.nsp-lbl{align-self:end}
+}
+/* Phone: the tier's name and what it pays sit on one line; the action sits under the price. */
+.spp-val{display:inline-flex;align-items:baseline;gap:8px}
+@media(max-width:760px){
+ .spp-tiers li{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:4px 12px}
+ .spp-tiers li>.spp-who{grid-column:1;grid-row:1/span 2;min-width:0}
+ .spp-tiers li>:is(.spp-auto,.spp-edit){display:contents}
+ .spp-tiers li :is(.spp-val,.nsp-money){grid-column:2;grid-row:1;justify-self:end}
+ .spp-tiers li .spp-link{grid-column:2;grid-row:2;justify-self:end}
+ .spp-tiers li>.spp-salenote{grid-column:1/-1}
+}
+html body .nsp .spp-tiers .nsp-money input{margin:0!important}

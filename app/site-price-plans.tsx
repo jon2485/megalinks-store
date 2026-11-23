@@ -27,7 +27,7 @@ export function SitePricePlans({price,tiers,fixed,onFixed,sale,onSale,disabled}:
     <span className="spp-who"><b>{t.name}</b><small>{manual!=null?'מחיר ידני לאתר הזה':pct?pct+'% הנחה על כל האתרים':'בלי הנחה כללית'}</small></span>
     {manual!=null?<span className="spp-edit"><span className="nsp-money"><input type="number" inputMode="decimal" min={0} step="0.01" value={manual} disabled={disabled} aria-label={'מחיר ידני ל'+t.name} onChange={e=>onFixed(t.id,e.target.value)}/><i>₪</i></span>
       <button type="button" className="spp-link" disabled={disabled} onClick={()=>onFixed(t.id,null)}><RotateCcw size={14} aria-hidden="true"/>{pct?'חזרה ל־'+pct+'%':'חזרה למחירון'}</button></span>
-     :<span className="spp-auto"><b>{auto==null?'—':ils(auto)}</b>{pct>0&&hasList&&<s>{ils(list)}</s>}<button type="button" className="spp-link" disabled={disabled} onClick={()=>onFixed(t.id,auto==null?'':String(auto))}>שינוי ידני</button></span>}
+     :<span className="spp-auto"><span className="spp-val"><b>{auto==null?'—':ils(auto)}</b>{pct>0&&hasList&&<s>{ils(list)}</s>}</span><button type="button" className="spp-link" disabled={disabled} onClick={()=>onFixed(t.id,auto==null?'':String(auto))}>שינוי ידני</button></span>}
     {saleNum!=null&&withSale!=null&&withSale<(pays??Infinity)&&<small className="spp-salenote">במבצע משלמים {ils(withSale)}</small>}
    </li>;})}</ul>
   <label className={'spp-sale'+(sale.on?' is-on':'')}><input type="checkbox" checked={sale.on} disabled={disabled} onChange={e=>onSale({on:e.target.checked})}/><Tag size={16} aria-hidden="true"/><span><b>מבצע על האתר</b><small>מחיר מבצע לכל הלקוחות, מוצג כמבצע בקטלוג</small></span></label>
