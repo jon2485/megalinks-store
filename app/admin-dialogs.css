@@ -86,6 +86,8 @@ body:has(.admin-design-v172) [data-slot=dialog-content] :is(h3,h4){margin:0!impo
 .om-dialog .om-result.is-ok span{color:var(--ad-copy)!important}
 /* Confirmation before deleting: small, white, no navy header */
 body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]):has([data-variant=destructive]):not(:has(form,input,textarea,select)){width:min(400px,calc(100vw - 24px))!important;padding-top:20px!important}
+/* Owner 23.11.2026: on phones the delete confirmation is a card in the middle of the screen, not a sheet stuck to one side. */
+@media(max-width:640px){body:has(.admin-design-v172) :is([data-slot=dialog-content],[data-slot=alert-dialog-content]):has([data-variant=destructive]):not(:has(form,input,textarea,select)):not(#dlg-x){inset:auto!important;left:50%!important;top:50%!important;translate:none!important;transform:translate(-50%,-50%)!important;width:calc(100vw - 32px)!important;max-width:400px!important;max-height:calc(100dvh - 32px)!important;margin:0!important;border-radius:22px!important}}
 body:has(.admin-design-v172) [data-slot=dialog-content]:has([data-variant=destructive]):not(:has(form,input,textarea,select)) [data-slot=dialog-header]{padding:0 20px!important;background:none;border:0}
 body:has(.admin-design-v172) [data-slot=dialog-content]:has([data-variant=destructive]):not(:has(form,input,textarea,select)) [data-slot=dialog-close]{color:var(--ad-copy)}
 body:has(.admin-design-v172) [data-slot=dialog-content]:has([data-variant=destructive]):not(:has(form,input,textarea,select)) [data-slot=dialog-close]:hover{background:var(--ad-tint);color:var(--ad-ink)}
