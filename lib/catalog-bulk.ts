@@ -6,7 +6,7 @@ import {liveSites} from './site-archive';
 import {MONTHLY,STOCK_WORD,EXCHANGE,emailList} from './catalog-fields';
 const texts=['name','url','category','logo_url','language','website_type','sale_title','sale_ends','public_notes','customer_notes','admin_notes','publishing_restrictions','city','tier_badge','pixel_option','wordpress_connection'];
 const flags=['active','is_on_sale','single_link_only','procurement_verified'];
-const numbers=['price_ils','cost_ils','sale_price_ils','dr','ur','turnaround_days'];
+const numbers=['price_ils','cost_ils','sale_price_ils','dr','ur','turnaround_days','max_words'];
 const lists=['tags','features','example_articles','recommended_topics','content_tags'];
 const allowed=new Set([...texts,...flags,...numbers,...lists,'supplier_id','supplier_email','supplier_name','stock_total','sort_order','pixel_price_ils']);
 export async function saveCatalogBatch(user:Row,input:Row){
@@ -56,6 +56,8 @@ export async function saveCatalogBatch(user:Row,input:Row){
   // The sale rule is checked when this save touches the price, the sale price or the sale switch, adds a site or makes one visible again.
   if(d.is_on_sale&&(strict||['price_ils','sale_price_ils','is_on_sale'].some(k=>k in values)))assert(Number.isSafeInteger(d.sale_price_cents)&&d.sale_price_cents<price,'מחיר מבצע חייב להיות נמוך מהמחיר הרגיל');
   if(d.sale_ends)assert(Number.isFinite(Date.parse(d.sale_ends)),'תאריך סיום המבצע אינו תקין');
+  // Word limit of an article at this site (owner 23.11.2026): empty or 0 = no limit; checked when the article is sent.
+  if('max_words' in values){const raw=values.max_words,n=Number(raw);if(raw===''||raw===null||n===0)delete d.max_words;else{assert(Number.isInteger(n)&&n>=50&&n<=20000,'מגבלת המילים צריכה להיות מספר שלם בין 50 ל-20,000');d.max_words=n;}}
   for(const k of ['dr','ur','turnaround_days'])if(k in values){const n=Number(values[k]);// Owner: UR (19.11.2026) and DR (20.11.2026) may have decimals, for example 4.1; delivery days stay whole numbers.
   assert(values[k]!==''&&Number.isFinite(n)&&(k!=='turnaround_days'||Number.isInteger(n))&&n>=0&&n<=(k==='turnaround_days'?365:k==='ur'?1000000:100),'דירוג או זמן אספקה לא תקינים');d[k]=k==='turnaround_days'?n:Math.round(n*100)/100;}
   if('supplier_id' in values){const supplierId=String(values.supplier_id||'');assert(!supplierId||suppliers.has(supplierId),'הספק לא נמצא');d.supplier_id=supplierId;d.supplier_name=suppliers.get(supplierId)?.name||'';}

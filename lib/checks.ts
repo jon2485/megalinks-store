@@ -102,6 +102,8 @@ export async function checkLink(value:string, expectedDomain='') {
  await page.res.body?.cancel();
  return {url:value,final_url:page.url.href,ok:true,status:page.res.status,message:'הקישור נגיש'};
 }
+// Words as a reader counts them: anything with a letter or a digit between spaces.
+export const articleWords=(html:string)=>plainText(html).split(/\s+/).filter(w=>/[\p{L}\p{N}]/u.test(w)).length;
 export async function articleChecks(a:Row) {
     const errors:string[]=[];const data=typeof a.data==='string'?JSON.parse(a.data):a.data||{};
     if(!a.title?.trim())errors.push('חסרה כותרת');if(!plainText(a.content||'').trim())errors.push('חסר גוף מאמר');
@@ -110,6 +112,11 @@ export async function articleChecks(a:Row) {
     const embedded=await inlineImages(a.content||'');if(embedded.length>10)errors.push('מותר עד 10 תמונות בתוך המאמר');for(const image of embedded)if(!image.credit)errors.push('חסר קרדיט לתמונה בתוך המאמר');
     let imageBytes=0;const imageIds=new Set<string>(embedded.map(i=>i.id));for(const key of ['image_id','secondary_image_id']){if(data[key])imageIds.add(data[key]);}const imageFiles=await mapIn('files','id',[...imageIds]);for(const id of imageIds){const file=imageFiles.get(String(id));if(!file||!file.type.startsWith('image/'))errors.push('יש לצרף קובץ תמונה תקין');else imageBytes+=file.size;}if(imageBytes>12*1024*1024)errors.push('התמונות יחד גדולות מ־12MB. הקטינו אותן לפני שליחה');
     const urls:string[]=[];await new HTMLRewriter().on('a[href]',{element(el:any){const href=el.getAttribute('href');if(href&&!urls.includes(href))urls.push(href);}}).transform(new Response(a.content||'')).text();
+    // The site's own limits (owner 23.11.2026): one link only, and a maximum number of words. The article is not sent until it fits.
+    const site=await one('SELECT data FROM websites WHERE id=?',a.website_id),rules=site?JSON.parse(site.data||'{}'):{};
+    if(rules.single_link_only&&urls.length>1)errors.push('באתר הזה מותר קישור אחד בלבד בתוך המאמר. כרגע יש '+urls.length+' קישורים.');
+    const maxWords=Number(rules.max_words||0),words=articleWords(a.content||'');
+    if(maxWords>0&&words>maxWords)errors.push('באתר הזה מותר עד '+maxWords.toLocaleString('he-IL')+' מילים. בכתבה יש '+words.toLocaleString('he-IL')+' מילים, צריך לקצר ב-'+(words-maxWords).toLocaleString('he-IL')+' מילים.');
     if(!urls.length)errors.push('חובה להוסיף לפחות קישור אחד בתוך גוף המאמר');if(urls.length>10)errors.push('ניתן לבדוק עד 10 קישורים במאמר');
     const links=await Promise.all(urls.slice(0,10).map(url=>checkLink(url)));for(const l of links)if(!l.ok)errors.push(l.url+': '+l.message);
     const validation={checked_at:now(),article_version:a.version,ok:!errors.length,errors,links};

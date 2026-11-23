@@ -3,7 +3,7 @@ import {websitePricing} from './shared';
 
 const select=(source:Row,fields:readonly string[])=>Object.fromEntries(fields.filter(k=>source[k]!==undefined).map(k=>[k,source[k]]));
 // Default-deny projections: adding an internal database field never publishes it.
-const websiteFields=['id','name','url','category','categories','dr','ur','active','is_active','logo_url','language','website_type','city','description','content_tags','recommended_topics','features','tags','turnaround_days','single_link_only','pixel_option','pixel_price','public_notes','customer_notes','publishing_restrictions','example_articles','is_on_sale','sale_price_cents','sale_ends','sale_title','site_status','sort_order','tier_badge'];
+const websiteFields=['id','name','url','category','categories','dr','ur','active','is_active','logo_url','language','website_type','city','description','content_tags','recommended_topics','features','tags','turnaround_days','single_link_only','max_words','pixel_option','pixel_price','public_notes','customer_notes','publishing_restrictions','example_articles','is_on_sale','sale_price_cents','sale_ends','sale_title','site_status','sort_order','tier_badge'];
 export function customerWebsiteData(source:Row):Row {
     const result=select(source,websiteFields);
     // Nested arbitrary objects are not public metadata either.

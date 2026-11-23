@@ -10,6 +10,7 @@ import {api,pricingApi,useData} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import {categories,type Ctx} from './workspace';
 import {SitePricePlans,saveTierPrices,saleValues,type Sale} from './site-price-plans';
+import {SiteRules,maxWordsProblem} from './site-rules';
 import './admin-supplier-new.css';
 
 type Guard={mark:(key:string,dirty:boolean)=>void};
@@ -37,8 +38,8 @@ export function BillingTypeCards({value,onChange,name='billing'}:{value:string;o
   {chosen&&<div className="nsp-explain" aria-live="polite">{chosen.explain}</div>}</div>;
 }
 
-type Site={key:string;url:string;name:string;named:boolean;category:string;logo:string;cost:string;price:string;sample:string;qty:string;total:string;attach:Row|null;open:boolean;fixed:Record<string,string|null>;sale:Sale;id?:string;done?:boolean;error?:string};
-const blank=():Site=>({key:Math.random().toString(36).slice(2),url:'',name:'',named:false,category:'',logo:'',cost:'',price:'',sample:'',qty:'',total:'',attach:null,open:true,fixed:{},sale:{on:false,price:'',title:'',ends:''}});
+type Site={key:string;url:string;name:string;named:boolean;category:string;logo:string;cost:string;price:string;sample:string;qty:string;total:string;attach:Row|null;open:boolean;fixed:Record<string,string|null>;sale:Sale;note:string;singleLink:boolean;maxWords:string;id?:string;done?:boolean;error?:string};
+const blank=():Site=>({key:Math.random().toString(36).slice(2),url:'',name:'',named:false,category:'',logo:'',cost:'',price:'',sample:'',qty:'',total:'',attach:null,open:true,fixed:{},sale:{on:false,price:'',title:'',ends:''},note:'',singleLink:false,maxWords:''});
 const ils=(v:string|number)=>'₪'+Number(v||0).toLocaleString('he-IL',{maximumFractionDigits:2});
 const todayLocal=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);};
 const fullUrl=(raw:string)=>{const v=raw.trim();if(!v)return '';try{const u=new URL(/^https?:\/\//i.test(v)?v:'https://'+v);return u.hostname.includes('.')?u.href:'';}catch{return '';}};
@@ -71,6 +72,7 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
   if(billing!=='exchange'&&s.cost.trim()&&!(Number(s.cost)>=0))return 'מחיר העלות אינו תקין.';
   if(s.sale.on&&(money(s.sale.price)===null||Number(s.sale.price)<0||Number(s.sale.price)>=Number(s.price)))return 'מחיר המבצע צריך להיות נמוך מהמחירון.';
   if(Object.values(s.fixed).some(v=>v!=null&&(v===''||!(Number(v)>=0))))return 'יש להזין מחיר ידני תקין לרמת המחיר, או לחזור לאחוז.';
+  if(maxWordsProblem(s.maxWords))return maxWordsProblem(s.maxWords);
   if(billing==='stock'&&(s.qty||s.total)&&(!(Number.isInteger(Number(s.qty))&&Number(s.qty)>0)||money(s.total)===null))return 'במלאי לאתר יש להזין כמות כתבות שלמה ועלות חבילה.';
   return '';
  };
@@ -99,7 +101,7 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
      // A site created in an earlier try keeps its id, so a retry never creates it twice.
      let siteId=(s.attach?.id||s.id) as string|undefined;
      if(s.attach&&!s.id){await pricingApi('admin/catalog-bulk','POST',{pricing_version:version,rows:[{id:s.attach.id,expected_updated:s.attach.updated,values:{supplier_id:id}}]});}
-     else if(!siteId){const r=await pricingApi('admin/websites','POST',{name:s.name.trim(),url:fullUrl(s.url),category:s.category,price_ils:s.price,...(billing!=='exchange'&&s.cost.trim()?{cost_ils:s.cost}:{}),supplier_id:id,logo_url:s.logo,example_articles:s.sample.trim()?[s.sample.trim()]:[],...saleValues(s.sale)});siteId=r.id as string;}
+     else if(!siteId){const r=await pricingApi('admin/websites','POST',{name:s.name.trim(),url:fullUrl(s.url),category:s.category,price_ils:s.price,...(billing!=='exchange'&&s.cost.trim()?{cost_ils:s.cost}:{}),supplier_id:id,logo_url:s.logo,example_articles:s.sample.trim()?[s.sample.trim()]:[],...saleValues(s.sale),public_notes:s.note.trim(),single_link_only:s.singleLink,...(s.maxWords.trim()?{max_words:Number(s.maxWords)}:{})});siteId=r.id as string;}
      const created=siteId;setSites(list=>list.map(x=>x.key===s.key?{...x,id:created}:x));
      if(siteId&&!s.attach)await saveTierPrices(siteId,s.fixed,{});
      if(billing==='stock'&&siteId&&s.qty&&!s.attach)await api('admin/supplier-stock/'+encodeURIComponent(siteId),'POST',{quantity:Number(s.qty),total_ils:s.total,paid_on:todayLocal(),method:'',note:'נוסף בהוספת הספק'});
@@ -139,7 +141,7 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
      <span className={'nsp-thumb is-sm'+(s.logo||s.attach?.logo_url?'':' is-empty')}>{s.logo||s.attach?.logo_url?<img src={s.logo||s.attach?.logo_url} alt=""/>:title.slice(0,1)}</span>
      <span className="nsp-sum-main"><b>{title}</b><small dir="ltr">{hostOf(s.url)}</small>
       <span className="nsp-chips">{s.attach?<span className="is-blue"><Link2 size={12} aria-hidden="true"/>יצורף מהקטלוג</span>:<>
-       {billing!=='exchange'&&s.cost&&<span>עלות {ils(s.cost)}</span>}{s.price&&<span>מחירון {ils(s.price)}</span>}{billing==='stock'&&s.qty&&<span className="is-green">מלאי {s.qty}</span>}{s.sale.on&&s.sale.price&&<span className="is-orange">מבצע {ils(s.sale.price)}</span>}{Object.values(s.fixed).some(v=>v!=null)&&<span>מחיר ידני לרמה</span>}{s.category&&<span>{categories[s.category]||s.category}</span>}</>}
+       {billing!=='exchange'&&s.cost&&<span>עלות {ils(s.cost)}</span>}{s.price&&<span>מחירון {ils(s.price)}</span>}{billing==='stock'&&s.qty&&<span className="is-green">מלאי {s.qty}</span>}{s.sale.on&&s.sale.price&&<span className="is-orange">מבצע {ils(s.sale.price)}</span>}{Object.values(s.fixed).some(v=>v!=null)&&<span>מחיר ידני לרמה</span>}{s.singleLink&&<span>קישור אחד</span>}{s.maxWords&&<span>עד {s.maxWords} מילים</span>}{s.note.trim()&&<span>יש הערה ללקוח</span>}{s.category&&<span>{categories[s.category]||s.category}</span>}</>}
        {s.done&&<span className="is-green"><Check size={12} aria-hidden="true"/>נשמר</span>}{issue&&<span className="is-red">{issue}</span>}</span></span>
      <span className="nsp-sum-act">{!s.done&&<button type="button" className="nsp-edit" onClick={()=>setSites(list=>list.map(x=>x.key===s.key?{...x,open:true}:x))}><Pencil size={15} aria-hidden="true"/>עריכה</button>}{remove}</span>
      {s.error&&<p className="nsp-err is-wide" role="alert">{s.error}</p>}
@@ -153,7 +155,7 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
       <div className="nsp-grid">
        {field(<>כתובת האתר (URL) {req}</>,<input dir="ltr" inputMode="url" placeholder="example.co.il" value={s.url} disabled={s.done} onChange={e=>onUrl(s,e.target.value)}/>)}
        {field(<>שם האתר {req}</>,<input value={s.name} disabled={s.done} placeholder="מתמלא לבד מהכתובת" onChange={e=>setSite(s.key,{name:e.target.value,named:true})} maxLength={200}/>)}
-       {w&&<div className="nsp-known is-wide" role="status"><span>האתר <b>{w.name}</b> כבר בקטלוג{w.supplier_name?<> (אצל הספק <bdi>{w.supplier_name}</bdi>)</>:' (בלי ספק)'}.</span><button type="button" className="nsp-btn is-small" onClick={()=>setSite(s.key,{attach:w})}><Link2 size={15} aria-hidden="true"/>לצרף לספק הזה</button></div>}
+       {w&&<KnownSite site={w} typedCost={billing==='exchange'?'':s.cost} onAttach={()=>setSite(s.key,{attach:w})}/>}
        {field(<>קטגוריה {req}</>,<select value={s.category} disabled={s.done} onChange={e=>setSite(s.key,{category:e.target.value})}><option value="">בחירת קטגוריה</option>{Object.entries(categories).map(([k,l])=><option key={k} value={k}>{l}</option>)}</select>)}
        <div className="nsp-f"><span className="nsp-lbl">תמונת האתר (לוגו)</span><label className="nsp-logo"><span className={'nsp-thumb'+(s.logo?'':' is-empty')}>{s.logo?<img src={s.logo} alt=""/>:<Upload size={18} aria-hidden="true"/>}</span><span><b>{s.logo?'להחלפת התמונה':'העלאת תמונה'}</b><small>PNG, JPG, GIF או WEBP · עד 5MB</small></span><input type="file" className="nsp-sr" accept="image/png,image/jpeg,image/gif,image/webp" disabled={s.done} onChange={e=>{void upload(s,e.target.files?.[0]);e.target.value='';}}/></label></div>
       </div></div>
@@ -166,6 +168,7 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
       {margin!==null&&<p className={'nsp-calc'+(margin<0?' is-red':'')}>{margin<0?'המחירון נמוך מהעלות: הפסד של '+ils(-margin)+' לכתבה':'רווח לכתבה: '+ils(margin)+' ('+Math.round(margin/Number(s.price)*100)+'%)'}</p>}
      </div>
      <SitePricePlans price={s.price} tiers={tiers} fixed={s.fixed} onFixed={(t,v)=>setSite(s.key,{fixed:{...s.fixed,[t]:v}})} sale={s.sale} onSale={patch=>setSite(s.key,{sale:{...s.sale,...patch}})} disabled={s.done}/>
+     <SiteRules note={s.note} onNote={v=>setSite(s.key,{note:v})} singleLink={s.singleLink} onSingleLink={v=>setSite(s.key,{singleLink:v})} maxWords={s.maxWords} onMaxWords={v=>setSite(s.key,{maxWords:v})} disabled={s.done}/>
      {billing==='stock'&&<div className="nsp-group is-stock"><h3><Boxes size={16} aria-hidden="true"/>מלאי לאתר הזה <small>לא חובה עכשיו</small></h3>
       <div className="nsp-grid">
        {field('כמה כתבות במלאי',<input type="number" inputMode="numeric" min={1} step={1} value={s.qty} disabled={s.done} onChange={e=>setSite(s.key,{qty:e.target.value})}/>)}
@@ -191,5 +194,19 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
   {error&&<p className="nsp-err is-main" role="alert">{error}</p>}
   <div className="nsp-save"><small>{supplierId.current?'הספק כבר נשמר. השמירה תמשיך מהאתר שלא נשמר.':count?'יישמרו הספק ו'+(count===1?'אתר אחד':'-'+count+' אתרים')+' לקטלוג':'יישמר הספק בלי אתרים'}</small>
    <button type="button" className="nsp-btn" disabled={busy} aria-busy={busy||undefined} onClick={()=>void save()}>{busy?<Loader2 size={18} className="nsp-spin" aria-hidden="true"/>:<Check size={18} aria-hidden="true"/>}{busy?step||'שומר…':'שמירת הספק והאתרים'}</button></div>
+ </div>;
+}
+
+// A site that is already in the catalog (owner 23.11.2026): which supplier has it, what it costs us there, the difference
+// from the cost typed here, a link to that supplier's page (new tab, so this form stays), and attaching instead of copying.
+function KnownSite({site:w,typedCost,onAttach}:{site:Row;typedCost:string;onAttach:()=>void}){
+ const cost=w.cost_cents==null||w.cost_cents===''?null:Number(w.cost_cents)/100,typed=String(typedCost||'').trim()===''?null:Number(typedCost);
+ const diff=cost!=null&&typed!=null&&Number.isFinite(typed)?typed-cost:null,who=w.supplier_name||'הספק הנוכחי';
+ return <div className="nsp-known is-wide" role="status">
+  <div className="nsp-known-text"><span>האתר <b>{w.name}</b> כבר בקטלוג{w.supplier_id?<> אצל הספק <b><bdi>{who}</bdi></b></>:' בלי ספק'}.</span>
+   {cost!=null&&<span>אצל הספק <bdi>{who}</bdi> האתר הזה עולה לך <b>{ils(cost)}</b>{w.price!=null?<> · במחירון {ils(Number(w.price)/100)}</>:null}.</span>}
+   {diff!=null&&diff!==0&&<span className={diff<0?'is-good':'is-bad'}>{diff<0?'המחיר שהזנת זול ב-'+ils(-diff)+' (לטובה)':'המחיר שהזנת יקר ב-'+ils(diff)+' (לרעה)'}</span>}
+  </div>
+  <div className="nsp-known-act">{w.supplier_id&&<a className="nsp-btn is-small is-quiet" href={'/admin-supplier/'+encodeURIComponent(w.supplier_id)} target="_blank" rel="noreferrer">לכניסה לספק</a>}<button type="button" className="nsp-btn is-small" onClick={onAttach}><Link2 size={15} aria-hidden="true"/>לצרף לספק הזה</button></div>
  </div>;
 }

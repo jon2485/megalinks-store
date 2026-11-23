@@ -59,7 +59,8 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
     const [notesOpen, setNotesOpen] = useState(false);
     const notesTitleId = useId();
     // Owner 16.11.2026: only the sheet's "הערות" column (public_notes) is shown next to each site in the price list.
-    const notes = [site.public_notes].filter(Boolean);
+    // 23.11.2026: the site's limits (one link, a word limit) are shown with the note, as the article editor shows them.
+    const notes = [site.public_notes, site.single_link_only ? 'באתר הזה מותר קישור אחד בלבד בתוך המאמר.' : '', Number(site.max_words) > 0 ? 'אורך הכתבה באתר הזה: עד ' + Number(site.max_words).toLocaleString('he-IL') + ' מילים.' : ''].filter(Boolean);
     const hasDiscount = Number(site.regular_price_cents) > Number(site.price_cents) && Number(site.price_cents) >= 0;
     const discountPercent = hasDiscount ? Math.floor((site.regular_price_cents - site.price_cents) / site.regular_price_cents * 1000) / 10 : 0;
     const domain = site.url.replace(/^https?:\/\//, '').replace(/\/$/, '');

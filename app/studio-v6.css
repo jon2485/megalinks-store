@@ -233,3 +233,6 @@ html body .studio-v2 .studio-document:focus-visible{box-shadow:inset 0 0 0 2px #
  html body .studio-v2 .studio-rich-editor>.studio-document{height:auto!important;min-height:300px;overflow:visible!important;overscroll-behavior:auto!important}
  html:has(.studio-v2 .studio-document:focus){scroll-padding-top:calc(var(--sv-sticky-top,70px) + 120px)}
 }
+/* Site limits (owner 23.11.2026): the word count turns red past the site's limit; the limits stand out in the site notes. */
+.ar-doc-count.is-over{color:#b4233a!important;font-weight:700}
+.sv-site-notes .sv-site-limit b{color:#7a4300;font-weight:700}
