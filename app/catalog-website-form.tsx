@@ -53,8 +53,9 @@ export default function CatalogWebsiteForm({ctx,site,close,defaultSupplier='',on
   <div className="nsp-group"><h3><Wallet size={16} aria-hidden="true"/>מחירים לכתבה <small>לפני מע״מ · העלות מוצגת בניהול בלבד</small></h3><div className="nsp-grid">
    <label className="nsp-f">{lbl('מחיר עלות לנו','מה שמשלמים לספק')}<span className="nsp-money"><Input type="number" min="0" step="0.01" inputMode="decimal" value={f.cost_ils} onChange={e=>set('cost_ils',e.target.value)}/><i>₪</i></span></label>
    <label className="nsp-f">{lbl(<>מחיר מחירון {req}</>,'מה שהלקוח משלם')}<span className="nsp-money"><Input required type="number" min="0" step="0.01" inputMode="decimal" value={f.price_ils} onChange={e=>set('price_ils',e.target.value)}/><i>₪</i></span></label>
+   {margin!==null&&<p className={'nsp-calc is-wide'+(margin<0?' is-red':'')} role="status">{margin<0?'הפסד לכתבה: '+shekel(-margin):'רווח לכתבה: '+shekel(margin)+(Number(f.price_ils)>0?' ('+Math.round(margin/Number(f.price_ils)*100)+'%)':'')}</p>}
    {site?.id&&presentation==='catalog'&&<div className="is-wide"><ExchangeSiteToggle ctx={ctx} site={site}/></div>}
-  </div>{margin!==null&&<p className={'nsp-calc'+(margin<0?' is-red':'')} role="status">{margin<0?'הפסד לכתבה: '+shekel(-margin):'רווח לכתבה: '+shekel(margin)+(Number(f.price_ils)>0?' ('+Math.round(margin/Number(f.price_ils)*100)+'%)':'')}</p>}</div>
+  </div></div>
   <SitePricePlans price={f.price_ils} tiers={tiers} fixed={fixedView} onFixed={(t,v)=>{onDirtyChange?.(true);setTierEdits(x=>({...x,[t]:v}));}} sale={sale} onSale={onSale} disabled={busy}/>
   <SiteRules note={String(f.public_notes||'')} onNote={v=>set('public_notes',v)} singleLink={!!f.single_link_only} onSingleLink={v=>set('single_link_only',v)} maxWords={String(f.max_words??'')} onMaxWords={v=>set('max_words',v)} disabled={busy}/>
   <div className="nsp-group supplier-procurement"><h3><Boxes size={16} aria-hidden="true"/>מלאי ותשלום לספק</h3><div className="nsp-grid">

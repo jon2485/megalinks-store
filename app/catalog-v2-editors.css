@@ -84,3 +84,12 @@ html body .admin-full-editor.admin-full-editor .catalog-website-form input:focus
  .catalog-sheets-panel .sheets-flow{grid-template-columns:minmax(0,1fr)}
 }
 @media(prefers-reduced-motion:reduce){.admin-full-editor .se-back,.catalog-sheets-panel .sheets-link{transition:none}}
+/* Owner 24.11.2026: every input in the site card right-aligned, in a clear white box with a frame */
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea){height:46px;min-height:46px;padding:0 14px!important;border:1px solid #d3dce7!important;border-radius:12px!important;background:#fff!important;background-color:#fff!important;box-shadow:0 1px 2px #0b1b2f0a!important;font:500 15px Heebo,Arial,sans-serif!important;color:#0b1b2f;text-align:right!important;transition:border-color .15s,box-shadow .15s}
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp textarea{height:auto;min-height:92px;padding:12px 14px!important;line-height:1.6}
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea):hover{border-color:#b7c5d6!important}
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea):focus,html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp :is(input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea):focus-visible{border-color:#1467cf!important;box-shadow:0 0 0 3px #1467cf26!important;outline:0}
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp select{padding-left:36px!important}
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp .nsp-money input{padding-left:40px!important}
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp :is(input,select,textarea):disabled{background:#f6f8fb!important;color:#64768e}
+html body .catalog-website-form.catalog-website-form.catalog-website-form.nsp label.nsp-logo{border:1px dashed #c3d0df;background:#fff;border-radius:12px;min-height:46px}
