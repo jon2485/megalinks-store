@@ -5,7 +5,7 @@
 // A site that is already in the catalog is attached instead of copied. Nothing new on the server: the same calls as the
 // catalog form, the stock dialogs and "צירוף אתרים".
 import React,{useMemo,useRef,useState} from 'react';
-import {ArrowLeftRight,Boxes,CalendarDays,Check,Link2,Loader2,Package,Plus,Trash2,Upload} from 'lucide-react';
+import {ArrowLeftRight,Boxes,CalendarDays,Check,FileText,Globe,Link2,Loader2,Package,Pencil,Plus,Trash2,Upload,Wallet} from 'lucide-react';
 import {api,pricingApi,useData} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import {categories,type Ctx} from './workspace';
@@ -36,8 +36,9 @@ export function BillingTypeCards({value,onChange,name='billing'}:{value:string;o
   {chosen&&<div className="nsp-explain" aria-live="polite">{chosen.explain}</div>}</div>;
 }
 
-type Site={key:string;url:string;name:string;named:boolean;category:string;logo:string;cost:string;price:string;sample:string;qty:string;total:string;attach:Row|null;id?:string;done?:boolean;error?:string};
-const blank=():Site=>({key:Math.random().toString(36).slice(2),url:'',name:'',named:false,category:'',logo:'',cost:'',price:'',sample:'',qty:'',total:'',attach:null});
+type Site={key:string;url:string;name:string;named:boolean;category:string;logo:string;cost:string;price:string;sample:string;qty:string;total:string;attach:Row|null;open:boolean;id?:string;done?:boolean;error?:string};
+const blank=():Site=>({key:Math.random().toString(36).slice(2),url:'',name:'',named:false,category:'',logo:'',cost:'',price:'',sample:'',qty:'',total:'',attach:null,open:true});
+const ils=(v:string|number)=>'₪'+Number(v||0).toLocaleString('he-IL',{maximumFractionDigits:2});
 const todayLocal=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);};
 const fullUrl=(raw:string)=>{const v=raw.trim();if(!v)return '';try{const u=new URL(/^https?:\/\//i.test(v)?v:'https://'+v);return u.hostname.includes('.')?u.href:'';}catch{return '';}};
 const hostOf=(raw:string)=>{try{return new URL(fullUrl(raw)).hostname.replace(/^www\./,'').toLowerCase();}catch{return '';}};
@@ -57,23 +58,29 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
  const upload=async(s:Site,file?:File)=>{if(!file)return;if(!['image/png','image/jpeg','image/gif','image/webp'].includes(file.type)||file.size>5*1024*1024){setSite(s.key,{error:'יש לבחור תמונת PNG, JPG, GIF או WEBP בגודל עד 5MB.'});return;}
   try{const data=new FormData();data.append('file',file);const r=await api('admin/catalog-logo','POST',data);setSite(s.key,{logo:r.url,error:''});}catch(e){setSite(s.key,{error:(e as Error).message});}};
 
+ // What is still missing in one site card ('' when the card is complete or empty).
+ const siteIssue=(s:Site):string=>{
+  if(s.done||!s.url.trim()&&!s.name.trim()&&!s.price.trim())return '';
+  if(!fullUrl(s.url))return 'יש להזין כתובת אתר מלאה.';
+  if(s.attach)return '';
+  if(known(s))return 'האתר כבר בקטלוג. אפשר לצרף אותו לספק הזה בכפתור שבכרטיס.';
+  if(!s.name.trim())return 'יש להזין את שם האתר.';
+  if(!s.category)return 'יש לבחור קטגוריה.';
+  if(money(s.price)===null||Number(s.price)<0)return 'יש להזין מחיר מחירון.';
+  if(billing!=='exchange'&&s.cost.trim()&&!(Number(s.cost)>=0))return 'מחיר העלות אינו תקין.';
+  if(billing==='stock'&&(s.qty||s.total)&&(!(Number.isInteger(Number(s.qty))&&Number(s.qty)>0)||money(s.total)===null))return 'במלאי לאתר יש להזין כמות כתבות שלמה ועלות חבילה.';
+  return '';
+ };
  const problem=():string=>{
   if(!f.name.trim())return 'יש להזין את שם הספק.';
   if(f.email.trim()&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()))return 'המייל של הספק אינו תקין.';
   if(billing==='pool'&&(pool.qty||pool.total)&&(!(Number.isInteger(Number(pool.qty))&&Number(pool.qty)>0)||money(pool.total)===null||Number(pool.total)<0))return 'בחבילה מראש יש להזין כמות כתבות שלמה ועלות חבילה.';
-  for(const [i,s] of sites.entries()){if(s.done)continue;const n='אתר '+(i+1)+': ';
-   if(!s.url.trim()&&!s.name.trim()&&!s.price.trim())continue;
-   if(!fullUrl(s.url))return n+'יש להזין כתובת אתר מלאה.';
-   if(s.attach)continue;
-   if(known(s))return n+'האתר כבר בקטלוג. אפשר לצרף אותו לספק הזה בכפתור שבכרטיס.';
-   if(!s.name.trim())return n+'יש להזין את שם האתר.';
-   if(!s.category)return n+'יש לבחור קטגוריה.';
-   if(money(s.price)===null||Number(s.price)<0)return n+'יש להזין מחיר מחירון.';
-   if(billing!=='exchange'&&s.cost.trim()&&(!(Number(s.cost)>=0)))return n+'מחיר העלות אינו תקין.';
-   if(billing==='stock'&&(s.qty||s.total)&&(!(Number.isInteger(Number(s.qty))&&Number(s.qty)>0)||money(s.total)===null))return n+'במלאי לאתר יש להזין כמות כתבות שלמה ועלות חבילה.';
-  }
+  const i=sites.findIndex(x=>siteIssue(x));
+  if(i>=0){const key=sites[i].key;setSites(list=>list.map(x=>x.key===key?{...x,open:true}:x));return 'אתר '+(i+1)+': '+siteIssue(sites[i]);}
   return '';
  };
+ // "+ הוספת אתר": the cards that are complete fold into a summary line, so the list stays short.
+ const addSite=()=>{setSites(list=>[...list.map(x=>fullUrl(x.url)&&!siteIssue(x)?{...x,open:false}:x),blank()]);dirty();};
 
  const save=async()=>{
   if(lock.current)return;const p=problem();if(p){setError(p);return;}
@@ -119,26 +126,54 @@ export default function NewSupplierPage({ctx,guard}:{ctx:Ctx;guard:Guard}){
     <small className="nsp-note">לא חובה עכשיו. אפשר להוסיף או להגדיל את החבילה אחר כך ב״הוספת מלאי״ בכרטיס הספק.</small></div>}
   </section>
   <section className="nsp-card" aria-labelledby="nsp-3"><div className="nsp-sec"><span className="nsp-n">3</span><h2 id="nsp-3">האתרים של הספק</h2><small>{count===1?'אתר אחד':count+' אתרים'}</small></div>
-   {sites.map((s,i)=>{const w=known(s);return <article key={s.key} className={'nsp-site'+(s.done?' is-done':'')+(s.error?' is-error':'')} aria-label={'אתר '+(i+1)}>
-    <div className="nsp-site-h"><span className="nsp-sn">{i+1}</span><b>{s.attach?.name||s.name||hostOf(s.url)||'אתר חדש'}</b>{s.done&&<span className="nsp-saved"><Check size={14} aria-hidden="true"/>נשמר</span>}
-     {sites.length>1&&!s.done&&<button type="button" className="nsp-rm" onClick={()=>{setSites(list=>list.filter(x=>x.key!==s.key));dirty();}}><Trash2 size={15} aria-hidden="true"/>הסרה</button>}</div>
-    {s.attach?<div className="nsp-attached"><Link2 size={16} aria-hidden="true"/><span><b>{s.attach.name}</b> כבר בקטלוג ויצורף לספק הזה עם הפרטים והמחירים שלו.</span><button type="button" className="nsp-link" onClick={()=>setSite(s.key,{attach:null,url:''})}>ביטול</button></div>:<div className="nsp-grid">
-     {field(<>כתובת האתר (URL) {req}</>,<input dir="ltr" inputMode="url" placeholder="example.co.il" value={s.url} disabled={s.done} onChange={e=>onUrl(s,e.target.value)}/>)}
-     {w&&<div className="nsp-known is-wide" role="status"><span>האתר <b>{w.name}</b> כבר בקטלוג{w.supplier_name?<> (אצל הספק <bdi>{w.supplier_name}</bdi>)</>:' (בלי ספק)'}.</span><button type="button" className="nsp-btn is-small" onClick={()=>setSite(s.key,{attach:w})}><Link2 size={15} aria-hidden="true"/>לצרף לספק הזה</button></div>}
-     {field(<>שם האתר {req}</>,<input value={s.name} disabled={s.done} onChange={e=>setSite(s.key,{name:e.target.value,named:true})} maxLength={200}/>,false,'מתמלא לבד מהכתובת, אפשר לשנות')}
-     <div className="nsp-f"><span className="nsp-lbl">תמונת האתר (לוגו)</span><label className="nsp-logo"><span className={'nsp-thumb'+(s.logo?'':' is-empty')}>{s.logo?<img src={s.logo} alt=""/>:<Upload size={18} aria-hidden="true"/>}</span><span><b>{s.logo?'להחלפת התמונה':'העלאת תמונה'}</b><small>PNG, JPG, GIF או WEBP · עד 5MB</small></span><input type="file" className="nsp-sr" accept="image/png,image/jpeg,image/gif,image/webp" disabled={s.done} onChange={e=>{void upload(s,e.target.files?.[0]);e.target.value='';}}/></label></div>
-     {field(<>קטגוריה {req}</>,<select value={s.category} disabled={s.done} onChange={e=>setSite(s.key,{category:e.target.value})}><option value="">בחירת קטגוריה</option>{Object.entries(categories).map(([k,l])=><option key={k} value={k}>{l}</option>)}</select>)}
-     {billing==='exchange'?<p className="nsp-exch"><ArrowLeftRight size={15} aria-hidden="true"/>בהחלפה לא משלמים לספק. העלות נקבעת לפי האתר שהוא בוחר בתמורה.</p>:
-      field('מחיר עלות לנו',<span className="nsp-money"><input type="number" inputMode="decimal" min={0} step="0.01" value={s.cost} disabled={s.done} onChange={e=>setSite(s.key,{cost:e.target.value})}/><i>₪ לפני מע״מ</i></span>,false,'מה שאנחנו משלמים לספק על כתבה')}
-     {field(<>מחיר מחירון {req}</>,<span className="nsp-money"><input type="number" inputMode="decimal" min={0} step="0.01" value={s.price} disabled={s.done} onChange={e=>setSite(s.key,{price:e.target.value})}/><i>₪ לפני מע״מ</i></span>,false,'מה שהלקוח משלם באתר שלנו')}
-     {billing==='stock'&&<div className="nsp-stock is-wide"><b className="nsp-stock-t">מלאי לאתר הזה</b>
-      {field('כמה כתבות במלאי',<input type="number" inputMode="numeric" min={1} step={1} value={s.qty} disabled={s.done} onChange={e=>setSite(s.key,{qty:e.target.value})}/>)}
-      {field('עלות החבילה לאתר',<span className="nsp-money"><input type="number" inputMode="decimal" min={0} step="0.01" value={s.total} disabled={s.done} onChange={e=>setSite(s.key,{total:e.target.value})}/><i>₪</i></span>)}</div>}
-     {field('כתבה לדוגמה',<input dir="ltr" inputMode="url" placeholder="https://" value={s.sample} disabled={s.done} onChange={e=>setSite(s.key,{sample:e.target.value})}/>,true,'קישור לכתבה שפורסמה באתר')}
-    </div>}
+   {sites.map((s,i)=>{const w=known(s),issue=siteIssue(s),title=s.attach?.name||s.name||hostOf(s.url)||'אתר חדש';
+    const remove=sites.length>1&&!s.done?<button type="button" className="nsp-rm" onClick={()=>{setSites(list=>list.filter(x=>x.key!==s.key));dirty();}} aria-label={'הסרת '+title}><Trash2 size={15} aria-hidden="true"/>הסרה</button>:null;
+    if(!s.open)return <article key={s.key} className={'nsp-sum'+(s.done?' is-done':'')+(s.error?' is-error':'')} aria-label={'אתר '+(i+1)+': '+title}>
+     <span className="nsp-sn">{i+1}</span>
+     <span className={'nsp-thumb is-sm'+(s.logo||s.attach?.logo_url?'':' is-empty')}>{s.logo||s.attach?.logo_url?<img src={s.logo||s.attach?.logo_url} alt=""/>:title.slice(0,1)}</span>
+     <span className="nsp-sum-main"><b>{title}</b><small dir="ltr">{hostOf(s.url)}</small>
+      <span className="nsp-chips">{s.attach?<span className="is-blue"><Link2 size={12} aria-hidden="true"/>יצורף מהקטלוג</span>:<>
+       {billing!=='exchange'&&s.cost&&<span>עלות {ils(s.cost)}</span>}{s.price&&<span>מחירון {ils(s.price)}</span>}{billing==='stock'&&s.qty&&<span className="is-green">מלאי {s.qty}</span>}{s.category&&<span>{categories[s.category]||s.category}</span>}</>}
+       {s.done&&<span className="is-green"><Check size={12} aria-hidden="true"/>נשמר</span>}{issue&&<span className="is-red">{issue}</span>}</span></span>
+     <span className="nsp-sum-act">{!s.done&&<button type="button" className="nsp-edit" onClick={()=>setSites(list=>list.map(x=>x.key===s.key?{...x,open:true}:x))}><Pencil size={15} aria-hidden="true"/>עריכה</button>}{remove}</span>
+     {s.error&&<p className="nsp-err is-wide" role="alert">{s.error}</p>}
+    </article>;
+    const margin=billing!=='exchange'&&money(s.cost)!==null&&money(s.price)!==null&&Number(s.price)>0?Number(s.price)-Number(s.cost):null;
+    const perArticle=billing==='stock'&&Number(s.qty)>0&&money(s.total)!==null?Number(s.total)/Number(s.qty):null;
+    return <article key={s.key} className={'nsp-site'+(s.done?' is-done':'')+(s.error?' is-error':'')} aria-label={'אתר '+(i+1)}>
+    <div className="nsp-site-h"><span className="nsp-sn">{i+1}</span><b>{title}</b>{s.done&&<span className="nsp-saved"><Check size={14} aria-hidden="true"/>נשמר</span>}{remove}</div>
+    {s.attach?<div className="nsp-attached"><Link2 size={16} aria-hidden="true"/><span><b>{s.attach.name}</b> כבר בקטלוג ויצורף לספק הזה עם הפרטים והמחירים שלו.</span><button type="button" className="nsp-link" onClick={()=>setSite(s.key,{attach:null,url:''})}>ביטול</button></div>:<>
+     <div className="nsp-group"><h3><Globe size={16} aria-hidden="true"/>פרטי האתר</h3>
+      <div className="nsp-grid">
+       {field(<>כתובת האתר (URL) {req}</>,<input dir="ltr" inputMode="url" placeholder="example.co.il" value={s.url} disabled={s.done} onChange={e=>onUrl(s,e.target.value)}/>)}
+       {field(<>שם האתר {req}</>,<input value={s.name} disabled={s.done} placeholder="מתמלא לבד מהכתובת" onChange={e=>setSite(s.key,{name:e.target.value,named:true})} maxLength={200}/>)}
+       {w&&<div className="nsp-known is-wide" role="status"><span>האתר <b>{w.name}</b> כבר בקטלוג{w.supplier_name?<> (אצל הספק <bdi>{w.supplier_name}</bdi>)</>:' (בלי ספק)'}.</span><button type="button" className="nsp-btn is-small" onClick={()=>setSite(s.key,{attach:w})}><Link2 size={15} aria-hidden="true"/>לצרף לספק הזה</button></div>}
+       {field(<>קטגוריה {req}</>,<select value={s.category} disabled={s.done} onChange={e=>setSite(s.key,{category:e.target.value})}><option value="">בחירת קטגוריה</option>{Object.entries(categories).map(([k,l])=><option key={k} value={k}>{l}</option>)}</select>)}
+       <div className="nsp-f"><span className="nsp-lbl">תמונת האתר (לוגו)</span><label className="nsp-logo"><span className={'nsp-thumb'+(s.logo?'':' is-empty')}>{s.logo?<img src={s.logo} alt=""/>:<Upload size={18} aria-hidden="true"/>}</span><span><b>{s.logo?'להחלפת התמונה':'העלאת תמונה'}</b><small>PNG, JPG, GIF או WEBP · עד 5MB</small></span><input type="file" className="nsp-sr" accept="image/png,image/jpeg,image/gif,image/webp" disabled={s.done} onChange={e=>{void upload(s,e.target.files?.[0]);e.target.value='';}}/></label></div>
+      </div></div>
+     <div className="nsp-group"><h3><Wallet size={16} aria-hidden="true"/>מחירים לכתבה <small>לפני מע״מ</small></h3>
+      <div className="nsp-grid">
+       {billing==='exchange'?<p className="nsp-exch"><ArrowLeftRight size={15} aria-hidden="true"/>בהחלפה לא משלמים לספק. העלות נקבעת לפי האתר שהוא בוחר בתמורה.</p>:
+        field(<>עלות לנו <small className="nsp-inline">מה שמשלמים לספק</small></>,<span className="nsp-money"><input type="number" inputMode="decimal" min={0} step="0.01" value={s.cost} disabled={s.done} onChange={e=>setSite(s.key,{cost:e.target.value})}/><i>₪</i></span>)}
+       {field(<>מחיר מחירון {req} <small className="nsp-inline">מה שהלקוח משלם</small></>,<span className="nsp-money"><input type="number" inputMode="decimal" min={0} step="0.01" value={s.price} disabled={s.done} onChange={e=>setSite(s.key,{price:e.target.value})}/><i>₪</i></span>)}
+      </div>
+      {margin!==null&&<p className={'nsp-calc'+(margin<0?' is-red':'')}>{margin<0?'המחירון נמוך מהעלות: הפסד של '+ils(-margin)+' לכתבה':'רווח לכתבה: '+ils(margin)+' ('+Math.round(margin/Number(s.price)*100)+'%)'}</p>}
+     </div>
+     {billing==='stock'&&<div className="nsp-group is-stock"><h3><Boxes size={16} aria-hidden="true"/>מלאי לאתר הזה <small>לא חובה עכשיו</small></h3>
+      <div className="nsp-grid">
+       {field('כמה כתבות במלאי',<input type="number" inputMode="numeric" min={1} step={1} value={s.qty} disabled={s.done} onChange={e=>setSite(s.key,{qty:e.target.value})}/>)}
+       {field('עלות החבילה לאתר',<span className="nsp-money"><input type="number" inputMode="decimal" min={0} step="0.01" value={s.total} disabled={s.done} onChange={e=>setSite(s.key,{total:e.target.value})}/><i>₪</i></span>)}
+      </div>
+      {perArticle!==null&&<p className="nsp-calc">יוצא {ils(Math.round(perArticle*100)/100)} לכתבה מהחבילה</p>}
+     </div>}
+     <div className="nsp-group"><h3><FileText size={16} aria-hidden="true"/>כתבה לדוגמה <small>לא חובה</small></h3>
+      <input dir="ltr" inputMode="url" placeholder="https://" aria-label="קישור לכתבה לדוגמה שפורסמה באתר" value={s.sample} disabled={s.done} onChange={e=>setSite(s.key,{sample:e.target.value})}/>
+     </div>
+    </>}
     {s.error&&<p className="nsp-err" role="alert">{s.error}</p>}
+    {!s.done&&fullUrl(s.url)&&!issue&&<div className="nsp-site-foot"><button type="button" className="nsp-done" onClick={()=>setSites(list=>list.map(x=>x.key===s.key?{...x,open:false}:x))}><Check size={16} aria-hidden="true"/>סיום האתר</button></div>}
    </article>;})}
-   <button type="button" className="nsp-add" onClick={()=>{setSites(list=>[...list,blank()]);dirty();}}><Plus size={18} aria-hidden="true"/>הוספת אתר נוסף לספק</button>
+   <button type="button" className="nsp-add" onClick={addSite}><Plus size={18} aria-hidden="true"/>הוספת אתר נוסף לספק</button>
   </section>
   <section className="nsp-card" aria-labelledby="nsp-4"><div className="nsp-sec"><span className="nsp-n">4</span><h2 id="nsp-4">אופן התנהלות והערות</h2><small>לא חובה</small></div>
    <div className="nsp-grid">

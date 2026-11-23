@@ -62,3 +62,26 @@ html body .nsp .nsp-money input{padding-left:92px!important}
  .nsp-save{padding:8px;bottom:84px;border-radius:16px}.nsp-save small{display:none}.nsp-save .nsp-btn{flex:1;height:46px}
 }
 @media(prefers-reduced-motion:reduce){.nsp-spin{animation:none}.nsp-type{transition:none}}
+/* Site cards in clear groups, and a summary line once a site is done (owner 23.11.2026: "יותר מסודר וקל להבנה"). */
+.nsp-group{display:grid;gap:10px;padding:14px 0;border-top:1px solid #edf1f6}.nsp-site-h+.nsp-group{border-top:0;padding-top:4px}
+.nsp-group h3{display:flex;align-items:center;gap:8px;margin:0;font-size:14.5px!important;font-weight:800;color:var(--ink)}.nsp-group h3 svg{color:var(--blue)}
+.nsp-group h3 small{font-size:12.5px;font-weight:500;color:var(--mute)}
+.nsp-group.is-stock{margin:4px -4px 0;padding:14px 12px;border:1px solid #cdeedd;border-radius:14px;background:#f3fcf6}.nsp-group.is-stock h3 svg{color:#15803d}
+.nsp-inline{font-size:12px;font-weight:500;color:var(--mute)}
+html body .nsp .nsp-money input{padding-left:38px!important}
+.nsp-calc{margin:0;font-size:13px;font-weight:700;color:#117c4c}.nsp-calc.is-red{color:#b4233a}
+.nsp-site-foot{display:flex;justify-content:flex-end;padding-top:12px;border-top:1px solid #edf1f6}
+.nsp-done,.nsp-edit{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border:0;border-radius:11px;background:#eef5ff;color:var(--blue);font:700 14px Heebo,Arial,sans-serif;cursor:pointer}
+.nsp-done:hover,.nsp-edit:hover{background:#e1edff}
+.nsp-sum{display:grid;grid-template-columns:26px 44px minmax(0,1fr) auto;align-items:center;gap:10px;padding:12px 14px;margin-bottom:10px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.nsp-sum.is-done{border-color:#bfe8cf;background:#f6fdf9}.nsp-sum.is-error{border-color:#f3c1cb}
+.nsp-thumb.is-sm{width:44px;height:44px;border-radius:11px;font-weight:800;color:#1e3a8a;background:#eef3f9}
+.nsp-sum-main{min-width:0;display:grid;gap:2px}.nsp-sum-main b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.nsp-sum-main>small{font-size:12.5px;color:var(--mute);text-align:right}
+.nsp-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:4px}.nsp-chips span{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;background:#f2f6fb;color:var(--copy);font-size:12px;font-weight:700}
+.nsp-chips .is-green{background:#e3f6ec;color:#117c4c}.nsp-chips .is-blue{background:#eaf2ff;color:var(--blue)}.nsp-chips .is-red{background:#fdf0f2;color:#a3253f}
+.nsp-sum-act{display:flex;align-items:center;gap:4px}
+.nsp-sum .nsp-err{grid-column:1/-1}
+@media(max-width:760px){
+ .nsp-sum{grid-template-columns:44px minmax(0,1fr);grid-template-areas:"thumb main" "act act"}
+ .nsp-sum>.nsp-sn{display:none}.nsp-sum>.nsp-thumb{grid-area:thumb}.nsp-sum-main{grid-area:main}.nsp-sum-act{grid-area:act;justify-content:flex-end;border-top:1px solid #edf1f6;padding-top:8px}
+}
