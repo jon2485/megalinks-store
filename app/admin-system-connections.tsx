@@ -13,7 +13,7 @@ import './admin-system-connections.css';
 // 22.11.2026 (owner: "like the other admin pages"): "חיבורים והגדרות" in the same look as the suppliers,
 // orders and content lists: one white card with filter chips, a table of rows and a blue action per row.
 // Same data (admin/settings), same dialogs (ConnectionForm, BankSettings) and the same API calls as before.
-const testable=['ai','wordpress','images','invoices'];
+const testable=['ai','wordpress','images','pixabay','invoices'];
 const providerLabels:Record<string,string>={openai:'OpenAI',gemini:'Google Gemini',groq:'Groq',grok:'xAI / Grok',resend:'Resend',webhook:'Webhook'};
 const ready=(c:Row)=>!!(c.enabled&&c.has_secret);
 const shortUrl=(raw:string)=>{try{const u=new URL(raw);return u.host+(u.pathname==='/'?'':u.pathname.replace(/\/$/,''));}catch{return raw;}};

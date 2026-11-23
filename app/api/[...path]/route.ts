@@ -17,6 +17,7 @@ import {normalizeRequestedPublication} from '@/lib/publication-date';
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
 import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server';
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
+import {englishQuery,pixabaySearch,pixabayPhoto,pixabayImageHost,pixabayKeyWorks,cacheDrop} from '@/lib/image-search';
 import {claimAiBudget,safeFailure} from '@/lib/security';
 import {customerArticleData,customerActivity,customerSharedRecord,supplierDelivery,protectCustomerResponse} from '@/lib/customer-privacy';
 import {geminiEnvironmentConfigured} from '@/lib/server';
@@ -696,10 +697,19 @@ if (p[0] === 'cart') {
             const priorData = JSON.parse(a.data);
             const data = { ...priorData, secondary_image_id:b.secondary_image_id===undefined?priorData.secondary_image_id||'':b.secondary_image_id, secondary_image_credit:b.secondary_image_credit===undefined?priorData.secondary_image_credit||'':maxText(b.secondary_image_credit,300), client_notes:b.client_notes===undefined?priorData.client_notes||'':maxText(b.client_notes,3000), ...(u.role==='admin'&&b.admin_notes!==undefined?{admin_notes:maxText(b.admin_notes,3000)}:{}), meta_description: b.meta_description===undefined?priorData.meta_description||'':maxText(b.meta_description, 350), image_id: b.image_id === undefined ? priorData.image_id || '' : b.image_id, image_credit: b.image_credit === undefined ? priorData.image_credit || '' : maxText(b.image_credit,300), image_credit_url: b.image_credit_url === undefined ? priorData.image_credit_url || '' : httpUrl(b.image_credit_url || '') };
             if(b.scheduled!==undefined&&b.scheduled!==(priorData.scheduled||'')){try{data.scheduled=normalizeRequestedPublication(b.scheduled);}catch(e){throw new ApiError(400,(e as Error).message);}}
-            if (data.image_id && data.image_id !== priorData.image_id) {
-                const credit=await one('SELECT data FROM activity WHERE resource=? AND action=? ORDER BY created DESC LIMIT 1',data.image_id,'נבחרה תמונה מ-Pexels');
-                if(credit) { const attribution=JSON.parse(credit.data); data.image_credit='צילום: '+attribution.photographer+' / Pexels'; data.image_credit_url=attribution.url; }
+            // A photo picked from a stock library keeps its source and photographer on the article (Pixabay: "מקור: Pixabay").
+            const newMain=data.image_id&&data.image_id!==priorData.image_id?data.image_id:'',newSecond=data.secondary_image_id&&data.secondary_image_id!==priorData.secondary_image_id?data.secondary_image_id:'';
+            if (newMain||newSecond) {
+                const picks=await all("SELECT resource,action,data FROM activity WHERE resource IN (?,?) AND action IN ('נבחרה תמונה מ-Pexels','נבחרה תמונה מ-Pixabay') ORDER BY created DESC",newMain||'-',newSecond||'-');
+                const pick=(id:string)=>{const row=id?picks.find(x=>x.resource===id):null;if(!row)return null;const a=JSON.parse(row.data);return {source:row.action.endsWith('Pixabay')?'Pixabay':'Pexels',photographer:String(a.photographer||''),url:String(a.url||'')};};
+                const main=pick(newMain),second=pick(newSecond);
+                if(main){data.image_credit=main.source==='Pixabay'?'צילום: '+main.photographer+' · מקור: Pixabay':'צילום: '+main.photographer+' / Pexels';data.image_credit_url=main.url;data.image_source=main.source;data.image_photographer=main.photographer;}
+                else if(newMain){delete data.image_source;delete data.image_photographer;}
+                if(second){data.secondary_image_source=second.source;data.secondary_image_photographer=second.photographer;if(!String(data.secondary_image_credit||'').trim())data.secondary_image_credit='צילום: '+second.photographer+(second.source==='Pixabay'?' · מקור: Pixabay':' / Pexels');}
+                else if(newSecond){delete data.secondary_image_source;delete data.secondary_image_photographer;}
             }
+            if(!data.image_id){delete data.image_source;delete data.image_photographer;}
+            if(!data.secondary_image_id){delete data.secondary_image_source;delete data.secondary_image_photographer;}
             if (b.brief) {
                 if(!writingSubmitted(a))data.publish_without_review=b.brief.publish_without_review===true;
                 for (const key of ['topic','brand','audience','style','keywords','notes','anchor','anchor_2']) data[key]=maxText(b.brief[key],key==='notes'?6000:500);
@@ -919,21 +929,54 @@ if (p[0] === 'cart') {
             return response({ ok: true });
         }
     }
+    // Stock photos (owner 23.11.2026): Pixabay first when it is connected, Pexels when Pixabay has nothing (or is off).
+    // Hebrew is turned into English first (lib/image-search.ts); `exact=1` searches the words exactly as given.
     if (p[0] === 'image-search' && method === 'GET') {
-        const c = await connection('images');
-        assert(c.enabled && c.secret, 'יש להגדיר מפתח Pexels בצד הניהול', 503);
-        const q = maxText(query.get('query'), 200);
-        assert(q, 'יש להזין נושא לחיפוש');
-        const res = await externalFetch('https://api.pexels.com/v1/search?per_page=12&query=' + encodeURIComponent(q), { headers: { Authorization: c.secret } });
-        assert(res.ok, 'מאגר התמונות דחה את הבקשה', 502);
-        const payload: any = await res.json();
-        return response({ photos: payload.photos.map((p: Row) => ({ id: p.id, url: p.url, photographer: p.photographer, src: p.src.medium, large: p.src.large })) });
+        const [pix, pex] = await Promise.all([connection('pixabay'), connection('images')]);
+        const pixOn = !!(pix.enabled && pix.secret), pexOn = !!(pex.enabled && pex.secret);
+        assert(pixOn || pexOn, 'מאגר התמונות עדיין לא חובר. אפשר להעלות תמונה מהמכשיר.', 503);
+        const raw = maxText(query.get('query'), 200).trim();
+        assert(raw, 'יש להזין נושא לחיפוש');
+        const ai = await connection('ai').catch(() => ({} as Row));
+        const english = query.get('exact') === '1' ? { query: raw.slice(0, 100), translated: false, via: 'none' } : await englishQuery(raw, ai.enabled && ai.secret ? async (prompt: string) => (await aiJson(ai, prompt)).raw : null);
+        let photos: Row[] = [], source = pixOn ? 'pixabay' : 'pexels', pixabayError: unknown = null;
+        if (pixOn) { try { photos = await pixabaySearch(pix.secret, english.query); } catch (e) { pixabayError = e; } }
+        if (!photos.length && pexOn) {
+            const res = await externalFetch('https://api.pexels.com/v1/search?per_page=12&query=' + encodeURIComponent(english.query), { headers: { Authorization: pex.secret } });
+            if (res.ok) { const payload: any = await res.json(); photos = (payload.photos || []).map((p: Row) => ({ id: p.id, source: 'pexels', url: p.url, photographer: p.photographer, src: p.src.medium, large: p.src.large })); source = 'pexels'; }
+            else if (!pixOn || pixabayError) assert(false, 'מאגר התמונות דחה את הבקשה', 502);
+        } else if (pixabayError) throw pixabayError;
+        return response({ photos, source: source || (pixOn ? 'pixabay' : 'pexels'), query: english.query, original: raw, translated: english.translated });
+    }
+    const importBody: Row | null = p[0] === 'image-import' && method === 'POST' ? await json(r) : null;
+    if (importBody?.source === 'pixabay') {
+        // Pixabay forbids lasting links to its images: the chosen one is copied into our storage, with its source and photographer.
+        const c = await connection('pixabay');
+        assert(c.enabled && c.secret, 'חיבור Pixabay אינו פעיל', 503);
+        assert(env.BUCKET, 'האחסון אינו זמין', 503);
+        const b = importBody;
+        const id = Number(b.photo_id);
+        assert(Number.isSafeInteger(id) && id > 0, 'תמונה לא תקינה');
+        const download = async (fresh: boolean) => { const { hit, cached } = await pixabayPhoto(c.secret, id, fresh); assert(pixabayImageHost(hit.largeImageURL), 'מקור תמונה לא מורשה', 502); const res = await externalFetch(hit.largeImageURL, {}); return { hit, cached, res }; };
+        let { hit, cached, res } = await download(false);
+        if (!res.ok && cached) { await cacheDrop('pixabay:id:' + id); ({ hit, res } = await download(true)); }
+        assert(res.ok, 'התמונה לא התקבלה', 502);
+        assert(Number(res.headers.get('Content-Length') || 0) <= 15 * 1024 * 1024, 'התמונה גדולה מדי');
+        const bytes = await res.arrayBuffer();
+        assert(bytes.byteLength <= 15 * 1024 * 1024, 'התמונה גדולה מדי');
+        const type = (res.headers.get('Content-Type') || 'image/jpeg').split(';')[0].trim();
+        assert(['image/jpeg', 'image/png', 'image/webp'].includes(type), 'סוג תמונה לא נתמך');
+        const fileId = uid(), key = u.id + '/' + fileId;
+        await env.BUCKET.put(key, bytes, { httpMetadata: { contentType: type } });
+        await stmt('INSERT INTO files(id,user_id,name,type,size,key,created) VALUES (?,?,?,?,?,?,?)', fileId, u.id, 'Pixabay-' + id + (type === 'image/png' ? '.png' : type === 'image/webp' ? '.webp' : '.jpg'), type, bytes.byteLength, key, now()).run();
+        await audit(u, fileId, 'נבחרה תמונה מ-Pixabay', { photo_id: id, photographer: hit.user, url: hit.pageURL, source: 'Pixabay' });
+        return response({ id: fileId, credit: 'צילום: ' + hit.user + ' · מקור: Pixabay', credit_url: hit.pageURL, source: 'Pixabay', photographer: hit.user });
     }
     if (p[0] === 'image-import' && method === 'POST') {
         const c = await connection('images');
         assert(c.enabled && c.secret, 'חיבור התמונות אינו פעיל', 503);
         assert(env.BUCKET, 'האחסון אינו זמין', 503);
-        const b = await json(r);
+        const b = importBody as Row;
         const id = Number(b.photo_id);
         assert(Number.isSafeInteger(id) && id > 0, 'תמונה לא תקינה');
         const metadata = await externalFetch('https://api.pexels.com/v1/photos/' + id, { headers: { Authorization: c.secret } });
@@ -1231,7 +1274,7 @@ if (p[0] === 'cart') {
         }
         if (p[1] === 'settings') {
             if (method === 'GET') {
-                const keys = ['ai', 'wordpress', 'payments', 'invoices', 'email', 'whatsapp', 'images'];
+                const keys = ['ai', 'wordpress', 'payments', 'invoices', 'email', 'whatsapp', 'images', 'pixabay'];
                 const connections: Row = {};
                 const stored = await settingsByKey([...keys.map(k => 'integration_' + k), 'vat', 'brand'], { ...Object.fromEntries(keys.map(k => ['integration_' + k, {}])), vat: 18, brand: 'פוסטפלואו' });
                 for (const k of keys) {
@@ -1261,7 +1304,7 @@ if (p[0] === 'cart') {
         }
         if (p[1] === 'integration' && p[2]) {
             const key = p[2];
-            assert(['ai', 'wordpress', 'payments', 'invoices', 'email', 'whatsapp', 'images'].includes(key), 'חיבור אינו נתמך');
+            assert(['ai', 'wordpress', 'payments', 'invoices', 'email', 'whatsapp', 'images', 'pixabay'].includes(key), 'חיבור אינו נתמך');
             if(p[3]==='models'){
                 assert(key==='ai'&&method==='POST','פעולה אינה נתמכת',405);
                 const b=await json(r),prev=await setting('integration_ai',{});
@@ -1313,6 +1356,10 @@ if (p[0] === 'cart') {
                     const res = await request(url, c.provider === 'gemini' ? { headers: { 'x-goog-api-key': c.secret } } : { headers: { Authorization: 'Bearer ' + c.secret } });
                     assert(res.ok, c.provider==='gemini'?geminiModelFailure(res.status):'המפתח לא אומת', 502);
                     if(c.provider==='gemini'){const modelInfo:any=await res.json();assert(modelInfo.supportedGenerationMethods?.includes('generateContent'),'מודל Gemini שנבחר אינו תומך בכתיבת תוכן',502);}
+                    return response({ ok: true });
+                }
+                if (key === 'pixabay') {
+                    assert(await pixabayKeyWorks(c.secret), 'מפתח Pixabay לא אומת', 502);
                     return response({ ok: true });
                 }
                 if (key === 'images') {

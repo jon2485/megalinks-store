@@ -5,7 +5,7 @@ import {RESEND_URL,RESEND_TEST_FROM} from './resend';
 
 export function integrationEnvironmentName(key:string,provider='openai') {
     if(key==='ai')return ({gemini:'GEMINI_API_KEY',openai:'OPENAI_API_KEY',groq:'GROQ_API_KEY',grok:'XAI_API_KEY'} as Row)[provider]||'';
-    return ({email:'POSTFLOW_EMAIL_SECRET',wordpress:'POSTFLOW_WORDPRESS_PASSWORD',payments:'POSTFLOW_PAYMENTS_SECRET',invoices:'POSTFLOW_GREENINVOICE_SECRET',whatsapp:'POSTFLOW_WHATSAPP_SECRET',images:'PEXELS_API_KEY'} as Row)[key]||'';
+    return ({email:'POSTFLOW_EMAIL_SECRET',wordpress:'POSTFLOW_WORDPRESS_PASSWORD',payments:'POSTFLOW_PAYMENTS_SECRET',invoices:'POSTFLOW_GREENINVOICE_SECRET',whatsapp:'POSTFLOW_WHATSAPP_SECRET',images:'PEXELS_API_KEY',pixabay:'PIXABAY_API_KEY'} as Row)[key]||'';
 }
 export function integrationEnvironmentSecret(key:string,provider?:string) {
     const name=integrationEnvironmentName(key,provider);return name?String((env as any)[name]||'').trim():'';
