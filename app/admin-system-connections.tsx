@@ -76,7 +76,7 @@ function ConnectionRow({ctx,name,c,setup}:{ctx:Ctx;name:string;c:Row;setup:()=>v
  return <div className="sv2-tr scx-row" style={cols}>
   <div className="sv2-who"><span className="sv2-thumb scx-ico" aria-hidden="true"><Icon size={20}/></span><span><b>{meta.name}</b><small title={meta.description}>{meta.description}</small></span></div>
   <span className="scx-facts"><small className="sv2-ml">פרטים שמורים</small>{details.length?details.map((d,i)=><React.Fragment key={i}>{i>0&&<i aria-hidden="true">·</i>}{d}</React.Fragment>):<em>—</em>}</span>
-  <span className="scx-key"><small className="sv2-ml">מפתח</small><KeyPlace c={c}/></span>
+  <span className="scx-key"><small className="sv2-ml">מפתח</small><KeyPlace c={c} compact/></span>
   <span className={'sv2-state '+(ok?'on':'wait')}><i/>{ok?'פעיל':'דורש הגדרה'}</span>
   <span className="sv2-rowact">
    <button type="button" className={'sv2-btn sm '+(ok?'tint':'primary')} onClick={setup}><Settings size={15} aria-hidden="true"/>הגדרה</button>
