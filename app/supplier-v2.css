@@ -307,3 +307,30 @@ select.sv2-native{display:block;width:100%;height:44px;margin-top:6px;padding:0 
  .sv2 .sv2-areas{grid-auto-columns:minmax(150px,1fr);overflow-x:auto;scrollbar-width:none}
  .sv2 .sv2-areas::-webkit-scrollbar{display:none}
 }
+
+/* Supplier stock pool (owner, 23.11.2026): one stock block for the whole supplier, light only. */
+.sv2-pool{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 24px;align-items:center}
+.sv2-pool .lbl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--sv-mute);font-weight:700}
+.sv2-pool .row{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;margin-top:4px;font-size:15px;color:var(--sv-copy)}
+.sv2-pool .row strong{color:var(--sv-ink)}
+.sv2-pool .big{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--sv-ink)}
+.sv2-pool .sv2-stock span{font-size:26px}.sv2-pool .sv2-stock i{font-size:26px}.sv2-pool .sv2-stock b{font-size:38px}
+.sv2-pool .sv2-stock.is-empty b{color:var(--sv-red)}
+.sv2-pool .acts{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.sv2-pool .foot{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:6px 18px;border-top:1px solid var(--sv-line);padding-top:12px;font-size:13px;color:var(--sv-mute)}
+.sv2-pool .foot b{color:var(--sv-copy)}
+.sv2-pool .own{display:grid;gap:6px;width:100%}
+.sv2-pool .own-row{display:flex;align-items:baseline;gap:10px;color:var(--sv-copy)}
+.sv2-pool .own-row .sv2-stock span,.sv2-pool .own-row .sv2-stock i{font-size:13px}.sv2-pool .own-row .sv2-stock b{font-size:15px}
+.sv2-pool.is-low{box-shadow:inset 0 0 0 2px #ffd8a8}
+.sv2-pool.is-empty{box-shadow:inset 0 0 0 2px #ffc2c8;background:linear-gradient(0deg,#fff,#fff7f8)}
+.sv2-pool.is-none .row{font-size:14px}
+.sv2-pool-alert{grid-column:1/-1;display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:14px;background:var(--sv-otint);color:#7a3a00;font-size:14px;font-weight:600}
+.sv2-pool-alert svg{flex:none;margin-top:2px}
+.sv2-pill.p-empty{background:var(--sv-rtint);color:var(--sv-red)}
+.sv2-linkish{background:none;border:0;padding:0;font:inherit;font-size:13px;font-weight:600;color:var(--sv-blue2,#0066cc);text-decoration:underline;text-underline-offset:3px;cursor:pointer;justify-self:start;width:max-content;max-width:100%;text-align:start}
+@media (max-width:760px){
+ .sv2-pool{grid-template-columns:1fr}
+ .sv2-pool .acts{justify-content:stretch}.sv2-pool .acts .sv2-btn{flex:1 1 100%;white-space:normal}
+ .sv2-pool .sv2-stock span,.sv2-pool .sv2-stock i{font-size:22px}.sv2-pool .sv2-stock b{font-size:32px}
+}

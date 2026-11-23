@@ -9,7 +9,7 @@ import {money,type Row} from '@/lib/shared';
 import {contentTime,contentUrl} from '@/lib/content-presentation';
 import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
 import {supplierPaymentMethods,supplierRequestKinds,supplierRequestStates,supplierStatementStates} from '@/lib/supplier-presentation';
-import {openAddStock,supplierKinds} from './supplier-pages';
+import {openAddStock,openAddPoolStock,supplierKinds} from './supplier-pages';
 import type {Ctx} from './workspace';
 import './supplier-v2.css';
 import {areaIcons} from './orders-area-head';
@@ -38,7 +38,7 @@ const avatarColors=['#0071e3','#30a46c','#bf5af2','#ff9f0a','#ff375f','#0a84ff',
 const avatarColor=(s:string)=>avatarColors[[...String(s||'')].reduce((n,c)=>n+c.charCodeAt(0),0)%avatarColors.length];
 export function Av({name,size}:{name?:string;size?:'lg'}){return <span className={'sv2-av'+(size?' is-lg':'')} style={{background:avatarColor(name||'')}} aria-hidden="true">{String(name||'?').trim().slice(0,1)}</span>;}
 function Stock({used,total,tone}:{used:number;total:number;tone?:string}){return <span className={'sv2-stock'+(tone?' is-'+tone:'')}><span>{used}</span><i>/</i><b>{total}</b></span>;}
-export const billingPill=(b:string)=>b==='stock'?<span className="sv2-pill p-stock"><i/>מלאי · חבילה מראש</span>:b==='monthly'?<span className="sv2-pill p-month"><i/>התחשבנות חודשית</span>:b==='mixed'?<span className="sv2-pill p-month"><i/>חודשי + מלאי לפי אתר</span>:<span className="sv2-muted">אין אתרים</span>;
+export const billingPill=(b:string)=>b==='pool'?<span className="sv2-pill p-stock"><i/>מלאי ספק משותף</span>:b==='stock'?<span className="sv2-pill p-stock"><i/>מלאי · חבילה מראש</span>:b==='monthly'?<span className="sv2-pill p-month"><i/>התחשבנות חודשית</span>:b==='mixed'?<span className="sv2-pill p-month"><i/>חודשי + מלאי לפי אתר</span>:<span className="sv2-muted">אין אתרים</span>;
 export const kindPill=(k:string)=><span className={'sv2-pill '+(k==='account'?'p-acc':k==='partial'?'p-part':'p-man')}>{supplierKinds[k]||'ספק ידני'}</span>;
 const orderPill:Record<string,[string,string]>={open:['p-open','הזמנה פתוחה'],awaiting:['p-wait','ממתינה לחשבונית'],invoice:['p-inv','התקבלה חשבונית'],paid:['p-paid','שולמה']};
 const packPill=(p:Row)=>p.status==='done'?<span className="sv2-pill p-paid"><i/>נוצלה במלואה</span>:p.status==='queued'?<span className="sv2-pill p-man"><i/>ממתינה לשימוש</span>:p.status==='low'?<span className="sv2-pill p-inv"><i/>עומדת להיגמר · {p.left}</span>:<span className="sv2-pill p-open"><i/>בשימוש{p.paid?' · שולמה':''}</span>;
@@ -53,17 +53,18 @@ export function SupplierV2({ctx,id,tab,guard,kit}:{ctx:Ctx;id:string;tab:Supplie
  const toTab=(t:SupplierTab)=>t==='articles'?go('admin-supplier-articles/'+id):t==='billing'?go('admin-supplier-billing/'+id):go('admin-supplier/'+id,()=>saveAdminViewState('supplier-editor:'+id,{site:'',tab:t,all:false}));
  if(state.error&&!s)return <div className="sv2"><div className="sv2-empty"><h3>הספק לא נטען</h3><p>{state.error}</p><button type="button" className="sv2-btn quiet" onClick={()=>ctx.go('admin-suppliers')}>חזרה לכל הספקים</button></div></div>;
  if(!s)return <div className="sv2"><p className="sv2-loading" role="status">טוען את הספק…</p></div>;
- const month=new Date().toISOString().slice(0,7),sentMonth=articles.filter(a=>String(a.supplier_sent_at||'').startsWith(month)).length,orders=b?(s.billing==='stock'?b.stock.packages.length:s.billing==='mixed'?b.stock.packages.length+b.orders.length:b.orders.length):0,billing=s.billing;
+ const month=new Date().toISOString().slice(0,7),sentMonth=articles.filter(a=>String(a.supplier_sent_at||'').startsWith(month)).length,orders=b?(s.billing==='stock'?b.stock.packages.length:s.billing==='mixed'||s.billing==='pool'?b.stock.packages.length+b.orders.length:b.orders.length):0,pool:Row|undefined=state.data?.pool,billing=s.billing;
  const tabTitle:Record<SupplierTab,string>={sites:'',articles:'כתבות שנשלחו',billing:'התחשבנות',details:'פרטים'};
  return <div className="sv2" dir="rtl">
   <nav className="sv2-crumb" aria-label="מיקום"><a href="/admin-suppliers" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-suppliers');}}>כל הספקים</a><ChevronLeft size={14} aria-hidden="true"/>{tab==='sites'?<span>{s.name}</span>:<><a href={'/admin-supplier/'+s.id} onClick={e=>{if(!plain(e))return;e.preventDefault();toTab('sites');}}>{s.name}</a><ChevronLeft size={14} aria-hidden="true"/><span>{tabTitle[tab]}</span></>}</nav>
-  {(tab==='sites'||tab==='details')&&<header className="sv2-card sv2-hero"><Av name={s.name} size="lg"/><div><h2>{s.name}</h2><div className="sv2-meta">{kindPill(s.kind)}{billingPill(billing)}{s.contact&&<span>{s.contact}</span>}{s.email&&<a href={'mailto:'+s.email}><bdi>{s.email}</bdi></a>}{s.phone&&<a href={'tel:'+s.phone}><bdi>{s.phone}</bdi></a>}</div></div><div className="sv2-kpis"><button type="button" className="sv2-kpi" onClick={()=>toTab('sites')}><span>אתרים</span><b>{s.site_count}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('articles')}><span>כתבות החודש</span><b>{sentMonth}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('billing')}><span>{billing==='stock'?'מלאי שנותר':'לתשלום'}</span><b><bdi>{!b?'—':billing==='stock'?b.stock.left:money(b.summary.due.amount)}</bdi></b></button></div></header>}
+  {(tab==='sites'||tab==='details')&&<header className="sv2-card sv2-hero"><Av name={s.name} size="lg"/><div><h2>{s.name}</h2><div className="sv2-meta">{kindPill(s.kind)}{billingPill(billing)}{s.contact&&<span>{s.contact}</span>}{s.email&&<a href={'mailto:'+s.email}><bdi>{s.email}</bdi></a>}{s.phone&&<a href={'tel:'+s.phone}><bdi>{s.phone}</bdi></a>}</div></div><div className="sv2-kpis"><button type="button" className="sv2-kpi" onClick={()=>toTab('sites')}><span>אתרים</span><b>{s.site_count}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('articles')}><span>כתבות החודש</span><b>{sentMonth}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('billing')}><span>{billing==='stock'||billing==='pool'?'מלאי שנותר':'לתשלום'}</span><b><bdi>{billing==='pool'?pool?.left??'—':!b?'—':billing==='stock'?b.stock.left:money(b.summary.due.amount)}</bdi></b></button></div></header>}
   <nav className="sv2-tabs" aria-label="חלקי עמוד הספק">
    {([['sites',Globe,'אתרים',s.site_count+' אתרים'+(state.data?.total?'':'')],['articles',FileText,'כתבות שנשלחו',articles.length+' כתבות'],['billing',CreditCard,'התחשבנות',orders?orders+' הזמנות':'הזמנות לפי חודש'],['details',UserRound,'פרטים','אנשי קשר ואופן התנהלות']] as [SupplierTab,React.ElementType,string,string][]).map(([key,Icon,label,sub])=><button key={key} type="button" className={'sv2-tab'+(tab===key?' on':'')} aria-current={tab===key?'page':undefined} onClick={()=>tab!==key&&toTab(key)}><span className="ic"><Icon size={19} aria-hidden="true"/></span><span><b>{label}</b><small>{sub}</small></span></button>)}
   </nav>
+  {tab==='sites'&&pool&&<PoolBlock ctx={ctx} supplier={s} pool={pool}/>}
   {tab==='sites'&&<SitesTab ctx={ctx} supplier={s} guard={guard} kit={kit}/>}
   {tab==='articles'&&<ArticlesTab ctx={ctx} supplier={s} state={arts}/>}
-  {tab==='billing'&&<BillingTab ctx={ctx} supplier={s} state={bill}/>}
+  {tab==='billing'&&<BillingTab ctx={ctx} supplier={s} state={bill} pool={pool}/>}
   {tab==='details'&&<DetailsTab ctx={ctx} supplier={s} guard={guard} kit={kit} go={go}/>}
  </div>;
 }
@@ -92,8 +93,9 @@ function SitesTab({ctx,supplier:s,guard,kit}:{ctx:Ctx;supplier:Row;guard:Guard;k
     <span className="sv2-rowact"><button type="button" className="sv2-btn tint sm" onClick={()=>quick(w)}><Pencil size={14} aria-hidden="true"/>עריכה</button><DropdownMenu dir="rtl"><DropdownMenuTrigger asChild><button type="button" className="sv2-dots" aria-label={'עוד פעולות עבור '+w.name}><MoreHorizontal size={16}/></button></DropdownMenuTrigger><DropdownMenuContent className="sv2-menu" align="end">
      <DropdownMenuItem onSelect={()=>edit(w.id)}><Pencil size={15}/>עריכה מלאה של האתר</DropdownMenuItem>
      <DropdownMenuItem onSelect={()=>go('admin-supplier-articles/'+s.id,()=>saveAdminViewState('supplier-articles:'+s.id,{site:w.id}))}><FileText size={15}/>כתבות באתר הזה</DropdownMenuItem>
+     {s.stock_pool!=null&&!w.stock_own?<DropdownMenuItem onSelect={()=>openAddStock(ctx,{...w,total:null,used:w.stock_sent},ctx.refresh)}><Plus size={15}/>מלאי נפרד לאתר הזה</DropdownMenuItem>:<>
      {<DropdownMenuItem onSelect={()=>go('admin-supplier-stock/'+w.id)}><Box size={15}/>{w.stock_total==null?'ניהול מלאי · אין עדיין חבילה':'ניהול מלאי · נותרו '+w.stock_remaining}</DropdownMenuItem>}
-     {<DropdownMenuItem onSelect={()=>openAddStock(ctx,{...w,total:w.stock_total,used:w.stock_sent},ctx.refresh)}><Plus size={15}/>הוספת מלאי</DropdownMenuItem>}
+     {<DropdownMenuItem onSelect={()=>openAddStock(ctx,{...w,total:w.stock_total,used:w.stock_sent},ctx.refresh)}><Plus size={15}/>הוספת מלאי</DropdownMenuItem>}</>}
      <DropdownMenuItem onSelect={()=>window.open(contentUrl(w.url),'_blank','noopener')}><ExternalLink size={15}/>פתיחת האתר</DropdownMenuItem>
      <DropdownMenuSeparator/>
      <DropdownMenuItem className="sv2-danger" onSelect={()=>ctx.open({kind:'admin-finance',title:'הסרת אתר מהספק',description:w.name+' · '+s.name,render:(c:()=>void)=><kit.SiteDetach ctx={ctx} site={w} supplier={s} close={c}/>})}><X size={15}/>הסרה מהספק</DropdownMenuItem>
@@ -153,14 +155,14 @@ function DetailsTab({ctx,supplier:s,guard,kit,go}:{ctx:Ctx;supplier:Row;guard:Gu
 }
 
 /* ---------- Billing: monthly orders and stock packages ---------- */
-function BillingTab({ctx,supplier:s,state}:{ctx:Ctx;supplier:Row;state:Row}){
+function BillingTab({ctx,supplier:s,state,pool}:{ctx:Ctx;supplier:Row;state:Row;pool?:Row}){
  const b:Row|undefined=state.data;
  if(state.error&&!b)return <section className="sv2-card"><div className="sv2-empty"><h3>ההתחשבנות לא נטענה</h3><p>{state.error}</p></div></section>;
  if(!b)return <section className="sv2-card"><p className="sv2-loading" role="status">טוען התחשבנות…</p></section>;
  const openOrder=(key:string)=>ctx.go('admin-supplier-order/'+encodeURIComponent(key));
  const openPack=(p:Row)=>ctx.go('admin-supplier-package/'+encodeURIComponent(p.site_id+'~'+p.number));
  // Per-site billing: monthly orders and stock packages can both exist for one supplier.
- const monthly=s.billing!=='stock'||b.orders.length>0,stocked=s.billing!=='monthly'||b.stock.packages.length>0,stock=b.stock.packages.length>0;
+ const monthly=s.billing!=='stock'&&s.billing!=='pool'||b.orders.length>0,stocked=s.billing!=='monthly'||b.stock.packages.length>0,stock=b.stock.packages.length>0,isPool=s.billing==='pool';
  const cols={gridTemplateColumns:'minmax(170px,1.3fr) 130px 140px 200px minmax(150px,1fr) 170px'},pcols={gridTemplateColumns:'minmax(200px,1.4fr) 150px 140px 150px 190px 160px'};
  return <>
   {monthly&&<>
@@ -185,19 +187,19 @@ function BillingTab({ctx,supplier:s,state}:{ctx:Ctx;supplier:Row;state:Row}){
    </section>
   </>}
   {stocked&&<>
-   <div className="sv2-card sv2-pad sv2-stockbar"><div><span className="lbl">מלאי פעיל בכל האתרים</span><div className="row">{b.stock.total?<Stock used={b.stock.used} total={b.stock.total}/>:<b className="big">אין מלאי</b>}<span>נותרו <b>{b.stock.left}</b> פרסומים · כל אתר עם חבילות משלו</span></div></div><button type="button" className="sv2-btn primary lg" onClick={()=>openAddStockFor(ctx,s)}><Box size={17} aria-hidden="true"/>הוספת מלאי (הזמנה חדשה)</button></div>
+   <div className="sv2-card sv2-pad sv2-stockbar">{isPool&&pool?.total!=null?<div><span className="lbl">מלאי הספק</span><div className="row"><Stock used={pool.used} total={pool.total} tone={pool.state==='ok'?undefined:pool.state==='low'?'low':'empty'}/><span>נותרו <b>{pool.left}</b> כתבות · משותף לכל האתרים של הספק</span></div></div>:<div><span className="lbl">מלאי פעיל בכל האתרים</span><div className="row">{b.stock.total?<Stock used={b.stock.used} total={b.stock.total}/>:<b className="big">אין מלאי</b>}<span>נותרו <b>{b.stock.left}</b> פרסומים · כל אתר עם חבילות משלו</span></div></div>}<button type="button" className="sv2-btn primary lg" onClick={()=>openAddStockFor(ctx,s)}><Box size={17} aria-hidden="true"/>הוספת מלאי (הזמנה חדשה)</button></div>
    <section className="sv2-card">
     {!stock?<div className="sv2-empty"><h3>עדיין אין חבילות מלאי</h3><p>כשמוסיפים מלאי לאתר, החבילה נרשמת כאן כהזמנה.</p></div>:<>
      <div className="sv2-th" style={pcols} aria-hidden="true"><span>הזמנה</span><span>שומשו מתוך</span><span>נוספה למערכת</span><span>עלות החבילה</span><span>סטטוס</span><span/></div>
      {b.stock.packages.map((p:Row)=><div key={p.site_id+':'+p.number} className="sv2-tr" style={pcols}>
-      <div><b className="sv2-strong">{p.site_name} · חבילה {p.number} · {p.quantity} פרסומים</b><small className="sv2-sub">{p.opening?'מלאי שהוגדר לפני רישום חבילות':'הזמנה '+p.code}</small></div>
+      <div><b className="sv2-strong">{p.site_name} · חבילה {p.number} · {p.quantity} {p.pool?'כתבות':'פרסומים'}</b><small className="sv2-sub">{p.opening?'מלאי שהוגדר לפני רישום חבילות':'הזמנה '+p.code+(p.merged?' · כולל '+p.merged+' שנשארו באתרים':'')}</small></div>
       <span><small className="sv2-ml">שומשו מתוך</small><Stock used={p.used} total={p.quantity} tone={p.status==='low'?'low':undefined}/></span>
       <span className="sv2-num"><small className="sv2-ml">נוספה</small>{p.created?d2(p.created):'—'}</span>
       <span><small className="sv2-ml">עלות</small>{p.total_cents==null?<span className="sv2-muted">לא נרשמה</span>:<><b className="sv2-num">{money(p.total_cents)}</b><small className="sv2-sub">{money(p.unit_cents)} ליחידה</small></>}</span>
       <span>{packPill(p)}</span>
-      <span><button type="button" className={'sv2-btn sm '+(p.status==='done'?'tint':'primary')} onClick={()=>openPack(p)}>פתיחת ההזמנה<ChevronLeft size={15} aria-hidden="true"/></button></span>
+      <span>{p.pool?<span className="sv2-muted">משותף לכל האתרים</span>:<button type="button" className={'sv2-btn sm '+(p.status==='done'?'tint':'primary')} onClick={()=>openPack(p)}>פתיחת ההזמנה<ChevronLeft size={15} aria-hidden="true"/></button>}</span>
      </div>)}
-     <div className="sv2-foot"><span>לכל אתר חבילות משלו, וחבילה חדשה מתחילה רק כשהקודמת באותו אתר נגמרת · אפשר רק להוסיף מלאי</span><span>{b.stock.packages.length} הזמנות</span></div>
+     <div className="sv2-foot"><span>{isPool?'מלאי הספק משותף לכל האתרים שלו · אתר עם מספר מלאי משלו מקבל מלאי נפרד · אפשר רק להוסיף מלאי':'לכל אתר חבילות משלו, וחבילה חדשה מתחילה רק כשהקודמת באותו אתר נגמרת · אפשר רק להוסיף מלאי'}</span><span>{b.stock.packages.length} הזמנות</span></div>
     </>}
    </section>
   </>}
@@ -205,7 +207,34 @@ function BillingTab({ctx,supplier:s,state}:{ctx:Ctx;supplier:Row;state:Row}){
 }
 
 // Add stock from the supplier level: pick the site first when there are several.
-export function openAddStockFor(ctx:Ctx,s:Row){ctx.open({kind:'admin-finance',title:'הוספת מלאי',description:'בחירת האתר שאליו נוספת החבילה · '+s.name,render:(close:()=>void)=><PickSite ctx={ctx} supplier={s} close={close}/>});}
+// Owner (23.11.2026): stock belongs to the supplier, for every stock supplier. "הוספת מלאי" adds to the supplier's pool;
+// a site with a stock number of its own is picked only through the small link in that dialog.
+export function openAddStockFor(ctx:Ctx,s:Row){openAddPoolStock(ctx,s,()=>openSiteStockFor(ctx,s));}
+function openSiteStockFor(ctx:Ctx,s:Row){ctx.open({kind:'admin-finance',title:'מלאי נפרד לאתר אחד',description:'לאתר שיש לו מספר מלאי משלו. המלאי שלו לא יורד ממלאי הספק · '+s.name,render:(close:()=>void)=><PickSite ctx={ctx} supplier={s} close={close}/>});}
+
+/* ---------- The supplier's stock pool on the supplier page (owner, 23.11.2026) ---------- */
+function PoolBlock({ctx,supplier:s,pool:p}:{ctx:Ctx;supplier:Row;pool:Row}){
+ const add=()=>openAddStockFor(ctx,s),has=p.total!=null,state=has?p.state:'none';
+ const tone=state==='empty'?'is-empty':state==='low'?'is-low':'';
+ const pill=state==='empty'?<span className="sv2-pill p-empty"><i/>נגמר</span>:state==='low'?<span className="sv2-pill p-inv"><i/>עומד להיגמר</span>:state==='ok'?<span className="sv2-pill p-stock"><i/>תקין</span>:<span className="sv2-pill p-month"><i/>עוד לא הוזן</span>;
+ const move=()=>ctx.open({kind:'admin-finance',title:'העברת אתר לספק אחר',description:s.name,render:(close:()=>void)=><div className="om-pay-form"><p className="om-pay-note">פתחו את הספק החדש, לחצו "צירוף אתרים" ובחרו את האתר. הכתבות שמחכות יישלחו לספק החדש לבד, תוך דקה.</p><div className="om-pay-actions"><button type="button" className="om-btn is-primary" onClick={()=>{close();ctx.go('admin-suppliers');}}>לכל הספקים</button><button type="button" className="om-btn" onClick={close}>ביטול</button></div></div>});
+ const own:Row[]=p.own||[];
+ if(!has&&!p.unnumbered&&!(p.leftovers||[]).length)return <div className="sv2-card sv2-pad sv2-pool is-none"><div><span className="lbl">מלאי הספק {pill}</span><div className="row"><span>אין מלאי לספק. הכתבות נשלחות כמו היום{own.length?', ואתר עם מלאי נפרד לפי המלאי שלו':''}.</span></div></div><div className="acts"><button type="button" className="sv2-btn tint" onClick={add}><Plus size={16} aria-hidden="true"/>הוספת מלאי לספק</button></div></div>;
+ const waitText=p.waiting===1?<><strong>כתבה אחת</strong> מחכה ולא נשלחה לספק</>:p.waiting>1?<><strong>{p.waiting} כתבות</strong> מחכות ולא נשלחו לספק</>:<>כתבה חדשה לא תישלח עד שיתווסף מלאי</>;
+ const leftText=<>{p.left===1?<>נותרה <strong>כתבה אחת</strong></>:<>נותרו <strong>{p.left}</strong> כתבות</>} לכל {p.sites===1?'האתר':p.sites+' האתרים'} של הספק</>;
+ return <div className={'sv2-card sv2-pad sv2-pool '+tone}>
+  <div><span className="lbl">מלאי הספק {pill}</span>
+   <div className="row">{has?<><Stock used={p.used} total={p.total} tone={state==='ok'?undefined:state==='low'?'low':'empty'}/><span>{state==='empty'?waitText:leftText}</span></>:<b className="big">ללא הגבלה</b>}</div></div>
+  <div className="acts">{state==='empty'&&<button type="button" className="sv2-btn quiet lg" onClick={move}>העברת אתר לספק אחר</button>}<button type="button" className="sv2-btn primary lg" onClick={add}><Plus size={17} aria-hidden="true"/>{has?'הוספת מלאי':'הזנת מלאי לספק'}</button></div>
+  {!has&&p.unnumbered>0&&<div className="sv2-pool-alert"><Bell size={16} aria-hidden="true"/><span>בגיליון כתוב "מלאי" {p.unnumbered===1?'באתר אחד':'ב־'+p.unnumbered+' מהאתרים'} של הספק, בלי מספר. עד שתזינו כאן מספר, הכתבות נשלחות בלי הגבלה, כמו היום.</span></div>}
+  {(has||own.length>0)&&<div className="foot">
+   {state==='empty'&&<span>הכתבות שמחכות יישלחו לבד מיד אחרי הוספת מלאי</span>}
+   {has&&p.last&&state!=='empty'&&<span>מלאי אחרון שנוסף: <b>{p.last.quantity} כתבות · {d2(p.last.created)}</b></span>}
+   {has&&state!=='empty'&&<span>התראה כשנותרות <b>{p.low_limit}</b></span>}
+   {own.length>0&&<div className="own"><span>{own.length===1?'אתר אחד':own.length+' אתרים'} עם מלאי נפרד משלו, לא יורד ממלאי הספק:</span>{own.map(w=><span key={w.id} className="own-row"><b>{w.name}</b><Stock used={w.used} total={w.total}/><span>נותרו {w.left}</span></span>)}</div>}
+  </div>}
+ </div>;
+}
 function PickSite({ctx,supplier:s,close}:{ctx:Ctx;supplier:Row;close:()=>void}){
  const state=useData('admin/suppliers/'+encodeURIComponent(s.id)+'?'+new URLSearchParams({page:'1',q:'',all:'0',selected:''}),ctx.revision),sites:Row[]=state.data?.sites||[];
  return <div className="om-pay-form"><div className="sv2-pick">{!state.data?<p className="sv2-loading">טוען אתרים…</p>:!sites.length?<p className="sv2-muted">לספק אין אתרים. צרפו אתר קודם.</p>:sites.map(w=><button key={w.id} type="button" onClick={()=>{close();setTimeout(()=>openAddStock(ctx,{...w,total:w.stock_total,used:w.stock_sent},ctx.refresh),50);}}><SiteBadge site={w}/><span><b>{w.name}</b><small>{w.stock_total==null?'התחשבנות חודשית · יעבור לחבילה':'נותרו '+w.stock_remaining+' מתוך '+w.stock_total}</small></span><ChevronLeft size={16} aria-hidden="true"/></button>)}</div><div className="om-pay-actions"><span className="om-foot-status">בחרו אתר</span><button type="button" className="om-btn" onClick={close}>ביטול</button></div></div>;

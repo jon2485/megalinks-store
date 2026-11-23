@@ -1,7 +1,7 @@
 'use client';
 import React,{useEffect,useRef,useState} from 'react';
 import {toast} from 'sonner';
-import {ArrowRight,BarChart3,Bell,CalendarDays,Check,CheckCircle2,ChevronDown,ChevronLeft,ChevronRight,Clock,CreditCard,FileText,History,Info,Landmark,Loader2,Mail,MessageSquare,PenLine,Plug,Plus,ReceiptText,RefreshCcw,RefreshCw,RotateCcw,Search,Send,ShieldCheck,Store,Tags,TriangleAlert,Wallet,X,XCircle} from 'lucide-react';
+import {ArrowRight,BarChart3,Bell,Boxes,CalendarDays,Check,CheckCircle2,ChevronDown,ChevronLeft,ChevronRight,Clock,CreditCard,FileText,History,Info,Landmark,Loader2,Mail,MessageSquare,PenLine,Plug,Plus,ReceiptText,RefreshCcw,RefreshCw,RotateCcw,Search,Send,ShieldCheck,Store,Tags,TriangleAlert,Wallet,X,XCircle} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {money,when,type Row} from '@/lib/shared';
 import {adminViewState,saveAdminViewState} from '@/lib/admin-view-state';
@@ -30,6 +30,9 @@ const taskDefs:TaskDef[]=[
  {id:'bank',lane:'urgent',icon:Landmark,one:'דיווח תשלום לאישור',many:'דיווחי תשלום לאישור',go:'בדיקה ואישור',goMany:'בדיקה ואישור',page:'admin-payment-reports',old:'הוותיק',quiet:'דיווחי תשלום',list:true},
  {id:'unapplied',lane:'urgent',icon:CreditCard,one:'תשלום בכרטיס שלא זוכה',many:'תשלומים בכרטיס שלא זוכו',go:'טיפול בתשלום',goMany:'טיפול בתשלומים',page:'admin-orders',old:'הוותיק',quiet:'תשלומים בכרטיס שלא זוכו',list:true},
  {id:'topup',lane:'urgent',icon:Wallet,one:'בקשת הטענת יתרה',many:'בקשות הטענת יתרה',go:'בדיקת הבקשה',goMany:'בדיקת הבקשות',page:'admin-topups',old:'הוותיקה',quiet:'הטענות יתרה'},
+ // Supplier stock pool (owner, 23.11.2026): one row per supplier whose stock ended or is about to. Each opens the supplier page,
+ // where stock is added (the waiting articles then go out by themselves) or a site is moved to another supplier.
+ {id:'supplier_stock',lane:'urgent',icon:Boxes,one:'המלאי של ספק נגמר',many:'ספקים שהמלאי שלהם נגמר',go:'הוספת מלאי',goMany:'לספקים',page:'admin-suppliers',old:'הוותיק',quiet:'מלאי ספקים'},
  {id:'delivery',lane:'urgent',icon:TriangleAlert,one:'תקלה בשליחה לספק',many:'תקלות שליחה לספק',go:'פתיחת הכתבה',goMany:'לתקלות השליחה',page:'admin-publication',old:'הוותיקה',quiet:'תקלות שליחה לספק'},
  {id:'article',lane:'content',icon:FileText,one:'כתבה לאישור שלך',many:'כתבות לאישור שלך',go:'בדיקת הכתבה',goMany:'בדיקת הכתבות',page:'admin-approvals',old:'הוותיקה',quiet:'כתבות לאישור'},
  {id:'supplier_fix',lane:'content',icon:PenLine,one:'הספק ביקש תיקונים',many:'ספקים ביקשו תיקונים',go:'פתיחת הכתבה',goMany:'לכתבות אצל הספק',page:'admin-publication',old:'הוותיקה',quiet:'בקשות תיקון מספקים'},
@@ -39,10 +42,11 @@ const taskDefs:TaskDef[]=[
  {id:'writing',lane:'content',icon:PenLine,one:'כתבה לכותב התוכן',many:'כתבות לכותב התוכן',go:'כתיבת המאמר',goMany:'לכתבות לכתיבה',page:'admin-writing',old:'הוותיקה',quiet:'כתבות לכותב התוכן'},
  {id:'late',lane:'content',icon:TriangleAlert,one:'באיחור אצל הספק',many:'באיחור אצל הספק',go:'מעקב מול הספק',goMany:'מעקב מול הספק',page:'admin-publication',old:'הוותיקה',quiet:'איחורים אצל הספק',list:true},
  {id:'support',lane:'service',icon:MessageSquare,one:'פנייה שמחכה לתשובה',many:'פניות שמחכות לתשובה',go:'פתיחת הפנייה',goMany:'מענה לפניות',page:'admin-support',preset:['support-status','awaiting_reply'],old:'הוותיקה',quiet:'פניות שירות'},
+ {id:'supplier_stock_low',lane:'service',icon:Boxes,one:'המלאי של ספק עומד להיגמר',many:'ספקים שהמלאי שלהם עומד להיגמר',go:'הוספת מלאי',goMany:'לספקים',page:'admin-suppliers',old:'הוותיק',quiet:'מלאי ספקים עומד להיגמר'},
  {id:'seller_request',lane:'service',icon:Store,one:'בקשת ספק לבדיקה',many:'בקשות ספקים לבדיקה',go:'בדיקת הבקשה',goMany:'לבקשות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'requests'}],old:'הוותיקה',quiet:'בקשות ספקים'},
  {id:'seller_invoice',lane:'service',icon:ReceiptText,one:'חשבונית ספק לבדיקה',many:'חשבוניות ספקים לבדיקה',go:'בדיקת החשבונית',goMany:'לחשבוניות הספקים',page:'admin-seller-requests',preset:['suppliers:requests-v2',{tab:'invoices'}],old:'הוותיקה',quiet:'חשבוניות ספקים'},
 ];
-const kindIcons:Record<string,Icon>={supplier_reject:XCircle,supplier_fix:PenLine,link_review:ShieldCheck,cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,unapplied:CreditCard,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
+const kindIcons:Record<string,Icon>={supplier_stock:Boxes,supplier_stock_low:Boxes,supplier_reject:XCircle,supplier_fix:PenLine,link_review:ShieldCheck,cancellation:XCircle,delivery:TriangleAlert,bank:Landmark,topup:Wallet,unapplied:CreditCard,article:FileText,publication:Send,writing:PenLine,late:TriangleAlert,support:MessageSquare,seller:Store,paid:CheckCircle2};
 const date=(s:string)=>{const d=new Date(s);return Number.isNaN(+d)?'לא תועד':new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d);};
 const clock=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',hour:'2-digit',minute:'2-digit'}).format(d);
 const dayLine=(d:Date)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',weekday:'long',day:'numeric',month:'long'}).format(d);
@@ -63,6 +67,7 @@ function lines(r:Row,task:string):{lead:string;short:unknown[];full:unknown[]}{
  if(task==='cancellation')return {lead:r.user_name,short:[r.number,r.website_name],full:[r.number,r.website_name,real(r.detail)]};
  if(task==='link_review')return {lead:r.website_name||r.user_name,short:[r.number,r.user_name],full:[r.number,r.user_name,real(r.detail)]};
  if(task==='supplier_fix'||task==='supplier_reject')return {lead:r.website_name||r.user_name,short:[r.number,r.user_name],full:[r.number,r.user_name,real(r.detail)&&'„'+real(r.detail)+'”']};
+ if(task==='supplier_stock'||task==='supplier_stock_low')return {lead:r.user_name,short:[r.status,r.website_name],full:[r.status,r.website_name]};
  if(task==='seller_request')return {lead:r.user_name,short:[r.website_name],full:[r.website_name]};
  if(task==='seller_invoice')return {lead:r.user_name,short:[r.detail&&'חודש '+r.detail],full:[r.detail&&'חודש '+r.detail]};
  return real(r.detail)?{lead:real(r.detail),short:[r.number,r.website_name],full:[r.user_name,r.number,r.website_name]}:{lead:r.user_name,short:[r.number,r.website_name],full:[r.number,r.website_name]};
@@ -159,7 +164,7 @@ export default function AdminUpdateFeed({ctx}:{ctx:Ctx}){
   return <div className={'lb-q'+(finished?' is-finished':'')} key={def.id}>
    <div className={'lb-qrow'+(single?'':' is-many')} onClick={single?undefined:e=>{if(!(e.target as HTMLElement).closest('a,button'))toggle();}}>
     <span className={'lb-num'+(t.total>99?' is-wide':'')}>{t.total}</span>
-    <div className="lb-txt"><b><Icon size={17} aria-hidden="true"/>{single?def.one:def.many}</b>{first&&<small>{!single&&def.old+': '}{dot(single?[lead,...short]:[lead,short[0]])}</small>}</div>
+    <div className="lb-txt"><b><Icon size={17} aria-hidden="true"/>{single?(def.id.startsWith('supplier_stock')&&first.title?first.title:def.one):def.many}</b>{first&&<small>{!single&&def.old+': '}{dot(single?[lead,...short]:[lead,short[0]])}</small>}</div>
     <div className="lb-meta">{Number(t.amount)>0&&<bdi className="lb-amt">{whole(t.amount)}</bdi>}{t.oldest&&waitPill(t.oldest)}</div>
     {link(key,single&&!def.list?first.page:def.page,()=>openTask(def,t),'lb-btn '+(def.lane==='urgent'?'is-pri':'is-soft'),<><span>{opening===key?'פותח…':single?def.go:def.goMany}</span>{arrow(key)}</>)}
     {single?(finished?<span className="lb-finished" role="status" aria-label="סומן כטופל"><Check size={18} aria-hidden="true"/></span>:def.id!=='unapplied'&&doneButton(first)):<button type="button" className="lb-end" aria-expanded={shown} aria-controls={'lb-items-'+def.id} aria-label={(shown?'הסתרת הפריטים: ':'הצגת הפריטים: ')+def.many} onClick={toggle}><ChevronDown size={20} aria-hidden="true"/></button>}

@@ -61,6 +61,41 @@ function AddStock({ctx,site,close}:{ctx:Ctx;site:Row;close:()=>void}){
  </form>;
 }
 
+/* ---------- Add stock to the supplier's pool (owner, 23.11.2026): shared by all its sites, no site to pick ---------- */
+export const openAddPoolStock=(ctx:Ctx,supplier:Row,pickSite?:()=>void)=>ctx.open({kind:'admin-finance',title:'הוספת מלאי',description:supplier.name+' · מלאי משותף לכל האתרים של הספק',render:(close:()=>void)=><AddPoolStock ctx={ctx} supplier={supplier} close={close} pickSite={pickSite?()=>{close();setTimeout(pickSite,50);}:undefined}/>});
+function AddPoolStock({ctx,supplier:s,close,pickSite}:{ctx:Ctx;supplier:Row;close:()=>void;pickSite?:()=>void}){
+ const state=useData('admin/suppliers/'+encodeURIComponent(s.id)+'?'+new URLSearchParams({page:'1',q:'',all:'0',selected:''}),ctx.revision),pool:Row|undefined=state.data?.pool;
+ const[f,setF]=useState({quantity:'',total_ils:'',unit_ils:'',paid_on:todayLocal(),method:'bank_transfer',note:''}),[merge,setMerge]=useState(true),[busy,setBusy]=useState(false),[error,setError]=useState(''),lock=useRef(false);
+ const set=(k:string,v:string)=>setF(o=>({...o,[k]:v})),qty=Number(f.quantity),validQty=Number.isInteger(qty)&&qty>0;
+ const total=f.total_ils!==''?Number(f.total_ils):f.unit_ils!==''&&validQty?Number(f.unit_ils)*qty:null,unit=f.unit_ils!==''?Number(f.unit_ils):f.total_ils!==''&&validQty?Number(f.total_ils)/qty:null;
+ const has=pool?.total!=null,leftovers:Row[]=!has?pool?.leftovers||[]:[],extra=merge?leftovers.reduce((n,w)=>n+Number(w.left),0):0,left=has?Number(pool!.left):0,waiting=Number(pool?.waiting||0);
+ const missing=!validQty?'כמות כתבות':total===null?'עלות המלאי או מחיר לכתבה':'';
+ const sites=Number(pool?.sites??s.site_count??0);
+ if(!pool)return <div className="om-pay-form"><p className="sv2-loading" role="status">טוען את מלאי הספק…</p></div>;
+ return <form noValidate className="om-pay-form" onSubmit={async e=>{e.preventDefault();if(lock.current)return;setError('');if(missing){setError('יש להזין '+missing+'.');return;}lock.current=true;setBusy(true);try{const r=await ctx.run(()=>api('admin/supplier-pool/'+encodeURIComponent(s.id),'POST',{...f,merge_sites:merge}),'המלאי נוסף לספק');if(r?.resent)toast.success(plural(r.resent,'כתבה אחת שחיכתה למלאי נשלחה לספק','כתבות שחיכו למלאי נשלחו לספק'));close();}catch(err){setError((err as Error).message);}finally{lock.current=false;setBusy(false);}}}>
+  <div className="om-pay-summary"><div><span>ספק</span><b>{s.name}</b></div><div><span>מצב היום</span><b>{has?<><bdi>{pool.used} / {pool.total}</bdi> · {left>0?'נותרו '+left:'נגמר'}</>:'עוד אין מלאי לספק'}</b></div><div className="is-total"><span>אחרי ההוספה</span><b>{validQty?<>נותרו <bdi>{left+qty+extra}</bdi> כתבות</>:'—'}</b></div></div>
+  <fieldset disabled={busy} className="om-steps">
+   <section className="om-step"><span className="om-step-node" aria-hidden="true">1</span><h4>כמה כתבות נקנו</h4>
+    <label>כמות כתבות<Input inputMode="numeric" value={f.quantity} placeholder="לדוגמה 100" onChange={e=>set('quantity',e.target.value.replace(/[^\d]/g,''))} autoFocus/></label>
+    <p className="om-pay-note">{waiting>0?plural(waiting,'כתבה אחת שמחכה תישלח','כתבות שמחכות יישלחו')+' לספק מיד אחרי השמירה.':'המלאי משותף לכל '+plural(sites,'האתר של הספק','האתרים של הספק')+'. כל כתבה שנשלחת לאחד מהם מורידה 1.'}</p>
+    {leftovers.length>0&&<label className="om-pay-confirm"><input type="checkbox" checked={merge} onChange={e=>setMerge(e.target.checked)}/><span><b>לצרף למלאי הספק את מה שנשאר באתרים: {plural(extra||leftovers.reduce((n,w)=>n+Number(w.left),0),'כתבה אחת','כתבות')}</b><br/>{leftovers.map(w=>w.name+' '+w.left).join(' · ')}. בלי הסימון, כל אתר ישמור את המלאי הנפרד שלו.</span></label>}
+    {pickSite&&<button type="button" className="sv2-linkish" onClick={pickSite}>לאתר מסוים יש מלאי אחר? מלאי נפרד לאתר אחד</button>}
+   </section>
+   <section className="om-step"><span className="om-step-node" aria-hidden="true">2</span><h4>עלות ותשלום</h4>
+    <div className="om-pay-grid"><label>עלות כל המלאי (לפני מע״מ)<Input inputMode="decimal" value={f.total_ils} placeholder={f.unit_ils&&validQty?String(Math.round(Number(f.unit_ils)*qty*100)/100):'₪'} onChange={e=>set('total_ils',e.target.value.replace(/[^\d.]/g,''))}/></label><label>מחיר לכתבה (לפני מע״מ)<Input inputMode="decimal" value={f.unit_ils} placeholder={f.total_ils&&validQty?String(Math.round(Number(f.total_ils)/qty*100)/100):'מחושב לבד'} onChange={e=>set('unit_ils',e.target.value.replace(/[^\d.]/g,''))}/></label></div>
+    {total!==null&&unit!==null&&validQty&&<p className="om-pay-note">סה״כ <bdi>{money(Math.round(total*100))}</bdi> · <bdi>{money(Math.round(unit*100))}</bdi> לכתבה</p>}
+    <div className="om-pay-grid"><label>תאריך תשלום<Input type="date" value={f.paid_on} max={todayLocal()} onChange={e=>set('paid_on',e.target.value)}/></label><label>אופן התשלום<select value={f.method} onChange={e=>set('method',e.target.value)}>{Object.entries(supplierPaymentMethods).map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></label></div>
+   </section>
+   <section className="om-step"><span className="om-step-node" aria-hidden="true">3</span><h4>הערה</h4>
+    <label>הערה פנימית <small className="supplier-field-hint">לא נשלחת לספק. אפשר להשאיר ריק.</small><Textarea className="resize-none" rows={2} value={f.note} maxLength={1000} onChange={e=>set('note',e.target.value)}/></label>
+    <p className="om-pay-note">אפשר רק להוסיף מלאי.</p>
+   </section>
+  </fieldset>
+  {error&&<p role="alert" className="supplier-error">{error}</p>}
+  <div className="om-pay-actions"><span className={'om-foot-status'+(missing?'':' is-ready')}>{missing?'חסר: '+missing:'מוכן לשמירה'}</span><button type="submit" className="om-btn is-primary" disabled={busy}><PackagePlus size={17} aria-hidden="true"/>{busy?'שומר…':'הוספת המלאי'}</button><button type="button" className="om-btn" disabled={busy} onClick={close}>ביטול</button></div>
+ </form>;
+}
+
 /* ---------- Overview: what needs me today ---------- */
 export function SupplierOverview({ctx}:{ctx:Ctx}){
  const state=useData('admin/supplier-overview',ctx.revision),d:Row|undefined=state.data;
