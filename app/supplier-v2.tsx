@@ -1,6 +1,6 @@
 'use client';
 import React,{useMemo,useRef,useState} from 'react';
-import {ArrowRight,Bell,Box,Check,ChevronLeft,CreditCard,Download,ExternalLink,FileText,Globe,Link2,Mail,MoreHorizontal,Pencil,Plus,Search,Send,UserRound,X} from 'lucide-react';
+import {ArrowLeftRight,ArrowRight,Bell,Box,Check,ChevronLeft,CreditCard,Download,ExternalLink,FileText,Globe,Link2,Mail,MoreHorizontal,Pencil,Plus,Search,Send,UserRound,X} from 'lucide-react';
 import {Input} from '@/components/ui/input';
 import {Textarea} from '@/components/ui/textarea';
 import {DropdownMenu,DropdownMenuContent,DropdownMenuItem,DropdownMenuSeparator,DropdownMenuTrigger} from '@/components/ui/dropdown-menu';
@@ -13,6 +13,7 @@ import {openAddStock,openAddPoolStock,supplierKinds} from './supplier-pages';
 import type {Ctx} from './workspace';
 import './supplier-v2.css';
 import {areaIcons} from './orders-area-head';
+import {AdminSupplierExchanges} from './admin-supplier-exchanges';
 
 // Pieces that live in the suppliers workspace, passed in to avoid a circular import.
 export type SupplierKit={
@@ -49,22 +50,24 @@ export function SupplierV2({ctx,id,tab,guard,kit}:{ctx:Ctx;id:string;tab:Supplie
  const params=new URLSearchParams({page:'1',q:'',all:'0',selected:''}),state=useData('admin/suppliers/'+encodeURIComponent(id)+'?'+params,ctx.revision),s:Row|undefined=state.data?.supplier;
  const bill=useData('admin/supplier-billing/'+encodeURIComponent(id),ctx.revision),b:Row|undefined=bill.data;
  const arts=useData('admin/suppliers/'+encodeURIComponent(id)+'/articles',ctx.revision),articles:Row[]=arts.data?.articles||[];
+ // Exchange suppliers (owner 23.11.2026): "החלפות" takes the place of "התחשבנות", since they are never paid.
+ const ex=useData('admin/exchanges?supplier='+encodeURIComponent(id),ctx.revision),exchange=!!ex.data?.is_exchange;
  const go=(page:string,before?:()=>void)=>guard.confirm(()=>{before?.();ctx.go(page);});
  const toTab=(t:SupplierTab)=>t==='articles'?go('admin-supplier-articles/'+id):t==='billing'?go('admin-supplier-billing/'+id):go('admin-supplier/'+id,()=>saveAdminViewState('supplier-editor:'+id,{site:'',tab:t,all:false}));
  if(state.error&&!s)return <div className="sv2"><div className="sv2-empty"><h3>הספק לא נטען</h3><p>{state.error}</p><button type="button" className="sv2-btn quiet" onClick={()=>ctx.go('admin-suppliers')}>חזרה לכל הספקים</button></div></div>;
  if(!s)return <div className="sv2"><p className="sv2-loading" role="status">טוען את הספק…</p></div>;
  const month=new Date().toISOString().slice(0,7),sentMonth=articles.filter(a=>String(a.supplier_sent_at||'').startsWith(month)).length,orders=b?(s.billing==='stock'?b.stock.packages.length:s.billing==='mixed'||s.billing==='pool'?b.stock.packages.length+b.orders.length:b.orders.length):0,pool:Row|undefined=state.data?.pool,billing=s.billing;
- const tabTitle:Record<SupplierTab,string>={sites:'',articles:'כתבות שנשלחו',billing:'התחשבנות',details:'פרטים'};
+ const tabTitle:Record<SupplierTab,string>={sites:'',articles:'כתבות שנשלחו',billing:exchange?'החלפות':'התחשבנות',details:'פרטים'};
  return <div className="sv2" dir="rtl">
   <nav className="sv2-crumb" aria-label="מיקום"><a href="/admin-suppliers" onClick={e=>{if(!plain(e))return;e.preventDefault();go('admin-suppliers');}}>כל הספקים</a><ChevronLeft size={14} aria-hidden="true"/>{tab==='sites'?<span>{s.name}</span>:<><a href={'/admin-supplier/'+s.id} onClick={e=>{if(!plain(e))return;e.preventDefault();toTab('sites');}}>{s.name}</a><ChevronLeft size={14} aria-hidden="true"/><span>{tabTitle[tab]}</span></>}</nav>
-  {(tab==='sites'||tab==='details')&&<header className="sv2-card sv2-hero"><Av name={s.name} size="lg"/><div><h2>{s.name}</h2><div className="sv2-meta">{kindPill(s.kind)}{billingPill(billing)}{s.contact&&<span>{s.contact}</span>}{s.email&&<a href={'mailto:'+s.email}><bdi>{s.email}</bdi></a>}{s.phone&&<a href={'tel:'+s.phone}><bdi>{s.phone}</bdi></a>}</div></div><div className="sv2-kpis"><button type="button" className="sv2-kpi" onClick={()=>toTab('sites')}><span>אתרים</span><b>{s.site_count}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('articles')}><span>כתבות החודש</span><b>{sentMonth}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('billing')}><span>{billing==='stock'||billing==='pool'?'מלאי שנותר':'לתשלום'}</span><b><bdi>{billing==='pool'?pool?.left??'—':!b?'—':billing==='stock'?b.stock.left:money(b.summary.due.amount)}</bdi></b></button></div></header>}
+  {(tab==='sites'||tab==='details')&&<header className="sv2-card sv2-hero"><Av name={s.name} size="lg"/><div><h2>{s.name}</h2><div className="sv2-meta">{kindPill(s.kind)}{exchange?<span className="axc-badge"><ArrowLeftRight size={14} aria-hidden="true"/>ספק החלפות</span>:billingPill(billing)}{s.contact&&<span>{s.contact}</span>}{s.email&&<a href={'mailto:'+s.email}><bdi>{s.email}</bdi></a>}{s.phone&&<a href={'tel:'+s.phone}><bdi>{s.phone}</bdi></a>}</div></div><div className="sv2-kpis"><button type="button" className="sv2-kpi" onClick={()=>toTab('sites')}><span>אתרים</span><b>{s.site_count}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('articles')}><span>כתבות החודש</span><b>{sentMonth}</b></button><button type="button" className="sv2-kpi" onClick={()=>toTab('billing')}><span>{exchange?'החלפות פתוחות':billing==='stock'||billing==='pool'?'מלאי שנותר':'לתשלום'}</span><b><bdi>{exchange?ex.data.balance:billing==='pool'?pool?.left??'—':!b?'—':billing==='stock'?b.stock.left:money(b.summary.due.amount)}</bdi></b></button></div></header>}
   <nav className="sv2-tabs" aria-label="חלקי עמוד הספק">
-   {([['sites',Globe,'אתרים',s.site_count+' אתרים'+(state.data?.total?'':'')],['articles',FileText,'כתבות שנשלחו',articles.length+' כתבות'],['billing',CreditCard,'התחשבנות',orders?orders+' הזמנות':'הזמנות לפי חודש'],['details',UserRound,'פרטים','אנשי קשר ואופן התנהלות']] as [SupplierTab,React.ElementType,string,string][]).map(([key,Icon,label,sub])=><button key={key} type="button" className={'sv2-tab'+(tab===key?' on':'')} aria-current={tab===key?'page':undefined} onClick={()=>tab!==key&&toTab(key)}><span className="ic"><Icon size={19} aria-hidden="true"/></span><span><b>{label}</b><small>{sub}</small></span></button>)}
+   {([['sites',Globe,'אתרים',s.site_count+' אתרים'+(state.data?.total?'':'')],['articles',FileText,'כתבות שנשלחו',articles.length+' כתבות'],exchange?['billing',ArrowLeftRight,'החלפות',ex.data.balance+' פתוחות לבחירה']:['billing',CreditCard,'התחשבנות',orders?orders+' הזמנות':'הזמנות לפי חודש'],['details',UserRound,'פרטים','אנשי קשר ואופן התנהלות']] as [SupplierTab,React.ElementType,string,string][]).map(([key,Icon,label,sub])=><button key={key} type="button" className={'sv2-tab'+(tab===key?' on':'')} aria-current={tab===key?'page':undefined} onClick={()=>tab!==key&&toTab(key)}><span className="ic"><Icon size={19} aria-hidden="true"/></span><span><b>{label}</b><small>{sub}</small></span></button>)}
   </nav>
   {tab==='sites'&&pool&&<PoolBlock ctx={ctx} supplier={s} pool={pool}/>}
   {tab==='sites'&&<SitesTab ctx={ctx} supplier={s} guard={guard} kit={kit}/>}
   {tab==='articles'&&<ArticlesTab ctx={ctx} supplier={s} state={arts}/>}
-  {tab==='billing'&&<BillingTab ctx={ctx} supplier={s} state={bill} pool={pool}/>}
+  {tab==='billing'&&(exchange?<AdminSupplierExchanges ctx={ctx} supplierId={s.id} state={ex}/>:<BillingTab ctx={ctx} supplier={s} state={bill} pool={pool}/>)}
   {tab==='details'&&<DetailsTab ctx={ctx} supplier={s} guard={guard} kit={kit} go={go}/>}
  </div>;
 }

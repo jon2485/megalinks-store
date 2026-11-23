@@ -81,7 +81,7 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   admin(u);assert(r.method==='GET','פעולה לא נתמכת',405);const filters:string[]=["COALESCE(json_extract(o.data,'$.trashed_at'),'')=''"],args:any[]=[];
   const search=text(query.get('search'));if(search){filters.push("(o.number||' '||u.name||' '||u.email||' '||COALESCE(json_extract(o.data,'$.invoice_name'),'')) LIKE ? ESCAPE '\\'");args.push('%'+search.replace(/[\\%_]/g,'\\$&')+'%');}
   const status=query.get('status')||'missing';assert(['all','missing','attached','unpaid'].includes(status),'סטטוס לא תקין');
-  const eligible="(o.paid=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1 AND c.demo=0)) AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND o.status<>'cancelled'"+' AND NOT '+fullyCancelledOrderSql();
+  const eligible="(o.paid=1 OR EXISTS(SELECT 1 FROM monthly_charges c WHERE c.order_id=o.id AND c.settled=1 AND c.demo=0)) AND COALESCE(json_extract(o.data,'$.demo'),0)=0 AND o.status<>'cancelled' AND o.payment<>'exchange'"+' AND NOT '+fullyCancelledOrderSql();
   const has="COALESCE(json_extract(o.data,'$.invoice_file_id'),'')<>''";
   const documentDate="COALESCE(NULLIF(json_extract(o.data,'$.paid_at'),''),o.created)",month=monthRange(query,documentDate);if(month){filters.push(month.sql);args.push(...month.args);}
   if(status==='missing')filters.push('('+eligible+') AND NOT ('+has+')');if(status==='attached')filters.push(has);if(status==='unpaid')filters.push('NOT ('+eligible+') AND NOT ('+has+')');

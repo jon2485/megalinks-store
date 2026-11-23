@@ -5,6 +5,7 @@ import {prepareOrderStatement,refreshOrderStatement} from '@/lib/order-statement
 import {completeWalletCard} from '@/lib/wallet-card';
 import {issueInvoiceSafely,invoiceJobs,retryInvoice} from '@/lib/auto-invoice';
 import {greenInvoiceToken,resetGreenInvoiceToken} from '@/lib/green-invoice';
+import {exchangeCostColumns,syncExchanges,supplierExchanges,exchangeSites,takeExchange,adminSupplierExchanges,adjustExchangeBalance,exchangeSupplierOf,exchangeDefaultCents} from '@/lib/exchanges';
 import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
 import {publicationPeriod} from '@/lib/publication-period';
 import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
@@ -197,7 +198,7 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin)});}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
@@ -316,6 +317,24 @@ async function handle(r: Request,access:ResponseAccess) {
     if(p[0]==='selling'&&p[1]==='articles'&&p[2]&&method==='POST'){
         const delivery=await one("SELECT j.id FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') JOIN seller_sites s ON s.website_id=a.website_id WHERE j.id=? AND j.kind='supplier_publication' AND json_extract(j.data,'$.owner_user_id')=? AND s.user_id=? AND COALESCE(json_extract(j.data,'$.demo'),0)=0",decodeURIComponent(p[2]),u.id,u.id);
         assert(delivery,'הפרסום לא נמצא',404);p.splice(0,p.length,'supplier-inbox',delivery.id);
+    }
+    // Exchange suppliers (owner 23.11.2026): the supplier's exchanges and site picker (no prices), and taking a site.
+    if(p[0]==='selling'&&p[1]==='exchanges'){
+        const supplierId=await exchangeSupplierOf(u.id);
+        if(method==='GET'&&!p[2]){if(!supplierId)return response({exchange_account:false});await syncExchanges(new URL(r.url).origin);return response({exchange_account:true,...await supplierExchanges(supplierId)});}
+        assert(supplierId,'החשבון אינו של ספק החלפות',403);
+        if(method==='GET'&&p[2]==='sites')return response({sites:await exchangeSites(supplierId)});
+        if(method==='POST'&&p[2]==='take')return response(await takeExchange(u,await json(r),(q,b)=>createOrder(u,u,q,b)),201);
+    }
+    // Admin: one supplier's exchanges with costs, a manual correction, the default cost and the sites open for exchanges.
+    if(p[0]==='admin'&&p[1]==='exchanges'){
+        admin(u);
+        if(method==='GET'&&!p[2]){await syncExchanges(new URL(r.url).origin);return response(await adminSupplierExchanges(String(new URL(r.url).searchParams.get('supplier')||'')));}
+        if(method==='POST'&&p[2]==='adjust'){const b=await json(r);return response(await adjustExchangeBalance(u,String(b.supplier_id||''),b));}
+        if(p[2]==='settings'){if(method==='GET')return response({default_cents:await exchangeDefaultCents()});if(method==='PATCH'){const b=await json(r),v=Math.round(Number(b.default_ils)*100);assert(Number.isSafeInteger(v)&&v>=0&&v<=10000000,'סכום אינו תקין');await saveSetting('exchange_default_cents',v);await audit(u,'exchange_settings','עלות ברירת מחדל להחלפה עודכנה',{cents:v});return response({default_cents:v});}}
+        if(method==='POST'&&p[2]==='sites'){const b=await json(r),id=String(b.website_id||''),on=b.available===true;const w=await one('SELECT id,data FROM websites WHERE id=?',id);assert(w,'האתר לא נמצא',404);const d=JSON.parse(w.data||'{}');
+            if(on){assert(Number.isSafeInteger(Number(d.cost_cents))&&Number(d.cost_cents)>=0&&d.cost_cents!==null&&d.cost_cents!==undefined,'יש להגדיר לאתר עלות לפני שמסמנים אותו להחלפה',409);assert(d.stock_mode!=='exchange','אתר של ספק החלפות אינו נפתח להחלפה',409);}
+            await stmt("UPDATE websites SET data=json_set(data,'$.exchange_available',?),updated=? WHERE id=?",on?1:0,now(),id).run();await audit(u,id,on?'האתר נפתח להחלפות':'האתר הוסר מההחלפות');return response({ok:true,available:on});}
     }
     const sellerResponse=await customerSellerRoutes(r,p,u);if(sellerResponse)return sellerResponse;
     const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
@@ -512,7 +531,7 @@ if (p[0] === 'cart') {
             }
         }
         if (method === 'GET')
-            return response({ ...(u.role==='admin'?{payment_confirmation:orderPaymentEvidence(parse(order)!,await paymentEvidenceRows(order.user_id))}:{}),order: parse(order), articles: (await all(`SELECT a.*,${articleCustomerColumns},w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id ${articleCustomerJoins} WHERE a.order_id=?`, order.id)).map(a=>customerArticle(a,u)), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', order.id),u) });
+            return response({ ...(u.role==='admin'?{payment_confirmation:orderPaymentEvidence(parse(order)!,await paymentEvidenceRows(order.user_id))}:{}),order: parse(order), articles: (await all(`SELECT a.*,${articleCustomerColumns}${u.role==='admin'?','+exchangeCostColumns:''},w.name AS website_name,w.url AS website_url,json_extract(o.data,'$.vat_percent') AS order_vat_percent FROM articles a LEFT JOIN websites w ON w.id=a.website_id JOIN orders o ON o.id=a.order_id ${articleCustomerJoins} WHERE a.order_id=?`, order.id)).map(a=>customerArticle(a,u)), activity: activityFor(await all('SELECT a.*,u.name AS actor FROM activity a JOIN users u ON u.id=a.user_id WHERE resource=? ORDER BY created DESC', order.id),u) });
         if (p[2] === 'payment-link' && method === 'POST') {
             assert(!JSON.parse(order.data).demo && !order.paid && order.status!=='cancelled'&&(isCardPayment(order)||order.payment==='monthly'), 'קישור אשראי זמין רק להזמנה שנבחר לה תשלום באשראי');
             const c = await connection('payments');

@@ -21,8 +21,11 @@ export function purchaseCosts(articles:Row[]){
   const writing=Number(a.editorial_price)>0,refunded=!!a.publication_refunded||!!a.writing_refunded,gone=a.status==='cancelled'&&!refunded;
   const publicationOff=(gone||!!a.publication_refunded)&&!a.supplier_cost_kept,writingOff=gone||!!a.writing_refunded;
   if(publicationOff&&(!writing||writingOff))continue;
-  const cost=a.cost_cents;
-  if(!publicationOff){if(a.cost_recorded!==false&&Number.isSafeInteger(cost)&&cost>=0&&(cost>0||a.cost_recorded===true))known+=cost;else missing++;}
+  // Exchange suppliers (owner 23.11.2026): a publication at an exchange supplier costs what is booked on its exchange
+  // (the site taken in return, or the ₪50 default until then); the article taken in return is not counted again.
+  const exchangeTarget=!!a.exchange_target&&a.exchange_target!=='0',exchangeCost=a.exchange_booked_cents!=null&&a.exchange_booked_cents!==''?Number(a.exchange_booked_cents):null;
+  const cost=exchangeCost??a.cost_cents;
+  if(!publicationOff&&!exchangeTarget){if(exchangeCost!==null||a.cost_recorded!==false&&Number.isSafeInteger(cost)&&cost>=0&&(cost>0||a.cost_recorded===true))known+=cost;else missing++;}
   if(writing&&!writingOff)known+=writingCost(a);
  }
  if(!articles.length)missing++;

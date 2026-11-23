@@ -1,0 +1,48 @@
+/* "החלפות" for an exchange supplier (owner 23.11.2026): the approved mockup, white cards with thin frames. */
+.sx{display:grid;gap:12px;font-family:Heebo,Arial,sans-serif;color:#0b274d}
+.sx *{box-sizing:border-box}
+.sx-card{background:#fff;border:1px solid #e3e8ef;border-radius:18px;padding:14px}
+.sx-bal{display:grid;gap:12px}
+.sx-big{display:flex;align-items:baseline;gap:10px}.sx-big b{font-size:46px;font-weight:800;line-height:1;color:#0071e3}.sx-big span{font-size:16px;font-weight:700}
+.sx-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sx-stats div{padding:9px 12px;border-radius:12px;background:#f5f7fa}.sx-stats small{display:block;font-size:12.5px;color:#6b7684}.sx-stats b{font-size:19px;font-weight:800}
+.sx-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:48px;border:0;border-radius:14px;background:#0071e3;color:#fff;font:700 16px Heebo,Arial,sans-serif;cursor:pointer;box-shadow:0 6px 16px -8px #0071e38c}
+.sx-btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.sx-btn.is-quiet{min-height:40px;margin-top:7px;background:#fff;color:#0071e3;box-shadow:inset 0 0 0 1px #cfe0f5;font-size:14.5px}
+.sx-btn.is-grey{min-height:42px;margin-top:8px;background:#f1f5fa;color:#3a4e66;box-shadow:none}
+.sx-btn:focus-visible,.sx-take:focus-visible{outline:3px solid #0079cb;outline-offset:2px}
+.sx-hint{margin:0;font-size:13px;line-height:1.5;color:#6b7684;text-align:center}
+.sx-note{margin:0 2px;font-size:13px;line-height:1.5;color:#6b7684}
+.sx-h{margin:4px 2px 0;font-size:16px;font-weight:800}
+.sx-empty{display:flex;gap:10px;align-items:flex-start;color:#4a5566}.sx-empty p{margin:0;font-size:14px;line-height:1.55}
+.sx-pair{padding:0;overflow:hidden}
+.sx-hd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 12px;background:#f7f9fc;border-bottom:1px solid #eef1f5;font-size:12.5px;font-weight:700;color:#4a5566}
+.sx-row{display:grid;grid-template-columns:74px minmax(0,1fr);gap:8px;padding:10px 12px;align-items:start}
+.sx-row+.sx-row{border-top:1px dashed #dfe6ee}
+.sx-k{font-size:12px;font-weight:700;color:#6b7684;padding-top:2px}
+.sx-v{min-width:0}.sx-v b{display:block;font-size:14px;font-weight:700;line-height:1.35;overflow-wrap:anywhere}.sx-v small{display:block;font-size:12.5px;color:#6b7684}
+.sx-v a{color:#0060c0;text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+.sx-pill{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap}
+.sx-pill.is-ok{background:#e8f6ee;color:#16794a}.sx-pill.is-wait{background:#fff4e0;color:#9a5b00}.sx-pill.is-open{background:#eaf3ff;color:#0060c0}
+.sx-pick{display:grid;gap:10px}
+.sx-for{margin:0;padding:10px 12px;border-radius:12px;background:#eef5ff;font-size:13.5px;line-height:1.5;color:#3a4e66}
+.sx-search{display:flex;align-items:center;gap:8px;height:46px;padding:0 14px;border:1px solid #dbe4ef;border-radius:12px;background:#fff;color:#6b7b91}
+.sx-search input{flex:1;min-width:0;border:0;outline:0;background:none;font:500 16px Heebo,Arial,sans-serif;color:#0b274d}
+.sx-search:focus-within{border-color:#1467cf;box-shadow:0 0 0 3px #1467cf22}
+.sx-sites{display:grid;gap:8px;margin:0;padding:0;list-style:none;max-height:min(58vh,560px);overflow:auto}
+.sx-site{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px}
+.sx-logo{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:#eef3f9;color:#0b274d;font-weight:800;font-size:17px;overflow:hidden}
+.sx-logo img{width:100%;height:100%;object-fit:contain;padding:4px;background:#fff}
+.sx-sn{min-width:0}.sx-sn b{display:block;font-size:15px;font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sx-sn small{display:block;font-size:12.5px;color:#0060c0;text-align:right}
+.sx-chips{display:flex;gap:5px;margin-top:4px}.sx-chips span{height:21px;padding:0 8px;border-radius:999px;background:#f0f4f9;font-size:11.5px;font-weight:700;color:#4a5566;display:inline-flex;align-items:center}
+.sx-take{height:38px;padding:0 12px;border:0;border-radius:11px;background:#0071e3;color:#fff;font:700 13.5px Heebo,Arial,sans-serif;cursor:pointer;white-space:nowrap}
+.sx-sheet{display:grid;gap:10px}.sx-sheet h2{margin:0;font-size:20px;font-weight:800}.sx-sheet p{margin:0;font-size:14px;color:#4a5566;line-height:1.55}
+.sx-facts{margin:0;border:1px solid #e9edf2;border-radius:14px;overflow:hidden}
+.sx-facts div{display:flex;justify-content:space-between;gap:12px;padding:10px 14px;font-size:13.5px;border-top:1px solid #eef1f5}.sx-facts div:first-child{border-top:0;background:#f7f9fc}
+.sx-facts dt{color:#6b7684}.sx-facts dd{margin:0;font-weight:700;text-align:left}
+@media(prefers-reduced-motion:reduce){.sx-btn{transition:none}}
+/* Inside the new popup: the search field keeps one frame, and a site address stays on one line. */
+html body .sky-dialog .sx-pick .sx-search input.sx-q.sx-q,html body .sky-dialog .sx-pick .sx-search input.sx-q.sx-q:focus,.sx-search input,.sx-search input:focus{height:auto!important;min-height:0!important;padding:0!important;border:0!important;border-radius:0!important;background:none!important;box-shadow:none!important}
+.sx-sn small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;direction:ltr;text-align:right}
+.sx-facts dd bdi,.sx-v small{overflow-wrap:normal;word-break:keep-all}
+.sx-facts dd bdi{white-space:nowrap}
