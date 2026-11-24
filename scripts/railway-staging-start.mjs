@@ -18,7 +18,10 @@ const owner=String(process.env.POSTFLOW_OWNER_EMAIL||'').trim().toLowerCase();
 const accounts=appendStagingCustomers(JSON.parse(process.env.POSTFLOW_STAGING_ACCOUNTS||'[]'),JSON.parse(process.env.POSTFLOW_STAGING_CUSTOMER_ACCOUNTS||'[]'),owner);
 if(!owner || !accounts.some(a=>a.email.toLowerCase()===owner))throw new Error("Staging owner must be an explicitly provisioned account");
 const gateway=createStagingGateway({accounts,sessionSecret:process.env.POSTFLOW_STAGING_SESSION_KEY,
-  origin:process.env.POSTFLOW_STAGING_ORIGIN,upstreamPort:8787,stateDir:'/data/staging-auth',exportToken:process.env.POSTFLOW_EXPORT_TOKEN||''});
+  origin:process.env.POSTFLOW_STAGING_ORIGIN,upstreamPort:8787,stateDir:'/data/staging-auth',exportToken:process.env.POSTFLOW_EXPORT_TOKEN||'',
+  // Google sign-in turns on only when both values are set in Railway (the secret is pasted there by the owner).
+  google:process.env.GOOGLE_CLIENT_ID&&process.env.GOOGLE_CLIENT_SECRET?{clientId:process.env.GOOGLE_CLIENT_ID.trim(),clientSecret:process.env.GOOGLE_CLIENT_SECRET.trim()}:null,
+  adminEmails:[owner,...String(process.env.POSTFLOW_ADMIN_EMAILS||'').split(',')]});
 const configPath = resolve("dist/server/wrangler.json");
 const config = JSON.parse(readFileSync(configPath, "utf8"));
 if (!Array.isArray(config.d1_databases) || config.d1_databases.length !== 1) {

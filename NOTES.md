@@ -2453,3 +2453,15 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - אחרי הייבוא המפתח `POSTFLOW_EXPORT_TOKEN` רוקן בשתי הסביבות, אז הייצוא סגור (השער דורש מפתח של 32 תווים לפחות). הקוד נשאר לשימוש עתידי.
 - לא הועבר בכוונה: קופונים (NEW10 לא פעיל, TXASJ71) — נראים כבדיקות; משתמשים והזמנות בדיקה.
 - נשאר לבעלים (מפתחות שרק הוא מזין): מייל Resend + דומיין שולח, חשבונית ירוקה (אמיתי, לא sandbox), Pixabay, פרטי בנק.
+
+## 24.11.2026 (ענן): כניסה עם Google ב-Staging
+
+**מה נבנה:** כפתור "כניסה עם Google" במסך הכניסה של השער (`scripts/railway-staging-gateway.mjs`). התהליך: OpenID Connect עם PKCE, `state` ו-`nonce`, בעוגייה חתומה לעשר דקות. הקוד מוחלף בשרת מול Google יחד עם הסוד.
+- נכנס רק חשבון שכבר מוגדר בשער (`POSTFLOW_STAGING_ACCOUNTS` / `..._CUSTOMER_ACCOUNTS`), ורק עם מייל ש-Google אימתה: Gmail, או דומיין Workspace (`hd`). מייל אחר מקבל הודעה ונשאר בחוץ.
+- לקוח נשאר מחובר 30 יום. מנהל (בעל המערכת ו-`POSTFLOW_ADMIN_EMAILS`) נשאר 8 שעות.
+- הכניסה עם סיסמה נשארה כמו שהייתה.
+- מופעל רק כש-`GOOGLE_CLIENT_ID` ו-`GOOGLE_CLIENT_SECRET` מוגדרים ב-Railway (`scripts/railway-staging-start.mjs`). האתר האמיתי לא מעביר אותם, ולכן שם אין שינוי.
+- כתובת החזרה שצריכה להיות רשומה ב-Google: `https://megalinks-staging-v172.up.railway.app/__staging/google/callback`.
+- בדיקה: `tests/railway-gateway-google.mjs` (Google מדומה, בלי רשת).
+
+**לא נבנה עדיין:** פתיחת חשבון חדש למי שלא מוגדר, כולל מסך אישור תנאים, ושינוי באתר האמיתי.
