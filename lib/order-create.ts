@@ -5,6 +5,7 @@ import {writingCost} from './admin-month-report';
 import {db,stmt,one,parse,assert,uid,now,hash,website,websitesById,mapIn,connection} from './server';
 import {businessMonth} from './monthly';
 import {openMonthlyOrder,monthlyOrderClosedSql,financialGuard,orderGuard} from './monthly-order';
+import {validPhone,PHONE_ERROR} from './pr';
 import type {Row} from './shared';
 export async function createOrder(user:Row,actor:Row,q:Row,b:Row){
  // Only a manager ordering for someone else skips the cart; the flag in the request body is not trusted on its own.
@@ -29,7 +30,7 @@ export async function createOrder(user:Row,actor:Row,q:Row,b:Row){
  // the terms and of the privacy policy were on the site then. An order the admin creates for a customer has none.
  const consent=actor.id===user.id&&b.accepted===true?{terms_accepted_at:stamp,terms_version:LEGAL_CONTENT.terms?.version||'',privacy_version:LEGAL_CONTENT.privacy?.version||''}:{};
  const billing={...(exchange||b.payment==='credits'&&!split?{paid_at:stamp}:{}),...(exchange?{exchange:1}:{}),...(split?{wallet_amount:walletAmount,card_amount:q.total-walletAmount}:{}),demo,on_account:monthly,invoice_name:String(b.invoice_name||user.company||user.name).slice(0,200),workflow:'editorial_v2',name:String(b.name||user.name).slice(0,100),phone:String(b.phone||user.phone||'').slice(0,30),company:String(b.company||user.company||'').slice(0,200),company_id:cleanTaxId(b.company_id),email:user.email,bank_reference:String(b.bank_reference||'').trim().slice(0,300),notes:String(b.notes||'').slice(0,1500),coupon:q.coupon?.code||'',...(q.coupon?{coupon_id:q.coupon.id}:{}),vat_percent:q.vatPercent,...(actor.id!==user.id?{created_by_admin:actor.id}: {}),...consent};
- assert(billing.phone,'יש להזין טלפון');assert(billing.invoice_name,'יש להזין שם לחשבונית');
+ assert(billing.phone,'יש להזין טלפון');assert(validPhone(billing.phone),PHONE_ERROR);assert(billing.invoice_name,'יש להזין שם לחשבונית');
  const ops:any[]=[financialGuard(target),...(actor.id===user.id?[stmt('UPDATE users SET phone=? WHERE id=?',billing.phone,user.id)]:[]),stmt('UPDATE pricing_state SET version=CASE WHEN version=? THEN version ELSE NULL END WHERE id=1',q.pricing_version)];
  if(existing){assert(!existing.purchase_closed_at,'ההזמנה נסגרה לרכישות נוספות',409);assert(!await one("SELECT id FROM records WHERE id=? AND json_extract(data,'$.status')='pending'",'payment-report:'+existing.id),'הזמנה '+existing.number+' נסגרה לרכישות נוספות. רעננו את סיכום הרכישה כדי לפתוח הזמנה חדשה',409);assert(Number(existing.vat_percent)===q.vatPercent,'שיעור המע״מ השתנה; לא ניתן לצרף להזמנה זו',409);ops.push(orderGuard(existing),stmt("UPDATE orders SET subtotal=subtotal+?,discount=discount+?,vat=vat+?,total=total+?,status=?,updated=? WHERE id=?",q.subtotal,q.discount,q.vat,q.total,status,stamp,id));}
  else ops.push(stmt('INSERT INTO order_numbers(order_id) VALUES (?)',id),stmt("INSERT INTO orders(id,user_id,number,status,subtotal,discount,vat,total,payment,paid,data,idempotency,created,updated) VALUES (?,?,(SELECT '#'||sequence FROM order_numbers WHERE order_id=?),?,?,?,?,?,?,?,?,?,?,?)",id,user.id,id,status,q.subtotal,q.discount,q.vat,q.total,payment,exchange||b.payment==='credits'&&!split?1:0,JSON.stringify(billing),b.idempotency,stamp,stamp));

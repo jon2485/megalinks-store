@@ -1,6 +1,6 @@
 import {issueInvoiceSafely} from './auto-invoice';
 import {prepareOrderStatement,storedOrderPdf} from './order-statement';
-import {sendQueuedMail} from './mail';
+import {sendQueuedMail,paymentApprovedMail} from './mail';
 import {one,all,parse,stmt,db,assert,admin,owns,now,uid,audit} from './server';
 import {financialGuard,orderGuard} from './monthly-order';
 import {completeOrderPayment} from './split-payment';
@@ -44,6 +44,7 @@ export async function paymentReports(r:Request,p:string[],u:Row,body:(r:Request)
  if(balance.charge){const c=balance.charge;assert(!c.demo,'לא מאשרים דיווח כספי בהדגמה');await db().batch([financialGuard(target),orderGuard(raw!),reportUpdate,log,stmt('INSERT INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)','monthly-report-paid:'+prior!.request_id,'monthly_payment',order.user_id,JSON.stringify({month:c.month,demo:false,payment_method:method,reference:prior!.reference,payment_date:prior!.payment_date,amount:c.amount,order_ids:[order.id],recorded_by:u.id}),stamp,stamp),stmt("UPDATE orders SET paid=1,data=json_set(data,'$.paid_at',?,'$.payment_approved_at',?,'$.payment_date',?,'$.settlement_payment_method',?),updated=? WHERE id=?",stamp,stamp,prior!.payment_date,method,stamp,order.id),stmt('UPDATE monthly_charges SET settled=1 WHERE order_id=?',order.id),stmt('UPDATE credit_accounts SET balance=balance-? WHERE user_id=?',c.amount,order.user_id)]);}
  else await completeOrderPayment(raw!,'reported-payment:'+prior!.request_id,{actor:u.id,payment_method:method,reference:prior!.reference,payment_date:prior!.payment_date,amount_cents:prior!.amount_cents},[reportUpdate,log]);
  // Owner 23.11.2026: an approved bank transfer gets its חשבונית מס/קבלה from Green Invoice (not a monthly statement).
+ await paymentApprovedMail(order.id,new URL(r.url).origin);
  if(!balance.charge)await issueInvoiceSafely('greeninvoice:reported-payment:'+prior!.request_id,{kind:'order',target:order.id,user_id:order.user_id,method:'bank',amount_cents:prior!.amount_cents,reference:String(prior!.reference||'')},new URL(r.url).origin);
  // Paying the last open order of a closed month marks that month's statement paid, as settling the month does.
  if(balance.charge)await stmt("UPDATE records SET data=json_set(data,'$.status','paid'),updated=? WHERE id=? AND NOT EXISTS(SELECT 1 FROM monthly_charges WHERE user_id=? AND month=? AND demo=0 AND settled=0)",stamp,'monthly:'+balance.charge.month+':'+order.user_id+':0',order.user_id,balance.charge.month).run();

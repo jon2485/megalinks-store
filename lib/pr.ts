@@ -21,6 +21,9 @@ function link(value:unknown){
  try{const url=new URL(/^https?:\/\//i.test(raw)?raw:'https://'+raw);return ['http:','https:'].includes(url.protocol)&&url.hostname.includes('.')?url.href:'';}catch{return '';}
 }
 /** Israeli phone numbers: 9-10 digits starting with 0, or +972 without the leading 0. Dashes and spaces are allowed. */
+export const PHONE_ERROR='מספר הטלפון לא תקין. יש להזין מספר מלא, למשל 050-1234567';
+/** A phone number someone can be reached at: 9 to 15 digits, with spaces, dashes, brackets or a leading + allowed. */
+export const validPhone=(value:unknown)=>{const raw=String(value||'').trim(),digits=raw.replace(/\D/g,'');return /^\+?[\d\s\-()]+$/.test(raw)&&digits.length>=9&&digits.length<=15;};
 export function prPhone(value:unknown){
  const raw=text(value,30),digits=raw.replace(/[\s\-()]/g,'');
  if(/^0\d{8,9}$/.test(digits))return digits;

@@ -37,6 +37,9 @@ const RESULT:Record<string,{tone:string;text:string}>={
  writing:{tone:'info',text:'ההודעה כבר בשליחה.'},
 };
 const plural=(n:number,one:string,many:string)=>n===1?one:n+' '+many;
+// A supplier follow-up gets its final subject only when it is sent; until then the list names what it is.
+const FOLLOW:Record<string,string>={hold:'בקשה מהספק להמתין עם הפרסום',update:'הנחיות מעודכנות לספק',answer:'תשובה לספק'};
+const subjectOf=(r:Row)=>String(r.subject||'')||(r.supplier_followup?(FOLLOW[r.supplier_followup]||'הודעת המשך לספק')+' · הנושא ייקבע בשליחה':'הודעה ללא נושא');
 const firstLine=(text:unknown)=>String(text||'').split('\n').map(s=>s.trim()).find(Boolean)||'';
 const cols={gridTemplateColumns:'minmax(0,1.8fr) minmax(0,1.1fr) 190px 104px 140px 32px'};
 
@@ -97,7 +100,7 @@ export function AdminMailPage({ctx}:{ctx:Ctx}){
    :state.error&&!state.data?<div className="sv2-error" role="alert"><p>{state.error}</p><button type="button" className="sv2-btn quiet sm" onClick={ctx.refresh}>ניסיון נוסף</button></div>
    :rows.length?<>
     <div className="sv2-th" style={cols} aria-hidden="true"><span>הודעה</span><span>נמען</span><span>מצב</span><span>נוצרה</span><span/><span/></div>
-    <div className="sm-list" aria-label="הודעות דיוור">{rows.slice((shown-1)*20,shown*20).map(r=>{const l=look(r.status),line=rowLine(r),files=mailFiles(r),isOpen=open===r.id,result=results[r.id],subject=r.subject||'הודעה ללא נושא',toggle=()=>setOpen(isOpen?'':r.id);
+    <div className="sm-list" aria-label="הודעות דיוור">{rows.slice((shown-1)*20,shown*20).map(r=>{const l=look(r.status),line=rowLine(r),files=mailFiles(r),isOpen=open===r.id,result=results[r.id],subject=subjectOf(r),toggle=()=>setOpen(isOpen?'':r.id);
      return <article key={r.id} className={'sm-item'+(isOpen?' is-open':'')}>
       <div className={'sv2-tr sm-row'+(l.row?' '+l.row:'')} style={cols} onClick={toggle}>
        <div className="sv2-who sm-who"><span className="sv2-thumb sm-ico" aria-hidden="true"><Mail size={19}/></span><span><b title={subject}>{subject}</b><small className={line.error?'is-error':undefined}>{line.text}</small></span></div>
@@ -139,7 +142,7 @@ function MailPanel({ctx,r,busy,result,retry}:{ctx:Ctx;r:Row;busy:string;result?:
   {r.status==='demo'&&<section className="sm-note"><Info size={17} aria-hidden="true"/><div><b>הודעת הדגמה</b><p>לא נשלח מייל אמיתי.</p></div></section>}
   {r.status!=='failed'&&r.delivery_error&&<p className="sm-prev-error">שגיאה מניסיון קודם: {r.delivery_error}</p>}
   <section className="sm-mail" aria-label="תוכן המייל">
-   <dl className="sm-fields"><div><dt>אל</dt><dd><bdi dir="ltr">{r.to||'—'}</bdi></dd></div><div><dt>נושא</dt><dd>{r.subject||'ללא נושא'}</dd></div></dl>
+   <dl className="sm-fields"><div><dt>אל</dt><dd><bdi dir="ltr">{r.to||'—'}</bdi></dd></div><div><dt>נושא</dt><dd>{subjectOf(r)}</dd></div></dl>
    <p className="sm-text" dir="rtl">{r.text||'אין תוכן טקסט.'}</p>
    {r.button?.url&&<div className="sm-link"><a className="sv2-btn tint sm-mail-button" href={r.button.url} target="_blank" rel="noopener noreferrer"><span>{r.button.label||'קישור'}</span><ExternalLink size={15} aria-hidden="true"/></a><bdi dir="ltr" className="sm-url" title={r.button.url}>{r.button.url}</bdi></div>}
    {files.length>0&&<div className="sm-files"><h4><Paperclip size={15} aria-hidden="true"/>קבצים במייל</h4><ul>{files.map(f=><li key={f}><FileText size={15} aria-hidden="true"/>{f}</li>)}</ul>{r.file_token&&<small>במייל נשלחו גם קישורי הורדה, בתוקף 45 יום.</small>}</div>}

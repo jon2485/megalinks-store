@@ -69,7 +69,7 @@ import {saveCatalogBatch} from '@/lib/catalog-bulk';
 import {financeRoutes,isTopUp} from '@/lib/finance';
 import { workflowRoutes } from '@/lib/workflow-routes';
 import { articleChecks, checkLink, verifyPublishedArticle } from '@/lib/checks';
-import { writingRequestMail, articleMail, queueMail, mailFileByToken } from '@/lib/mail';
+import { writingRequestMail, articleMail, queueMail, mailFileByToken, paymentApprovedMail } from '@/lib/mail';
 import { articleDocx } from '@/lib/delivery-docx';
 import { closeMonth } from '@/lib/monthly';
 import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-content';
@@ -85,7 +85,7 @@ import { env, waitUntil } from 'cloudflare:workers';
 import { Row, websitePricing, calculateQuote, articleTransitions, httpUrl, plainText, textToHtml } from '@/lib/shared';
 import { ApiError, db, stmt, one, all, parse, actor, admin, owns, assert, setting, saveSetting, audit, ensureCatalog, publicWebsite, website, websitesById, mapIn, settingsByKey, uid, now, hash, encrypt, connection, geminiServerKey, externalFetch, externalUrl, notify, syncOrder, basicAuth } from '@/lib/server';
 import {hasAgencyCentre} from '@/lib/agency-shared';
-import {PR_CONTENT_TYPE,PR_INTERVIEW_CENTS,PR_MAX_SITES,prSites,validInterview} from '@/lib/pr';
+import {PR_CONTENT_TYPE,PR_INTERVIEW_CENTS,PR_MAX_SITES,prSites,validInterview,validPhone,PHONE_ERROR} from '@/lib/pr';
 export const dynamic = 'force-dynamic';
 const response = (data: any, status = 200) => Response.json(data, { status, headers: { 'Cache-Control': 'no-store' } });
 const json = async (r: Request): Promise<Row> => { assert(Number(r.headers.get('content-length') || 0) <= 500000, 'הבקשה גדולה מדי', 413); const raw = await r.text(); assert(raw.length <= 500000, 'הבקשה גדולה מדי', 413); try {
@@ -427,6 +427,7 @@ async function handle(r: Request,access:ResponseAccess) {
         }
         if (method === 'PATCH') {
             const b = await json(r);
+            assert(!maxText(b.phone,30)||maxText(b.phone,30)===String(u.phone||'')||validPhone(b.phone),PHONE_ERROR);
             await stmt('UPDATE users SET name=?,phone=?,company=? WHERE id=?', maxText(b.name, 100) || u.name, maxText(b.phone, 30), maxText(b.company, 200), u.id).run();
             return response({ ok: true });
         }
@@ -586,7 +587,7 @@ if (p[0] === 'cart') {
             assert(maxText(b.reference, 300).length > 2, 'יש להזין אסמכתת תשלום');
             await requireUnusedReference(maxText(b.reference,300),order.id,b.confirm_duplicate_reference);
             const closedAt=now();await completeOrderPayment(order,'manual-paid:'+order.id,{reference:maxText(b.reference,300),payment_date:paymentDate,payment_method:'bank_transfer',amount_cents:order.total,actor:u.id},[stmt("UPDATE records SET data=json_set(data,'$.status','approved','$.handled_by',?,'$.handled_at',?),updated=? WHERE id=? AND json_extract(data,'$.status')='pending'",u.id,closedAt,closedAt,'payment-report:'+order.id)]);
-            await audit(u, order.id, 'תשלום אומת ידנית', { method:'bank_transfer' });
+            await audit(u, order.id, 'תשלום אומת ידנית', { method:'bank_transfer' });await paymentApprovedMail(order.id,new URL(r.url).origin);
             return response({ ok: true });
         }
         // A customer only asks: the admin approves (the cancel below) or rejects the request.
@@ -760,9 +761,10 @@ if (p[0] === 'cart') {
             assert(order&&canWorkOrder(parse(order)!), 'נדרש תשלום מאומת לפני התקדמות');
             assert(plainText(a.content).trim() || ['writing', 'cancelled'].includes(next), 'יש להוסיף תוכן לכתבה');
             assert(b.version === a.version, 'הכתבה עודכנה במקביל', 409);
-            if(next==='admin_review'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);}
+            // 24.11.2026 The check that just passed stays valid for the version this save creates (the content did not change), so the admin does not see it as out of date.
+            let passed:Row|null=null;if(next==='admin_review'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);passed=validation;}
             if(next==='revisions')assert(maxText(b.note,3000).trim(),'יש לפרט את הסיבה להחזרה לתיקון');
-            const statusData=JSON.parse(a.data);if(next==='admin_review'){statusData.first_submitted_at||=now();statusData.submitted_at=now();statusData.review_requested_at=now();}if(next==='published')statusData.published_at=now();if(next==='approved'){const at=dispatchAtFor(statusData);if(at&&Date.parse(at)>Date.parse(now())){statusData.dispatch_at=at;delete statusData.dispatch_attempted_at;}else delete statusData.dispatch_at;}
+            const statusData=JSON.parse(a.data);if(passed)statusData.validation={...passed,article_version:a.version+1};if(next==='admin_review'){statusData.first_submitted_at||=now();statusData.submitted_at=now();statusData.review_requested_at=now();}if(next==='published')statusData.published_at=now();if(next==='approved'){const at=dispatchAtFor(statusData);if(at&&Date.parse(at)>Date.parse(now())){statusData.dispatch_at=at;delete statusData.dispatch_attempted_at;}else delete statusData.dispatch_at;}
             let url = a.published_url;if(next==='published'){try{url=httpUrl(b.url||'');}catch{assert(false,'הקישור לא תקין. יש להדביק את הכתובת המלאה של הכתבה, שמתחילה ב־https://');}}
             if (next === 'published'){assert(url,'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);assert(!JSON.parse(order!.data).demo,'הדגמה אינה פרסום אמיתי');}
             const publication=publicationPeriod();if(next==='published')statusData.published_month=publication.month;
@@ -1198,6 +1200,7 @@ if (p[0] === 'cart') {
                 assert(['admin', 'customer', 'agency', 'supplier'].includes(b.role), 'תפקיד לא תקין');
                 const owner = await one('SELECT value FROM settings WHERE key=?', 'owner_id');
                 assert(target.id !== owner?.value || b.role === 'admin', 'אין להסיר את הרשאות בעל המערכת');
+                assert(!maxText(b.phone,30)||maxText(b.phone,30)===String(target.phone||'')||validPhone(b.phone),PHONE_ERROR);
                 await stmt('UPDATE users SET role=?,name=?,phone=?,company=? WHERE id=?', b.role, maxText(b.name, 100) || target.name, maxText(b.phone, 30), maxText(b.company, 200), target.id).run();
                 await audit(u, target.id, 'תפקיד עודכן', { role: b.role });
                 return response({ ok: true });
