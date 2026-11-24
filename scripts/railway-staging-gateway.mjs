@@ -19,7 +19,9 @@ function loginPage(returnTo,error='',email='',production=false) {
 // no query string, and the request reaches the app with no identity and no cookies. Everything else stays locked.
 export const publicMailPath=pathname=>/^\/(?:brand\/megalinks-logo(?:-dark)?\.png|api\/mail-file\/[0-9a-f]{48}\/\d\/[^\/]{1,200})$/.test(pathname);
 // production: the same gateway for the real environment (own cookie name, no "test environment" wording).
-export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort=8787,stateDir,production=false}) {
+export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort=8787,stateDir,production=false,exportToken=''}) {
+  // 24.11.2026 Staging only: read-only /api/export/* for the real site's one-time import, with its own token (checked here and in the app).
+  const exportAllowed=(req,path)=>{const given=String(req.headers['x-export-token']||'');return !!exportToken&&exportToken.length>=32&&req.method==='GET'&&path.startsWith('/api/export/')&&given.length===exportToken.length&&timingSafeEqual(Buffer.from(sha(given)),Buffer.from(sha(exportToken)));};
   const COOKIE=production?'__Host-megalinks_session':'__Host-megalinks_staging';
   const formPage=(returnTo,error='',email='')=>loginPage(returnTo,error,email,production);
   const publicOrigin=new URL(origin).origin;
@@ -65,7 +67,7 @@ export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort
         return finish(303,'',{'Set-Cookie':cookie(id+'.'+sign(id)),Location:returnTo});
       }
       if(['/signin-with-chatgpt','/callback'].includes(url.pathname))return finish(200,formPage(url.searchParams.get('return_to')||'/'),{'Content-Security-Policy':"default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'"});
-      const open=!session&&['GET','HEAD'].includes(req.method)&&!url.search&&publicMailPath(url.pathname);
+      const open=!session&&(['GET','HEAD'].includes(req.method)&&!url.search&&publicMailPath(url.pathname)||exportAllowed(req,url.pathname));
       if(!session&&!open){
         if(url.pathname.startsWith('/api/')||url.pathname==='/mcp')return finish(401,JSON.stringify({error:'יש להתחבר כדי להמשיך'}),{'Content-Type':'application/json'});
         return finish(303,'',{Location:'/signin-with-chatgpt?return_to='+encodeURIComponent(safeReturn(url.pathname+url.search))});

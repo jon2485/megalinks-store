@@ -80,6 +80,7 @@ import { supplierBilling, supplierOrder, supplierPackage, sendOrderSummary, send
 import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManualSupplierMonths } from '@/lib/supplier-month';
 import { DEFAULT_SUPPLIER_EMAIL } from '@/lib/supplier-presentation';
 import { contentHtml, signature, matchingSignature } from '@/lib/integrations';
+import {stagingExport,importFromStaging} from '@/lib/staging-import';
 import { aiArticleHtml } from '@/lib/ai-article-content';
 import { env, waitUntil } from 'cloudflare:workers';
 import { Row, websitePricing, calculateQuote, articleTransitions, httpUrl, plainText, textToHtml } from '@/lib/shared';
@@ -201,6 +202,7 @@ async function handle(r: Request,access:ResponseAccess) {
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
     if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
+    if(p[0]==='export'){const res=await stagingExport(r,p);if(res)return res;}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
@@ -1221,6 +1223,7 @@ if (p[0] === 'cart') {
             }
         }
         if(p[1]==='catalog-bulk'&&method==='POST')return response(await saveCatalogBatch(u,await json(r)));
+        if(p[1]==='import-staging'&&method==='POST')return response(await importFromStaging(r,u,await json(r)));
         if(p[1]==='catalog-logo'&&method==='POST'){
             const form=await r.formData(),file=form.get('file');assert(file instanceof File&&file.size>0&&file.size<=5*1024*1024,'יש לבחור תמונת לוגו עד 5MB');
             assert(['image/png','image/jpeg','image/gif','image/webp'].includes(file.type),'ניתן להעלות PNG, JPG, GIF או WEBP בלבד');const bytes=new Uint8Array(await file.arrayBuffer());

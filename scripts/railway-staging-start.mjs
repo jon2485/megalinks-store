@@ -18,7 +18,7 @@ const owner=String(process.env.POSTFLOW_OWNER_EMAIL||'').trim().toLowerCase();
 const accounts=appendStagingCustomers(JSON.parse(process.env.POSTFLOW_STAGING_ACCOUNTS||'[]'),JSON.parse(process.env.POSTFLOW_STAGING_CUSTOMER_ACCOUNTS||'[]'),owner);
 if(!owner || !accounts.some(a=>a.email.toLowerCase()===owner))throw new Error("Staging owner must be an explicitly provisioned account");
 const gateway=createStagingGateway({accounts,sessionSecret:process.env.POSTFLOW_STAGING_SESSION_KEY,
-  origin:process.env.POSTFLOW_STAGING_ORIGIN,upstreamPort:8787,stateDir:'/data/staging-auth'});
+  origin:process.env.POSTFLOW_STAGING_ORIGIN,upstreamPort:8787,stateDir:'/data/staging-auth',exportToken:process.env.POSTFLOW_EXPORT_TOKEN||''});
 const configPath = resolve("dist/server/wrangler.json");
 const config = JSON.parse(readFileSync(configPath, "utf8"));
 if (!Array.isArray(config.d1_databases) || config.d1_databases.length !== 1) {
@@ -37,7 +37,7 @@ writeFileSync(configPath, JSON.stringify(config));
 // Only required runtime bindings cross the boundary; no live provider keys do.
 // This internal loopback key is ephemeral unless an existing automation key is configured.
 const automationKey=process.env.POSTFLOW_AUTOMATION_KEY||randomBytes(32).toString('hex');
-const workerSecrets={POSTFLOW_OWNER_EMAIL:owner,SETTINGS_ENCRYPTION_KEY:process.env.SETTINGS_ENCRYPTION_KEY,POSTFLOW_AUTOMATION_KEY:automationKey,POSTFLOW_STAGING_ORIGIN:process.env.POSTFLOW_STAGING_ORIGIN};
+const workerSecrets={POSTFLOW_OWNER_EMAIL:owner,SETTINGS_ENCRYPTION_KEY:process.env.SETTINGS_ENCRYPTION_KEY,POSTFLOW_AUTOMATION_KEY:automationKey,POSTFLOW_STAGING_ORIGIN:process.env.POSTFLOW_STAGING_ORIGIN,POSTFLOW_EXPORT_TOKEN:process.env.POSTFLOW_EXPORT_TOKEN||''};
 if(Buffer.from(workerSecrets.SETTINGS_ENCRYPTION_KEY||'','base64').length!==32)throw new Error("A 32-byte encryption key is required");
 writeFileSync(resolve("dist/server/.dev.vars"),Object.entries(workerSecrets).map(([k,v])=>k+'='+JSON.stringify(v)).join('\n'),{mode:0o600});
 const executable = resolve("node_modules/wrangler/bin/wrangler.js");

@@ -37,7 +37,7 @@ writeFileSync(configPath, JSON.stringify(config));
 // Only required runtime bindings cross the boundary; no live provider keys do.
 // This internal loopback key is ephemeral unless an existing automation key is configured.
 const automationKey=process.env.POSTFLOW_AUTOMATION_KEY||randomBytes(32).toString('hex');
-const workerSecrets={POSTFLOW_OWNER_EMAIL:owner,SETTINGS_ENCRYPTION_KEY:process.env.SETTINGS_ENCRYPTION_KEY,POSTFLOW_AUTOMATION_KEY:automationKey,POSTFLOW_PUBLIC_ORIGIN:process.env.POSTFLOW_PRODUCTION_ORIGIN};
+const workerSecrets={POSTFLOW_OWNER_EMAIL:owner,SETTINGS_ENCRYPTION_KEY:process.env.SETTINGS_ENCRYPTION_KEY,POSTFLOW_AUTOMATION_KEY:automationKey,POSTFLOW_PUBLIC_ORIGIN:process.env.POSTFLOW_PRODUCTION_ORIGIN,POSTFLOW_EXPORT_TOKEN:process.env.POSTFLOW_EXPORT_TOKEN||'',POSTFLOW_STAGING_EXPORT_URL:process.env.POSTFLOW_STAGING_EXPORT_URL||''};
 if(Buffer.from(workerSecrets.SETTINGS_ENCRYPTION_KEY||'','base64').length!==32)throw new Error("A 32-byte encryption key is required");
 writeFileSync(resolve("dist/server/.dev.vars"),Object.entries(workerSecrets).map(([k,v])=>k+'='+JSON.stringify(v)).join('\n'),{mode:0o600});
 const executable = resolve("node_modules/wrangler/bin/wrangler.js");
