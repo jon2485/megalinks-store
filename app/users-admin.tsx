@@ -16,8 +16,16 @@ const roleTones:Row={customer:'unreported',agency:'month',supplier:'work',admin:
 const accountsText=(n:number)=>n===1?'חשבון אחד':n+' חשבונות';
 const available=(u:Row)=>Math.max(0,Number(u.credit_limit||0)-Number(u.monthly_balance||0));
 function UserSettings({ctx,user,close}:{ctx:Ctx;user:Row;close:()=>void}){
- const [role,setRole]=useState(user.role);
- return <section className="users-settings"><Field label="סוג החשבון"><Pick value={role} onChange={setRole} options={{customer:'לקוח',agency:'סוכנות',supplier:'ספק',admin:'מנהל מערכת'}}/></Field><ActionForm initial={user} fields={[["name","שם מלא","text"],["phone","טלפון","tel"],["company","חברה / סוכנות","text"]]} submit={b=>ctx.run(()=>api('admin/users/'+user.id,'PATCH',{...b,role}),'פרטי החשבון והרשאותיו עודכנו').then(close)} label="שמירת הפרטים"/></section>;
+ // 24.11.2026 (M26, owner) A change of account type asks first, in the same window; saving name, phone or company stays one click.
+ const [role,setRole]=useState(user.role),[pending,setPending]=useState<Row|null>(null),[draft,setDraft]=useState<Row|null>(null),[busy,setBusy]=useState(false);
+ const names:Row={customer:'לקוח',agency:'סוכנות',supplier:'ספק',admin:'מנהל מערכת'};
+ const save=(b:Row)=>ctx.run(()=>api('admin/users/'+user.id,'PATCH',{...b,role}),'פרטי החשבון והרשאותיו עודכנו').then(close);
+ const who=user.name||user.email;
+ return <section className="users-settings"><Field label="סוג החשבון"><Pick value={role} onChange={v=>{setRole(v);setPending(null);}} options={names}/></Field>
+  {pending?<div className="om-dialog users-role-confirm" role="alertdialog" aria-label="אישור שינוי סוג החשבון"><p className="om-note is-warning">לשנות את סוג החשבון של <bdi>{who}</bdi> מ{names[user.role]||user.role} ל{names[role]||role}?</p>
+   <p className="om-note">{role==='admin'?'מנהל מערכת יקבל גישה מלאה לניהול: הזמנות, תשלומים, לקוחות, ספקים והגדרות.':user.role==='admin'?'החשבון יאבד את הגישה לניהול.':role==='supplier'?'החשבון יעבור לאזור הספקים.':'ההרשאות של החשבון ישתנו בהתאם לסוג החדש.'}</p>
+   <div className="om-dialog-actions"><button type="button" className={'om-btn '+(role==='admin'||user.role==='admin'?'is-danger':'is-primary')} disabled={busy} onClick={()=>{setBusy(true);save(pending).catch(()=>{}).finally(()=>setBusy(false));}}>{busy?'שומר…':'כן, לשנות את סוג החשבון'}</button><button type="button" className="om-btn" disabled={busy} onClick={()=>setPending(null)}>חזרה</button></div></div>
+  :<ActionForm initial={{...user,...(draft||{})}} fields={[["name","שם מלא","text"],["phone","טלפון","tel"],["company","חברה / סוכנות","text"]]} submit={b=>role!==user.role?(setDraft(b),setPending(b),Promise.resolve()):save(b)} label="שמירת הפרטים"/>}</section>;
 }
 function MonthlyPermission({ctx,user,close}:{ctx:Ctx;user:Row;close:()=>void}){const[enabled,setEnabled]=useState(!!user.monthly_enabled);return <div className="users-settings"><label className="payment-report-confirm"><input type="checkbox" checked={enabled} onChange={e=>setEnabled(e.target.checked)}/>הרשאה לרכישה בחשבון חודשי</label><ActionForm fields={[["limit_ils","מסגרת מאושרת (₪)","number"]]} initial={{limit_ils:Number(user.credit_limit||0)/100}} submit={b=>ctx.run(()=>api('admin/credit-accounts','PATCH',{...b,user_id:user.id,enabled}),'המסגרת והרשאת החשבון נשמרו').then(close)} label="שמירת המסגרת"/></div>;}
 function CreditMovement({ctx,user,close}:{ctx:Ctx;user:Row;close:()=>void}){return <ActionForm fields={[["amount","סכום התנועה (₪)","number"],["reason","סיבת העדכון","text"],["reference","אסמכתא ייחודית","text"]]} submit={b=>ctx.run(()=>api('credits','POST',{...b,user_id:user.id}),'יתרת הקרדיט עודכנה').then(close)} label="אישור עדכון יתרה"/>;}
