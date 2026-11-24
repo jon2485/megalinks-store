@@ -44,7 +44,9 @@ const asCell=(value:any)=>Array.isArray(value)?value.join(', '):typeof value==='
 // Same address with or without www, a trailing slash or capitals is the same site, exactly as the catalog save compares it
 // (found on Staging 16.11.2026: "ynet.co.il" in the sheet was planned as a new site and the save refused it as a duplicate).
 const urlKey=(href:string)=>{try{const u=new URL(href);return u.hostname.toLowerCase().replace(/^www\./,'')+u.pathname.replace(/\/$/,'')+u.search;}catch{return href;}};
-export function planSheets(rows:any[][],existing:Row[]){
+// 24.11.2026 A catalog with no live site at all (a new environment, or after "התחלה מאפס") takes the sheet's own ids,
+// so one sheet can feed Staging and the real site without clearing its id column. Otherwise an unknown id stays an error.
+export function planSheets(rows:any[][],existing:Row[]){const adopt=!existing.length;
  const errors:string[]=[],operations:Row[]=[],entries:Row[]=[],seenIds=new Set<string>(),seenUrls=new Map<string,string>();
  if(!Array.isArray(rows)||rows.length<2||rows.length>5001)throw Error('נדרש גיליון עם 1 עד 5,000 אתרים');
  const heads=rows[0].map(x=>String(x??'').trim()),keys=heads.map(sheetKey);
@@ -62,7 +64,7 @@ export function planSheets(rows:any[][],existing:Row[]){
    try{siteUrl=url(raw.url||'');}catch(e){if(own&&raw.url&&String(own.url??'').trim()===raw.url)siteUrl=raw.url;else throw e;}
    if(!id){const matches=existingUrls.get(urlKey(siteUrl))||[];if(matches.length>1)throw Error('כתובת קיימת בכמה רשומות; יש למלא מזהה');id=matches[0]||'sheet-'+crypto.randomUUID();}
    if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id)||seenIds.has(id))throw Error('מזהה אתר לא תקין או כפול');seenIds.add(id);
-   const before=known.get(id);if(raw.id&&!before)throw Error('המזהה אינו קיים באתר; לאתר חדש יש להשאיר אותו ריק');
+   const before=known.get(id);if(raw.id&&!before&&!adopt)throw Error('המזהה אינו קיים באתר; לאתר חדש יש להשאיר אותו ריק');
    const prevUrlId=seenUrls.get(urlKey(siteUrl));if(prevUrlId&&(!before||!known.has(prevUrlId)))throw Error('כתובת אתר כפולה');seenUrls.set(urlKey(siteUrl),id);
    if(!before&&existingUrls.has(urlKey(siteUrl)))throw Error('כתובת האתר כבר קיימת');
    if(!raw.name||!raw.category||raw.price_ils==='')throw Error('שם אתר קטגוריה ומחיר הם חובה');
