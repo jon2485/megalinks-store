@@ -90,3 +90,6 @@ export async function prSites():Promise<PrSite[]>{
    publication_cents:publication,total_cents:publication+PR_INTERVIEW_CENTS};
  });
 }
+
+// 24.11.2026 (owner) The PR page shows "רגע, בונים פה" while this is true (app/pr/route.ts); false brings the page back as it was.
+export const PR_LOCKED=true;

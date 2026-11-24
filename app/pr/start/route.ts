@@ -1,12 +1,14 @@
 import {PR_START_HTML} from '@/lib/pr-page-html';
 import {SITE_URL} from '@/lib/seo';
-import {PR_DAYS,PR_HOURS,prSites} from '@/lib/pr';
+import {PR_DAYS,PR_HOURS,PR_LOCKED,prSites} from '@/lib/pr';
 import {prData} from '@/lib/pr-render';
 
 // Step 2 of the PR page: the interview details, then the normal cart and checkout (see home/pr/start.html).
 export const dynamic='force-dynamic';
 const chip=(value:string,label:string)=>`<button type="button" aria-pressed="false" data-value="${value}">${label}</button>`;
 export async function GET(){
+    // 24.11.2026 While the PR page is closed ("רגע, בונים פה"), its second step sends visitors back to it.
+    if(PR_LOCKED)return new Response(null,{status:302,headers:{location:'/pr','cache-control':'no-store'}});
     let sites:Awaited<ReturnType<typeof prSites>>=[];
     try{sites=await prSites();}catch(error){console.error('PR form: sites unavailable',error);}
     const html=PR_START_HTML.replaceAll('%%SITE_URL%%',SITE_URL).replace('<!--PR:DATA-->',()=>prData(sites))
