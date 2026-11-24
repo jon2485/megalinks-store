@@ -81,3 +81,5 @@
 @media(forced-colors:active){.publication-catalog-card.pc-apple{border:1px solid CanvasText!important}.publication-catalog-card.pc-apple .pc-tip{background:Canvas;color:CanvasText;border:1px solid CanvasText}}
 /* Savings: the amount itself one size up and heavier, so the eye lands on the gain */
 :is(.pc-saving,.ba-saving) .saving-amount{font-size:1.15em;font-weight:800;letter-spacing:-.01em}
+/* 24.11.2026 The explanation of the second metric (UR, on the left of the card) opened past the card's left edge and was cut on the leftmost card; it now opens from that metric's left edge into the card. */
+.publication-catalog-card.pc-apple .pc-metric:last-child:not(:first-child) .pc-tip{inset-inline-start:auto;inset-inline-end:0}
