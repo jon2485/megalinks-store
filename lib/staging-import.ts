@@ -29,10 +29,13 @@ async function pull(path:string){
 
 /** Real-site side (admin): part=logos (in batches, from offset), knowledge, or relink (logo links move to this site). */
 export async function importFromStaging(r:Request,u:Row,b:Row){
+ try{return await runImport(r,u,b);}catch(e){if(e instanceof ApiError)throw e;throw new ApiError(500,'הייבוא נכשל: '+String((e as Error)?.message||e).slice(0,300));}
+}
+async function runImport(r:Request,u:Row,b:Row){
  admin(u);assert(env.BUCKET,'האחסון אינו זמין',503);const part=String(b.part||'');
  const staging=new URL(String((env as any).POSTFLOW_STAGING_EXPORT_URL||'https://invalid.invalid')).origin,here=new URL(r.url).origin;
  if(part==='logos'){
-  const rows=await all("SELECT DISTINCT json_extract(data,'$.logo_url') AS u FROM websites WHERE json_extract(data,'$.logo_url') LIKE ?",staging+'/api/catalog-logo/%');
+  const rows=await all("SELECT DISTINCT json_extract(data,'$.logo_url') AS u FROM websites WHERE json_valid(data) AND instr(json_extract(data,'$.logo_url'),?)=1",staging+'/api/catalog-logo/');
   const ids=rows.map(x=>String(x.u).split('/').pop()||'').filter(id=>UUID.test(id)).sort(),offset=Math.max(0,Math.floor(Number(b.offset)||0)),batch=ids.slice(offset,offset+60);
   let copied=0,existing=0;const failed:string[]=[];
   for(const id of batch){const at='public/catalog-logos/'+id;if(await env.BUCKET.head(at)){existing++;continue;}
@@ -51,7 +54,7 @@ export async function importFromStaging(r:Request,u:Row,b:Row){
  }
  if(part==='relink'){
   // Only after every logo is here: a link whose file is missing stays on Staging.
-  const rows=await all("SELECT id,json_extract(data,'$.logo_url') AS u FROM websites WHERE json_extract(data,'$.logo_url') LIKE ?",staging+'/api/catalog-logo/%');let moved=0;const missing:string[]=[];
+  const rows=await all("SELECT id,json_extract(data,'$.logo_url') AS u FROM websites WHERE json_valid(data) AND instr(json_extract(data,'$.logo_url'),?)=1",staging+'/api/catalog-logo/');let moved=0;const missing:string[]=[];
   const updates:any[]=[],stamp=new Date().toISOString();
   for(const w of rows){const id=String(w.u).split('/').pop()||'';if(!UUID.test(id)||!await env.BUCKET.head('public/catalog-logos/'+id)){missing.push(w.id);continue;}
    updates.push(stmt("UPDATE websites SET data=json_set(data,'$.logo_url',?),updated=? WHERE id=?",here+'/api/catalog-logo/'+id,stamp,w.id));moved++;}
