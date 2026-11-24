@@ -63,7 +63,32 @@ button{cursor:pointer}
 .now{font:900 26px/1 Heebo;color:var(--green);white-space:nowrap}
 .now small{font:600 13px Heebo;color:var(--muted);margin-right:4px}
 .add{height:46px;border:0;border-radius:14px;padding:0 16px;background:linear-gradient(180deg,var(--o1),var(--o2));color:#fff;font:700 15px Heebo;display:flex;align-items:center;gap:6px;white-space:nowrap;box-shadow:inset 0 1px 0 #ffffff59,0 10px 20px -12px #f06307}
-.add.in{background:#fff;color:var(--green);box-shadow:inset 0 0 0 1.5px #9fd8b5}
+.add{transition:transform .35s cubic-bezier(.32,.72,0,1),box-shadow .35s cubic-bezier(.32,.72,0,1),background .2s}
+.add .ic{width:24px;height:24px;border-radius:8px;background:#00000014;box-shadow:inset 0 1px 0 #ffffff59;display:grid;place-items:center;font:800 17px/1 Heebo;transition:transform .45s cubic-bezier(.32,.72,0,1)}
+.add:active{transform:scale(.96);transition-duration:.08s}
+.add[data-added=true]{background:linear-gradient(180deg,#20854a,#178648);box-shadow:inset 0 1px 0 #ffffff59,0 10px 22px -10px #1a9a52b3}
+.add[data-added=true] .ic{background:#ffffff38;animation:pop .5s cubic-bezier(.32,.72,0,1)}
+.add[data-added=true] .lb{animation:lbl .18s ease-out}
+@keyframes pop{30%{transform:scale(1.35)}60%{transform:scale(.9)}}
+@keyframes lbl{from{opacity:0;transform:translateY(3px)}}
+.incart{font:700 13px Heebo;color:var(--green);white-space:nowrap}
+.addbox{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.addw+.incart,.bcard .incart{align-self:center}
+.card,.logo{transition:transform .35s cubic-bezier(.32,.72,0,1),box-shadow .35s cubic-bezier(.32,.72,0,1)}
+@media(hover:hover) and (pointer:fine){
+ .card:hover{transform:translateY(-4px);box-shadow:0 0 0 1px #1673e62e,0 24px 40px -24px #0b285073}
+ .card:hover .row>.logo{transform:scale(1.05) rotate(-2deg)}
+ .add:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 #ffffff80,0 2px 4px #a03c0033,0 16px 30px -12px #f26a1bcc}
+ .add:not([data-added=true]):hover .ic{transform:rotate(90deg)}
+ .nm a:hover{text-decoration:underline}
+ .qty button:hover{background:#eef3fa}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}.card:hover{transform:none}}
+.qty{display:flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden;flex:0 0 auto;height:34px}
+.qty button{width:32px;height:34px;border:0;background:#fff;color:var(--ink);font:800 18px/1 Heebo}
+.qty button:disabled{color:#c3ccd8}
+.qty span{min-width:26px;text-align:center;font:800 15px Heebo;border-inline:1px solid var(--line);line-height:34px}
+.it .side{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex:0 0 auto}
 /* bundles */
 .bcard{gap:14px}
 .bhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -173,12 +198,15 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const fmt=n=>'₪'+Math.round(n).toLocaleString('he-IL');
 const pct=(l,p)=>Math.round((1-p/l)*100);
 const short=d=>d.replace(/^www\./,'');
-let cart=[];try{cart=JSON.parse(localStorage.getItem('bf-cart')||'[]').filter(id=>BY[id])}catch{}
-const save=()=>{try{localStorage.setItem('bf-cart',JSON.stringify(cart))}catch{}};
+let cart={};try{const c=JSON.parse(localStorage.getItem('bf-cart2')||'{}');for(const k in c)if(BY[k]&&c[k]>0)cart[k]=Math.min(20,c[k]|0)}catch{}
+const save=()=>{try{localStorage.setItem('bf-cart2',JSON.stringify(cart))}catch{}};
+const ADDED_MS=2400,timers={};
 const st={q:'',cat:'הכול',max:0,dr:0,sort:'rec',openB:{}};
 const cats=['הכול',...[...new Set(S.map(s=>s.c))].sort((a,b)=>S.filter(s=>s.c===b).length-S.filter(s=>s.c===a).length)];
 function logo(d,n){return L[d]?`<div class="logo"><img src="${L[d]}" alt="" loading="lazy"></div>`:`<div class="logo ph">${esc(n.trim()[0]||'?')}</div>`}
-function addBtn(id,wide){const inC=cart.includes(id);return `<button class="add${inC?' in':''}${wide?' addw':''}" data-add="${id}">${inC?'✓ בסל':(wide?'+ הוספת החבילה לסל':'+ הוספה לסל')}</button>`}
+const label=wide=>wide?'הוספת החבילה לסל':'הוספה לסל';
+const inCart=id=>cart[id]?(cart[id]===1?'✓ כבר בסל':'✓ '+cart[id]+' בסל'):'';
+function addBtn(id,wide){return `<div class="addbox"${wide?' style="align-items:stretch"':''}><button class="add${wide?' addw':''}" data-add="${id}" data-added="false" aria-live="polite"><span class="lb">${label(wide)}</span><span class="ic" aria-hidden="true">+</span></button><span class="incart" data-in="${id}">${inCart(id)}</span></div>`}
 function single(s){return `<article class="card">
  <div class="row">${logo(s.d,s.n)}<div class="nm"><h3>${esc(s.n)}</h3><a href="https://${esc(s.u)}" target="_blank" rel="noopener">${esc(short(s.u))}</a></div><span class="off">-${pct(s.l,s.p)}%</span></div>
  <div class="tags"><span class="tag"><small>DR</small>${s.dr}</span><span class="tag"><small>UR</small>${s.ur}</span><span class="tag cat">${esc(s.c)}</span></div>
@@ -213,17 +241,21 @@ function view(){const v=(location.hash||'#all').slice(1);const V=['all','bundles
  h+=`<p class="foot">MegaLinks · בניית קישורים חיצוניים · המחירים לפני מע״מ</p>`;
  $('view').innerHTML=h;const qi=$('q');if(qi){qi.oninput=()=>{st.q=qi.value;const r=filtered();$('grid').innerHTML=r.length?r.map(single).join(''):'<div class="empty">אין אתרים שמתאימים לחיפוש.</div>';document.querySelector('.count span').textContent=r.length+' אתרים'}}
  totals()}
-function cartItems(){return cart.map(id=>BY[id]).filter(Boolean)}
-function totals(){const its=cartItems(),l=its.reduce((a,x)=>a+x.l,0),t=its.reduce((a,x)=>a+x.p,0);
- $('cartN').textContent=its.length;$('bar').classList.toggle('show',its.length>0);
- $('barTot').textContent=its.length+(its.length===1?' פריט · ':' פריטים · ')+fmt(t);$('barSub').innerHTML='חסכתם <em>'+fmt(l-t)+'</em> בבלאק פריידיי';
- $('items').innerHTML=its.map(x=>x.sites?`<div class="it"><div class="logo ph" style="font-size:15px">${x.sites.length}</div><div class="nm"><h3>${esc(x.title)}</h3><span>חבילה: ${esc(x.sites.map(s=>s.n).join(', '))}</span></div><div class="p"><b>${fmt(x.p)}</b><s>${fmt(x.l)}</s></div><button class="rm" data-rm="${x.id}" aria-label="הסרה">✕</button></div>`
-  :`<div class="it">${logo(x.d,x.n)}<div class="nm"><h3>${esc(x.n)}</h3><span>${esc(short(x.u))}</span></div><div class="p"><b>${fmt(x.p)}</b><s>${fmt(x.l)}</s></div><button class="rm" data-rm="${x.id}" aria-label="הסרה">✕</button></div>`).join('')||'<p class="sub">הסל ריק.</p>';
+function cartItems(){return Object.keys(cart).map(id=>BY[id]&&{...BY[id],q:cart[id]}).filter(Boolean)}
+const qtyBox=x=>`<div class="qty" role="group" aria-label="כמות"><button data-q="${x.id}" data-d="1" ${x.q>=20?'disabled':''} aria-label="הגדלת כמות">+</button><span>${x.q}</span><button data-q="${x.id}" data-d="-1" ${x.q<=1?'disabled':''} aria-label="הפחתת כמות">−</button></div>`;
+function totals(){const its=cartItems(),n=its.reduce((a,x)=>a+x.q,0),l=its.reduce((a,x)=>a+x.l*x.q,0),t=its.reduce((a,x)=>a+x.p*x.q,0);
+ $('cartN').textContent=n;$('bar').classList.toggle('show',n>0);
+ $('barTot').textContent=n+(n===1?' פריט · ':' פריטים · ')+fmt(t);$('barSub').innerHTML='חסכתם <em>'+fmt(l-t)+'</em> בבלאק פריידיי';
+ $('items').innerHTML=its.map(x=>`<div class="it">${x.sites?`<div class="logo ph" style="font-size:15px">${x.sites.length}</div>`:logo(x.d,x.n)}<div class="nm"><h3>${esc(x.sites?x.title:x.n)}</h3><span>${esc(x.sites?'חבילה: '+x.sites.map(s=>s.n).join(', '):short(x.u))}</span></div>
+  <div class="side"><div class="p"><b>${fmt(x.p*x.q)}</b><s>${fmt(x.l*x.q)}</s></div>${qtyBox(x)}</div><button class="rm" data-rm="${x.id}" aria-label="הסרה מהסל">✕</button></div>`).join('')||'<p class="sub">הסל ריק.</p>';
  $('sList').textContent=fmt(l);$('sSave').textContent=fmt(l-t);$('sTot').textContent=fmt(t)}
-function refreshButtons(){document.querySelectorAll('[data-add]').forEach(b=>{const id=b.dataset.add,inC=cart.includes(id),wide=b.classList.contains('addw');b.classList.toggle('in',inC);b.textContent=inC?'✓ בסל':(wide?'+ הוספת החבילה לסל':'+ הוספה לסל')});totals()}
+function refreshButtons(){document.querySelectorAll('[data-in]').forEach(s=>s.textContent=inCart(s.dataset.in));totals()}
+function flash(btn){const id=btn.dataset.add,wide=btn.classList.contains('addw');btn.dataset.added='true';btn.querySelector('.lb').textContent='נוסף לסל';btn.querySelector('.ic').textContent='✓';
+ clearTimeout(timers[id]);timers[id]=setTimeout(()=>{document.querySelectorAll(`[data-add="${id}"]`).forEach(b=>{b.dataset.added='false';b.querySelector('.lb').textContent=label(b.classList.contains('addw'));b.querySelector('.ic').textContent='+'})},ADDED_MS)}
 document.addEventListener('click',e=>{
- const a=e.target.closest('[data-add]');if(a){const id=a.dataset.add;cart=cart.includes(id)?cart.filter(x=>x!==id):[...cart,id];save();refreshButtons();return}
- const r=e.target.closest('[data-rm]');if(r){cart=cart.filter(x=>x!==r.dataset.rm);save();refreshButtons();if(!cart.length)openSheet(false);return}
+ const a=e.target.closest('[data-add]');if(a){const id=a.dataset.add;if((cart[id]||0)<20)cart[id]=(cart[id]||0)+1;save();flash(a);refreshButtons();return}
+ const qb=e.target.closest('[data-q]');if(qb){const id=qb.dataset.q,v=(cart[id]||0)+Number(qb.dataset.d);if(v>=1&&v<=20){cart[id]=v;save();refreshButtons()}return}
+ const r=e.target.closest('[data-rm]');if(r){delete cart[r.dataset.rm];save();refreshButtons();if(!Object.keys(cart).length)openSheet(false);return}
  const m=e.target.closest('[data-more]');if(m){st.openB[m.dataset.more]=1;view();return}
  const c=e.target.closest('[data-cat]');if(c){st.cat=c.dataset.cat;view();return}
  const s=e.target.closest('[data-seg]');if(s){const k=s.dataset.seg;st[k]=k==='sort'?s.dataset.val:Number(s.dataset.val);view();return}
@@ -233,13 +265,13 @@ function openSheet(v){$('sheet').classList.toggle('show',v);$('dim').classList.t
 $('open').onclick=$('cartTop').onclick=()=>openSheet(true);$('close').onclick=$('dim').onclick=()=>openSheet(false);
 window.addEventListener('hashchange',()=>{view();window.scrollTo(0,0)});
 $('xlsx').onclick=()=>{const its=cartItems();if(!its.length)return;if(!window.XLSX){alert('לא הצלחנו ליצור את הקובץ. נסו לרענן את הדף, או שלחו את ההזמנה בוואטסאפ.');return}
- const rows=[['הזמנת בלאק פריידיי - MegaLinks'],['תאריך',new Date().toLocaleDateString('he-IL')],['שם',$('nm').value],['טלפון',$('ph').value],[],['#','סוג','שם','כתובת','DR','UR','מחיר מחירון ₪','מחיר בלאק פריידיי ₪']];
- its.forEach((x,i)=>{if(x.sites){rows.push([i+1,'חבילה',x.title,'','','',x.l,x.p]);x.sites.forEach(s=>rows.push(['','  אתר בחבילה',s.n,'https://'+s.u,s.dr,s.ur,s.l,'']))}else rows.push([i+1,'אתר',x.n,'https://'+x.u,x.dr,x.ur,x.l,x.p])});
- rows.push([],['','','','','','','סה״כ לפני מע״מ',its.reduce((a,x)=>a+x.p,0)]);
- const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:5},{wch:13},{wch:30},{wch:32},{wch:6},{wch:6},{wch:15},{wch:19}];
+ const rows=[['הזמנת בלאק פריידיי - MegaLinks'],['תאריך',new Date().toLocaleDateString('he-IL')],['שם',$('nm').value],['טלפון',$('ph').value],[],['#','סוג','שם','כתובת','DR','UR','מחיר מחירון ₪','מחיר בלאק פריידיי ₪','כמות','סה״כ ₪']];
+ its.forEach((x,i)=>{if(x.sites){rows.push([i+1,'חבילה',x.title,'','','',x.l,x.p,x.q,x.p*x.q]);x.sites.forEach(s=>rows.push(['','  אתר בחבילה',s.n,'https://'+s.u,s.dr,s.ur,s.l,'','','']))}else rows.push([i+1,'אתר',x.n,'https://'+x.u,x.dr,x.ur,x.l,x.p,x.q,x.p*x.q])});
+ rows.push([],['','','','','','','','','סה״כ לפני מע״מ',its.reduce((a,x)=>a+x.p*x.q,0)]);
+ const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:5},{wch:13},{wch:30},{wch:32},{wch:6},{wch:6},{wch:15},{wch:19},{wch:7},{wch:14}];
  const wb=XLSX.utils.book_new();wb.Workbook={Views:[{RTL:true}]};XLSX.utils.book_append_sheet(wb,ws,'הזמנה');XLSX.writeFile(wb,'הזמנת-בלאק-פריידיי-MegaLinks.xlsx')};
-$('wa').onclick=()=>{const its=cartItems();if(!its.length)return;const t=its.reduce((a,x)=>a+x.p,0);
- const msg='שלום, הזמנה ממבצעי בלאק פריידיי:\n'+its.map(x=>x.sites?'• חבילה: '+x.title+' ('+x.sites.map(s=>short(s.u)).join(', ')+') - '+fmt(x.p):'• '+x.n+' ('+short(x.u)+') - '+fmt(x.p)).join('\n')+'\nסה״כ: '+fmt(t)+' לפני מע״מ'+($('nm').value?'\nשם: '+$('nm').value:'')+($('ph').value?'\nטלפון: '+$('ph').value:'');
+$('wa').onclick=()=>{const its=cartItems();if(!its.length)return;const t=its.reduce((a,x)=>a+x.p*x.q,0);const qs=x=>x.q>1?' × '+x.q+' = '+fmt(x.p*x.q):'';
+ const msg='שלום, הזמנה ממבצעי בלאק פריידיי:\n'+its.map(x=>x.sites?'• חבילה: '+x.title+' ('+x.sites.map(s=>short(s.u)).join(', ')+') - '+fmt(x.p)+qs(x):'• '+x.n+' ('+short(x.u)+') - '+fmt(x.p)+qs(x)).join('\n')+'\nסה״כ: '+fmt(t)+' לפני מע״מ'+($('nm').value?'\nשם: '+$('nm').value:'')+($('ph').value?'\nטלפון: '+$('ph').value:'');
  window.open('https://wa.me/'+WA+'?text='+encodeURIComponent(msg),'_blank')};
 $('nB').textContent=B.length;$('nS').textContent=S.length;
 view();
