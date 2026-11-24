@@ -2,21 +2,34 @@
 // Stock photos for an article (owner 23.11.2026): one search box in Hebrew or English. When Hebrew was turned into
 // English the line "חיפשנו: …" shows what was searched, and the words can be changed. Results come from Pixabay when it
 // is connected (Pexels when Pixabay has nothing); the chosen photo is saved on our server with its credit.
-import React,{useState} from 'react';
+import React,{useEffect,useRef,useState} from 'react';
 import {ImageOff,Loader2,Pencil,Search,X} from 'lucide-react';
 import {api} from '@/lib/client';
 import type {Row} from '@/lib/shared';
 import './image-search.css';
 
 type Result={photos:Row[];source:string;query:string;original:string;translated:boolean};
+// A preview tries each address in turn (public copy, small preview, through our server); if none opens, a quiet
+// placeholder shows instead of the photo's tags as text (owner 24.11.2026: "שתמיד יוצגו תמונות").
+function Thumb({p}:{p:Row}){
+ const list=[p.src,...(Array.isArray(p.fallbacks)?p.fallbacks:[])].filter(Boolean) as string[];
+ const [i,setI]=useState(0);
+ if(i>=list.length)return <span className="isx-noimg" aria-hidden="true"><ImageOff size={22}/></span>;
+ return <img key={list[i]} src={list[i]} alt="" loading="lazy" referrerPolicy="no-referrer" onError={()=>setI(n=>n+1)}/>;
+}
 const SOURCES:Record<string,[string,string]>={pixabay:['Pixabay','https://pixabay.com/'],pexels:['Pexels','https://www.pexels.com/']};
 
 export function ImageSearch({onSelected}:{onSelected:(file:Row)=>void}){
  const [text,setText]=useState(''),[result,setResult]=useState<Result|null>(null),[busy,setBusy]=useState(false),[picking,setPicking]=useState(''),[error,setError]=useState(''),[editing,setEditing]=useState(false),[term,setTerm]=useState('');
- const run=async(q:string,exact=false)=>{
-  if(!q.trim()||busy)return;setBusy(true);setError('');setEditing(false);
-  try{const r=await api('image-search?query='+encodeURIComponent(q.trim())+(exact?'&exact=1':''));setResult(exact&&result?{...r,original:result.original,translated:true}:r);setTerm(r.query);}
-  catch(e){setError((e as Error).message);}finally{setBusy(false);}
+ const retry=useRef<ReturnType<typeof setTimeout>|null>(null);
+ useEffect(()=>()=>{if(retry.current)clearTimeout(retry.current);},[]);
+ const run=async(q:string,exact=false,again=false)=>{
+  if(!q.trim()||(busy&&!again))return;setBusy(true);setError('');setEditing(false);
+  try{const r=await api('image-search?query='+encodeURIComponent(q.trim())+(exact?'&exact=1':''));setResult(exact&&result?{...r,original:result.original,translated:true}:r);setTerm(r.query);setBusy(false);}
+  catch(e){const message=(e as Error).message;
+   // The library is busy for a few seconds: say so and search again by itself once.
+   if(!again&&/עמוס/.test(message)){setError('מאגר התמונות עמוס לרגע. מנסים שוב אוטומטית…');retry.current=setTimeout(()=>void run(q,exact,true),8000);return;}
+   setError(message);setBusy(false);}
  };
  const pick=async(p:Row)=>{
   if(picking)return;setPicking(p.source+':'+p.id);setError('');
@@ -38,7 +51,7 @@ export function ImageSearch({onSelected}:{onSelected:(file:Row)=>void}){
   {busy&&!result&&<ul className="isx-grid" aria-hidden="true">{Array.from({length:6},(_,i)=><li key={i}><span className="isx-skel"/></li>)}</ul>}
   {result&&(result.photos.length?<ul className={'isx-grid'+(busy?' is-dim':'')} aria-label="תוצאות החיפוש">{result.photos.map(p=>{const key=p.source+':'+p.id,saving=picking===key;return <li key={key}>
    <button type="button" className="isx-tile" disabled={!!picking} aria-busy={saving||undefined} aria-label={'בחירת התמונה'+(p.photographer?' של '+p.photographer:'')} onClick={()=>void pick(p)}>
-    <img src={p.src} alt={p.alt||'תמונת מאגר'} loading="lazy" referrerPolicy="no-referrer"/>
+    <Thumb p={p}/>
     {saving&&<span className="isx-saving"><Loader2 size={18} className="isx-spin" aria-hidden="true"/>שומר…</span>}
    </button>
    <small className="isx-by">צילום: <bdi>{p.photographer}</bdi></small>

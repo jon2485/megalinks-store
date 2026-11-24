@@ -87,7 +87,10 @@ export async function cachePut(key:string,data:unknown){
 }
 export async function cacheDrop(key:string){await stmt('DELETE FROM image_search_cache WHERE key=?',key).run();}
 
-export type StockPhoto={id:number;source:'pixabay'|'pexels';src:string;url:string;photographer:string;width?:number;height?:number;alt?:string};
+export type StockPhoto={id:number;source:'pixabay'|'pexels';src:string;fallbacks?:string[];url:string;photographer:string;width?:number;height?:number;alt?:string};
+// Pixabay's public image server keeps a 640px copy next to every 150px preview (…_150.jpg → …_640.jpg). The browser loads
+// it straight from there, so a search costs one Pixabay request instead of one per photo (owner 24.11.2026: "שתמיד יוצגו תמונות").
+export const pixabayCdn640=(preview:string)=>{try{const u=new URL(preview);if(u.protocol!=='https:'||u.hostname!=='cdn.pixabay.com'||!/_150\.(jpe?g|png)$/i.test(u.pathname))return '';u.pathname=u.pathname.replace(/_150\.(jpe?g|png)$/i,'_640.$1');return u.href;}catch{return '';}};
 
 async function pixabayFailure(res:Response|number):Promise<never>{
  const status=typeof res==='number'?res:res.status;
@@ -100,19 +103,33 @@ const pixabayParams=(key:string,extra:Record<string,string>)=>PIXABAY_API+'?'+ne
 
 export async function pixabaySearch(key:string,query:string):Promise<StockPhoto[]>{
  const q=clean(query).toLowerCase().slice(0,100);
- const cacheKey='pixabay:s:'+q;
+ const cacheKey='pixabay:s2:'+q;
  const cached=await cacheGet(cacheKey);
  if(Array.isArray(cached))return cached;
- const res=await externalFetch(pixabayParams(key,{q,lang:'en',image_type:'photo',orientation:'horizontal',safesearch:'true',per_page:'30'}),{});
+ const ask=()=>externalFetch(pixabayParams(key,{q,lang:'en',image_type:'photo',orientation:'horizontal',safesearch:'true',per_page:'30'}),{});
+ let res=await ask();
+ // Pixabay allows a limited number of requests a minute: when it says so, wait a moment and ask once more.
+ if(res.status===429){await res.text().catch(()=>'');await new Promise(r=>setTimeout(r,2500));res=await ask();}
  if(!res.ok)await pixabayFailure(res);
  const payload:any=await res.json().catch(()=>null);
  if(!payload||!Array.isArray(payload.hits))await pixabayFailure(502);
- const photos:StockPhoto[]=payload.hits.slice(0,30).filter((h:any)=>Number.isSafeInteger(Number(h?.id))&&h.webformatURL).map((h:any)=>({id:Number(h.id),source:'pixabay',src:String(h.webformatURL),url:String(h.pageURL||''),photographer:String(h.user||'Pixabay').slice(0,120),width:Number(h.webformatWidth)||undefined,height:Number(h.webformatHeight)||undefined,alt:String(h.tags||'').slice(0,200)}));
+ const photos:StockPhoto[]=payload.hits.slice(0,30).filter((h:any)=>Number.isSafeInteger(Number(h?.id))&&(h.webformatURL||h.previewURL)).map((h:any)=>{
+  // Each preview has fallbacks: the public 640px copy, then the 150px preview, then Pixabay's own address (through our server).
+  const preview=String(h.previewURL||''),list=[pixabayCdn640(preview),preview,String(h.webformatURL||'')].filter((v,i,a)=>v&&pixabayImageHost(v)&&a.indexOf(v)===i);
+  return {id:Number(h.id),source:'pixabay' as const,src:list[0],fallbacks:list.slice(1),url:String(h.pageURL||''),photographer:String(h.user||'Pixabay').slice(0,120),width:Number(h.webformatWidth)||undefined,height:Number(h.webformatHeight)||undefined,alt:String(h.tags||'').slice(0,200)};}).filter((p:StockPhoto)=>p.src);
  await cachePut(cacheKey,photos);
  // Keep each result's download details too, so choosing a photo needs no second request to Pixabay (one statement for all hits).
  const byId=payload.hits.slice(0,30).filter((h:any)=>Number.isSafeInteger(Number(h?.id))&&(h.largeImageURL||h.webformatURL)).map((h:any)=>({id:Number(h.id),largeImageURL:String(h.largeImageURL||h.webformatURL),pageURL:String(h.pageURL||''),user:String(h.user||'Pixabay').slice(0,120)}));
  if(byId.length)await stmt("INSERT OR REPLACE INTO image_search_cache(key,data,created) SELECT 'pixabay:id:'||json_extract(value,'$.id'),value,? FROM json_each(?)",now(),JSON.stringify(byId)).run();
  return photos;
+}
+
+// Few results for a long phrase: search again with fewer words and add what is new (at most one more request).
+export async function pixabaySearchBroad(key:string,query:string):Promise<StockPhoto[]>{
+ const photos=await pixabaySearch(key,query),words=clean(query).split(' ').filter(Boolean);
+ if(photos.length>=8||words.length<2)return photos;
+ const wider=await pixabaySearch(key,words.slice(0,words.length>2?2:1).join(' ')).catch(()=>[] as StockPhoto[]);
+ const seen=new Set(photos.map(p=>p.id));return [...photos,...wider.filter(p=>!seen.has(p.id))].slice(0,30);
 }
 
 // One photo by id (cached like a search). `fresh` skips the cache when a cached download address has expired.

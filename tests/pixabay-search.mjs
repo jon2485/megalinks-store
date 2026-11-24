@@ -10,7 +10,7 @@ const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json
 const {Miniflare}=require('miniflare');
 const secret=randomBytes(32).toString('base64');
 const JPEG=new Uint8Array([0xff,0xd8,0xff,0xe0,1,2,3,4,5,6,7,8,0xff,0xd9]);
-const calls={search:[],id:[],download:[],pexels:[],ai:[]};let expireOnce=new Set();
+const calls={search:[],id:[],download:[],pexels:[],ai:[]};let expireOnce=new Set();const busyOnce={done:false};
 const aiAnswers={'חתול על הספה':'cat on sofa','ארוחה ל-cat':'meal for cat'};
 const hit=(id,q)=>({id,pageURL:'https://pixabay.com/photos/example-'+id+'/',type:'photo',tags:q+', example',previewURL:'https://cdn.pixabay.com/photo/x/'+id+'_150.jpg',webformatURL:'https://pixabay.com/get/w'+id+'_640.jpg',webformatWidth:640,webformatHeight:427,largeImageURL:id===666?'https://evil.example/x.jpg':'https://pixabay.com/get/large-'+id+'.jpg',user:'צלם בדיוני '+id,user_id:id});
 const mf=new Miniflare({outboundService:async request=>{const url=new URL(request.url);
@@ -19,6 +19,9 @@ const mf=new Miniflare({outboundService:async request=>{const url=new URL(reques
    if(p.key!=='pix-good')return new Response('[ERROR 400] Invalid or missing API key',{status:400});
    if(p.id){calls.id.push(p.id);return Response.json({total:1,totalHits:1,hits:Number(p.id)===404?[]:[hit(Number(p.id),'photo')]});}
    calls.search.push(p);
+   if(p.q==='busy once'&&!busyOnce.done){busyOnce.done=true;return new Response('Rate limit exceeded',{status:429});}
+   if(p.q==='busy always')return new Response('Rate limit exceeded',{status:429});
+   if(p.q==='red sports car')return Response.json({total:2,totalHits:2,hits:[hit(900,p.q),hit(901,p.q)]});
    if(/nothing/.test(p.q))return Response.json({total:0,totalHits:0,hits:[]});
    return Response.json({total:40,totalHits:40,hits:Array.from({length:40},(_,i)=>hit(100+i,p.q))});}
   if(url.hostname==='pixabay.com'&&/^\/get\/w\d+_640\.jpg$/.test(url.pathname)){calls.thumb=(calls.thumb||0)+1;return new Response(JPEG,{headers:{'Content-Type':'image/jpeg','Content-Length':String(JPEG.length)}});}
@@ -64,19 +67,19 @@ try{
  check(r.source==='pixabay'&&r.query==='dog food'&&r.translated===false,'English is searched as written');
  const sent=calls.search.at(-1);
  check(sent.q==='dog food'&&sent.image_type==='photo'&&sent.safesearch==='true'&&sent.orientation==='horizontal'&&sent.per_page==='30'&&sent.lang==='en','photos only, safesearch, horizontal, 30, lang en');
- check(r.photos.length===30&&r.photos.every(p=>p.source==='pixabay'&&p.photographer&&p.src.startsWith('/api/image-thumb?src='+encodeURIComponent('https://pixabay.com/get/'))),'30 results at most, each with a photographer, previews through our server');
- {const thumb=await mf.dispatchFetch('https://postflow.test'+r.photos[0].src,{headers:{'oai-authenticated-user-id':'buyer','oai-authenticated-user-email':'buyer@example.test'}});const tb=new Uint8Array(await thumb.arrayBuffer());
+ check(r.photos.length===30&&r.photos.every(p=>p.source==='pixabay'&&p.photographer&&p.src===('https://cdn.pixabay.com/photo/x/'+p.id+'_640.jpg')&&p.fallbacks[0]===('https://cdn.pixabay.com/photo/x/'+p.id+'_150.jpg')&&p.fallbacks[1]==='/api/image-thumb?src='+encodeURIComponent('https://pixabay.com/get/w'+p.id+'_640.jpg')),'30 results at most, each with a photographer; previews from the public copy, then the small one, then through our server');
+ {const thumb=await mf.dispatchFetch('https://postflow.test'+r.photos[0].fallbacks[1],{headers:{'oai-authenticated-user-id':'buyer','oai-authenticated-user-email':'buyer@example.test'}});const tb=new Uint8Array(await thumb.arrayBuffer());
   check(thumb.status===200&&thumb.headers.get('content-type')==='image/jpeg'&&tb.length===JPEG.length,'the preview opens through our server (Pixabay preview addresses only work for the server that asked)');
   const evil=await mf.dispatchFetch('https://postflow.test/api/image-thumb?src='+encodeURIComponent('https://evil.example/x.jpg'),{headers:{'oai-authenticated-user-id':'buyer','oai-authenticated-user-email':'buyer@example.test'}});await evil.arrayBuffer();
   check(evil.status===400,'a preview from outside Pixabay is refused');
-  const anon=await mf.dispatchFetch('https://postflow.test'+r.photos[0].src);await anon.arrayBuffer();check(anon.status!==200,'previews need a signed-in user');}
+  const anon=await mf.dispatchFetch('https://postflow.test'+r.photos[0].fallbacks[1]);await anon.arrayBuffer();check(anon.status!==200,'previews need a signed-in user');}
  check(!JSON.stringify(r).includes('pix-good'),'the key is not in the results');
 
  // Cache: the same words (any case or spacing) do not call Pixabay again.
  const before=calls.search.length;
  await search('dog food');await search('  Dog   FOOD ');
  check(calls.search.length===before,'repeat searches come from the 24-hour cache');
- await db.prepare("UPDATE image_search_cache SET created=? WHERE key='pixabay:s:dog food'").bind(new Date(Date.now()-25*3600e3).toISOString()).run();
+ await db.prepare("UPDATE image_search_cache SET created=? WHERE key='pixabay:s2:dog food'").bind(new Date(Date.now()-25*3600e3).toISOString()).run();
  await search('dog food');check(calls.search.length===before+1,'after 24 hours the search goes to Pixabay again');
 
  // Hebrew, no AI connection: the dictionary.
@@ -95,12 +98,16 @@ try{
  await search('חתול על הספה');check(calls.ai.length===1,'a translation is cached: no second AI call');
  r=await search('ארוחה ל-cat');check(r.query==='meal for cat'&&!/[֐-׿]/.test(r.query),'mixed text with AI: English kept');
  r=await search('פרחים בגינה');check(r.translated&&r.query==='flowers garden','AI fails → dictionary');
+ // Busy for a moment: one more try by itself; few results for a long phrase: a wider search is added.
+ {const before=calls.search.length;const b=await search('busy once','&exact=1');check(b.photos.length===30&&calls.search.length===before+2,'Pixabay busy once → asked again by itself, results shown');}
+ {const w=await search('red sports car','&exact=1');check(w.photos.length>2&&w.photos[0].id===900&&calls.search.at(-1).q==='red sports','few results → a wider search with fewer words is added');}
  // Changing the searched words ("שינוי"): exact search, no translation.
  const aiCalls=calls.ai.length;r=await search('kitten','&exact=1');check(!r.translated&&r.query==='kitten'&&calls.ai.length===aiCalls,'exact words: no translation');
 
  // Pixabay first; Pexels only when Pixabay has nothing.
  await req('admin/integration/images','PATCH',{enabled:true,secret:'px-key',secret_storage:'encrypted_server'});
  calls.pexels.length=0;r=await search('mountain');check(r.source==='pixabay'&&!calls.pexels.length,'both connected: Pixabay first, Pexels not asked');
+ {const busy=await search('busy always','&exact=1');check(busy.source==='pexels'&&busy.photos.length>0,'Pixabay still busy after the second try → Pexels results instead of an error');}
  r=await search('nothing at all');check(r.source==='pexels'&&r.photos[0].source==='pexels'&&calls.pexels.at(-1)==='nothing at all','no Pixabay results → Pexels');
  await req('admin/integration/pixabay','PATCH',{enabled:true,secret:'pix-bad',secret_storage:'encrypted_server'});
  r=await search('lake view');check(r.source==='pexels','Pixabay key failing and Pexels connected → Pexels results');

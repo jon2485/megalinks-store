@@ -17,7 +17,7 @@ import {normalizeRequestedPublication} from '@/lib/publication-date';
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
 import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server';
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
-import {englishQuery,pixabaySearch,pixabayPhoto,pixabayImageHost,pixabayKeyWorks,cacheDrop} from '@/lib/image-search';
+import {englishQuery,pixabaySearchBroad,pixabayPhoto,pixabayImageHost,pixabayKeyWorks,cacheDrop} from '@/lib/image-search';
 import {claimAiBudget,safeFailure} from '@/lib/security';
 import {customerArticleData,customerActivity,customerSharedRecord,supplierDelivery,protectCustomerResponse} from '@/lib/customer-privacy';
 import {geminiEnvironmentConfigured} from '@/lib/server';
@@ -941,14 +941,16 @@ if (p[0] === 'cart') {
         const ai = await connection('ai').catch(() => ({} as Row));
         const english = query.get('exact') === '1' ? { query: raw.slice(0, 100), translated: false, via: 'none' } : await englishQuery(raw, ai.enabled && ai.secret ? async (prompt: string) => (await aiJson(ai, prompt)).raw : null);
         let photos: Row[] = [], source = pixOn ? 'pixabay' : 'pexels', pixabayError: unknown = null;
-        if (pixOn) { try { photos = await pixabaySearch(pix.secret, english.query); } catch (e) { pixabayError = e; } }
+        if (pixOn) { try { photos = await pixabaySearchBroad(pix.secret, english.query); } catch (e) { pixabayError = e; } }
         if (!photos.length && pexOn) {
             const res = await externalFetch('https://api.pexels.com/v1/search?per_page=12&query=' + encodeURIComponent(english.query), { headers: { Authorization: pex.secret } });
             if (res.ok) { const payload: any = await res.json(); photos = (payload.photos || []).map((p: Row) => ({ id: p.id, source: 'pexels', url: p.url, photographer: p.photographer, src: p.src.medium, large: p.src.large })); source = 'pexels'; }
             else if (!pixOn || pixabayError) assert(false, 'מאגר התמונות דחה את הבקשה', 502);
         } else if (pixabayError) throw pixabayError;
-        // Pixabay's preview addresses only open from the server that asked for them, so the browser loads them through /api/image-thumb.
-        photos = photos.map(ph => ph.source === 'pixabay' && pixabayImageHost(ph.src) ? { ...ph, src: '/api/image-thumb?src=' + encodeURIComponent(ph.src) } : ph);
+        // Pixabay's own preview addresses (pixabay.com/get/…) open only for the server that asked, so those go through
+        // /api/image-thumb; the public copies on cdn.pixabay.com load straight in the browser.
+        const viaUs = (v: string) => { try { return new URL(v).hostname === 'pixabay.com' ? '/api/image-thumb?src=' + encodeURIComponent(v) : v; } catch { return v; } };
+        photos = photos.map(ph => ph.source === 'pixabay' ? { ...ph, src: viaUs(String(ph.src)), fallbacks: (Array.isArray(ph.fallbacks) ? ph.fallbacks : []).map((v: string) => viaUs(String(v))) } : ph);
         return response({ photos, source: source || (pixOn ? 'pixabay' : 'pexels'), query: english.query, original: raw, translated: english.translated });
     }
     if (p[0] === 'image-thumb' && method === 'GET') {
