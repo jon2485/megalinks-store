@@ -5,7 +5,7 @@ import {stmt,one,all,now,uid,db,mapIn} from './server';
 import type {Row} from './shared';
 
 import {MARKETING_WORDING,ACCOUNT_MARKETING_WORDING} from './marketing-wording';
-export type MarketingSource='checkout'|'account'|'admin';
+export type MarketingSource='checkout'|'account'|'admin'|'signup';
 const recordId=(userId:string)=>'marketing:'+userId;
 
 export async function marketingStatus(userId:string){

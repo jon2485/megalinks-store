@@ -80,6 +80,7 @@ import { supplierBilling, supplierOrder, supplierPackage, sendOrderSummary, send
 import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManualSupplierMonths } from '@/lib/supplier-month';
 import { DEFAULT_SUPPLIER_EMAIL } from '@/lib/supplier-presentation';
 import { contentHtml, signature, matchingSignature } from '@/lib/integrations';
+import {resolveGoogle,acceptGoogle} from '@/lib/google-account';
 import {stagingExport,importFromStaging} from '@/lib/staging-import';
 import { aiArticleHtml } from '@/lib/ai-article-content';
 import { env, waitUntil } from 'cloudflare:workers';
@@ -200,6 +201,8 @@ async function handle(r: Request,access:ResponseAccess) {
         assert(!origin || origin === new URL(r.url).origin, 'מקור הבקשה אינו מורשה', 403);
     }
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
+    // Google sign-in: called only by the gateway over loopback, with the automation key (lib/google-account.ts).
+    if(p[0]==='auth'&&p[1]==='google'&&['resolve','accept'].includes(p[2])&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(p[2]==='resolve'?await resolveGoogle(b):await acceptGoogle(b));}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
     if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
     if(p[0]==='export'){const res=await stagingExport(r,p);if(res)return res;}

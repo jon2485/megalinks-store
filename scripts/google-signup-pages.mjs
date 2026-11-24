@@ -1,0 +1,102 @@
+// The sign-in and terms screens for Google sign-in, served by the gateway. Built from the approved design
+// design/login-screen/mockup.html (?s=login, ?s=terms), Google only.
+// The newsletter line is MARKETING_WORDING (lib/marketing-wording.ts) and the terms line is TERMS_WORDING
+// (lib/google-account.ts): the wording saved with the consent must be the wording shown (tests check both match).
+export const MARKETING_WORDING='אני רוצה לקבל במייל עדכונים ומבצעים ממגה לינקס';
+export const TERMS_LINE=['קראתי ואני מאשר/ת את ','תנאי השימוש',' ואת ','מדיניות הפרטיות'];
+const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export const PAGE_CSP="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self'; font-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
+const CHECK='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg>';
+const BOX='<span class="box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>';
+const GOOGLE='<svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
+const STYLE=`@font-face{font-family:Heebo;src:url("/brand/heebo-variable.ttf");font-weight:100 900;font-display:swap}
+:root{--ink:#0b1b2f;--muted:#4f5d6e;--faint:#66727f;--line:rgba(11,40,80,.1);--blue:#1673e6;--blue-ink:#1460c4;--green:#1d7d45;--ease:cubic-bezier(.32,.72,0,1);color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0}
+body{min-height:100vh;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:40px 16px;background:radial-gradient(900px 420px at 50% -8%,#d8eeff 0,transparent 70%),#f5f7fa;color:var(--ink);font-family:Heebo,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.card{width:100%;max-width:440px;background:#fff;border-radius:28px;box-shadow:0 0 0 1px var(--line),0 1px 2px #0b28500a,0 24px 48px -30px #0b285066;padding:30px 30px 26px}
+.logo{display:flex;justify-content:center;margin-bottom:22px}.logo img{height:40px;width:auto}
+h1{margin:0;text-align:center;font-size:27px;font-weight:850;letter-spacing:-.02em;line-height:1.2;text-wrap:balance}
+.sub{margin:8px auto 0;max-width:340px;text-align:center;font-size:16px;line-height:1.6;color:var(--muted);text-wrap:pretty}
+.stack{display:grid;gap:12px;margin-top:20px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;padding:0 18px;border:0;border-radius:16px;font:inherit;font-size:17px;font-weight:700;cursor:pointer;text-decoration:none;transition:transform .12s ease-out,box-shadow .2s var(--ease),background-color .2s}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible,.check input:focus-visible+.box,a:focus-visible{outline:3px solid #7fb4f5;outline-offset:3px}
+.btn svg{flex:none}
+.google{background:#fff;color:#1f1f1f;box-shadow:inset 0 0 0 1px #c9d3df,0 6px 16px -10px #0b285040}
+.safe{display:flex;gap:8px;align-items:flex-start;margin:18px 0 0;padding:12px 14px;border-radius:14px;background:#f4f8fe;font-size:14px;line-height:1.55;color:#33445a}
+.safe svg{flex:none;margin-top:2px;color:var(--blue)}
+.legal{margin:0;text-align:center;font-size:13.5px;color:var(--faint)}.legal a{color:#33445a;text-underline-offset:3px}
+.pill{display:flex;width:max-content;margin:0 auto 12px;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:999px;background:#eef5ff;color:var(--blue-ink);font-size:13px;font-weight:800}
+.who{display:flex;align-items:center;gap:12px;margin-top:22px;padding:12px 14px;border-radius:16px;box-shadow:inset 0 0 0 1px var(--line)}
+.av{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#19b8c7,#1673e6);color:#fff;font-size:18px;font-weight:800}
+.who .t{flex:1;min-width:0}.who b{display:block;font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.who small{display:block;font-size:14px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
+.who .via{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--faint)}
+.who a{flex:none;font-size:14px;font-weight:700;color:var(--blue-ink);text-underline-offset:3px}
+.checks{display:grid;gap:10px;margin-top:16px}
+.check{position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer;transition:box-shadow .2s,background-color .2s}
+.check.on{background:#f4f8fe;box-shadow:inset 0 0 0 2px var(--blue)}
+.check input{position:absolute;opacity:0;width:24px;height:24px;margin:0}
+.box{flex:none;display:grid;place-items:center;width:24px;height:24px;margin-top:1px;border-radius:8px;box-shadow:inset 0 0 0 2px #b3c1d1;background:#fff;color:#fff;transition:background-color .15s,box-shadow .15s}
+.check.on .box{background:var(--blue);box-shadow:none}
+.check .tx{flex:1;font-size:15.5px;line-height:1.55;font-weight:600}.check .tx a{color:var(--blue-ink);text-underline-offset:3px}
+.check .tx small{display:block;margin-top:2px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.tag{flex:none;align-self:center;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:800;background:#fff1e6;color:#a8510a}.tag.opt{background:#f1f4f8;color:#5b6b82}
+.go{margin-top:18px;background:linear-gradient(180deg,#2b86f0,#1673e6);color:#fff;box-shadow:0 10px 22px -12px #1673e6}
+.go[disabled]{background:#dfe6ee;color:#6b7886;box-shadow:none;cursor:not-allowed}
+.hint{margin:10px 0 0;text-align:center;font-size:14px;color:#a8510a}.hint.ok{color:var(--green)}
+.error{margin:14px 0 0;padding:10px 14px;border-radius:12px;background:#fdecec;color:#a02020;font-size:14.5px;line-height:1.5;text-align:center}
+.note{margin:14px 0 0;text-align:center;font-size:13px;line-height:1.5;color:var(--faint)}
+.free{margin:18px 0 0;text-align:center;font-size:15px;font-weight:700;color:var(--green)}
+.why{list-style:none;margin:12px 0 0;padding:14px 16px;display:grid;gap:9px;border-radius:16px;background:#f6f9fc}
+.why li{display:flex;gap:9px;align-items:flex-start;font-size:15px;line-height:1.5;color:#33445a}
+.why svg{flex:none;margin-top:3px;color:var(--blue)}
+.peek{display:flex;align-items:center;justify-content:center;gap:4px;min-height:44px;margin-top:10px;font-size:15px;font-weight:700;color:var(--blue-ink);text-decoration:none}
+.peek:hover{text-decoration:underline;text-underline-offset:3px}
+.help{margin:0;text-align:center;font-size:14.5px;color:var(--muted)}.help a{color:#0f7a55;font-weight:700;text-underline-offset:3px}
+.test{margin:0;text-align:center;font-size:13px}.test a{color:var(--faint);text-underline-offset:3px}
+[hidden]{display:none!important}
+@media(max-width:480px){body{padding:24px 16px calc(24px + env(safe-area-inset-bottom))}.card{padding:26px 20px 22px;border-radius:24px}h1{font-size:25px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}`;
+const shell=(title,body,extra='')=>`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} | Mega Links</title><style>${STYLE}</style></head><body>${body}
+<p class="help">לא מצליחים להיכנס? <a href="https://wa.me/972507508850" target="_blank" rel="noopener">כתבו לנו בוואטסאפ</a></p>
+<p class="legal"><a href="/terms" target="_blank" rel="noopener">תנאי שימוש</a> · <a href="/privacy" target="_blank" rel="noopener">מדיניות פרטיות</a> · <a href="/accessibility" target="_blank" rel="noopener">הצהרת נגישות</a></p>${extra}</body></html>`;
+const logo='<div class="logo"><img src="/brand/megalinks-logo-dark.png" alt="Mega Links" width="160" height="40"></div>';
+
+export function googleLoginPage({startHref,error='',passwordHref=''}){
+ return shell('כניסה לחשבון',`<main class="card">${logo}
+ <h1>כניסה לחשבון</h1>
+ <p class="sub">נכנסים בלחיצה אחת. אם עוד אין לכם חשבון, הוא ייפתח בכניסה הראשונה.</p>
+ ${error?`<p class="error" role="alert">${escape(error)}</p>`:''}
+ <p class="free">ההרשמה בחינם. משלמים רק על פרסום שמזמינים.</p>
+ <ul class="why">
+  <li>${CHECK}<span>מחירון של אתרים ישראליים, עם מחיר קבוע לכל אתר</span></li>
+  <li>${CHECK}<span>אנחנו כותבים את הכתבה, או שאתם שולחים כתבה מוכנה</span></li>
+  <li>${CHECK}<span>רואים כל פרסום, משלב ההזמנה ועד שהוא באוויר</span></li>
+ </ul>
+ <div class="stack"><a class="btn google" href="${escape(startHref)}">${GOOGLE}<span>כניסה עם <bdi>Google</bdi></span></a></div>
+ <p class="safe"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span>אנחנו מקבלים מ־<bdi>Google</bdi> רק את השם ואת כתובת המייל. את הסיסמה שלכם אנחנו לא רואים.</span></p>
+ <a class="peek" href="/catalog">לצפייה במחירון בלי להירשם<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a>
+</main>`,passwordHref?`<p class="test"><a href="${escape(passwordHref)}">כניסה לחשבון בדיקה עם סיסמה</a></p>`:'');
+}
+
+export function termsPage({name,email,switchHref,error=''}){
+ const initial=(String(name||email).trim()[0]||'?').toUpperCase();
+ return shell('אישור תנאים',`<main class="card">${logo}
+ <span class="pill">צעד אחרון</span>
+ <h1>נשאר רק לאשר את התנאים</h1>
+ <p class="sub">מאשרים פעם אחת, בפתיחת החשבון.</p>
+ <div class="who"><span class="av" aria-hidden="true">${escape(initial)}</span><span class="t"><b>${escape(name||email)}</b><small dir="ltr">${escape(email)}</small><span class="via">מחובר/ת דרך <bdi>Google</bdi></span></span><a href="${escape(switchHref)}">החלפת חשבון</a></div>
+ ${error?`<p class="error" role="alert">${escape(error)}</p>`:''}
+ <form method="post" action="/__staging/google/terms" id="f" novalidate>
+ <div class="checks">
+  <label class="check" id="c1"><input type="checkbox" name="accepted" value="1" id="i1" aria-describedby="hint">${BOX}<span class="tx">${TERMS_LINE[0]}<a href="/terms" target="_blank" rel="noopener">${TERMS_LINE[1]}</a>${TERMS_LINE[2]}<a href="/privacy" target="_blank" rel="noopener">${TERMS_LINE[3]}</a></span><span class="tag">חובה</span></label>
+  <label class="check" id="c2"><input type="checkbox" name="marketing" value="1" id="i2">${BOX}<span class="tx">${MARKETING_WORDING}<small>אפשר לבטל בכל רגע בהגדרות החשבון.</small></span><span class="tag opt">לא חובה</span></label>
+ </div>
+ <button class="btn go" id="go" type="submit">פתיחת החשבון</button>
+ <p class="hint" id="hint" aria-live="polite">כדי להמשיך יש לסמן את אישור תנאי השימוש</p>
+ </form>
+ <p class="note">אחרי האישור תחזרו בדיוק למקום שבו הייתם. נשמור את מועד האישור ואת גרסת התנאים.</p>
+</main>`,`<script>const i1=document.getElementById('i1'),i2=document.getElementById('i2'),go=document.getElementById('go'),hint=document.getElementById('hint'),f=document.getElementById('f');
+function sync(){document.getElementById('c1').classList.toggle('on',i1.checked);document.getElementById('c2').classList.toggle('on',i2.checked);go.disabled=!i1.checked;hint.textContent=i1.checked?'הכול מוכן':'כדי להמשיך יש לסמן את אישור תנאי השימוש';hint.classList.toggle('ok',i1.checked);}
+i1.onchange=i2.onchange=sync;sync();f.onsubmit=e=>{if(!i1.checked){e.preventDefault();return;}go.disabled=true;go.textContent='פותחים את החשבון…';};</script>`);
+}

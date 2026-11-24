@@ -11,7 +11,7 @@ import './admin-marketing-list.css';
 
 // The newsletter list in "התראות ודיוור": who agreed to marketing email, export for the external mailing tool, and
 // removal of addresses that unsubscribed there. The law's four sending rules are listed once, short.
-const SOURCES:Row={checkout:'בתשלום',account:'בהגדרות',admin:'מנהל'};
+const SOURCES:Row={checkout:'בתשלום',account:'בהגדרות',admin:'מנהל',signup:'בהרשמה'};
 export default function AdminMarketingList({ctx}:{ctx:Ctx}){
  const state=useData('admin/marketing',ctx.revision),list:Row[]=state.data?.subscribers||[];
  const [text,setText]=useState(''),[busy,setBusy]=useState(''),[error,setError]=useState(''),[result,setResult]=useState<Row|null>(null);
