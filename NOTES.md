@@ -2327,3 +2327,27 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Articles tab** (like the customer's "הכתבות שלי"): the customer's row (`PurchaseRow` in `app/purchased-view.tsx`, new optional `actions`) with the site logo, name and address, title, state, order number; admin buttons "עריכה" (or "בדיקה ואישור") and "צפייה בכתבה" (or "קישור לכתבה" when published). The counts, search and groups stay.
 - Checked locally at 1366px (headless screenshots in `docs/mockups/customer-file-{history,profile,articles}.png`). Not deployed.
 - **Deployed to Staging (owner: "כן, להעלות", 24.11.2026):** `3b5d3bf`, deployment `85bf3b87` SUCCESS, `/healthz` 200, no error lines. Signed-in pages not opened on Staging itself (sign-in gateway). The next deploy must start from `3b5d3bf` or later.
+
+## 24.11.2026 (4): Almog Achdut sites (paused by the owner, to continue later)
+- **Owner:** add 18 sites to the catalog sheet (tab "אתרים"); supplier almogachdut1@gmail.com "אלמוג אחדות", cost ₪100 per link, monthly ("חודשי" in column J); "fill what is needed". Then: take the list price from Desktop\catalog.xlsx (column "מחיר", the price before discount) where the site is there, ask about the rest.
+- **Checked:** none of the 18 is in the sheet yet. In catalog.xlsx 17 found (match by domain): nlh-law 200 (DR 13, UR 4.4), malpracticelaw 160 (4.2/0), mgn-law 200 (9/6), wisebaby 160 (4.8/18), elza 200 (23/9), hamishmar 160 (-/-), tunisianfood 160 (6/8), hommyfood 160 (24/10), oceanevents 200 (3/5), kal-nofesh 160 (22/9), burj-kalifa 200 (5/8), disneyland-paris 200 (7/9), in-amsterdam 200 (7/9), sagrada-familia 200 (6/8), travelistanbul 298.9 (3/9), inrometours 160 (-/-), design-factory 200 (23/7).
+- **Open:** list price for travel-japan.co.il (not in the file; asked, not answered). Categories must use the sheet's 23 labels (the owner's list has others, e.g. "תיירות ונופש" -> "תיירות", "משפחה" -> "הורות ומשפחה"). Logos not taken yet. Nothing written to the sheet.
+
+## 24.11.2026 (5): Full end-to-end pass, local, real saves (no code changed)
+- **Owner:** go over everything end to end: homepage, customer pages, admin and the links between them; place orders, send articles, images, links; every failure must give a message to the customer, the supplier and the admin.
+- **How:** local QA server, a headless Chrome driven over CDP from the scratchpad (the built-in browser pane is throttled when hidden). Real saves on fictional data.
+- **Worked end to end:** public pages and all homepage links; catalog (favourites, add to cart); cart (quantity, remove, wrong coupon message, writing service); checkout by bank transfer (order #1032) and by balance (#1033, balance went down exactly); monthly account order (added to #1031); customer payment report -> admin approval -> order paid; article editor (title, text, link, image upload, wrong file type message, link checker caught a 404), send -> admin queue + admin mail; admin return for fixes -> customer mail and notice -> customer resend; admin approve -> supplier mail with personal link; supplier page (wrong domain and 404 messages, fix request -> lobby task, admin answer); writing service (brief -> admin writes -> customer mail -> customer approves, "no image" window); cancel request -> admin mail and lobby -> refund to balance (+3,846.80) -> customer mail; top-up approval (+500, customer mail); support ticket both ways (mail on reply); automatic click-through of all buttons on 10 customer screens (no dead buttons).
+- **Findings (not fixed, waiting for the owner):**
+  1. Checkout accepts a phone like "12" and saves it to the profile.
+  2. No mail and no notice to the customer when a bank transfer is approved, though the page says "נעדכן אותך כאן ובמייל".
+  3. No mail to the admin on a new bank-transfer order, a payment report or a new ticket (lobby only); top-up and cancel requests do send one.
+  4. A signed-in supplier (role supplier) sees 0 sites and no articles although the supplier card with the same e-mail has 8 sites and articles; the test seller sees 0 sites although admin shows one. May be test data; needs a decision.
+  5. Checkout with an inactive site in the cart: "אחד האתרים בסל אינו פעיל" does not name the site, totals stay "מחשב…", the cart does not mark it.
+  6. The wrong-coupon message from the cart stays on the checkout page.
+  7. Supplier page and admin "דיווח על פרסום": an invalid address gives the general "הפעולה לא הושלמה" message; in admin the error shows twice.
+  8. Admin article page says "בדיקת הקישורים לא עדכנית" right after the customer passed the check and sent.
+  9. Mailing screen: supplier follow-up mails wait with an empty subject (text is built on send); admin mail subject "פרטי כתיבה חדשים: " ends empty when the customer gave no title.
+  10. Lobby cancel item shows the whole order amount, not the cancelled site's.
+  11. Small: "אתר אחד שמורים עבורך"; homepage shows "כניסה למערכת" to a signed-in user; "החזרה ללקוח לצפייה" on an empty article does nothing and says nothing; empty bank details block in checkout when no bank details are set.
+- **Could not complete:** marking an article published (the link checker rightly rejects a made-up link); card payment (outside service); real mail delivery (mail is not connected locally, checked in the queue); phones.
+- **Local test data left:** orders #1032 (jpost article at the supplier, walla article cancelled and refunded) and #1033, one more item in monthly #1031, a ticket "בדיקת מערכת: שאלה על הזמנה 1032", top-up QA-LOCAL-TOPUP-24 approved, payment report for #1025 still pending.
