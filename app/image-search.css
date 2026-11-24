@@ -26,6 +26,7 @@ html body .isx .isx-edit input:focus{border-color:#1467cf!important;box-shadow:0
 .isx-tile img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .2s ease}
 @media(hover:hover){.isx-tile:hover:not(:disabled) img{transform:scale(1.04)}}
 .isx-tile:disabled{cursor:wait}
+.isx-noimg{position:absolute;inset:0;display:grid;place-items:center;color:#9aa9bb;background:#eef3f9}
 .isx-saving{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;background:#ffffffd9;color:#0b274d;font-weight:800;font-size:14px}
 .isx-by{font-size:11.5px;color:#6b7684;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .isx-skel{display:block;aspect-ratio:4/3;border-radius:12px;background:linear-gradient(90deg,#eef3f9,#f6f9fc,#eef3f9);background-size:200% 100%;animation:isx-shine 1.2s linear infinite}
