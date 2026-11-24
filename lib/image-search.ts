@@ -89,7 +89,10 @@ export async function cacheDrop(key:string){await stmt('DELETE FROM image_search
 
 export type StockPhoto={id:number;source:'pixabay'|'pexels';src:string;url:string;photographer:string;width?:number;height?:number;alt?:string};
 
-function pixabayFailure(status:number):never{
+async function pixabayFailure(res:Response|number):Promise<never>{
+ const status=typeof res==='number'?res:res.status;
+ // Server log for diagnosis (never the key): Pixabay's status and the start of its answer.
+ if(typeof res!=='number'){const text=await res.text().catch(()=>'');console.warn('pixabay request failed',status,text.slice(0,200).replace(/key=[^&\s]+/g,'key=…'));}
  // The customer sees a plain message; the admin checks the key with "בדיקה" in חיבורים והגדרות.
  throw new ApiError(status===429?429:502,status===429?'מאגר התמונות עמוס כרגע. נסו שוב בעוד דקה.':'מאגר התמונות Pixabay אינו זמין כרגע. אפשר להעלות תמונה מהמכשיר או לנסות שוב מאוחר יותר.');
 }
@@ -101,11 +104,14 @@ export async function pixabaySearch(key:string,query:string):Promise<StockPhoto[
  const cached=await cacheGet(cacheKey);
  if(Array.isArray(cached))return cached;
  const res=await externalFetch(pixabayParams(key,{q,lang:'en',image_type:'photo',orientation:'horizontal',safesearch:'true',per_page:'30'}),{});
- if(!res.ok)pixabayFailure(res.status);
+ if(!res.ok)await pixabayFailure(res);
  const payload:any=await res.json().catch(()=>null);
- if(!payload||!Array.isArray(payload.hits))pixabayFailure(502);
+ if(!payload||!Array.isArray(payload.hits))await pixabayFailure(502);
  const photos:StockPhoto[]=payload.hits.slice(0,30).filter((h:any)=>Number.isSafeInteger(Number(h?.id))&&h.webformatURL).map((h:any)=>({id:Number(h.id),source:'pixabay',src:String(h.webformatURL),url:String(h.pageURL||''),photographer:String(h.user||'Pixabay').slice(0,120),width:Number(h.webformatWidth)||undefined,height:Number(h.webformatHeight)||undefined,alt:String(h.tags||'').slice(0,200)}));
  await cachePut(cacheKey,photos);
+ // Keep each result's download details too, so choosing a photo needs no second request to Pixabay (one statement for all hits).
+ const byId=payload.hits.slice(0,30).filter((h:any)=>Number.isSafeInteger(Number(h?.id))&&(h.largeImageURL||h.webformatURL)).map((h:any)=>({id:Number(h.id),largeImageURL:String(h.largeImageURL||h.webformatURL),pageURL:String(h.pageURL||''),user:String(h.user||'Pixabay').slice(0,120)}));
+ if(byId.length)await stmt("INSERT OR REPLACE INTO image_search_cache(key,data,created) SELECT 'pixabay:id:'||json_extract(value,'$.id'),value,? FROM json_each(?)",now(),JSON.stringify(byId)).run();
  return photos;
 }
 
@@ -114,8 +120,8 @@ export async function pixabayPhoto(key:string,id:number,fresh=false):Promise<{hi
  const cacheKey='pixabay:id:'+id;
  if(!fresh){const cached=await cacheGet(cacheKey);if(cached?.id)return {hit:cached,cached:true};}
  const res=await externalFetch(pixabayParams(key,{id:String(id)}),{});
- if(res.status===400||res.status===404){const text=await res.text().catch(()=>'');if(!/key/i.test(text))throw new ApiError(404,'התמונה לא נמצאה במאגר');pixabayFailure(400);}
- if(!res.ok)pixabayFailure(res.status);
+ if(res.status===400||res.status===404){const text=await res.text().catch(()=>'');if(!/key/i.test(text))throw new ApiError(404,'התמונה לא נמצאה במאגר');await pixabayFailure(400);}
+ if(!res.ok)await pixabayFailure(res);
  const payload:any=await res.json().catch(()=>null);const hit=payload?.hits?.[0];
  if(!hit||Number(hit.id)!==id)throw new ApiError(404,'התמונה לא נמצאה במאגר');
  const stored={id:Number(hit.id),largeImageURL:String(hit.largeImageURL||hit.webformatURL||''),pageURL:String(hit.pageURL||''),user:String(hit.user||'Pixabay').slice(0,120)};

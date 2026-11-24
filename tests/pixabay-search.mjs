@@ -21,6 +21,7 @@ const mf=new Miniflare({outboundService:async request=>{const url=new URL(reques
    calls.search.push(p);
    if(/nothing/.test(p.q))return Response.json({total:0,totalHits:0,hits:[]});
    return Response.json({total:40,totalHits:40,hits:Array.from({length:40},(_,i)=>hit(100+i,p.q))});}
+  if(url.hostname==='pixabay.com'&&/^\/get\/w\d+_640\.jpg$/.test(url.pathname)){calls.thumb=(calls.thumb||0)+1;return new Response(JPEG,{headers:{'Content-Type':'image/jpeg','Content-Length':String(JPEG.length)}});}
   if(url.hostname==='pixabay.com'&&url.pathname.startsWith('/get/large-')){const id=url.pathname.match(/large-(\d+)/)[1];calls.download.push(id);
    if(expireOnce.has(id)){expireOnce.delete(id);return new Response('gone',{status:410});}
    return new Response(JPEG,{headers:{'Content-Type':'image/jpeg','Content-Length':String(JPEG.length)}});}
@@ -63,7 +64,12 @@ try{
  check(r.source==='pixabay'&&r.query==='dog food'&&r.translated===false,'English is searched as written');
  const sent=calls.search.at(-1);
  check(sent.q==='dog food'&&sent.image_type==='photo'&&sent.safesearch==='true'&&sent.orientation==='horizontal'&&sent.per_page==='30'&&sent.lang==='en','photos only, safesearch, horizontal, 30, lang en');
- check(r.photos.length===30&&r.photos.every(p=>p.source==='pixabay'&&p.photographer&&p.src.startsWith('https://pixabay.com/get/')),'30 results at most, each with a photographer');
+ check(r.photos.length===30&&r.photos.every(p=>p.source==='pixabay'&&p.photographer&&p.src.startsWith('/api/image-thumb?src='+encodeURIComponent('https://pixabay.com/get/'))),'30 results at most, each with a photographer, previews through our server');
+ {const thumb=await mf.dispatchFetch('https://postflow.test'+r.photos[0].src,{headers:{'oai-authenticated-user-id':'buyer','oai-authenticated-user-email':'buyer@example.test'}});const tb=new Uint8Array(await thumb.arrayBuffer());
+  check(thumb.status===200&&thumb.headers.get('content-type')==='image/jpeg'&&tb.length===JPEG.length,'the preview opens through our server (Pixabay preview addresses only work for the server that asked)');
+  const evil=await mf.dispatchFetch('https://postflow.test/api/image-thumb?src='+encodeURIComponent('https://evil.example/x.jpg'),{headers:{'oai-authenticated-user-id':'buyer','oai-authenticated-user-email':'buyer@example.test'}});await evil.arrayBuffer();
+  check(evil.status===400,'a preview from outside Pixabay is refused');
+  const anon=await mf.dispatchFetch('https://postflow.test'+r.photos[0].src);await anon.arrayBuffer();check(anon.status!==200,'previews need a signed-in user');}
  check(!JSON.stringify(r).includes('pix-good'),'the key is not in the results');
 
  // Cache: the same words (any case or spacing) do not call Pixabay again.
@@ -104,11 +110,11 @@ try{
  calls.id.length=0;calls.download.length=0;
  let file=await req('image-import','POST',{source:'pixabay',photo_id:101},'buyer');
  check(file.id&&file.source==='Pixabay'&&file.credit==='צילום: צלם בדיוני 101 · מקור: Pixabay'&&file.photographer==='צלם בדיוני 101','import returns the credit "מקור: Pixabay" and the photographer');
- check(calls.id.join()==='101'&&calls.download.join()==='101','the photo is looked up once and downloaded once');
+ check(calls.id.length===0&&calls.download.join()==='101','a photo from the search is downloaded once, with no second Pixabay request');
  const res=await mf.dispatchFetch('https://postflow.test/api/files/'+file.id,{headers:{'oai-authenticated-user-id':'buyer','oai-authenticated-user-email':'buyer@example.test'}});
  const bytes=new Uint8Array(await res.arrayBuffer());check(res.status===200&&bytes.length===JPEG.length&&bytes.every((b,i)=>b===JPEG[i]),'the image is served from our server, not from Pixabay');
  const stored=await db.prepare('SELECT name,type,size FROM files WHERE id=?').bind(file.id).first();check(stored.name==='Pixabay-101.jpg'&&stored.type==='image/jpeg','file row: Pixabay-101.jpg');
- file=await req('image-import','POST',{source:'pixabay',photo_id:101},'buyer');check(calls.id.length===1,'the same photo again: id lookup from the cache');
+ file=await req('image-import','POST',{source:'pixabay',photo_id:101},'buyer');check(calls.id.length===0,'the same photo again: still no Pixabay request');
  // A cached download address that expired: looked up again and downloaded.
  await req('image-import','POST',{source:'pixabay',photo_id:102},'buyer');expireOnce.add('102');
  const ids=calls.id.length;await req('image-import','POST',{source:'pixabay',photo_id:102},'buyer');check(calls.id.length===ids+1,'expired cached address → fresh lookup, then saved');
