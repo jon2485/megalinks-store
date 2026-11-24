@@ -1225,7 +1225,10 @@ if (p[0] === 'cart') {
             const form=await r.formData(),file=form.get('file');assert(file instanceof File&&file.size>0&&file.size<=5*1024*1024,'יש לבחור תמונת לוגו עד 5MB');
             assert(['image/png','image/jpeg','image/gif','image/webp'].includes(file.type),'ניתן להעלות PNG, JPG, GIF או WEBP בלבד');const bytes=new Uint8Array(await file.arrayBuffer());
             const valid=file.type==='image/png'?bytes.slice(0,8).join(',')==='137,80,78,71,13,10,26,10':file.type==='image/jpeg'?bytes[0]===255&&bytes[1]===216:file.type==='image/gif'?new TextDecoder().decode(bytes.slice(0,3))==='GIF':new TextDecoder().decode(bytes.slice(0,4))==='RIFF'&&new TextDecoder().decode(bytes.slice(8,12))==='WEBP';assert(valid,'תוכן הקובץ אינו תואם לפורמט התמונה');
-            assert(env.BUCKET,'שמירת לוגו אינה זמינה',503);const id=uid();await env.BUCKET.put('public/catalog-logos/'+id,bytes,{httpMetadata:{contentType:file.type}});await audit(u,id,'העלאת לוגו לקטלוג');return response({id,url:new URL('/api/catalog-logo/'+id,new URL(r.url).origin).href},201);
+            assert(env.BUCKET,'שמירת לוגו אינה זמינה',503);
+            // 24.11.2026 Moving logos from Staging to the real site keeps each logo's id, so the sheet links only change host. Never overwrites.
+            const keep=String(form.get('keep_id')||'');assert(!keep||/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(keep),'מזהה לוגו לא תקין');if(keep&&await env.BUCKET.head('public/catalog-logos/'+keep))return response({id:keep,url:new URL('/api/catalog-logo/'+keep,new URL(r.url).origin).href,existing:true});
+            const id=keep||uid();await env.BUCKET.put('public/catalog-logos/'+id,bytes,{httpMetadata:{contentType:file.type}});await audit(u,id,'העלאת לוגו לקטלוג');return response({id,url:new URL('/api/catalog-logo/'+id,new URL(r.url).origin).href},201);
         }
         if (p[1] === 'websites') {
             if (method === 'POST' || method === 'PATCH') {
