@@ -2351,3 +2351,20 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
   11. Small: "אתר אחד שמורים עבורך"; homepage shows "כניסה למערכת" to a signed-in user; "החזרה ללקוח לצפייה" on an empty article does nothing and says nothing; empty bank details block in checkout when no bank details are set.
 - **Could not complete:** marking an article published (the link checker rightly rejects a made-up link); card payment (outside service); real mail delivery (mail is not connected locally, checked in the queue); phones.
 - **Local test data left:** orders #1032 (jpost article at the supplier, walla article cancelled and refunded) and #1033, one more item in monthly #1031, a ticket "בדיקת מערכת: שאלה על הזמנה 1032", top-up QA-LOCAL-TOPUP-24 approved, payment report for #1025 still pending.
+
+## 24.11.2026 (ערב) — תיקונים אחרי המעבר המקיף (מקומי בלבד, לא נדחף, לא עלה ל-Staging)
+
+החלטות הבעלים: אין מיילים למנהל על הזמנה בהעברה או דיווח תשלום. במקומם מייל סיכום יומי ב-18:00.
+
+מה נעשה:
+- `lib/daily-summary.ts` (חדש): מייל סיכום למנהלים ב-18:00 שעון ישראל — הזמנות היום, כמה נשלחו לכתיבה, כמה עלו, מה מתעכב. נשלח פעם ביום (מזהה job עם התאריך), מופעל מהבקשה שרצה כל דקה (`maintenance/scheduled-articles`). תצוגה מקדימה למנהל: `GET /api/admin/daily-summary`.
+- ספק שמתחבר עם המייל שכתוב לו על האתר (`supplier_email`) רואה את האתרים והכתבות שלו ויכול לדווח פרסום (`lib/customer-sellers.ts`, `route.ts`: `selling`, `selling/articles`, `supplier-inbox`). האתרים האלה לקריאה בלבד (`managed:true`, `app/seller-workspace.tsx`): בלי עריכה, השהיה או הסרה. תשלומים ודוחות חודשיים לא כלולים.
+- אתר לא פעיל בסל: הודעה אדומה בכרטיס האתר בסל, והודעת התשלום נוקבת בשם האתר (`quote()` + `app/purchase-flow.tsx`).
+- קופון שכבר לא תקף: בעמוד התשלום הקופון פשוט יורד, בלי הודעת שגיאה ישנה.
+- קישור שגוי בדיווח פרסום (ספק בקישור, ספק מחובר, מנהל): הודעה מדויקת במקום "הפעולה לא הושלמה".
+- לובי, בקשת ביטול של אתר אחד: הסכום הוא של האתר בלבד (`lib/admin-updates.ts`).
+
+נבדק מקומית: סיכום יומי (טקסט), מסך הספק (8 אתרים, 8 כתבות), הודעת קישור שגוי אצל ספק מחובר, סכום ביטול (3,846.80 במקום 6,914.80), tsc, build, 3 בדיקות הבנייה.
+לא נבדק בפועל: אתר לא פעיל בסל (אין כרגע סל כזה), קישור שגוי אצל המנהל (אותו קוד), שליחת המייל עצמה (מייל לא מחובר מקומית).
+
+נשאר פתוח (מחכה להחלטת הבעלים): טלפון "12" מתקבל; אין מייל ללקוח כשמאשרים העברה בנקאית; "בדיקת הקישורים לא עדכנית" אצל המנהל; שגיאה שמופיעה פעמיים במסך המנהל; נושא ריק במיילי מעקב לספק במסך הדיוור; פרטי הבנק — הבעלים מזין בעצמו בניהול.

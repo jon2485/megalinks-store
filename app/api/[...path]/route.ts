@@ -8,7 +8,8 @@ import {greenInvoiceToken,resetGreenInvoiceToken} from '@/lib/green-invoice';
 import {exchangeCostColumns,syncExchanges,supplierExchanges,exchangeSites,takeExchange,adminSupplierExchanges,adjustExchangeBalance,exchangeSupplierOf,exchangeDefaultCents} from '@/lib/exchanges';
 import {articleCustomerColumns,articleCustomerJoins,articleCustomerList,assignArticleCustomer} from '@/lib/article-customer';
 import {publicationPeriod} from '@/lib/publication-period';
-import {customerSellerRoutes,closeSellerMonths,sellerLogo} from '@/lib/customer-sellers';
+import {sendDailySummary,dailySummaryText,israelDay} from '@/lib/daily-summary';
+import {customerSellerRoutes,closeSellerMonths,sellerLogo,mailOf,ownMail} from '@/lib/customer-sellers';
 import {releaseScheduledApprovals,dispatchAtFor,dispatchDue} from '@/lib/scheduled-approval';
 import {ticketFollowUps,ticketClosed} from '@/lib/ticket-thread-view';
 import {ticketMail} from '@/lib/ticket-mail';
@@ -147,7 +148,7 @@ async function cartItems(u: Row) { const pricing=await pricingContext(u.id); con
     }
     return items;
 }
-async function quote(u: Row, code = '') { const pricing_version=await pricingVersion();const items = await cartItems(u);assert(pricing_version===await pricingVersion(),'המחירים עודכנו תוך כדי החישוב. נסו שוב',409); assert(items.length, 'הסל ריק'); assert(items.every(x => x.active), 'אחד האתרים בסל אינו פעיל'); const vatPercent = Number(await setting('vat', 18)); const subtotal = calculateQuote(items, 0, vatPercent).subtotal; const c = await coupon(code, u, subtotal); const eligible=items.filter(i=>!i.bundle_applied).reduce((sum,i)=>sum+i.price*i.quantity,0);const discount=Math.round(eligible*Number(c?.percent||0)/100),vat=Math.round((subtotal-discount)*vatPercent/100);const pricing_token=await hash(JSON.stringify(items.map(i=>[i.id,i.website_id,i.quantity,i.price,i.bundle_applied]).sort())+':'+discount+':'+vat);return {subtotal,discount,vat,total:subtotal-discount+vat,items,coupon:c,vatPercent,pricing_token,pricing_version}; }
+async function quote(u: Row, code = '') { const pricing_version=await pricingVersion();const items = await cartItems(u);assert(pricing_version===await pricingVersion(),'המחירים עודכנו תוך כדי החישוב. נסו שוב',409); assert(items.length, 'הסל ריק'); {const off=items.filter(x=>!x.active).map(x=>x.name);assert(!off.length,(off.length===1?'האתר '+off[0]+' כבר לא זמין לפרסום':'האתרים '+off.join(', ')+' כבר לא זמינים לפרסום')+'. הסירו '+(off.length===1?'אותו':'אותם')+' מהסל כדי להמשיך.');} const vatPercent = Number(await setting('vat', 18)); const subtotal = calculateQuote(items, 0, vatPercent).subtotal; const c = await coupon(code, u, subtotal); const eligible=items.filter(i=>!i.bundle_applied).reduce((sum,i)=>sum+i.price*i.quantity,0);const discount=Math.round(eligible*Number(c?.percent||0)/100),vat=Math.round((subtotal-discount)*vatPercent/100);const pricing_token=await hash(JSON.stringify(items.map(i=>[i.id,i.website_id,i.quantity,i.price,i.bundle_applied]).sort())+':'+discount+':'+vat);return {subtotal,discount,vat,total:subtotal-discount+vat,items,coupon:c,vatPercent,pricing_token,pricing_version}; }
 async function normalizeBundle(input: Row, prior: Row = {}) {
     const b = { ...prior, ...input };
     if (input.websites) {
@@ -199,7 +200,7 @@ async function handle(r: Request,access:ResponseAccess) {
     }
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);return response({...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
     if(p[0]==='branding'&&method==='GET')return response({brand:await setting('brand','פוסטפלואו')});
@@ -287,7 +288,8 @@ async function handle(r: Request,access:ResponseAccess) {
             assert(!(await issueForSupplier(a))?.open,'שלחתם בקשה למנהל, והיא ממתינה לתשובה. נא להמתין עם הפרסום',409);
             assert(!JSON.parse(a.data).cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409);
             assert(!(JSON.parse(a.data).supplier_hold_at&&a.status!=='sent'),'הכתבה חזרה ללקוח לתיקונים. נא להמתין עם פרסום הכתבה עד שנשלח הנחיות מעודכנות',409);
-            const url = httpUrl(b.url);
+            // 24.11.2026 An address that is not a link gets its own message, not the general "הפעולה לא הושלמה".
+            let url='';try{url=httpUrl(b.url);}catch{assert(false,'הקישור לא תקין. יש להדביק את הכתובת המלאה של הכתבה, שמתחילה ב־https://');}
             assert(url, 'יש להזין קישור לפרסום');assert(a.status==='sent','הכתבה כבר טופלה',409);const w=await website(a.website_id,true);const checked:Row=await verifyPublishedArticle(url,w.url,a);if(!checked.ok&&checked.manual_review)return response(await saveLinkReview(a,url,checked,{id:token.user_id},'token'));assert(checked.ok,checked.message,422);
             const publication=publicationPeriod();
             const reportResult=await db().batch([articleGuard(a),stmt('UPDATE tokens SET used=1 WHERE id=? AND used=0', token.id), stmt("UPDATE articles SET status='published',published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?,'$.published_at',?) WHERE id=? AND status='sent'", url, publication.stamp,publication.month,publication.stamp,a.id), stmt('INSERT INTO activity(id,user_id,resource,action,data,created) VALUES (?,?,?,?,?,?)', uid(), token.user_id, a.id, 'הספק דיווח על פרסום', JSON.stringify({ url }), now())]);
@@ -315,8 +317,11 @@ async function handle(r: Request,access:ResponseAccess) {
         u = await actor();
     access.privileged=u.role==='admin';
     if(u.role==='admin'&&method==='GET'){const origin=new URL(r.url).origin;await releaseScheduledApprovals(origin);await dispatchScheduledArticles(origin);}
+    // 24.11.2026 What tonight's 18:00 summary mail would say right now (admin only, sends nothing).
+    if(p[0]==='admin'&&p[1]==='daily-summary'&&method==='GET'){admin(u);const d=israelDay(new Date());return response({day:d.day,text:await dailySummaryText(d.start,d.day.slice(8,10)+'.'+d.day.slice(5,7)+'.'+d.day.slice(0,4))});}
     if(p[0]==='selling'&&p[1]==='articles'&&p[2]&&method==='POST'){
-        const delivery=await one("SELECT j.id FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') JOIN seller_sites s ON s.website_id=a.website_id WHERE j.id=? AND j.kind='supplier_publication' AND json_extract(j.data,'$.owner_user_id')=? AND s.user_id=? AND COALESCE(json_extract(j.data,'$.demo'),0)=0",decodeURIComponent(p[2]),u.id,u.id);
+        // 24.11.2026 Also the supplier whose e-mail is written on the site (see customer-sellers.ts).
+        const delivery=await one("SELECT j.id FROM jobs j JOIN articles a ON a.id=json_extract(j.data,'$.article_id') JOIN websites w ON w.id=a.website_id LEFT JOIN seller_sites s ON s.website_id=a.website_id AND s.user_id=? WHERE j.id=? AND j.kind='supplier_publication' AND ((json_extract(j.data,'$.owner_user_id')=? AND s.id IS NOT NULL) OR "+ownMail+") AND COALESCE(json_extract(j.data,'$.demo'),0)=0",u.id,decodeURIComponent(p[2]),u.id,mailOf(u));
         assert(delivery,'הפרסום לא נמצא',404);p.splice(0,p.length,'supplier-inbox',delivery.id);
     }
     // Exchange suppliers (owner 23.11.2026): the supplier's exchanges and site picker (no prices), and taking a site.
@@ -345,8 +350,9 @@ async function handle(r: Request,access:ResponseAccess) {
     const workflowResponse=await workflowRoutes(r,p,u);if(workflowResponse)return workflowResponse;
     if (p[0] === 'supplier-inbox') {
         const seller=await one('SELECT user_id FROM seller_profiles WHERE user_id=?',u.id);
-        assert(u.role==='admin'||u.role==='supplier'||seller,'הגישה זמינה לספק מורשה',403);
-        const rows = (await all("SELECT j.* FROM jobs j WHERE j.kind='supplier_publication' ORDER BY j.created DESC")).map(parse).filter(j => j && (u.role==='admin' || (u.role==='supplier'?j.recipient_email===u.email.toLowerCase():j.owner_user_id===u.id)));
+        // 24.11.2026 Whoever signs in with the e-mail an article was sent to is that article's supplier, whatever the account type.
+        const rows = (await all("SELECT j.* FROM jobs j WHERE j.kind='supplier_publication' ORDER BY j.created DESC")).map(parse).filter(j => j && (u.role==='admin' || String(j.recipient_email||'').toLowerCase()===mailOf(u) || (!!j.owner_user_id&&j.owner_user_id===u.id)));
+        assert(u.role==='admin'||u.role==='supplier'||seller||rows.length,'הגישה זמינה לספק מורשה',403);
         if (method==='GET' && !p[1]) return response({ deliveries:u.role==='admin'?rows:rows.map(row=>supplierDelivery(row!)) });
         const job=rows.find(j=>j!.id===decodeURIComponent(p[1] || '')); assert(job,'המשלוח לא נמצא',404);
         const article=parse(await one('SELECT * FROM articles WHERE id=?',job.article_id)); assert(article,'כתבה לא נמצאה',404);
@@ -354,7 +360,7 @@ async function handle(r: Request,access:ResponseAccess) {
         if (method==='GET' && query.get('inline')){const image=(await inlineImages(article.content)).find(i=>i.id===query.get('inline'));assert(image,'התמונה אינה חלק מהמשלוח',404);const f=await one('SELECT * FROM files WHERE id=?',image.id);assert(f,'התמונה לא נמצאה',404);const blob=await env.BUCKET?.get(f.key);assert(blob,'התמונה לא נמצאה',404);return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}});}
         if (method==='GET' && query.get('image')==='1') { const f=await one('SELECT * FROM files WHERE id=?',(query.get('secondary')==='1'?article.secondary_image_id:article.image_id)||''); assert(f,'תמונה לא נמצאה',404); const blob=await env.BUCKET?.get(f.key); assert(blob,'תמונה לא נמצאה',404); return new Response(blob.body,{headers:{'Content-Type':f.type,'X-Content-Type-Options':'nosniff','Content-Security-Policy':"default-src 'none'"}}); }
         if (method==='GET') return response({delivery:u.role==='admin'?job:supplierDelivery(job),article:{id:article.id,title:article.title,content:await supplierContent(article.content,'/api/supplier-inbox/'+encodeURIComponent(job.id)+'?inline='),image_id:article.image_id,image_credit:article.image_credit,image_credit_url:article.image_credit_url,secondary_image_id:article.secondary_image_id,secondary_image_credit:article.secondary_image_credit,meta_description:article.meta_description,client_notes:article.client_notes,scheduled:article.scheduled||'',status:article.status,cancel_pending:!!article.cancel_pending}});
-        if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); const url=job.demo?'':httpUrl(b.url||''); assert(job.demo || url,'יש להזין קישור לפרסום'); if(!job.demo){const w=await website(article.website_id,true);const check:Row=await verifyPublishedArticle(url,w.url,article);if(!check.ok&&check.manual_review)return response(await saveLinkReview(article,url,check,u,'inbox'));assert(check.ok,check.message,422);}
+        if (method==='POST') { const b=await json(r); assert(!article.cancel_pending,'הכתבה ממתינה לביטול; דיווח פרסום חסום',409); assert(article.status==='sent','הכתבה אינה ממתינה לפרסום',409); assert(!['blocked','failed','requested','writing'].includes(job.status),'המשלוח אינו מוכן',409); assert(job.demo||String(b.url||'').trim(),'יש להזין קישור לפרסום');let url='';if(!job.demo){try{url=httpUrl(b.url||'');}catch{assert(false,'הקישור לא תקין. יש להדביק את הכתובת המלאה של הכתבה, שמתחילה ב־https://');}} if(!job.demo){const w=await website(article.website_id,true);const check:Row=await verifyPublishedArticle(url,w.url,article);if(!check.ok&&check.manual_review)return response(await saveLinkReview(article,url,check,u,'inbox'));assert(check.ok,check.message,422);}
             const publication=publicationPeriod();await db().batch([articleGuard(article),stmt("UPDATE articles SET status=?,published_url=?,version=version+1,updated=?,data=json_set(data,'$.published_month',?,'$.published_at',?) WHERE id=? AND status='sent'",job.demo?'demo_completed':'published',url,publication.stamp,publication.month,publication.stamp,article.id),stmt('UPDATE jobs SET status=?,updated=? WHERE id=?',job.demo?'demo_completed':'completed',now(),job.id)]);
             if(!job.demo){await stmt("UPDATE tokens SET used=1 WHERE kind='supplier' AND resource=?",article.id).run();await articleMail({...article,published_url:url},'published',new URL(r.url).origin);}await audit(u,article.id,job.demo?'הספק השלים הדגמת פרסום':u.role==='admin'?'מנהל דיווח על פרסום':'הספק דיווח על פרסום',{url}); await syncOrder(article.order_id); return response({ok:true}); }
     }
@@ -757,7 +763,7 @@ if (p[0] === 'cart') {
             if(next==='admin_review'){const validation=await articleChecks(a);assert(validation.ok,validation.errors.join(' · '),422);}
             if(next==='revisions')assert(maxText(b.note,3000).trim(),'יש לפרט את הסיבה להחזרה לתיקון');
             const statusData=JSON.parse(a.data);if(next==='admin_review'){statusData.first_submitted_at||=now();statusData.submitted_at=now();statusData.review_requested_at=now();}if(next==='published')statusData.published_at=now();if(next==='approved'){const at=dispatchAtFor(statusData);if(at&&Date.parse(at)>Date.parse(now())){statusData.dispatch_at=at;delete statusData.dispatch_attempted_at;}else delete statusData.dispatch_at;}
-            const url = next === 'published' ? httpUrl(b.url || '') : a.published_url;
+            let url = a.published_url;if(next==='published'){try{url=httpUrl(b.url||'');}catch{assert(false,'הקישור לא תקין. יש להדביק את הכתובת המלאה של הכתבה, שמתחילה ב־https://');}}
             if (next === 'published'){assert(url,'יש להזין קישור לפרסום');const w=await website(a.website_id,true);const check=await checkLink(url,w.url);assert(check.ok,check.message,422);assert(!JSON.parse(order!.data).demo,'הדגמה אינה פרסום אמיתי');}
             const publication=publicationPeriod();if(next==='published')statusData.published_month=publication.month;
             const result = await stmt('UPDATE articles SET status=?,published_url=?,data=?,version=version+1,updated=? WHERE id=? AND version=?', next, url, JSON.stringify(statusData), publication.stamp, a.id, a.version).run();
