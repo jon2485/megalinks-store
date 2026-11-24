@@ -947,7 +947,19 @@ if (p[0] === 'cart') {
             if (res.ok) { const payload: any = await res.json(); photos = (payload.photos || []).map((p: Row) => ({ id: p.id, source: 'pexels', url: p.url, photographer: p.photographer, src: p.src.medium, large: p.src.large })); source = 'pexels'; }
             else if (!pixOn || pixabayError) assert(false, 'מאגר התמונות דחה את הבקשה', 502);
         } else if (pixabayError) throw pixabayError;
+        // Pixabay's preview addresses only open from the server that asked for them, so the browser loads them through /api/image-thumb.
+        photos = photos.map(ph => ph.source === 'pixabay' && pixabayImageHost(ph.src) ? { ...ph, src: '/api/image-thumb?src=' + encodeURIComponent(ph.src) } : ph);
         return response({ photos, source: source || (pixOn ? 'pixabay' : 'pexels'), query: english.query, original: raw, translated: english.translated });
+    }
+    if (p[0] === 'image-thumb' && method === 'GET') {
+        const src = String(query.get('src') || '');
+        assert(pixabayImageHost(src), 'מקור תמונה לא מורשה', 400);
+        const res = await externalFetch(src, {});
+        assert(res.ok, 'התמונה לא התקבלה', 502);
+        const type = (res.headers.get('Content-Type') || '').split(';')[0].trim();
+        assert(['image/jpeg', 'image/png', 'image/webp'].includes(type), 'סוג תמונה לא נתמך', 502);
+        assert(Number(res.headers.get('Content-Length') || 0) <= 3 * 1024 * 1024, 'התמונה גדולה מדי', 502);
+        return new Response(res.body, { headers: { 'Content-Type': type, 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff' } });
     }
     const importBody: Row | null = p[0] === 'image-import' && method === 'POST' ? await json(r) : null;
     if (importBody?.source === 'pixabay') {
