@@ -41,6 +41,8 @@ const redActions=new Set(['הזמנה בוטלה','כתבה בוטלה וזוכ�
 const okActions=new Set(['תשלום אומת באמצעות הספק','תשלום אומת ידנית','דיווח תשלום אושר','הטענת יתרה אושרה','תשלום הזמנה חודשית התקבל ואושר','חשבון חודשי סומן כשולם','הספק דיווח על פרסום','מנהל דיווח על פרסום']);
 
 type Entry={row:Row;raw:string;label:string;cat:Cat;tone:string;parsed:unknown;ok:boolean;text:string};
+// 24.11.2026 The customers-centre pages are recorded by their code; show their Hebrew names.
+const agencyTabs:Record<string,string>={overview:'ראשי',customers:'לקוחות',publications:'פרסומים',tasks:'לטיפול',calendar:'לוח פרסומים',reports:'דוחות',settings:'הגדרות'};
 function kindName(kind:string){return kindNames[kind]||kind;}
 function describe(row:Row):Entry{
  const raw=String(row.action||''),text=typeof row.data==='string'?row.data:row.data==null?'':JSON.stringify(row.data);
@@ -52,7 +54,7 @@ function describe(row:Row):Entry{
  else if(created){label='נוספה רשומה: '+kindName(created[1]);cat=kindCats[created[1]]||'system';}
  else if(updated){label='עודכנה רשומה: '+kindName(updated[1]);cat=kindCats[updated[1]]||'system';}
  else if((raw==='רשומה עודכנה'||raw==='רשומה נמחקה')&&data.kind){label=(raw==='רשומה עודכנה'?'עודכנה רשומה: ':'נמחקה רשומה: ')+kindName(String(data.kind));cat=kindCats[String(data.kind)]||'system';}
- else if(raw.startsWith('צפייה במרכז הלקוחות של החשבון'))cat='customers';
+ else if(raw.startsWith('צפייה במרכז הלקוחות של החשבון')){cat='customers';const tab=raw.match(/: ([a-z]+)$/);if(tab)label='צפייה במרכז הלקוחות של החשבון: '+(agencyTabs[tab[1]]||tab[1]);}
  const tone=redActions.has(raw)||raw.endsWith('נדרש טיפול')?'red':okActions.has(raw)?'ok':raw==='רשומה נמחקה'?'cancelled':'neutral';
  return {row,raw,label,cat,tone,parsed,ok,text};
 }
@@ -145,14 +147,39 @@ export function AdminAuditPage({ctx}:{ctx:Ctx}){
  </section>;
 }
 
+// 24.11.2026 (owner: the customer file's history showed "סטטוס: approved" in tall cards) The same rows as this log,
+// for the actions of one customer: readable names, the order or article each action was on (opens it), day headings.
+export function ActivityList({rows,resolve}:{rows:Row[];resolve?:(resource:string)=>Res}){
+ const [open,setOpen]=useState(''),[page,setPage]=useState(1),[cat,setCat]=useState<string>('all');
+ const all=useMemo(()=>rows.map(describe),[rows]);
+ const list=all.filter(e=>cat==='all'||e.cat===cat),pages=Math.max(1,Math.ceil(list.length/20)),shown=Math.min(page,pages),slice=list.slice((shown-1)*20,shown*20);
+ const counts=(c:Cat)=>all.filter(e=>e.cat===c).length;
+ const views:[string,string,number][]=[['all','הכול',all.length],...catOrder.filter(c=>counts(c)>0).map(c=>[c,catLabels[c],counts(c)] as [string,string,number])];
+ const groups:{key:string;title:string;items:Entry[]}[]=[];
+ for(const e of slice){const d=new Date(e.row.created),key=valid(d)?dayKey(d):'none',last=groups[groups.length-1];if(last&&last.key===key)last.items.push(e);else groups.push({key,title:dayTitle(d),items:[e]});}
+ if(!all.length)return <div className="sv2-empty"><h3>עדיין אין פעולות מתועדות</h3><p>פעולות על הלקוח, ההזמנות והכתבות שלו יופיעו כאן.</p></div>;
+ return <section className="orders-match-screen sv2 sv2-orders sv2-fin sys-audit cf-audit" dir="rtl">
+  <section className="sv2-card sa-board" aria-label="היסטוריית הפעולות של הלקוח" style={{backdropFilter:'none',WebkitBackdropFilter:'none'}}>
+   {views.length>2&&<div className="sv2-tools sa-tools"><div className="sv2-seg sa-seg" role="group" aria-label="סינון לפי סוג הפעולה">{views.map(([key,label,count])=><button key={key} type="button" className={cat===key?'on':''} aria-pressed={cat===key} onClick={()=>{setCat(key);setPage(1);setOpen('');}}>{label}<b><bdi>{count}</bdi></b></button>)}</div></div>}
+   <div className="sv2-th" style={cols} aria-hidden="true"><span>פעולה</span><span>מבצע</span><span>על מה</span><span>סוג</span><span className="sa-end">שעה</span><span/></div>
+   <div className="sa-list">{groups.map(g=><React.Fragment key={g.key+g.items[0].row.id}>
+    <div className="sv2-tr sa-day" role="heading" aria-level={3}>{g.title}</div>
+    {g.items.map(e=>{const id=String(e.row.id);return <AuditRow key={id} e={e} open={open===id} toggle={()=>setOpen(open===id?'':id)} res={resolve&&e.row.resource?resolve(String(e.row.resource)):undefined} plainOnly/>;})}
+   </React.Fragment>)}</div>
+   <OrderPager page={shown} total={list.length} size={20} onChange={v=>{setPage(v);setOpen('');}}/>
+  </section>
+ </section>;
+}
+
 // One action: what (with the recorded text when it differs), who, a short line of details and the record, category, time.
-function AuditRow({e,open,toggle}:{e:Entry;open:boolean;toggle:()=>void}){
+type Res={label:string;go?:()=>void}|null;
+function AuditRow({e,open,toggle,res,plainOnly=false}:{e:Entry;open:boolean;toggle:()=>void;res?:Res;plainOnly?:boolean}){
  const id=String(e.row.id),d=new Date(e.row.created),sum=summary(e),Icon=catIcons[e.cat],label=e.label||'פעולה';
  return <article className={'sa-rec is-tone-'+e.tone+(open?' is-open':'')}>
   <div className="sv2-tr sa-row" style={cols} onClick={toggle}>
-   <div className="sv2-who sa-what"><span className={'sv2-thumb sa-ico is-c-'+e.cat} aria-hidden="true"><Icon size={19}/></span><span><b dir="auto">{e.label||'פעולה ללא שם'}</b>{e.label!==e.raw&&e.raw?<small dir="auto" title={e.raw}>{e.raw}</small>:null}</span></div>
+   <div className="sv2-who sa-what"><span className={'sv2-thumb sa-ico is-c-'+e.cat} aria-hidden="true"><Icon size={19}/></span><span><b dir="auto">{e.label||'פעולה ללא שם'}</b>{!plainOnly&&e.label!==e.raw&&e.raw?<small dir="auto" title={e.raw}>{e.raw}</small>:null}</span></div>
    <span className="sa-actor"><small className="sv2-ml">מבצע</small><span className="sa-line">{e.row.actor||<span className="sa-muted">לא ידוע</span>}</span></span>
-   <span className="sa-sum"><small className="sv2-ml">פרטים</small><span className="sa-line" dir="auto" title={sum||undefined}>{sum||<span className="sa-muted">אין פרטים</span>}</span>{e.row.resource?<bdi className="sa-res" dir="ltr" title={String(e.row.resource)}>{String(e.row.resource)}</bdi>:null}</span>
+   <span className="sa-sum"><small className="sv2-ml">פרטים</small><span className="sa-line" dir="auto" title={sum||undefined}>{sum||<span className="sa-muted">אין פרטים</span>}</span>{res?(res.go?<button type="button" className="sa-reslink" onClick={ev=>{ev.stopPropagation();res.go?.();}}>{res.label}</button>:<span className="sa-reslabel">{res.label}</span>):res===undefined&&e.row.resource?<bdi className="sa-res" dir="ltr" title={String(e.row.resource)}>{String(e.row.resource)}</bdi>:null}</span>
    <span className="sa-cat"><span className={'sv2-pill sa-pill is-c-'+e.cat}>{catLabels[e.cat]}</span></span>
    <span className="sa-time">{valid(d)?<time dateTime={e.row.created}><bdi>{clock(d)}</bdi></time>:'—'}</span>
    <span className="sa-exp"><button type="button" className="sa-expand" aria-label={(open?'סגירת פירוט ':'פירוט ')+label} aria-expanded={open} aria-controls={'record-'+id} onClick={ev=>{ev.stopPropagation();toggle();}}>{open?<ChevronUp size={18} aria-hidden="true"/>:<ChevronDown size={18} aria-hidden="true"/>}</button></span>

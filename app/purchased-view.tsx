@@ -35,7 +35,8 @@ export function PurchaseActions({ article, ctx, compact=false, canAssign=false, 
             </div>;
 }
 
-export function PurchaseRow({ article, site, ctx, compact=false,canAssign=false }: { article: Row; site?: Row; ctx: Ctx; compact?:boolean;canAssign?:boolean }) {
+// actions: other buttons in place of the customer's (the admin customer file, owner 24.11.2026); the row itself is the same.
+export function PurchaseRow({ article, site, ctx, compact=false,canAssign=false,actions }: { article: Row; site?: Row; ctx: Ctx; compact?:boolean;canAssign?:boolean;actions?:React.ReactNode }) {
     const [logoFailed, setLogoFailed] = useState(false);
     const logo = article.website_logo || site?.logo_url;
     const websiteUrl = article.website_url || site?.url || '';
@@ -60,7 +61,7 @@ export function PurchaseRow({ article, site, ctx, compact=false,canAssign=false 
                 {!!article.editorial&&<p className="purchase-writing-info"><FileText size={15}/>נרכשה כתיבה בידי כותב מקצועי · {article.editorial_words} מילים</p>}
             </div>
             <div className="purchase-order-column"><span aria-label={'מספר הזמנה '+(article.number||'לא זמין')} dir="ltr" className="purchase-order-pill"><FileText size={14}/>{article.number||'—'}</span></div>
-            <PurchaseActions article={article} ctx={ctx} compact={compact} canAssign={canAssign}/>
+            {actions??<PurchaseActions article={article} ctx={ctx} compact={compact} canAssign={canAssign}/>}
         </CardContent>
     </Card>;
 
