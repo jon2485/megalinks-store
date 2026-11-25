@@ -3,152 +3,195 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>הזמנה מרוכזת · הדמיה</title>
+<title>הזמנה מרוכזת · הדמיה 2</title>
+<!-- Mockup v2 (25.11.2026). Built on the approved cart look (cart-checkout-refresh.css): waves ground, cart art,
+     stepper, white panels, item cards with logo/name/domain/price, pale disclosure bar, summary column.
+     The explanation keeps every line of the approved bulk-instructions, plus the content options from spec.md. -->
 <style>
 @font-face{font-family:Heebo;src:url("../../public/brand/heebo-variable.ttf");font-weight:100 900}
-:root{--navy:#09234b;--ink:#183d64;--muted:#405a78;--blue:#0876bf;--sky:#008aff;--teal:#008d9d;--line:#d9eaf5;--ok:#1d7d45;--okbg:#e6f6ec;--bad:#b42318;--badbg:#fdecec;color-scheme:light}
-*{box-sizing:border-box}html,body{margin:0}
-body{font-family:Heebo,Arial,sans-serif;color:var(--navy);background:#f3faff url("../../public/brand/checkout-waves.webp") center top/100% 720px no-repeat;-webkit-font-smoothing:antialiased}
-.top{height:70px;background:linear-gradient(180deg,#0b2a55,#09234b);border-bottom:3px solid #2ad1e0;display:flex;align-items:center;justify-content:space-between;padding:0 28px;color:#fff;font-weight:700}
-.top img{height:34px}.top span{opacity:.75;font-size:14px}
-.page{max-width:1080px;margin:0 auto;padding:22px 20px 40px}
-/* steps, like the cart */
-.steps{display:flex;justify-content:center;gap:0;margin:4px auto 18px;max-width:560px}
+:root{--navy:#0b274d;--ink:#09234b;--copy:#405a78;--muted:#52677e;--line:#d6e6f0;--ice:#f2f7fa;--teal:#007c88;--blue:#0876bf;--cta:#1b6fe0;--err:#b42342;--errbg:#fdf0f2;--ok:#1d7d45;--okbg:#e7f6ee;color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0}[hidden]{display:none!important}
+body{font-family:Heebo,Arial,sans-serif;color:var(--ink);background:#f3faff url("../../public/brand/checkout-waves.webp") center top/100% 720px no-repeat;-webkit-font-smoothing:antialiased}
+.top{height:72px;background:linear-gradient(180deg,#0b2a55,#09234b);border-radius:0 0 18px 18px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;color:#fff}.top img{height:34px}.top span{opacity:.7;font-size:14px}
+.page{max-width:1320px;margin:0 auto;padding:18px 28px 60px}
+.steps{display:flex;justify-content:center;max-width:620px;margin:0 auto 10px;padding:0;list-style:none}
 .step{flex:1;display:grid;justify-items:center;gap:6px;position:relative;font-size:13.5px;color:var(--muted)}
-.step:not(:last-child):after{content:"";position:absolute;top:17px;left:-50%;width:100%;height:1px;background:#9fc9e6;z-index:0}
-.step i{z-index:1;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid #b9d9ec;font-style:normal;font-weight:700;color:var(--muted)}
-.step.on i{background:#0090cf;border-color:#0090cf;color:#fff}.step.on{color:var(--navy);font-weight:700}.step.done i{background:#e3f5fb;color:var(--teal);border-color:#8fd6e6}
-/* hero, like "סל הפרסום שלך" */
-.hero{display:flex;align-items:center;gap:22px;margin:6px 0 22px}
-.hero img{width:150px;height:auto;flex:none;filter:drop-shadow(0 12px 18px #0876bf33)}
-.hero h1{margin:0;font-size:44px;line-height:1.15;font-weight:850;letter-spacing:-.02em}.hero h1 b{color:var(--blue)}
-.hero p{margin:8px 0 0;font-size:17px;color:var(--muted);line-height:1.6;max-width:560px}
-/* two start cards */
-.start{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.card{background:#ffffffe6;border:1px solid #ffffff;border-radius:22px;box-shadow:0 10px 30px -14px #09234b33;padding:22px;backdrop-filter:blur(14px)}
-.card h2{margin:0 0 6px;font-size:21px;font-weight:800;display:flex;gap:10px;align-items:center}
-.num{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--sky);color:#fff;font-size:17px;font-weight:800;flex:none}
-.card:nth-child(2) .num{background:var(--teal)}
-.card p{margin:0;color:var(--ink);font-size:15px;line-height:1.75}
-.ticks{list-style:none;margin:12px 0 16px;padding:0;display:grid;gap:7px}.ticks li{display:flex;gap:8px;font-size:15px;line-height:1.55;color:var(--ink)}.ticks svg{flex:none;margin-top:4px;color:var(--teal)}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:14px;border:0;font:inherit;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none}
-.primary{background:linear-gradient(180deg,#1a8fe0,#0876bf);color:#fff;box-shadow:0 10px 20px -12px #0876bf}
-.ghost{background:#fff;color:var(--blue);box-shadow:inset 0 0 0 1px #9ccbe9}
-.orange{background:linear-gradient(180deg,#ff9a3d,#f47a12);color:#fff;box-shadow:0 10px 22px -12px #f47a12}
-.drop{display:grid;justify-items:center;gap:8px;text-align:center;margin-top:12px;padding:26px 16px;border:2px dashed #8fd6e6;border-radius:18px;background:#f4fbff}
-.drop b{font-size:17px}.drop small{color:var(--muted);font-size:14px}
-.sheet{margin-top:14px;border-radius:14px;overflow:hidden;border:1px solid var(--line);font-size:12.5px}
-.sheet .tabs{display:flex;gap:2px;background:#eef3f8;padding:4px 6px 0}.sheet .tabs span{padding:5px 10px;border-radius:8px 8px 0 0;background:#dfe7ef;color:#4a5d72}.sheet .tabs span.on{background:#fff;color:var(--navy);font-weight:700}
-.sheet table{width:100%;border-collapse:collapse;background:#fff}.sheet th{background:var(--navy);color:#fff;font-weight:700;padding:7px 8px;text-align:right}.sheet td{padding:6px 8px;border-top:1px solid #e3edf5;color:#33445a}
-.sheet tr.ex td{background:#e8f7fb;color:#2d6f7d;font-style:italic}.sheet .dd{display:inline-flex;align-items:center;gap:4px}.sheet .dd:after{content:"▾";color:#8aa}
-details.more{margin-top:14px;font-size:14px;color:var(--muted);line-height:1.8}details.more summary{cursor:pointer;font-weight:700;color:var(--navy);min-height:40px;padding:8px 0}
-/* review */
-.review{margin-top:22px}
-.sum{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;padding:14px 18px}
-.sum b{font-size:18px}.chips{display:flex;gap:8px;flex-wrap:wrap}
-.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:700;border:0;cursor:pointer;background:#eef5fb;color:var(--ink)}
-.chip.ok{background:var(--okbg);color:var(--ok)}.chip.bad{background:var(--badbg);color:var(--bad)}.chip.sel{box-shadow:inset 0 0 0 2px currentColor}
-.rows{margin-top:12px;display:grid;gap:10px}
-.row{display:grid;grid-template-columns:42px minmax(0,1.3fr) minmax(0,1.4fr) minmax(0,1fr) 110px 130px 40px;gap:12px;align-items:center;padding:14px 16px;border-radius:18px;background:#ffffffeb;border:1px solid var(--line);box-shadow:0 5px 18px -10px #09234b2e}
-.row .n{font-weight:800;color:var(--muted);text-align:center}
-.site{display:flex;align-items:center;gap:10px;min-width:0}.site i{flex:none;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#d6ecff,#c9f3f6);display:grid;place-items:center;font-style:normal;font-weight:800;color:var(--blue)}
-.site b,.cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cell{color:var(--ink);font-size:15px}.cell.empty{color:#8a9aab}
-.lab{display:none;font-size:12px;color:var(--muted)}
-.status{justify-self:start;display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:13.5px;font-weight:800}.status.ok{background:var(--okbg);color:var(--ok)}.status.bad{background:var(--badbg);color:var(--bad)}
-.x{width:36px;height:36px;border-radius:50%;border:0;background:transparent;color:#b42318;cursor:pointer;font-size:18px}
-.row.err{border-color:#f3b4ae;background:#fffafa}
-.fix{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:12px;border-top:1px dashed #f0c4bf}
-.fix .why{grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;color:var(--bad);font-weight:700;font-size:14.5px}
-.f{display:grid;gap:5px;font-size:13.5px;font-weight:600;color:var(--ink)}.f input,.f select{font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid #c9dbe8;padding:0 12px;background:#fff;color:var(--navy)}.f input.bad{border-color:#e5776c;box-shadow:0 0 0 3px #fdecec}
-.more-fields{grid-column:1/-1;font-size:14px;font-weight:700;color:var(--blue);background:none;border:0;padding:0;text-align:right;cursor:pointer}
-.bar{position:sticky;bottom:0;background:#ffffffee;backdrop-filter:blur(16px);border-top:1px solid var(--line);box-shadow:0 -10px 30px -18px #09234b55;padding:12px 20px calc(12px + env(safe-area-inset-bottom))}
-.bar .in{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
-.bar b{font-size:17px}.bar small{display:block;color:var(--muted);font-size:13.5px}
-.bar .btn[disabled]{background:#dfe6ee;color:#6b7886;box-shadow:none;cursor:not-allowed}
-.note{margin:6px 0 0;font-size:13.5px;color:var(--bad);font-weight:700}
-[hidden]{display:none!important}
-@media(max-width:760px){
- .top{padding:0 14px}.page{padding:14px 16px 30px}
- .hero{gap:12px}.hero img{width:84px}.hero h1{font-size:30px}.hero p{font-size:15px}
- .start{grid-template-columns:1fr}.card{padding:18px 16px;border-radius:20px}
- .sheet{display:none}
- .row{grid-template-columns:30px minmax(0,1fr) auto;gap:6px 10px;padding:14px}
- .row>.cell,.row>.w{grid-column:2/4}.row .status{grid-column:2/3;grid-row:2}.row .x{grid-column:3;grid-row:1}
- .row .site{grid-column:2/3}.lab{display:inline}
- .fix{grid-template-columns:1fr}
- .bar .in{flex-direction:column;align-items:stretch;gap:8px}.bar .btn{width:100%}
+.step:not(:last-child):after{content:"";position:absolute;top:18px;left:-50%;width:100%;height:1px;background:#a9d3ea}
+.step i{z-index:1;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid #c9dfea;font-style:normal;color:var(--muted)}
+.step.on i{background:#0a8fca;border-color:#0a8fca;color:#fff}.step.on{color:var(--ink);font-weight:800}
+.hero{display:flex;align-items:center;gap:26px;justify-content:flex-start;margin:10px 0 26px}
+.hero img{width:160px;flex:none}
+.hero h1{margin:0;font-size:46px;font-weight:850;letter-spacing:-.02em;line-height:1.15}.hero h1 b{color:#0a8fca}
+.hero p{margin:8px 0 0;font-size:17px;color:var(--copy)}
+/* approved instructions (bulk-order-approved.css), kept */
+.guide{padding:24px;border-radius:20px;background:#ffffffa8;box-shadow:0 6px 24px #09234b0d;max-width:980px;margin:0 auto}
+.guide>h2{font-size:27px;line-height:1.5;font-weight:800;text-align:center;margin:0 0 20px}
+.route{position:relative;list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.route:before{content:"";position:absolute;right:25px;top:28px;bottom:28px;width:3px;background:linear-gradient(#008aff,#02c7d7 33%,#9266f5 66%,#1d9b6c)}
+.route>li{position:relative;display:grid;grid-template-columns:52px minmax(0,1fr);gap:14px;padding:20px 0 20px 20px;border:1px solid #ffffffd9;border-radius:16px;background:linear-gradient(120deg,#b7ddffb3,#e9f8ffb3);box-shadow:inset 0 1px 0 #fff,0 5px 15px #163d6c0d}
+.route>li:nth-child(2){background:linear-gradient(125deg,#a8e0ff9c,#a5f4f5a8,#d7e7ffad)}.route>li:nth-child(3){background:linear-gradient(125deg,#ccbdfaa6,#e7e3ffb5,#dce9ffb3)}.route>li:nth-child(4){background:linear-gradient(125deg,#bdf0d7a6,#e3fbefb5,#dcefffb3)}
+.no{z-index:2;justify-self:center;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;font-size:27px;font-weight:700;color:#fff;background:#0089ef}.route>li:nth-child(2) .no{background:#008d9d}.route>li:nth-child(3) .no{background:#7950ce}.route>li:nth-child(4) .no{background:#1d8a5c}
+.sc h3{font-size:21px;font-weight:800;line-height:1.5;margin:0 0 6px}.sc p{font-size:15px;line-height:1.85;margin:0;color:#183d64}
+.dl{margin-top:12px;display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:10px 16px;border-radius:12px;background:#ffffffe0;color:var(--blue);border:1px solid var(--blue);font:inherit;font-weight:700;cursor:pointer}
+.ex{padding:14px;margin-top:14px;border-radius:12px;background:#ffffff80}.ex h4{font-size:15px;margin:0 0 8px}.ex>div{display:grid;grid-template-columns:70px 140px 1fr;gap:10px;padding:9px 10px;background:#ffffff75;border-bottom:1px solid #b9d9ec;font-size:14px}.ex>div:last-child{border-bottom:0}
+.note{display:flex;gap:8px;background:#ffffff8a;margin-top:12px;padding:12px;border-radius:12px;font-size:15px;line-height:1.8}
+.ways{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px}
+.way{padding:14px;border-radius:14px;background:#ffffffc7;border:1px solid #ffffff}
+.way b{display:block;font-size:16px;margin-bottom:4px}.way p{font-size:14px;line-height:1.7}
+.way .tag{display:inline-block;margin-top:8px;padding:2px 10px;border-radius:999px;font-size:12.5px;font-weight:800;background:#e3f6ec;color:var(--ok)}.way .tag.pay{background:#eef1ff;color:#4b3fb5}
+.lamp{display:flex;gap:10px;margin:14px 0 0;padding:12px 16px;background:#ffffffb8;border-radius:12px;font-size:15px;line-height:1.8}
+details.more{margin-top:14px;font-size:14px;line-height:1.8;color:var(--copy)}details.more summary{cursor:pointer;font-weight:600;color:var(--ink);min-height:44px;padding:10px}details.more p{margin:6px 10px}
+.upload{max-width:980px;margin:16px auto 0;background:#ffffffeb;border-radius:20px;border:1px solid var(--line);box-shadow:0 5px 20px #09234b08;padding:20px}
+.drop{display:grid;justify-items:center;gap:8px;text-align:center;padding:24px;border:2px dashed #a6e2ea;border-radius:16px;background:#f7fcfe}
+.drop b{font-size:18px}.drop small{color:var(--copy)}
+.pick{min-height:46px;padding:0 22px;border-radius:12px;border:0;background:var(--blue);color:#fff;font:inherit;font-weight:700}
+/* review: same anatomy as the cart */
+.review{display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:24px;align-items:start;margin-top:30px}
+.panel{background:#fff;border-radius:26px;border:1px solid #e3eef5;box-shadow:0 12px 34px -20px #0b274d40;padding:22px}
+.panel-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.panel-head h2{margin:0;font-size:24px;font-weight:850}
+.tabs{display:flex;gap:6px;padding:4px;border-radius:14px;background:var(--ice)}
+.tabs button{min-height:38px;padding:0 14px;border-radius:10px;border:0;background:transparent;font:inherit;font-size:14.5px;font-weight:700;color:var(--muted);cursor:pointer}
+.tabs button[aria-pressed=true]{background:#fff;color:var(--ink);box-shadow:0 2px 8px #0b274d1a}.tabs .e{color:var(--err)}
+.item{border:1px solid var(--line);border-radius:20px;padding:16px 18px 12px;margin-top:12px;background:#fff}
+.item.bad{border-color:#efb7c2;background:linear-gradient(180deg,#fff8f9,#fff 60%)}
+.alert{display:flex;gap:10px;align-items:flex-start;margin:-4px 0 14px;padding:11px 14px;border-radius:14px;background:var(--errbg);color:var(--err);font-size:15px;font-weight:700;line-height:1.55}
+.alert svg{flex:none;margin-top:2px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:18px;align-items:center}
+.site{display:flex;align-items:center;gap:14px;min-width:0}
+.logo{flex:none;width:56px;height:56px;border-radius:14px;border:1px solid var(--line);display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff;background:#d33}
+.logo.q{background:#fff;color:#9aa9b8;border-style:dashed}
+.site b{display:block;font-size:19px}.site small{display:block;color:var(--blue);font-size:14px;direction:ltr;text-align:right}
+.rowno{font-size:12.5px;color:var(--muted);font-weight:700;display:block}
+.way-pill{display:inline-flex;align-items:center;gap:6px;min-height:34px;padding:0 12px;border-radius:999px;font-size:14px;font-weight:700;background:var(--ice);color:var(--navy);white-space:nowrap}
+.way-pill.ai{background:#eef7ff;color:#0a64b8}.way-pill.pro{background:#f1eeff;color:#5a3fc0}
+.price{text-align:left;border-inline-start:1px solid var(--line);padding-inline-start:18px;min-width:150px}
+.price b{display:block;font-size:26px;font-weight:850;color:var(--navy)}.price small{color:var(--muted);font-size:13px}
+.trash{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--muted);display:grid;place-items:center;cursor:pointer}
+.bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:8px 14px;border-radius:12px;background:#eef8fc;color:#0a64b8;font-size:14.5px;font-weight:700}
+.bar span.meta{color:var(--muted);font-weight:500}
+.chev{display:inline-flex;align-items:center;gap:8px}.chev em{font-style:normal;padding:1px 10px;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--navy);font-size:12.5px}
+.fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 4px 4px}
+.f{display:grid;gap:6px;font-size:14px;font-weight:600;color:var(--navy)}.f.wide{grid-column:1/-1}
+.f input,.f select,.f textarea{font:inherit;font-size:16px;min-height:46px;border-radius:12px;border:1px solid #c7daea;padding:0 12px;background:#fff;color:var(--ink)}.f textarea{min-height:76px;padding:10px 12px;resize:vertical}
+.f .err{border-color:#e07b8d;box-shadow:0 0 0 3px #fbe3e8}
+.f small{font-weight:500;color:var(--muted)}
+/* summary, like סיכום ההזמנה */
+.sum{position:sticky;top:16px;padding:0;overflow:hidden}
+.sum h2{display:flex;justify-content:space-between;align-items:center;margin:0;padding:20px 22px;font-size:24px;font-weight:850;background:linear-gradient(180deg,#eaf6ff,#f6fbff)}
+.sum dl{margin:0;padding:14px 22px;display:grid;gap:12px}.sum dl div{display:flex;justify-content:space-between;font-size:15px;color:var(--copy)}.sum dd{margin:0;font-weight:800;color:var(--ink)}
+.sum .sep{border-top:1px solid var(--line);margin:2px 0}
+.sum .okc{color:var(--ok)}.sum .bad{color:var(--err)}
+.total{margin:0 22px;padding:16px 18px;border-radius:18px;background:linear-gradient(180deg,#eef6ff,#e3f0ff);border:1px solid #c9e0f7}
+.total span{font-size:14px;color:var(--copy)}.total b{display:block;font-size:26px;color:#0a64b8;margin-top:2px}
+.sum .act{padding:16px 22px 22px;display:grid;gap:10px}
+.cta{min-height:52px;border-radius:14px;border:0;font:inherit;font-size:16.5px;font-weight:800;color:#fff;background:linear-gradient(180deg,#2f86f2,#1b6fe0);box-shadow:0 10px 20px -12px #1b6fe0;cursor:pointer}
+.cta[disabled]{background:#dfe6ee;color:#6b7886;box-shadow:none;cursor:not-allowed}
+.sec{min-height:48px;border-radius:14px;border:1px solid var(--line);background:#fff;font:inherit;font-size:15.5px;font-weight:700;color:var(--ink)}
+.why{margin:0;font-size:13.5px;color:var(--err);font-weight:700;text-align:center}
+.after{margin:0 22px 22px;padding:12px 14px;border-radius:14px;background:var(--ice);font-size:13.5px;line-height:1.7;color:var(--copy)}
+@media(max-width:900px){
+ .top{padding:0 14px;height:62px}.page{padding:14px 12px 40px}
+ .hero{gap:12px}.hero img{width:96px}.hero h1{font-size:31px}.hero p{font-size:15px}
+ .guide{padding:14px 10px}.guide>h2{font-size:21px}.route>li{grid-template-columns:38px minmax(0,1fr);gap:8px;padding:16px 0 16px 12px}.route:before{right:18px}.no{width:34px;height:34px;font-size:21px}.sc h3{font-size:18px}.sc p{font-size:14px}.ex>div{grid-template-columns:48px 1fr}.ex>div>span:last-child{grid-column:1/-1}.ways{grid-template-columns:1fr}.dl{width:100%;justify-content:center}
+ .review{grid-template-columns:1fr}.sum{position:static}
+ .panel{padding:14px;border-radius:22px}.panel-head h2{font-size:21px}
+ .main{grid-template-columns:minmax(0,1fr) auto;gap:12px}.main .way-pill{grid-column:1/-1;grid-row:2;justify-self:start}
+ .price{grid-column:1/-1;grid-row:3;border:0;padding:0;text-align:right;display:flex;align-items:baseline;gap:8px}.price b{font-size:23px}
+ .fields{grid-template-columns:1fr}.bar{font-size:14px}.bar .meta{display:none}
 }
 </style>
 </head>
 <body>
-<div class="top"><img src="../../public/brand/megalinks-logo.png" alt="MegaLinks"><span>(תפריט האתר כמו היום)</span></div>
+<div class="top"><img src="../../public/brand/megalinks-logo.png" alt="MegaLinks"><span>(התפריט של האתר, כמו היום)</span></div>
 <main class="page">
- <ol class="steps" aria-label="שלבים">
-  <li class="step done" id="s1"><i>1</i>מורידים תבנית</li>
-  <li class="step on" id="s2"><i>2</i>ממלאים ומעלים</li>
-  <li class="step" id="s3"><i>3</i>בודקים ומוסיפים לסל</li>
- </ol>
- <header class="hero">
-  <img src="../../public/brand/cart-publication.webp" alt="">
-  <div><h1><b>הזמנה</b> מרוכזת</h1><p>מזמינים הרבה כתבות בבת אחת: ממלאים קובץ Excel, מעלים, בודקים ומוסיפים הכול לסל.</p></div>
- </header>
+ <ol class="steps"><li class="step" id="st1"><i>1</i>מורידים תבנית</li><li class="step" id="st2"><i>2</i>ממלאים ומעלים</li><li class="step" id="st3"><i>3</i>בודקים ומוסיפים לסל</li></ol>
+ <header class="hero"><img src="../../public/brand/cart-publication.webp" alt=""><div><h1><b>הזמנה</b> מרוכזת</h1><p>מעלים קובץ, בודקים את השורות ומוסיפים לסל.</p></div></header>
 
- <section class="start">
-  <article class="card">
-   <h2><span class="num">1</span>מורידים את התבנית</h2>
-   <p>שורה אחת לכל כתבה. רק עמודת האתר חובה, את השאר אפשר להשלים גם אחרי הרכישה.</p>
-   <ul class="ticks">
-    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m5 12 5 5 9-10"/></svg>בוחרים אתר מרשימה נפתחת בקובץ, בלי להקליד שמות</li>
-    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m5 12 5 5 9-10"/></svg>שתי כתבות באותו אתר? שתי שורות</li>
-    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m5 12 5 5 9-10"/></svg>כתיבה בתשלום: 15 אגורות למילה, לפני מע״מ</li>
-   </ul>
-   <a class="btn primary" href="#"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>הורדת תבנית Excel</a>
-   <div class="sheet" aria-hidden="true">
-    <div class="tabs"><span class="on">הזמנה</span><span>אתרים ומחירים</span><span>הלקוחות שלי</span><span>איך ממלאים</span></div>
-    <table><tr><th>אתר ★</th><th>נושא הכתבה</th><th>מילים לכתיבה</th></tr>
-     <tr class="ex"><td>ישראל היום</td><td>דוגמה: איך לבחור שטיח</td><td>400</td></tr>
-     <tr><td><span class="dd">Ynet</span></td><td>מדריך לחיסכון בחשמל</td><td></td></tr>
-     <tr><td><span class="dd">בחרו אתר</span></td><td></td><td></td></tr></table>
-   </div>
-  </article>
-  <article class="card">
-   <h2><span class="num">2</span>מעלים את הקובץ המלא</h2>
-   <p>אפשר Excel או CSV. אחרי ההעלאה תראו כל שורה, ומה צריך לתקן אם משהו לא תקין.</p>
-   <label class="drop">
-    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#008d9d" stroke-width="1.9"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 20h16"/></svg>
-    <b>גוררים לכאן את הקובץ</b><small>או</small>
-    <span class="btn ghost">בחירת קובץ מהמחשב</span>
-    <small>עד 500 שורות · ‎.xlsx או ‎.csv</small>
-   </label>
-   <details class="more"><summary>פרטים נוספים למילוי הקובץ</summary>שיוך ללקוח הסוכנות: בוחרים מהרשימה בקובץ, או מזינים שם, מייל או מזהה מ״הלקוחות שלי״. השורה המסומנת כדוגמה לא נכנסת להזמנה.</details>
-  </article>
+ <section class="guide" id="guide">
+  <h2>בוחרים עכשיו, מכינים תוכן מתי שנוח</h2>
+  <ol class="route">
+   <li><span class="no">1</span><div class="sc"><h3>מורידים תבנית ובוחרים אתרים</h3><p>מורידים את קובץ ה־Excel וממלאים שורה נפרדת לכל כתבה שרוצים להזמין.</p><p>אפשר לבחור אתרים בלבד, גם אם עדיין אין נושא, מאמר או הנחיות. את האתר בוחרים מרשימה נפתחת בקובץ.</p><button class="dl">⤓ הורדת תבנית Excel</button></div></li>
+   <li><span class="no">2</span><div class="sc"><h3>כל שורה היא כתבה בפני עצמה</h3><p>רוצים שתי כתבות באותו אתר? ממלאים שתי שורות נפרדות. לכל כתבה אפשר לתת נושא והנחיות משלה.</p><p>הנושא אינו חובה. אפשר להשאיר אותו ריק ולהשלים בהמשך באזור האישי.</p><div class="ex"><h4>דוגמה למילוי שתי שורות</h4><div><b>שורה 1</b><span>ישראל היום</span><span>נושא: איך לבחור שטיח</span></div><div><b>שורה 2</b><span>כלכליסט</span><span>נושא: משאירים ריק וממלאים בהמשך</span></div></div></div></li>
+   <li><span class="no">3</span><div class="sc"><h3>מוסיפים הנחיות עכשיו — או בהמשך</h3><p>כבר יודעים מה לפרסם? אפשר למלא מראש נושא, מותג, עוגן וקישור.</p><p>עדיין מתכננים? משאירים את השדות הרלוונטיים ריקים, ומשלימים אחרי הרכישה באזור האישי.</p></div></li>
+   <li><span class="no">4</span><div class="sc"><h3>בוחרים מי מכין את התוכן</h3><p>לכל שורה בקובץ בוחרים איך הכתבה תיכתב. אפשר לבחור לכל כתבה דרך אחרת:</p>
+    <div class="ways">
+     <div class="way"><b>אני אכין את התוכן</b><p>כותבים בעורך, מעלים מאמר מוכן מקובץ Word, או יוצרים טיוטה עם AI. הכול באזור האישי, אחרי הרכישה.</p><span class="tag">בלי עלות</span></div>
+     <div class="way"><b>כתיבה עם AI</b><p>המערכת כותבת טיוטה לבד מיד אחרי התשלום, לפי הנושא, מילת המפתח או הקישור. אתם בודקים ושולחים לפרסום.</p><span class="tag">בלי עלות</span></div>
+     <div class="way"><b>כתיבה מקצועית</b><p>כותב מקצועי שלנו כותב את הכתבה. ממלאים מספר מילים, בין 100 ל־5,000.</p><span class="tag pay">15 אג׳ למילה · 400 מילים = 60 ₪</span></div>
+    </div>
+    <p class="note"><span>ⓘ</span><span><strong>לא חובה להחליט עכשיו.</strong> אם לא בוחרים, אתם מכינים את התוכן. אחרי הרכישה אפשר לשנות, למשל להוסיף כתיבה מקצועית.</span></p></div></li>
+  </ol>
+  <p class="lamp"><span>💡</span><span><strong>לדוגמה:</strong> בוחרים 10 אתרים עכשיו, ומשלימים את התוכן לכל כתבה כשתהיו מוכנים.</span></p>
+  <details class="more"><summary>פרטים נוספים למילוי הקובץ</summary><p>שיוך ללקוח הסוכנות הוא לבחירה: בוחרים מהרשימה הנפתחת בקובץ (הלקוחות מ„הלקוחות שלי”), או מזינים שם, מייל או מזהה. אם יש שמות זהים, בוחרים את הלקוח במסך הבדיקה.</p><p>כתיבה מקצועית עולה 15 אגורות למילה, לפני מע״מ. כתיבה עם AI מתחילה רק אחרי שההזמנה שולמה.</p><p>עד 500 שורות בקובץ, כתבה אחת בכל שורה. שורת הדוגמה בקובץ להמחשה בלבד ואינה נוספת להזמנה.</p></details>
  </section>
+
+ <section class="upload" id="upload"><label class="drop"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#008d9d" stroke-width="2"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 20h16"/></svg><b>מעלים את הקובץ ובודקים את השורות</b><small>גוררים לכאן קובץ Excel או CSV לפי התבנית, או</small><span class="pick">בחירת קובץ</span></label></section>
 
  <section class="review" id="review">
-  <div class="card sum">
-   <b>12 שורות · 12 כתבות</b>
-   <div class="chips" role="group" aria-label="סינון שורות"><button class="chip sel">הכול 12</button><button class="chip ok">✓ תקינות 10</button><button class="chip bad">! לתיקון 2</button></div>
+  <div class="panel">
+   <div class="panel-head"><h2>השורות מהקובץ (5)</h2><div class="tabs" role="group" aria-label="סינון"><button aria-pressed="true">הכול 5</button><button>תקינות 3</button><button class="e">לתיקון 2</button></div></div>
+
+   <article class="item bad">
+    <p class="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>שורה 3: האתר "ישרל היום" לא נמצא בקטלוג. בחרו אתר מהרשימה.</p>
+    <div class="main"><div class="site"><span class="logo q">?</span><div><span class="rowno">שורה 3</span><b>ישרל היום</b><small>לא זוהה</small></div></div><span class="way-pill ai">כתיבה עם AI</span><button class="trash" aria-label="הסרת שורה 3">🗑</button></div>
+    <div class="fields">
+     <label class="f">אתר לפרסום<select class="err"><option>ישראל היום — אולי התכוונתם?</option></select></label>
+     <label class="f">איך התוכן יוכן<select><option>כתיבה עם AI · בלי עלות</option></select></label>
+     <label class="f">נושא הכתבה <small>(לא חובה)</small><input value="טיפים לקניית רכב"></label>
+     <label class="f">מילת מפתח (עוגן)<input value="ביטוח רכב"></label>
+     <label class="f">קישור<input dir="ltr" value="https://alpha.co.il"></label>
+     <label class="f">לקוח הסוכנות<select><option>חברת אלפא</option></select></label>
+    </div>
+   </article>
+
+   <article class="item bad">
+    <p class="alert"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v6m0 4h.01"/></svg>שורה 4: לכתיבה מקצועית צריך בין 100 ל־5,000 מילים.</p>
+    <div class="main"><div class="site"><span class="logo" style="background:#e01b22">W</span><div><span class="rowno">שורה 4</span><b>וואלה</b><small>www.walla.co.il</small></div></div><span class="way-pill pro">כתיבה מקצועית</span><div class="price"><b>2,900.00 ₪</b><small>לפרסום · לפני מע״מ</small></div></div>
+    <div class="fields">
+     <label class="f">מספר מילים<input class="err" value="50"></label>
+     <label class="f">איך התוכן יוכן<select><option>כתיבה מקצועית · 15 אג׳ למילה</option></select></label>
+     <label class="f">לקוח הסוכנות<select><option>חברת בטא</option></select></label>
+    </div>
+   </article>
+
+   <article class="item">
+    <div class="main"><div class="site"><span class="logo" style="background:#fff;color:#1f2d8a;font-size:15px">net</span><div><span class="rowno">שורה 1</span><b>Ynet</b><small>www.ynet.co.il</small></div></div><span class="way-pill ai">כתיבה עם AI</span><div class="price"><b>4,500.00 ₪</b><small>לפרסום · לפני מע״מ</small></div></div>
+    <div class="bar"><span class="chev">פרטי הכתבה <span class="meta">· מדריך לחיסכון בחשמל · חברת אלפא</span></span><span class="chev"><em>מלא</em>⌄</span></div>
+   </article>
+   <article class="item">
+    <div class="main"><div class="site"><span class="logo" style="background:#d4002a;font-size:14px">PC</span><div><span class="rowno">שורה 2</span><b>pcmag</b><small>il.pcmag.com</small></div></div><span class="way-pill">אני אכין את התוכן</span><div class="price"><b>350.00 ₪</b><small>לפרסום · לפני מע״מ</small></div></div>
+    <div class="bar"><span class="chev">פרטי הכתבה <span class="meta">· בלי נושא עדיין</span></span><span class="chev"><em>ריק</em>⌄</span></div>
+   </article>
+   <article class="item">
+    <div class="main"><div class="site"><span class="logo" style="background:#c2185b;font-size:15px">לא</span><div><span class="rowno">שורה 5</span><b>לאישה</b><small>www.laisha.co.il</small></div></div><span class="way-pill pro">כתיבה מקצועית · 400 מילים</span><div class="price"><b>1,200.00 ₪</b><small>+ 60.00 ₪ כתיבה · לפני מע״מ</small></div></div>
+    <div class="bar"><span class="chev">פרטי הכתבה <span class="meta">· מתכונים לשבת</span></span><span class="chev"><em>חלקי</em>⌄</span></div>
+   </article>
   </div>
-  <div class="rows">
-   <div class="row"><span class="n">1</span><span class="site"><i>Y</i><b>Ynet</b></span><span class="cell"><span class="lab">נושא: </span>מדריך לחיסכון בחשמל</span><span class="cell"><span class="lab">לקוח: </span>חברת אלפא</span><span class="cell w"><span class="lab">כתיבה: </span>400 מילים</span><span class="status ok">✓ תקינה</span><button class="x" aria-label="הסרת שורה 1">✕</button></div>
-   <div class="row"><span class="n">2</span><span class="site"><i>כ</i><b>כלכליסט</b></span><span class="cell empty">נושא: נשלים בהמשך</span><span class="cell empty">בלי לקוח</span><span class="cell w empty">בלי כתיבה</span><span class="status ok">✓ תקינה</span><button class="x" aria-label="הסרת שורה 2">✕</button></div>
-   <div class="row err"><span class="n">3</span><span class="site"><i>?</i><b>ישרל היום</b></span><span class="cell">טיפים לקניית רכב</span><span class="cell empty">בלי לקוח</span><span class="cell w empty">בלי כתיבה</span><span class="status bad">! לתיקון</span><button class="x" aria-label="הסרת שורה 3">✕</button>
-    <div class="fix"><p class="why">⚠ האתר "ישרל היום" לא נמצא בקטלוג. בחרו אתר מהרשימה.</p>
-     <label class="f">אתר לפרסום<select><option>ישראל היום (מוצע)</option><option>בחרו אתר…</option></select></label>
-     <label class="f">נושא הכתבה (לא חובה)<input value="טיפים לקניית רכב"></label>
-     <label class="f">לקוח הסוכנות<select><option>ללא שיוך ללקוח</option></select></label>
-     <button class="more-fields">עוד שדות: מותג, עוגן, קישור והנחיות ▾</button></div></div>
-   <div class="row err"><span class="n">4</span><span class="site"><i>ו</i><b>וואלה</b></span><span class="cell">השקעות למתחילים</span><span class="cell">חברת בטא</span><span class="cell w">50 מילים</span><span class="status bad">! לתיקון</span><button class="x" aria-label="הסרת שורה 4">✕</button>
-    <div class="fix"><p class="why">⚠ כתיבה בתשלום: בין 100 ל־5,000 מילים, או ריק.</p>
-     <label class="f">מילים לכתיבה בתשלום<input class="bad" value="50"></label>
-     <label class="f">קישור למאמר<input dir="ltr" value="https://beta.co.il"></label>
-     <label class="f">עוגן<input value="השקעות חכמות"></label>
-     <button class="more-fields">עוד שדות ▾</button></div></div>
-   <div class="row"><span class="n">5</span><span class="site"><i>ל</i><b>לאישה</b></span><span class="cell">מתכונים לשבת</span><span class="cell empty">בלי לקוח</span><span class="cell w empty">בלי כתיבה</span><span class="status ok">✓ תקינה</span><button class="x" aria-label="הסרת שורה 5">✕</button></div>
-  </div>
+
+  <aside class="panel sum">
+   <h2>סיכום הקובץ <span>📋</span></h2>
+   <dl>
+    <div><dt>שורות בקובץ</dt><dd>5</dd></div>
+    <div><dt>תקינות</dt><dd class="okc">3</dd></div>
+    <div><dt>לתיקון</dt><dd class="bad">2</dd></div>
+    <div class="sep"></div>
+    <div><dt>פרסום באתרי מדיה</dt><dd>₪ 8,950.00</dd></div>
+    <div><dt>כתיבה מקצועית</dt><dd>₪ 60.00</dd></div>
+    <div><dt>כתיבה עם AI</dt><dd>בלי עלות</dd></div>
+   </dl>
+   <div class="total"><span>סכום ביניים, לפני מע״מ</span><b>₪ 9,010.00</b><span>הסיכום המלא, הנחות וקופון — בסל</span></div>
+   <div class="act">
+    <button class="cta" disabled>הוספת 5 כתבות לסל</button>
+    <p class="why">יש 2 שורות לתיקון לפני ההוספה לסל</p>
+    <button class="sec">העלאת קובץ אחר</button>
+   </div>
+   <p class="after"><b>אחרי התשלום:</b> כתבות עם AI נכתבות אוטומטית ומחכות לכם באזור האישי לבדיקה ושליחה. את השאר מכינים שם.</p>
+  </aside>
  </section>
 </main>
-<div class="bar"><div class="in"><div><b>תוספות כתיבה: 360.00 ₪</b><small>לפני מע״מ. מחירי הפרסום והסיכום המלא יוצגו בסל.</small><p class="note">יש 2 שורות לתיקון לפני ההוספה לסל</p></div><button class="btn orange" disabled>הוספת 12 כתבות לסל</button></div></div>
-<script>const s=new URLSearchParams(location.search).get('s')||'review';if(s==='empty'){document.getElementById('review').hidden=true;document.querySelector('.bar').hidden=true;}else{document.getElementById('s2').className='step done';document.getElementById('s3').className='step on';}</script>
+<script>const s=new URLSearchParams(location.search).get('s')||'review';
+if(s==='empty'){document.getElementById('review').hidden=true;document.getElementById('st2').className='step on';}
+else{document.getElementById('st3').className='step on';document.getElementById('guide').hidden=true;document.getElementById('upload').hidden=true;}</script>
 </body>
 </html>
