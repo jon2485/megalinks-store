@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>כניסה לחשבון · הדמיה מפוצלת</title>
+<!-- Mockup 25.11.2026: the "Split Login" layout from 21st.dev (login-03 by Mohammad Shehadeh, MIT), rebuilt in our
+     identity: Hebrew copy at right, the approved glass-link artwork (home-publication.webp) on the waves ground at left
+     (as DESIGN.md's homepage reference). Content of the approved mockup.html (?s=login, ?s=terms) is unchanged. -->
+<style>
+@font-face{font-family:Heebo;src:url("../../public/brand/heebo-variable.ttf");font-weight:100 900}
+:root{--ink:#0b1b2f;--navy:#09234b;--muted:#4f5d6e;--faint:#66727f;--line:rgba(11,40,80,.1);--blue:#1673e6;--blue-ink:#1460c4;--teal:#007f8c;--green:#1d7d45;color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0;height:100%}[hidden]{display:none!important}
+body{font-family:Heebo,Arial,sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased}
+.split{min-height:100vh;min-height:100svh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+/* right: the sign-in pane */
+.pane{position:relative;display:flex;flex-direction:column;padding:28px clamp(24px,5vw,72px) 22px;background:radial-gradient(700px 520px at 85% 20%,#eaf5ff 0,transparent 70%),#fff}
+.pane-top{display:flex;align-items:center;justify-content:space-between}
+.pane-top img{height:38px}
+.home{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:15px;font-weight:600;color:var(--navy);text-decoration:none}
+.home:hover{text-decoration:underline;text-underline-offset:3px}
+.body{flex:1;display:flex;flex-direction:column;justify-content:center;width:100%;max-width:440px;margin:0 auto;padding:28px 0}
+h1{margin:0;font-size:clamp(34px,3.6vw,46px);font-weight:850;letter-spacing:-.025em;line-height:1.12}h1 b{color:var(--blue)}
+.sub{margin:12px 0 0;font-size:17px;line-height:1.65;color:var(--muted)}
+.free{margin:18px 0 0;font-size:15.5px;font-weight:800;color:var(--green)}
+.why{list-style:none;margin:12px 0 0;padding:0;display:grid;gap:10px}
+.why li{display:flex;gap:10px;align-items:flex-start;font-size:15.5px;line-height:1.5;color:#33445a}
+.why i{flex:none;display:grid;place-items:center;width:22px;height:22px;margin-top:1px;border-radius:50%;background:#e7f2ff;color:var(--blue)}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:56px;margin-top:26px;padding:0 18px;border:0;border-radius:16px;font:inherit;font-size:17px;font-weight:700;cursor:pointer;text-decoration:none;transition:transform .12s,box-shadow .2s}
+.btn:active{transform:scale(.98)}.btn:focus-visible,a:focus-visible,.check input:focus-visible+.box{outline:3px solid #7fb4f5;outline-offset:3px}
+.google{background:#fff;color:#1f1f1f;box-shadow:inset 0 0 0 1px #c9d3df,0 10px 22px -14px #0b285066}
+.google:hover{box-shadow:inset 0 0 0 1px #9fb4cb,0 14px 26px -14px #0b285080}
+.terms-line{margin:12px 0 0;font-size:13.5px;line-height:1.6;color:var(--faint)}.terms-line a{color:#33445a;text-underline-offset:3px}
+.safe{display:flex;gap:8px;align-items:flex-start;margin:18px 0 0;padding:12px 14px;border-radius:14px;background:#f4f8fe;font-size:14px;line-height:1.55;color:#33445a}.safe svg{flex:none;margin-top:2px;color:var(--blue)}
+.peek{display:inline-flex;align-items:center;gap:4px;min-height:44px;margin-top:8px;font-size:15px;font-weight:700;color:var(--blue-ink);text-decoration:none}.peek:hover{text-decoration:underline;text-underline-offset:3px}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;font-size:13.5px;color:var(--faint)}
+.foot a{color:#33445a;text-underline-offset:3px}.foot .wa{color:#0f7a55;font-weight:700}
+/* terms step */
+.pill{display:inline-flex;align-items:center;height:28px;padding:0 12px;margin-bottom:12px;border-radius:999px;background:#e3efff;color:var(--blue-ink);font-size:13px;font-weight:800;width:max-content;align-self:flex-start}
+.who{display:flex;align-items:center;gap:12px;margin-top:22px;padding:12px 14px;border-radius:16px;box-shadow:inset 0 0 0 1px var(--line)}
+.av{flex:none;display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#19b8c7,#1673e6);color:#fff;font-size:18px;font-weight:800}
+.who .t{flex:1;min-width:0}.who b{display:block}.who small{display:block;font-size:14px;color:var(--muted);direction:ltr;text-align:right;overflow:hidden;text-overflow:ellipsis}.who .via{font-size:12.5px;color:var(--faint)}
+.who a{font-size:14px;font-weight:700;color:var(--blue-ink)}
+.checks{display:grid;gap:10px;margin-top:16px}
+.check{position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:16px;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
+.check.on{background:#f4f8fe;box-shadow:inset 0 0 0 2px var(--blue)}
+.check input{position:absolute;opacity:0;width:24px;height:24px;margin:0}
+.box{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:8px;box-shadow:inset 0 0 0 2px #b3c1d1;color:#fff}.check.on .box{background:var(--blue);box-shadow:none}
+.tx{flex:1;font-size:15.5px;line-height:1.55;font-weight:600}.tx a{color:var(--blue-ink)}.tx small{display:block;font-size:13.5px;font-weight:500;color:var(--muted)}
+.tag{flex:none;align-self:center;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:800;background:#fff1e6;color:#a8510a}.tag.opt{background:#f1f4f8;color:#5b6b82}
+.go{background:linear-gradient(180deg,#2b86f0,#1673e6);color:#fff;box-shadow:0 12px 24px -14px #1673e6;margin-top:18px}.go[disabled]{background:#dfe6ee;color:#6b7886;box-shadow:none;cursor:not-allowed}
+.hint{margin:10px 0 0;text-align:center;font-size:14px;color:#a8510a}.hint.ok{color:var(--green)}
+.note{margin:12px 0 0;text-align:center;font-size:13px;color:var(--faint)}
+/* left: brand artwork on the waves ground */
+.art{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:40px clamp(28px,4vw,64px);background:linear-gradient(160deg,#e3f4ff 0,#d7f3f6 55%,#eef8ff 100%);border-inline-start:1px solid #dcebf4}
+.art:before{content:"";position:absolute;inset:0;background:url("../../public/brand/checkout-waves.webp") center/cover no-repeat;opacity:.9}
+.art>*{position:relative}
+.art img{display:block;width:min(440px,72%);height:auto;margin:auto;filter:drop-shadow(0 30px 40px #0876bf2e);animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+.quote{max-width:480px}
+.quote p{margin:0;font-size:clamp(20px,1.9vw,26px);line-height:1.45;font-weight:700;color:var(--navy)}.quote p b{color:var(--teal)}
+.quote small{display:block;margin-top:10px;font-size:13px;letter-spacing:.04em;color:#4f6b82}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{padding:10px 14px;border-radius:14px;background:#ffffffb3;backdrop-filter:blur(10px);box-shadow:0 6px 18px -12px #0b285055;font-size:13.5px;color:#33445a}.stat b{display:block;font-size:18px;color:var(--navy)}
+@media(prefers-reduced-motion:reduce){.art img{animation:none}*{transition:none!important}}
+@media(max-width:880px){
+ .split{grid-template-columns:1fr}
+ .art{order:-1;padding:16px 16px 0;min-height:0;border:0}
+ .art img{width:min(210px,52vw);margin:0 auto}.quote,.stats{display:none}
+ .pane{padding:14px 16px calc(18px + env(safe-area-inset-bottom));background:#fff;border-radius:24px 24px 0 0;margin-top:-22px;box-shadow:0 -12px 30px -20px #0b285066}
+ .pane-top img{height:32px}
+ .body{padding:16px 0 20px}h1{font-size:31px}.sub{font-size:16px}
+ .foot{justify-content:center;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="split">
+ <main class="pane">
+  <div class="pane-top"><img src="../../public/brand/megalinks-logo-dark.png" alt="Mega Links"><a class="home" href="#">לדף הבית<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></a></div>
+
+  <section class="body" id="login">
+   <h1><b>כניסה</b> לחשבון</h1>
+   <p class="sub">נכנסים בלחיצה אחת. אם עוד אין לכם חשבון, הוא ייפתח בכניסה הראשונה.</p>
+   <p class="free">ההרשמה בחינם. משלמים רק על פרסום שמזמינים.</p>
+   <ul class="why">
+    <li><i><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><path d="m5 12 5 5 9-10"/></svg></i>מחירון של אתרים ישראליים, עם מחיר קבוע לכל אתר</li>
+    <li><i><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><path d="m5 12 5 5 9-10"/></svg></i>אנחנו כותבים את הכתבה, או שאתם שולחים כתבה מוכנה</li>
+    <li><i><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4"><path d="m5 12 5 5 9-10"/></svg></i>רואים כל פרסום, משלב ההזמנה ועד שהוא באוויר</li>
+   </ul>
+   <a class="btn google" href="#"><svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg><span>כניסה עם <bdi>Google</bdi></span></a>
+   <p class="safe"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg><span>אנחנו מקבלים מ־<bdi>Google</bdi> רק את השם ואת כתובת המייל. את הסיסמה שלכם אנחנו לא רואים.</span></p>
+   <a class="peek" href="#">לצפייה במחירון בלי להירשם<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="m15 18-6-6 6-6"/></svg></a>
+  </section>
+
+  <section class="body" id="terms" hidden>
+   <span class="pill">צעד אחרון</span>
+   <h1>נשאר רק <b>לאשר</b> את התנאים</h1>
+   <p class="sub">מאשרים פעם אחת, בפתיחת החשבון.</p>
+   <div class="who"><span class="av">ד</span><span class="t"><b>דנה כהן</b><small>dana@example.com</small><span class="via">מחובר/ת דרך <bdi>Google</bdi></span></span><a href="#">החלפת חשבון</a></div>
+   <div class="checks">
+    <label class="check" id="c1"><input type="checkbox" id="i1"><span class="box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="m5 12 5 5 9-10"/></svg></span><span class="tx">קראתי ואני מאשר/ת את <a href="#">תנאי השימוש</a> ואת <a href="#">מדיניות הפרטיות</a></span><span class="tag">חובה</span></label>
+    <label class="check" id="c2"><input type="checkbox" id="i2"><span class="box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="m5 12 5 5 9-10"/></svg></span><span class="tx">אני רוצה לקבל במייל עדכונים ומבצעים ממגה לינקס<small>אפשר לבטל בכל רגע בהגדרות החשבון.</small></span><span class="tag opt">לא חובה</span></label>
+   </div>
+   <button class="btn go" id="go" disabled>פתיחת החשבון</button>
+   <p class="hint" id="hint">כדי להמשיך יש לסמן את אישור תנאי השימוש</p>
+   <p class="note">אחרי האישור תחזרו בדיוק למקום שבו הייתם. נשמור את מועד האישור ואת גרסת התנאים.</p>
+  </section>
+
+  <div class="foot"><span>לא מצליחים להיכנס? <a class="wa" href="#">כתבו לנו בוואטסאפ</a></span><span><a href="#">תנאי שימוש</a> · <a href="#">מדיניות פרטיות</a> · <a href="#">הצהרת נגישות</a></span></div>
+ </main>
+
+ <aside class="art" aria-hidden="true">
+  <div class="stats"><span class="stat"><b>מחיר קבוע</b>לכל אתר, בלי הפתעות</span><span class="stat"><b>מעקב מלא</b>עד שהכתבה באוויר</span></div>
+  <img src="../../public/brand/home-publication.webp" alt="" width="833" height="1000">
+  <div class="quote"><p>בוחרים אתר, מזמינים כתבה, <b>ורואים אותה מתפרסמת.</b></p><small>MEGA LINKS · כתבות וקישורים באתרים ישראליים</small></div>
+ </aside>
+</div>
+<script>const s=new URLSearchParams(location.search).get('s')||'login';
+document.getElementById('login').hidden=s!=='login';document.getElementById('terms').hidden=s==='login';
+const i1=document.getElementById('i1'),i2=document.getElementById('i2'),go=document.getElementById('go'),hint=document.getElementById('hint');
+function sync(){document.getElementById('c1').classList.toggle('on',i1.checked);document.getElementById('c2').classList.toggle('on',i2.checked);go.disabled=!i1.checked;hint.textContent=i1.checked?'הכול מוכן':'כדי להמשיך יש לסמן את אישור תנאי השימוש';hint.classList.toggle('ok',i1.checked);}
+i1.onchange=i2.onchange=sync;if(s==='ready')i1.checked=true;sync();</script>
+</body>
+</html>
