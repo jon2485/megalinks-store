@@ -26,7 +26,7 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
 .error{margin:18px 0 0;padding:11px 14px;border-radius:10px;background:#fdecec;color:#a02020;font-size:14.5px;line-height:1.5}
 .btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;min-height:56px;margin-top:28px;padding:0 18px;border:0;border-radius:14px;font:inherit;font-size:17px;font-weight:700;cursor:pointer;text-decoration:none;transition:transform .12s,background-color .2s}
 .btn:active{transform:scale(.985)}
-.google{background:var(--navy);color:#fff;box-shadow:0 14px 26px -18px #071f4b}.google:hover{background:#0b2b63}
+.google{background:linear-gradient(100deg,#1fcfd0,#3aa7e0 55%,#5c7ce8);color:#fff;border-radius:999px;box-shadow:0 12px 24px -14px #3a8fe0}.google:hover{filter:brightness(1.05)}
 .google .g{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#fff;flex:none}
 .free{margin:12px 0 0;font-size:15px;font-weight:700;color:var(--ok);text-align:center}
 .safe{margin:22px 0 0;padding-top:18px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.55;color:var(--faint)}
@@ -56,7 +56,7 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
 .check.on .box{background:var(--link);box-shadow:none}.check.mail.on .box{background:#f08a2c}
 .check.on .box svg{transform:scale(1)}
 .check:has(input:focus-visible){outline:3px solid #7fb4f5;outline-offset:3px}
-.go{background:var(--navy);color:#fff;margin-top:20px}.go[disabled]{background:#e3e9ef;color:#6b7886;cursor:not-allowed}
+.go{background:var(--navy);color:#fff;margin-top:20px;border-radius:999px}.go[disabled]{background:#e3e9ef;color:#6b7886;cursor:not-allowed}
 .hint{margin:10px 0 0;text-align:center;font-size:14px;color:#a8510a}.hint.ok{color:var(--ok)}
 .note{margin:12px 0 0;text-align:center;font-size:13px;line-height:1.5;color:var(--faint)}
 .art{position:relative;overflow:hidden;display:flex;flex-direction:column;justify-content:center;gap:clamp(28px,5vh,52px);padding:clamp(36px,6vh,64px) clamp(32px,4.5vw,72px);background:#fff;color:var(--ink);border-inline-start:1px solid var(--line)}
@@ -81,13 +81,16 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
 .meter i:after{content:"";position:absolute;inset:0 0 0 auto;width:var(--v);border-radius:3px;background:#19b8c7}
 .add{display:flex;align-items:center;justify-content:center;gap:6px;height:38px;margin-top:14px;border-radius:11px;background:linear-gradient(180deg,#ff9a3d,#f47a20);color:#3a1c00;font-size:14px;font-weight:800}
 .pool{display:none}
+.bgfx{display:none}
 .float{position:absolute;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:16px;background:#fff;color:var(--ink);box-shadow:0 0 0 1px var(--line),0 10px 18px -10px #0b285040,0 30px 50px -26px #0b285073;font-size:14px;line-height:1.4;animation:rise .7s .35s cubic-bezier(.2,.7,.2,1) both}
 .float b{display:block;font-size:15px}.float span{color:#5b6b7b}
 .float .dot{flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#e4f6ec;color:#1d7d45}
 .float.cart .dot{background:#fff1e3;color:#c25a0a}
 .float.live{bottom:0;inset-inline-start:6%}.float.cart{bottom:0;inset-inline-end:4%}
 @keyframes rise{from{opacity:0;translate:0 22px}}
-@media(prefers-reduced-motion:reduce){.site,.float{animation:none}*{transition:none!important}.check:hover{transform:none}}
+@keyframes arc-draw{to{stroke-dashoffset:0}}
+@keyframes arc-drift{to{transform:translate(-6%,3%) rotate(-3deg)}}
+@media(prefers-reduced-motion:reduce){.site,.float,.bgfx g{animation:none}.bgfx path{animation:none;stroke-dashoffset:0}*{transition:none!important}.check:hover{transform:none}}
 @media(max-width:900px){
  .split{grid-template-columns:1fr;grid-template-rows:auto 1fr}
  .art{order:-1;padding:22px 18px 18px;gap:16px;justify-content:flex-start;border:0}
@@ -105,7 +108,13 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
  h1{font-size:27px}.sub{font-size:16px}.btn{margin-top:22px}
  .foot{justify-content:center;text-align:center}.foot nav{justify-content:center}
  /* phone (owner 25.11): a smaller card floating on the site's own light waves, like the site's pages */
- body{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom));background:#eceff3}
+ body{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(180deg,#eef3f8,#e6edf5)}
+ .bgfx{display:block;position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+ .bgfx svg{position:absolute;inset:-10% -30%;width:160%;height:120%}
+ .bgfx path{fill:none;stroke:#8fb8e6;stroke-width:2;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1;opacity:.75;animation:arc-draw 2.4s cubic-bezier(.4,0,.2,1) forwards}
+ .bgfx path:nth-child(2){stroke:#8fd9e3;animation-delay:.25s}.bgfx path:nth-child(3){animation-delay:.5s}.bgfx path:nth-child(4){stroke:#b4c7f2;animation-delay:.75s}
+ .bgfx g{animation:arc-drift 18s ease-in-out infinite alternate}
+ .split{position:relative;z-index:1}
  .split{min-height:0;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px #dde3ea,0 1px 2px #0b28500d,0 18px 40px -24px #0b285047}
  .art{padding:18px 16px 14px;gap:12px}
  .say h2{font-size:22px}
@@ -132,7 +141,7 @@ const ART=`<aside class="art" aria-hidden="true">
   <div class="float cart"><span class="dot"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></span><div><b>נוסף לסל הפרסום</b><span>ממשיכים להזמנה</span></div></div>
  </div>
 </aside>`;
-const shell=(title,body,{extra='',script=''}={})=>`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} | Mega Links</title><style>${STYLE}</style></head><body><div class="split"><main class="pane">
+const shell=(title,body,{extra='',script=''}={})=>`<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} | Mega Links</title><style>${STYLE}</style></head><body><div class="bgfx" aria-hidden="true"><svg viewBox="0 0 600 900" preserveAspectRatio="xMidYMid slice"><g><path pathLength="1" d="M-40 180C120 110 330 120 520 250"/><path pathLength="1" d="M60 520C180 380 400 360 640 470"/><path pathLength="1" d="M-60 760C120 620 300 600 470 690"/><path pathLength="1" d="M330 980C380 820 480 700 650 640"/></g></svg></div><div class="split"><main class="pane">
  <div class="top"><img src="/brand/megalinks-logo-dark.png" alt="Mega Links" width="144" height="36"><a class="home" href="/">לדף הבית</a></div>
  ${body}
  <div class="foot"><span>לא מצליחים להיכנס? <a class="wa" href="https://wa.me/972507508850" target="_blank" rel="noopener">כתבו לנו בוואטסאפ</a></span><nav aria-label="מסמכים"><a href="/terms" target="_blank" rel="noopener">תנאי שימוש</a><a href="/privacy" target="_blank" rel="noopener">מדיניות פרטיות</a><a href="/accessibility" target="_blank" rel="noopener">הצהרת נגישות</a></nav>${extra}</div>
