@@ -50,7 +50,7 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
 .check.on .ic{background:var(--link);color:#fff}.check.mail.on .ic{background:#f08a2c;color:#fff}
 .tx{flex:1;min-width:0;font-size:15.5px;line-height:1.5;font-weight:700;color:var(--ink)}.tx a{color:var(--link);text-underline-offset:3px}
 .tx small{display:block;margin-top:3px;font-size:13.5px;font-weight:500;color:var(--muted)}
-.need{display:inline-block;margin-inline-start:6px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;vertical-align:2px;background:#fff1e6;color:#a8510a}.need.opt{background:#f1f4f8;color:#5b6b82}
+
 .box{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 2px #a9b8c8;background:#fff;color:#fff;transition:background-color .15s,box-shadow .15s}
 .box svg{transform:scale(0);transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
 .check.on .box{background:var(--link);box-shadow:none}.check.mail.on .box{background:#f08a2c}
@@ -146,8 +146,8 @@ export function termsPage({name,email,switchHref,error=''}){
  ${error?`<p class="error" role="alert">${escape(error)}</p>`:''}
  <form method="post" action="/__staging/google/terms" id="f" novalidate>
  <div class="checks">
-  <label class="check" id="c1"><input type="checkbox" name="accepted" value="1" id="i1" aria-describedby="hint"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="tx">${TERMS_LINE[0]}<a href="/terms" target="_blank" rel="noopener">${TERMS_LINE[1]}</a>${TERMS_LINE[2]}<a href="/privacy" target="_blank" rel="noopener">${TERMS_LINE[3]}</a><span class="need">חובה</span><small>נדרש כדי לפתוח את החשבון.</small></span>${BOX}</label>
-  <label class="check mail" id="c2"><input type="checkbox" name="marketing" value="1" id="i2"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg></span><span class="tx">${MARKETING_WORDING}<span class="need opt">לא חובה</span><small>אפשר לבטל בכל רגע בהגדרות החשבון.</small></span>${BOX}</label>
+  <label class="check" id="c1"><input type="checkbox" name="accepted" value="1" id="i1" aria-describedby="hint"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="tx">${TERMS_LINE[0]}<a href="/terms" target="_blank" rel="noopener">${TERMS_LINE[1]}</a>${TERMS_LINE[2]}<a href="/privacy" target="_blank" rel="noopener">${TERMS_LINE[3]}</a><small>נדרש כדי לפתוח את החשבון.</small></span>${BOX}</label>
+  <label class="check mail" id="c2"><input type="checkbox" name="marketing" value="1" id="i2"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg></span><span class="tx">${MARKETING_WORDING}<small>אפשר לבטל בכל רגע בהגדרות החשבון.</small></span>${BOX}</label>
  </div>
  <button class="btn go" id="go" type="submit">פתיחת החשבון</button>
  <p class="hint" id="hint" aria-live="polite">כדי להמשיך יש לסמן את אישור תנאי השימוש</p>
