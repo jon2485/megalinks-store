@@ -104,6 +104,19 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
  .body{max-width:none;padding:18px 0 22px;justify-content:flex-start}
  h1{font-size:27px}.sub{font-size:16px}.btn{margin-top:22px}
  .foot{justify-content:center;text-align:center}.foot nav{justify-content:center}
+ /* phone (owner 25.11): a smaller card floating on the site's own light waves, like the site's pages */
+ body{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom));background:url("/brand/checkout-waves.webp") center top/cover no-repeat fixed,radial-gradient(420px 300px at 100% 0,#c9e9f6 0,transparent 70%),radial-gradient(420px 320px at 0 100%,#d3e4fb 0,transparent 70%),linear-gradient(180deg,#dcf0fa,#eef6fc)}
+ .split{min-height:0;border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px #d6e4ee,0 24px 48px -28px #0b285073}
+ .art{padding:18px 16px 14px;gap:12px}
+ .say h2{font-size:22px}
+ .row{gap:8px}.site{padding:8px 10px;border-radius:12px}.lg{height:30px}
+ .pool{margin-top:10px;font-size:14.5px}
+ .pane{padding:14px 16px 16px}
+ .top img{height:26px}.home{font-size:14px}
+ .body{padding:14px 0 18px}
+ h1{font-size:24px}.sub{font-size:15px;margin-top:10px}
+ .btn{margin-top:18px;min-height:52px;font-size:16px}
+ .safe{margin-top:16px;padding-top:14px}
 }`;
 const POOL='<b>מאגר עצום של 2,500+ אתרים</b>, בכל תחום ובמחירים הטובים ביותר.';
 const SITES=[['ynet','ווינט','חדשות',96],['israelhayom','ישראל היום','חדשות',90],['calcalist','כלכליסט','כלכלה',88],['maariv','מעריב','חדשות',84]];
