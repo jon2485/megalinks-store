@@ -2,7 +2,7 @@
 import './account-navigation-refinements.css';
 
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
-import { ExternalLink, ArrowLeft, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Download, ShoppingCart, Pencil, Globe, Heart, MessageSquareText, Plus, Search, SlidersHorizontal, Tag, Wallet, ListFilter, RotateCcw, X, Check, Newspaper, Monitor, BriefcaseBusiness, House, Plane, HeartPulse, Gamepad2, Utensils, LayoutGrid, ClipboardPaste, Info } from 'lucide-react';
+import { ExternalLink, ArrowLeft, ArrowDownUp, ChevronDown, ChevronLeft, ChevronRight, Download, ShoppingCart, Pencil, Globe, Heart, MessageSquareText, Plus, Search, SlidersHorizontal, Tag, Wallet, ListFilter, RotateCcw, X, Check, Newspaper, Monitor, BriefcaseBusiness, House, Plane, HeartPulse, Gamepad2, Utensils, LayoutGrid, ClipboardPaste, Info, Link2, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -60,7 +60,8 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
     const notesTitleId = useId();
     // Owner 16.11.2026: only the sheet's "הערות" column (public_notes) is shown next to each site in the price list.
     // 23.11.2026: the site's limits (one link, a word limit) are shown with the note, as the article editor shows them.
-    const notes = [site.public_notes, site.single_link_only ? 'באתר הזה מותר קישור אחד בלבד בתוך המאמר.' : '', Number(site.max_words) > 0 ? 'אורך הכתבה באתר הזה: עד ' + Number(site.max_words).toLocaleString('he-IL') + ' מילים.' : ''].filter(Boolean);
+    const noteItems = [{kind:'note',text:String(site.public_notes||'').trim()}, {kind:'link',text:site.single_link_only ? 'באתר הזה מותר קישור אחד בלבד בתוך המאמר.' : ''}, {kind:'words',text:Number(site.max_words) > 0 ? 'אורך הכתבה באתר הזה: עד ' + Number(site.max_words).toLocaleString('he-IL') + ' מילים.' : ''}].filter(item=>item.text);
+    const notes = noteItems.map(item=>item.text);
     const hasDiscount = Number(site.regular_price_cents) > Number(site.price_cents) && Number(site.price_cents) >= 0;
     const discountPercent = hasDiscount ? Math.floor((site.regular_price_cents - site.price_cents) / site.regular_price_cents * 1000) / 10 : 0;
     const domain = site.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
@@ -91,11 +92,12 @@ export function PublicationCard({ site, ctx, favorite, onFavorite, managing = fa
             {(['DR', 'UR'] as const).map(key => <div className="pc-metric" key={key}><b>{(key === 'DR' ? site.dr : site.ur) ?? '—'}</b><span className="pc-metric-key"><bdi dir="ltr">{key}</bdi><button type="button" className="pc-info" data-site={site.id} aria-label={'מה זה ' + key + '?'} aria-expanded={metricTip === key} aria-describedby={metricTip === key ? 'pc-tip-' + site.id + '-' + key : undefined} onClick={() => setMetricTip(metricTip === key ? null : key)}>i</button></span><span className="pc-tip" role="tooltip" id={'pc-tip-' + site.id + '-' + key}><b dir="ltr">{key}:</b> {metricHelp[key]}</span></div>)}
         </div>
         <div className="pc-notes-row">
+                {/* Owner 25.11.2026: the same small window by the button, in the new look: white, icon rows, a blue "הבנתי". */}
                 <Popover open={notesOpen} onOpenChange={setNotesOpen}>
                     <PopoverTrigger asChild><button type="button" className="pc-notes" disabled={!notes.length} aria-label={'הערות לפרסום — ' + site.name} title={notes.length ? 'פתיחת הערות לפרסום' : 'לא פורסמו הערות לפרסום באתר זה'}><span><MessageSquareText size={17} aria-hidden="true"/>הערות לפרסום</span><ChevronLeft className="pc-notes-chevron" size={16} aria-hidden="true"/></button></PopoverTrigger>
-                    <PopoverContent dir="rtl" side="top" align="end" sideOffset={10} collisionPadding={12} className="publication-notes-popover" aria-labelledby={notesTitleId}>
-                        <header><h3 id={notesTitleId}>הערות לפרסום</h3><button type="button" className="publication-notes-close" aria-label="סגירת הערות לפרסום" onClick={()=>setNotesOpen(false)}><X size={18} aria-hidden="true"/></button></header>
-                        <div className="publication-notes-copy">{notes.map((note,index)=><p key={index}>{note}</p>)}</div>
+                    <PopoverContent dir="rtl" side="top" align="end" sideOffset={10} collisionPadding={12} className="publication-notes-popover catalog-notes-pop" aria-labelledby={notesTitleId}>
+                        <header><h3 id={notesTitleId}>הערות לפרסום</h3><button type="button" className="publication-notes-close" aria-label="סגירת הערות לפרסום" onClick={()=>setNotesOpen(false)}><X size={16} aria-hidden="true"/></button></header>
+                        <ul className="catalog-notes-list">{noteItems.map((item,index)=><li key={index}><span className={'catalog-notes-icon is-'+item.kind} aria-hidden="true">{item.kind==='link'?<Link2 size={15}/>:item.kind==='words'?<FileText size={15}/>:<Info size={15}/>}</span><p>{item.text}</p></li>)}</ul>
                         <button type="button" className="publication-notes-done" onClick={()=>setNotesOpen(false)}>הבנתי</button>
                     </PopoverContent>
                 </Popover>
