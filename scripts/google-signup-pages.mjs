@@ -7,7 +7,7 @@ export const MARKETING_WORDING='אני רוצה לקבל במייל עדכוני
 export const TERMS_LINE=['קראתי ואני מאשר/ת את ','תנאי השימוש',' ואת ','מדיניות הפרטיות'];
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const PAGE_CSP="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src 'self'; font-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'";
-const BOX='<span class="box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>';
+const BOX='<span class="box" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></span>';
 const GOOGLE='<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>';
 const STYLE=`@font-face{font-family:Heebo;src:url("/brand/heebo-variable.ttf");font-weight:100 900;font-display:swap}
 @font-face{font-family:Rubik;src:url("/brand/rubik-bold.woff");font-weight:700;font-display:swap}
@@ -39,15 +39,23 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
 .who .t{flex:1;min-width:0}.who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .who small{display:block;font-size:14px;color:var(--muted);direction:ltr;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .who a{flex:none;font-size:14px;font-weight:700;color:var(--link);text-underline-offset:3px}
-.checks{display:grid;gap:10px;margin-top:18px}
-.check{position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:12px;box-shadow:inset 0 0 0 1px var(--line);cursor:pointer}
-.check.on{background:#f3f8fd;box-shadow:inset 0 0 0 2px var(--link)}
-.check input{position:absolute;opacity:0;width:24px;height:24px;margin:0}
-.box{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;box-shadow:inset 0 0 0 2px #a9b8c8;color:#fff;background:#fff}
-.check.on .box{background:var(--link);box-shadow:none}
-.tx{flex:1;font-size:15.5px;line-height:1.55;font-weight:600}.tx a{color:var(--link);text-underline-offset:3px}
-.tx small{display:block;margin-top:2px;font-size:13.5px;font-weight:500;color:var(--muted)}
-.need{flex:none;align-self:center;font-size:12.5px;font-weight:700;color:#a8510a}.need.opt{color:var(--faint);font-weight:600}
+.checks{display:grid;gap:12px;margin-top:20px}
+.check{position:relative;display:flex;gap:14px;align-items:center;padding:16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line),0 8px 18px -14px #0b28504d;cursor:pointer;transition:box-shadow .2s,background-color .2s,transform .15s}
+.check:hover{box-shadow:inset 0 0 0 1.5px #b9cde0,0 12px 22px -14px #0b285066;transform:translateY(-1px)}
+.check.on{background:linear-gradient(180deg,#f4f9ff,#eaf3ff);box-shadow:inset 0 0 0 2px var(--link),0 12px 24px -16px #1460c480}
+.check.mail.on{background:linear-gradient(180deg,#fff8f0,#fff1e3);box-shadow:inset 0 0 0 2px #f08a2c,0 12px 24px -16px #f08a2c80}
+.check input{position:absolute;opacity:0;width:1px;height:1px;margin:0}
+.ic{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:#eaf2ff;color:var(--link);transition:background-color .2s,color .2s}
+.check.mail .ic{background:#fff1e3;color:#d26a12}
+.check.on .ic{background:var(--link);color:#fff}.check.mail.on .ic{background:#f08a2c;color:#fff}
+.tx{flex:1;min-width:0;font-size:15.5px;line-height:1.5;font-weight:700;color:var(--ink)}.tx a{color:var(--link);text-underline-offset:3px}
+.tx small{display:block;margin-top:3px;font-size:13.5px;font-weight:500;color:var(--muted)}
+.need{display:inline-block;margin-inline-start:6px;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:800;vertical-align:2px;background:#fff1e6;color:#a8510a}.need.opt{background:#f1f4f8;color:#5b6b82}
+.box{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;box-shadow:inset 0 0 0 2px #a9b8c8;background:#fff;color:#fff;transition:background-color .15s,box-shadow .15s}
+.box svg{transform:scale(0);transition:transform .25s cubic-bezier(.3,1.6,.5,1)}
+.check.on .box{background:var(--link);box-shadow:none}.check.mail.on .box{background:#f08a2c}
+.check.on .box svg{transform:scale(1)}
+.check:has(input:focus-visible){outline:3px solid #7fb4f5;outline-offset:3px}
 .go{background:var(--navy);color:#fff;margin-top:20px}.go[disabled]{background:#e3e9ef;color:#6b7886;cursor:not-allowed}
 .hint{margin:10px 0 0;text-align:center;font-size:14px;color:#a8510a}.hint.ok{color:var(--ok)}
 .note{margin:12px 0 0;text-align:center;font-size:13px;line-height:1.5;color:var(--faint)}
@@ -79,7 +87,7 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
 .float.cart .dot{background:#fff1e3;color:#c25a0a}
 .float.live{bottom:0;inset-inline-start:6%}.float.cart{bottom:0;inset-inline-end:4%}
 @keyframes rise{from{opacity:0;translate:0 22px}}
-@media(prefers-reduced-motion:reduce){.site,.float{animation:none}*{transition:none!important}}
+@media(prefers-reduced-motion:reduce){.site,.float{animation:none}*{transition:none!important}.check:hover{transform:none}}
 @media(max-width:900px){
  .split{grid-template-columns:1fr;grid-template-rows:auto 1fr}
  .art{order:-1;padding:22px 18px 18px;gap:16px;justify-content:flex-start;border:0}
@@ -138,8 +146,8 @@ export function termsPage({name,email,switchHref,error=''}){
  ${error?`<p class="error" role="alert">${escape(error)}</p>`:''}
  <form method="post" action="/__staging/google/terms" id="f" novalidate>
  <div class="checks">
-  <label class="check" id="c1"><input type="checkbox" name="accepted" value="1" id="i1" aria-describedby="hint">${BOX}<span class="tx">${TERMS_LINE[0]}<a href="/terms" target="_blank" rel="noopener">${TERMS_LINE[1]}</a>${TERMS_LINE[2]}<a href="/privacy" target="_blank" rel="noopener">${TERMS_LINE[3]}</a></span><span class="need">חובה</span></label>
-  <label class="check" id="c2"><input type="checkbox" name="marketing" value="1" id="i2">${BOX}<span class="tx">${MARKETING_WORDING}<small>אפשר לבטל בכל רגע בהגדרות החשבון.</small></span><span class="need opt">לא חובה</span></label>
+  <label class="check" id="c1"><input type="checkbox" name="accepted" value="1" id="i1" aria-describedby="hint"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 5 3.4 8.3 8 9 4.6-.7 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></span><span class="tx">${TERMS_LINE[0]}<a href="/terms" target="_blank" rel="noopener">${TERMS_LINE[1]}</a>${TERMS_LINE[2]}<a href="/privacy" target="_blank" rel="noopener">${TERMS_LINE[3]}</a><span class="need">חובה</span><small>נדרש כדי לפתוח את החשבון.</small></span>${BOX}</label>
+  <label class="check mail" id="c2"><input type="checkbox" name="marketing" value="1" id="i2"><span class="ic" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg></span><span class="tx">${MARKETING_WORDING}<span class="need opt">לא חובה</span><small>אפשר לבטל בכל רגע בהגדרות החשבון.</small></span>${BOX}</label>
  </div>
  <button class="btn go" id="go" type="submit">פתיחת החשבון</button>
  <p class="hint" id="hint" aria-live="polite">כדי להמשיך יש לסמן את אישור תנאי השימוש</p>
