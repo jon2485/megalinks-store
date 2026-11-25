@@ -105,8 +105,8 @@ h1{margin:0;font-family:Rubik,Heebo,sans-serif;font-weight:700;font-size:clamp(3
  h1{font-size:27px}.sub{font-size:16px}.btn{margin-top:22px}
  .foot{justify-content:center;text-align:center}.foot nav{justify-content:center}
  /* phone (owner 25.11): a smaller card floating on the site's own light waves, like the site's pages */
- body{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom));background:url("/brand/checkout-waves.webp") center top/cover no-repeat fixed,radial-gradient(420px 300px at 100% 0,#c9e9f6 0,transparent 70%),radial-gradient(420px 320px at 0 100%,#d3e4fb 0,transparent 70%),linear-gradient(180deg,#dcf0fa,#eef6fc)}
- .split{min-height:0;border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px #d6e4ee,0 24px 48px -28px #0b285073}
+ body{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding:16px 12px calc(16px + env(safe-area-inset-bottom));background:#eceff3}
+ .split{min-height:0;border-radius:22px;overflow:hidden;background:#fff;box-shadow:0 0 0 1px #dde3ea,0 1px 2px #0b28500d,0 18px 40px -24px #0b285047}
  .art{padding:18px 16px 14px;gap:12px}
  .say h2{font-size:22px}
  .row{gap:8px}.site{padding:8px 10px;border-radius:12px}.lg{height:30px}
