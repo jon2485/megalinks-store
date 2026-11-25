@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הזמנה מרוכזת · הדמיה</title>
+<style>
+@font-face{font-family:Heebo;src:url("../../public/brand/heebo-variable.ttf");font-weight:100 900}
+:root{--navy:#09234b;--ink:#183d64;--muted:#405a78;--blue:#0876bf;--sky:#008aff;--teal:#008d9d;--line:#d9eaf5;--ok:#1d7d45;--okbg:#e6f6ec;--bad:#b42318;--badbg:#fdecec;color-scheme:light}
+*{box-sizing:border-box}html,body{margin:0}
+body{font-family:Heebo,Arial,sans-serif;color:var(--navy);background:#f3faff url("../../public/brand/checkout-waves.webp") center top/100% 720px no-repeat;-webkit-font-smoothing:antialiased}
+.top{height:70px;background:linear-gradient(180deg,#0b2a55,#09234b);border-bottom:3px solid #2ad1e0;display:flex;align-items:center;justify-content:space-between;padding:0 28px;color:#fff;font-weight:700}
+.top img{height:34px}.top span{opacity:.75;font-size:14px}
+.page{max-width:1080px;margin:0 auto;padding:22px 20px 40px}
+/* steps, like the cart */
+.steps{display:flex;justify-content:center;gap:0;margin:4px auto 18px;max-width:560px}
+.step{flex:1;display:grid;justify-items:center;gap:6px;position:relative;font-size:13.5px;color:var(--muted)}
+.step:not(:last-child):after{content:"";position:absolute;top:17px;left:-50%;width:100%;height:1px;background:#9fc9e6;z-index:0}
+.step i{z-index:1;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid #b9d9ec;font-style:normal;font-weight:700;color:var(--muted)}
+.step.on i{background:#0090cf;border-color:#0090cf;color:#fff}.step.on{color:var(--navy);font-weight:700}.step.done i{background:#e3f5fb;color:var(--teal);border-color:#8fd6e6}
+/* hero, like "סל הפרסום שלך" */
+.hero{display:flex;align-items:center;gap:22px;margin:6px 0 22px}
+.hero img{width:150px;height:auto;flex:none;filter:drop-shadow(0 12px 18px #0876bf33)}
+.hero h1{margin:0;font-size:44px;line-height:1.15;font-weight:850;letter-spacing:-.02em}.hero h1 b{color:var(--blue)}
+.hero p{margin:8px 0 0;font-size:17px;color:var(--muted);line-height:1.6;max-width:560px}
+/* two start cards */
+.start{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.card{background:#ffffffe6;border:1px solid #ffffff;border-radius:22px;box-shadow:0 10px 30px -14px #09234b33;padding:22px;backdrop-filter:blur(14px)}
+.card h2{margin:0 0 6px;font-size:21px;font-weight:800;display:flex;gap:10px;align-items:center}
+.num{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:var(--sky);color:#fff;font-size:17px;font-weight:800;flex:none}
+.card:nth-child(2) .num{background:var(--teal)}
+.card p{margin:0;color:var(--ink);font-size:15px;line-height:1.75}
+.ticks{list-style:none;margin:12px 0 16px;padding:0;display:grid;gap:7px}.ticks li{display:flex;gap:8px;font-size:15px;line-height:1.55;color:var(--ink)}.ticks svg{flex:none;margin-top:4px;color:var(--teal)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 20px;border-radius:14px;border:0;font:inherit;font-size:16px;font-weight:700;cursor:pointer;text-decoration:none}
+.primary{background:linear-gradient(180deg,#1a8fe0,#0876bf);color:#fff;box-shadow:0 10px 20px -12px #0876bf}
+.ghost{background:#fff;color:var(--blue);box-shadow:inset 0 0 0 1px #9ccbe9}
+.orange{background:linear-gradient(180deg,#ff9a3d,#f47a12);color:#fff;box-shadow:0 10px 22px -12px #f47a12}
+.drop{display:grid;justify-items:center;gap:8px;text-align:center;margin-top:12px;padding:26px 16px;border:2px dashed #8fd6e6;border-radius:18px;background:#f4fbff}
+.drop b{font-size:17px}.drop small{color:var(--muted);font-size:14px}
+.sheet{margin-top:14px;border-radius:14px;overflow:hidden;border:1px solid var(--line);font-size:12.5px}
+.sheet .tabs{display:flex;gap:2px;background:#eef3f8;padding:4px 6px 0}.sheet .tabs span{padding:5px 10px;border-radius:8px 8px 0 0;background:#dfe7ef;color:#4a5d72}.sheet .tabs span.on{background:#fff;color:var(--navy);font-weight:700}
+.sheet table{width:100%;border-collapse:collapse;background:#fff}.sheet th{background:var(--navy);color:#fff;font-weight:700;padding:7px 8px;text-align:right}.sheet td{padding:6px 8px;border-top:1px solid #e3edf5;color:#33445a}
+.sheet tr.ex td{background:#e8f7fb;color:#2d6f7d;font-style:italic}.sheet .dd{display:inline-flex;align-items:center;gap:4px}.sheet .dd:after{content:"▾";color:#8aa}
+details.more{margin-top:14px;font-size:14px;color:var(--muted);line-height:1.8}details.more summary{cursor:pointer;font-weight:700;color:var(--navy);min-height:40px;padding:8px 0}
+/* review */
+.review{margin-top:22px}
+.sum{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;padding:14px 18px}
+.sum b{font-size:18px}.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:700;border:0;cursor:pointer;background:#eef5fb;color:var(--ink)}
+.chip.ok{background:var(--okbg);color:var(--ok)}.chip.bad{background:var(--badbg);color:var(--bad)}.chip.sel{box-shadow:inset 0 0 0 2px currentColor}
+.rows{margin-top:12px;display:grid;gap:10px}
+.row{display:grid;grid-template-columns:42px minmax(0,1.3fr) minmax(0,1.4fr) minmax(0,1fr) 110px 130px 40px;gap:12px;align-items:center;padding:14px 16px;border-radius:18px;background:#ffffffeb;border:1px solid var(--line);box-shadow:0 5px 18px -10px #09234b2e}
+.row .n{font-weight:800;color:var(--muted);text-align:center}
+.site{display:flex;align-items:center;gap:10px;min-width:0}.site i{flex:none;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#d6ecff,#c9f3f6);display:grid;place-items:center;font-style:normal;font-weight:800;color:var(--blue)}
+.site b,.cell{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cell{color:var(--ink);font-size:15px}.cell.empty{color:#8a9aab}
+.lab{display:none;font-size:12px;color:var(--muted)}
+.status{justify-self:start;display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:13.5px;font-weight:800}.status.ok{background:var(--okbg);color:var(--ok)}.status.bad{background:var(--badbg);color:var(--bad)}
+.x{width:36px;height:36px;border-radius:50%;border:0;background:transparent;color:#b42318;cursor:pointer;font-size:18px}
+.row.err{border-color:#f3b4ae;background:#fffafa}
+.fix{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding-top:12px;border-top:1px dashed #f0c4bf}
+.fix .why{grid-column:1/-1;display:flex;gap:8px;align-items:flex-start;color:var(--bad);font-weight:700;font-size:14.5px}
+.f{display:grid;gap:5px;font-size:13.5px;font-weight:600;color:var(--ink)}.f input,.f select{font:inherit;font-size:15px;min-height:44px;border-radius:12px;border:1px solid #c9dbe8;padding:0 12px;background:#fff;color:var(--navy)}.f input.bad{border-color:#e5776c;box-shadow:0 0 0 3px #fdecec}
+.more-fields{grid-column:1/-1;font-size:14px;font-weight:700;color:var(--blue);background:none;border:0;padding:0;text-align:right;cursor:pointer}
+.bar{position:sticky;bottom:0;background:#ffffffee;backdrop-filter:blur(16px);border-top:1px solid var(--line);box-shadow:0 -10px 30px -18px #09234b55;padding:12px 20px calc(12px + env(safe-area-inset-bottom))}
+.bar .in{max-width:1080px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.bar b{font-size:17px}.bar small{display:block;color:var(--muted);font-size:13.5px}
+.bar .btn[disabled]{background:#dfe6ee;color:#6b7886;box-shadow:none;cursor:not-allowed}
+.note{margin:6px 0 0;font-size:13.5px;color:var(--bad);font-weight:700}
+[hidden]{display:none!important}
+@media(max-width:760px){
+ .top{padding:0 14px}.page{padding:14px 16px 30px}
+ .hero{gap:12px}.hero img{width:84px}.hero h1{font-size:30px}.hero p{font-size:15px}
+ .start{grid-template-columns:1fr}.card{padding:18px 16px;border-radius:20px}
+ .sheet{display:none}
+ .row{grid-template-columns:30px minmax(0,1fr) auto;gap:6px 10px;padding:14px}
+ .row>.cell,.row>.w{grid-column:2/4}.row .status{grid-column:2/3;grid-row:2}.row .x{grid-column:3;grid-row:1}
+ .row .site{grid-column:2/3}.lab{display:inline}
+ .fix{grid-template-columns:1fr}
+ .bar .in{flex-direction:column;align-items:stretch;gap:8px}.bar .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="top"><img src="../../public/brand/megalinks-logo.png" alt="MegaLinks"><span>(תפריט האתר כמו היום)</span></div>
+<main class="page">
+ <ol class="steps" aria-label="שלבים">
+  <li class="step done" id="s1"><i>1</i>מורידים תבנית</li>
+  <li class="step on" id="s2"><i>2</i>ממלאים ומעלים</li>
+  <li class="step" id="s3"><i>3</i>בודקים ומוסיפים לסל</li>
+ </ol>
+ <header class="hero">
+  <img src="../../public/brand/cart-publication.webp" alt="">
+  <div><h1><b>הזמנה</b> מרוכזת</h1><p>מזמינים הרבה כתבות בבת אחת: ממלאים קובץ Excel, מעלים, בודקים ומוסיפים הכול לסל.</p></div>
+ </header>
+
+ <section class="start">
+  <article class="card">
+   <h2><span class="num">1</span>מורידים את התבנית</h2>
+   <p>שורה אחת לכל כתבה. רק עמודת האתר חובה, את השאר אפשר להשלים גם אחרי הרכישה.</p>
+   <ul class="ticks">
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m5 12 5 5 9-10"/></svg>בוחרים אתר מרשימה נפתחת בקובץ, בלי להקליד שמות</li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m5 12 5 5 9-10"/></svg>שתי כתבות באותו אתר? שתי שורות</li>
+    <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="m5 12 5 5 9-10"/></svg>כתיבה בתשלום: 15 אגורות למילה, לפני מע״מ</li>
+   </ul>
+   <a class="btn primary" href="#"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12m0 0-5-5m5 5 5-5M4 19h16"/></svg>הורדת תבנית Excel</a>
+   <div class="sheet" aria-hidden="true">
+    <div class="tabs"><span class="on">הזמנה</span><span>אתרים ומחירים</span><span>הלקוחות שלי</span><span>איך ממלאים</span></div>
+    <table><tr><th>אתר ★</th><th>נושא הכתבה</th><th>מילים לכתיבה</th></tr>
+     <tr class="ex"><td>ישראל היום</td><td>דוגמה: איך לבחור שטיח</td><td>400</td></tr>
+     <tr><td><span class="dd">Ynet</span></td><td>מדריך לחיסכון בחשמל</td><td></td></tr>
+     <tr><td><span class="dd">בחרו אתר</span></td><td></td><td></td></tr></table>
+   </div>
+  </article>
+  <article class="card">
+   <h2><span class="num">2</span>מעלים את הקובץ המלא</h2>
+   <p>אפשר Excel או CSV. אחרי ההעלאה תראו כל שורה, ומה צריך לתקן אם משהו לא תקין.</p>
+   <label class="drop">
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#008d9d" stroke-width="1.9"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 20h16"/></svg>
+    <b>גוררים לכאן את הקובץ</b><small>או</small>
+    <span class="btn ghost">בחירת קובץ מהמחשב</span>
+    <small>עד 500 שורות · ‎.xlsx או ‎.csv</small>
+   </label>
+   <details class="more"><summary>פרטים נוספים למילוי הקובץ</summary>שיוך ללקוח הסוכנות: בוחרים מהרשימה בקובץ, או מזינים שם, מייל או מזהה מ״הלקוחות שלי״. השורה המסומנת כדוגמה לא נכנסת להזמנה.</details>
+  </article>
+ </section>
+
+ <section class="review" id="review">
+  <div class="card sum">
+   <b>12 שורות · 12 כתבות</b>
+   <div class="chips" role="group" aria-label="סינון שורות"><button class="chip sel">הכול 12</button><button class="chip ok">✓ תקינות 10</button><button class="chip bad">! לתיקון 2</button></div>
+  </div>
+  <div class="rows">
+   <div class="row"><span class="n">1</span><span class="site"><i>Y</i><b>Ynet</b></span><span class="cell"><span class="lab">נושא: </span>מדריך לחיסכון בחשמל</span><span class="cell"><span class="lab">לקוח: </span>חברת אלפא</span><span class="cell w"><span class="lab">כתיבה: </span>400 מילים</span><span class="status ok">✓ תקינה</span><button class="x" aria-label="הסרת שורה 1">✕</button></div>
+   <div class="row"><span class="n">2</span><span class="site"><i>כ</i><b>כלכליסט</b></span><span class="cell empty">נושא: נשלים בהמשך</span><span class="cell empty">בלי לקוח</span><span class="cell w empty">בלי כתיבה</span><span class="status ok">✓ תקינה</span><button class="x" aria-label="הסרת שורה 2">✕</button></div>
+   <div class="row err"><span class="n">3</span><span class="site"><i>?</i><b>ישרל היום</b></span><span class="cell">טיפים לקניית רכב</span><span class="cell empty">בלי לקוח</span><span class="cell w empty">בלי כתיבה</span><span class="status bad">! לתיקון</span><button class="x" aria-label="הסרת שורה 3">✕</button>
+    <div class="fix"><p class="why">⚠ האתר "ישרל היום" לא נמצא בקטלוג. בחרו אתר מהרשימה.</p>
+     <label class="f">אתר לפרסום<select><option>ישראל היום (מוצע)</option><option>בחרו אתר…</option></select></label>
+     <label class="f">נושא הכתבה (לא חובה)<input value="טיפים לקניית רכב"></label>
+     <label class="f">לקוח הסוכנות<select><option>ללא שיוך ללקוח</option></select></label>
+     <button class="more-fields">עוד שדות: מותג, עוגן, קישור והנחיות ▾</button></div></div>
+   <div class="row err"><span class="n">4</span><span class="site"><i>ו</i><b>וואלה</b></span><span class="cell">השקעות למתחילים</span><span class="cell">חברת בטא</span><span class="cell w">50 מילים</span><span class="status bad">! לתיקון</span><button class="x" aria-label="הסרת שורה 4">✕</button>
+    <div class="fix"><p class="why">⚠ כתיבה בתשלום: בין 100 ל־5,000 מילים, או ריק.</p>
+     <label class="f">מילים לכתיבה בתשלום<input class="bad" value="50"></label>
+     <label class="f">קישור למאמר<input dir="ltr" value="https://beta.co.il"></label>
+     <label class="f">עוגן<input value="השקעות חכמות"></label>
+     <button class="more-fields">עוד שדות ▾</button></div></div>
+   <div class="row"><span class="n">5</span><span class="site"><i>ל</i><b>לאישה</b></span><span class="cell">מתכונים לשבת</span><span class="cell empty">בלי לקוח</span><span class="cell w empty">בלי כתיבה</span><span class="status ok">✓ תקינה</span><button class="x" aria-label="הסרת שורה 5">✕</button></div>
+  </div>
+ </section>
+</main>
+<div class="bar"><div class="in"><div><b>תוספות כתיבה: 360.00 ₪</b><small>לפני מע״מ. מחירי הפרסום והסיכום המלא יוצגו בסל.</small><p class="note">יש 2 שורות לתיקון לפני ההוספה לסל</p></div><button class="btn orange" disabled>הוספת 12 כתבות לסל</button></div></div>
+<script>const s=new URLSearchParams(location.search).get('s')||'review';if(s==='empty'){document.getElementById('review').hidden=true;document.querySelector('.bar').hidden=true;}else{document.getElementById('s2').className='step done';document.getElementById('s3').className='step on';}</script>
+</body>
+</html>
