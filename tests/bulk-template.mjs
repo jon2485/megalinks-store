@@ -1,0 +1,63 @@
+// Owner approved 26.11.2026 (design/bulk-order): the per-user template, re-uploaded, plus the new content rules.
+import assert from 'node:assert/strict';
+import { createRequire } from 'node:module';
+import { realpathSync } from 'node:fs';
+import { unzipSync, strFromU8 } from 'fflate';
+const require = createRequire(realpathSync('node_modules/wrangler') + '/package.json');
+await require('esbuild').build({ entryPoints: ['lib/bulk-template.ts', 'lib/bulk-order.ts', 'lib/office.ts'], outdir: '.sites-runtime/bulk-template', bundle: true, splitting: true, platform: 'node', format: 'esm' });
+const { bulkTemplateBytes, bulkTemplateName } = await import('../.sites-runtime/bulk-template/bulk-template.js');
+const { parseBulkSheet, bulkRowError, bulkCartPayload, bulkSuggestSite, bulkContentChoices, bulkTemplateHeaders, bulkEditorialAgorot } = await import('../.sites-runtime/bulk-template/bulk-order.js');
+const { parseCsv } = await import('../.sites-runtime/bulk-template/office.js');
+const sites = [{ id: 's1', name: 'אתר בדיקה', url: 'https://www.site.test/', active: 1, price_cents: 45000, dr: 40, category: 'tech', turnaround_days: 3 }, { id: 's2', name: 'מגזין "גדול" & שות׳', url: 'https://big.test', active: 1, price_cents: 120050, category: 'news_national' }, { id: 's3', name: 'אתר מוסתר', url: 'https://hidden.test', active: 0, price_cents: 100 }];
+const customers = [{ id: 'c1', name: 'חברת אלפא', email: 'alpha@example.test' }];
+const files = unzipSync(bulkTemplateBytes({ sites, customers, ai: true, categoryLabel: k => ({ tech: 'טכנולוגיה' })[k] || k }));
+assert.equal(bulkTemplateName, 'הזמנה מרוכזת - מגה לינקס.xlsx');
+const wb = strFromU8(files['xl/workbook.xml']);
+assert.deepEqual([...wb.matchAll(/<sheet name="([^"]+)"/g)].map(m => m[1]), ['הזמנה', 'איך ממלאים', 'אתרים', 'הלקוחות שלי'], 'four sheets, the order sheet first');
+const order = strFromU8(files['xl/worksheets/sheet1.xml']);
+assert.match(order, /rightToLeft="1"/); assert.match(order, /state="frozen"/); assert.match(order, /<col min="10" max="10"[^>]*hidden="1"/, 'marker column hidden');
+assert.match(order, /שורת דוגמה בלבד/, 'orange banner'); assert.match(order, /<mergeCell ref="A5:I5"\/>/);
+assert((order.match(/>דוגמה: /g) || []).length >= 7, 'each example cell says דוגמה:');
+assert.match(order, /<formula1>'אתרים'!\$A\$2:\$A\$3<\/formula1>/, 'site list from the active sites only');
+assert.match(order, /<formula1>"אני אכין את התוכן,כתיבה עם AI,כתיבה מקצועית"<\/formula1>/);
+assert.match(order, /type="whole" operator="between"[^>]*sqref="D7:D506"><formula1>100<\/formula1><formula2>5000<\/formula2>/);
+assert.match(order, /'הלקוחות שלי'!\$A\$2:\$A\$2/); assert.match(order, /AND\(\$B7="כתיבה מקצועית",\$D7=""\)/);
+const sitesSheet = strFromU8(files['xl/worksheets/sheet3.xml']);
+assert.match(sitesSheet, /מגזין &quot;גדול&quot; &amp; שות׳/, 'names escaped'); assert.match(sitesSheet, /<v>1200.5<\/v>/, 'customer price in shekels'); assert(!sitesSheet.includes('אתר מוסתר'));
+assert.match(sitesSheet, /טכנולוגיה/);
+const noAi = strFromU8(unzipSync(bulkTemplateBytes({ sites, customers: [], ai: false }))['xl/worksheets/sheet1.xml']);
+assert.match(noAi, /<formula1>"אני אכין את התוכן,כתיבה מקצועית"<\/formula1>/, 'no AI choice when AI is off'); assert(!noAi.includes("'הלקוחות שלי'"), 'no customer list without customers');
+assert.deepEqual(bulkContentChoices(false), ['אני אכין את התוכן', 'כתיבה מקצועית']);
+
+// Read the generated sheet back the way the page does (cells by column letter), fill rows under the example, parse.
+const read = xml => [...xml.matchAll(/<row r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g)].map(([, , cells]) => { const out = []; for (const [, ref, body] of cells.matchAll(/<c r="([A-Z]+)\d+"[^>]*?(?:\/>|>([\s\S]*?)<\/c>)/g)) { let i = 0; for (const l of ref) i = i * 26 + l.charCodeAt(0) - 64; out[i - 1] = body ? (body.match(/<t[^>]*>([\s\S]*?)<\/t>/)?.[1] ?? body.match(/<v>([\s\S]*?)<\/v>/)?.[1] ?? '').replace(/&quot;/g, '"').replace(/&amp;/g, '&') : ''; } return out; });
+const sheet = read(order);
+assert.deepEqual(sheet[2].slice(0, 10), bulkTemplateHeaders);
+assert.throws(() => parseBulkSheet(sheet, sites, customers), /אינו מכיל/, 'the empty template has no orders: title, hints, banner and example are skipped');
+sheet[6] = ['אתר בדיקה', 'כתיבה עם AI', '', '', '', 'השכרת מנוף', '', 'חברת אלפא', ''];
+sheet[7] = ['www.site.test', 'כתיבה מקצועית', 'מדריך', '400'];
+sheet[8] = ['אתר בדיקא', '', 'נושא'];
+sheet[9] = ['אתר בדיקה', 'כתיבה עם AI'];
+sheet[10] = ['אתר בדיקה', 'כתיבה מקצועית'];
+sheet[11] = ['אתר בדיקה', 'משהו אחר'];
+const rows = parseBulkSheet(sheet, sites, customers);
+assert.equal(rows.length, 6);
+const err = r => bulkRowError(r, sites, customers, { ai: true });
+assert.equal(err(rows[0]), '', 'AI with a keyword only is fine'); assert.equal(rows[0].customer_id, 'c1');
+assert.equal(bulkCartPayload(rows[0]).auto_ai, true); assert.equal(bulkCartPayload(rows[0]).topic, 'כתבה בנושא השכרת מנוף'); assert.equal(bulkCartPayload(rows[0]).editorial, false);
+assert.equal(err(rows[1]), '', 'site by its address'); assert.equal(bulkCartPayload(rows[1]).editorial_words, 400); assert.equal(bulkEditorialAgorot(rows[1]), 6000);
+assert.match(err(rows[2]), /לא נמצא/); assert.equal(bulkSuggestSite(rows[2].name, sites)?.id, 's1', 'אולי התכוונתם');
+assert.equal(bulkSuggestSite('משהו אחר לגמרי', sites), null);
+assert.match(err(rows[3]), /נושא, מילת מפתח או קישור/);
+assert.match(err(rows[4]), /כתיבה מקצועית.*100/);
+assert.match(err(rows[5]), /בחרו איך התוכן יוכן/);
+assert.match(bulkRowError(rows[0], sites, customers, { ai: false }), /לא זמינה/);
+assert.match(err({ ...rows[0], words: '50' }), /100/);
+assert.equal(bulkCartPayload({ ...rows[0], words: '800' }).words, 800);
+assert.match(err({ ...rows[0], website_id: 's3' }), /לא נמצא/, 'hidden site refused');
+
+// CSV saved from the new template keeps working (title line, headers, hint row with the marker, then a real row).
+const csv = parseCsv('﻿הזמנה מרוכזת · מגה לינקס\n' + bulkTemplateHeaders.join(',') + '\nבחרו,,,,,,,,,דוגמה בלבד — לא להזמנה\n"אתר בדיקה","כתיבה מקצועית","נושא, עם פסיק",500\n');
+const fromCsv = parseBulkSheet(csv, sites, customers);
+assert.equal(fromCsv.length, 1); assert.equal(fromCsv[0].topic, 'נושא, עם פסיק'); assert.equal(err(fromCsv[0]), '');
+console.log('BULK TEMPLATE PASSED: four RTL sheets, unmissable example, lists and validations, per-user sites and customers, re-upload, AI rules, suggestion, CSV.');

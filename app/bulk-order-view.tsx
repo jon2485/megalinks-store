@@ -9,9 +9,9 @@ import { api, useData } from '@/lib/client';
 import { exportSpreadsheet, readSpreadsheet } from '@/lib/office';
 import { bulkHeaders, parseBulkSheet, bulkRowError, bulkCartPayload } from '@/lib/bulk-order';
 import { type Row, money } from '@/lib/shared';
-import { type Ctx, ErrorBox } from './workspace';
+import { type Ctx, ErrorBox, categories } from './workspace';
 import { toast } from 'sonner';
-import {bulkTemplateBytes} from '@/lib/bulk-template';
+import {bulkTemplateBytes,bulkTemplateName} from '@/lib/bulk-template';
 import {downloadSpreadsheetBytes} from '@/lib/office';
 import BulkInstructions from './bulk-instructions';
 import { addToCartChecked } from './agency-buying';
@@ -20,10 +20,11 @@ import './bulk-order-approved.css';
 export default function BulkView({ ctx }: { ctx: Ctx }) {
     const customersState = useData('records/customer', ctx.revision);
     const customers: Row[] = customersState.data?.records || [];
+    const options = useData('bulk-options', ctx.revision); const ai = !!options.data?.ai_available;
     const [rows, setRows] = useState<Row[]>([]), [error, setError] = useState(''), [busy, setBusy] = useState(false), [loading, setLoading] = useState(false);
     const lock = useRef(false);
     const update = (id: string, patch: Row) => setRows(rs => rs.map(r => r.id === id ? { ...r, ...patch } : r));
-    const rowError = (row: Row) => bulkRowError(row, ctx.catalog, customers);
+    const rowError = (row: Row) => bulkRowError(row, ctx.catalog, customers, { ai });
     const articles = rows.reduce((n, row) => n + (Number(row.quantity) || 0), 0);
     const editorialTotal = rows.reduce((n, row) => n + (Number(row.editorial_words) || 0) * 15 * (Number(row.quantity) || 0), 0);
     const invalid = rows.filter(row => rowError(row)).length;
@@ -49,7 +50,7 @@ export default function BulkView({ ctx }: { ctx: Ctx }) {
     };
     return <div dir="rtl" className="bulk-order-approved mx-auto max-w-5xl space-y-5 text-right">
         <header className="bulk-order-intro"><h1>הזמנה מרוכזת</h1><p>מעלים קובץ, בודקים את השורות ומוסיפים לסל.</p></header>
-        <BulkInstructions download={() => downloadSpreadsheetBytes('megalinks-bulk-order-template.xlsx',bulkTemplateBytes())}/>
+        <BulkInstructions download={() => downloadSpreadsheetBytes(bulkTemplateName,bulkTemplateBytes({sites:ctx.catalog,customers,ai,categoryLabel:k=>categories[k]||k}))}/>
         <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><label className="flex flex-col items-center gap-3 rounded-xl border-2 border-dashed border-cyan-200 bg-slate-50 p-5 text-center"><Upload size={27} className="text-teal-700"/><span className="text-lg font-bold text-slate-900">מעלים את הקובץ ובודקים את השורות</span><span className="text-sm text-slate-700">Excel או CSV לפי התבנית</span><Input aria-label="קובץ הזמנות" type="file" accept=".xlsx,.csv" className="max-w-sm bg-white" disabled={!ready || busy || loading} onChange={e => { const f = e.target.files?.[0]; if (f) void load(f); e.target.value = ''; }}/>{!ready && !customersState.error && <span>טוען את רשימת הלקוחות…</span>}{loading && <span>קורא את הקובץ…</span>}</label><ErrorBox error={customersState.error || error}/></section>
         {!!rows.length && <><div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-white p-4 text-slate-800"><b>{rows.length} שורות · {articles} כתבות</b><span>{invalid ? `${invalid} שורות דורשות תיקון` : 'כל השורות תקינות'}</span></div><div className="space-y-3">{rows.map((row, index) => <article key={row.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"><div className="mb-3 flex items-center justify-between"><b className="text-base text-slate-900">שורה {index + 1}</b><Button variant="ghost" size="icon" className="rounded-full text-red-600 hover:bg-red-50" disabled={busy} aria-label={'הסרת שורה ' + (index + 1)} onClick={() => setRows(rs => rs.filter(r => r.id !== row.id))}><X size={17}/></Button></div><div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <label className="grid gap-1.5 text-sm font-semibold text-slate-800"><span>אתר לפרסום</span><Select dir="rtl" disabled={busy} value={row.website_id || 'missing'} onValueChange={v => update(row.id, { website_id: v, name: ctx.catalog.find(w=>w.id===v)?.name||row.name })}><SelectTrigger className="h-11 w-full min-w-0 bg-white"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="missing">{row.name ? 'לא זוהה: ' + row.name : 'בחרו אתר'}</SelectItem>{ctx.catalog.filter(w => w.active !== 0).map(w => <SelectItem key={w.id} value={w.id}>{w.name}</SelectItem>)}</SelectContent></Select></label>

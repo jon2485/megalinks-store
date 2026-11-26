@@ -1024,6 +1024,8 @@ if (p[0] === 'cart') {
         await audit(u, fileId, 'נבחרה תמונה מ-Pexels', { photo_id: id, photographer: photo.photographer, url: photo.url });
         return response({ id: fileId, credit: 'צילום: ' + photo.photographer + ' / Pexels', credit_url: photo.url });
     }
+    // Bulk order (owner 26.11.2026): the page and the template offer "כתיבה עם AI" only when AI writing is configured.
+    if (p[0] === 'bulk-options' && method === 'GET') { const ai = await connection('ai'); return response({ ai_available: !!(ai.enabled && ai.secret) }); }
     if (p[0] === 'favorites') {
         if (method === 'GET')
             return response({ favorites: await all('SELECT * FROM favorites WHERE user_id=?', u.id) });
