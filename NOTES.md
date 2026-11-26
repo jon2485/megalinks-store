@@ -2531,3 +2531,8 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - **Homepage (owner approved the mockup):** under the headline, "מאגר של 2,700+ מהאתרים החזקים ביותר בישראל, מערכת מתקדמת לניהול ומעקב, והכל במקום אחד." (`home/index.html` `.hero__sub`, Heebo ML 500; `lib/home-page-html.ts` and `lib/pr-page-html.ts` regenerated). Mockups: `design/homepage-hero/`.
 - **Checked:** tsc, build, seo.mjs, catalog-home-layout, catalog-list-filter, catalog-grid, cart-add-feedback pass. seo-audit.mjs fails the same before this change; cart-checkout-actions, checkout-phone-actions and catalog-home-actions do not run on Windows (ESM path), Railway runs them.
 - **Not done:** push and Staging (owner: "עדיין אל תעלה").
+
+## 26.11.2026 night: on Staging (owner: "כן מאושר תעלה, כולל השינויים שלפניו")
+- Branch `claude/bulk-order-build-20261126`, commit `9a6ea9e`: the bulk order redesign plus `claude/catalog-popovers-20261126` (`c461c25`: catalog windows keep the header, original sort buttons, homepage sentence). Included what Staging ran before (`dc7d942`).
+- Railway build succeeded, `/healthz` 200, the homepage serves the new sentence, `/bulk` asks for sign-in as expected.
+- **Still to check on Staging:** the AI drafts after payment and their email, with a paid test order (needs the AI connection on Staging).
