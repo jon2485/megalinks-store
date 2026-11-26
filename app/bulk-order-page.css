@@ -127,3 +127,30 @@
 .bulk-page .bp-suggest{background:#fff;border-color:#cfd6df;color:#1b6fe0}
 .bulk-page .bp-f input,.bulk-page .bp-f select,.bulk-page .bp-f textarea{border-color:#d8dee6}
 .bulk-page .bp-step.is-on i{background:#1b6fe0;border-color:#1b6fe0;color:#fff}
+
+/* Owner 26.11.2026, design review (all ten points). */
+.bulk-page .bp-sn svg,.bulk-page .bp-an svg{display:block}
+.bulk-page .bp-an{background:#1b6fe0}.bulk-page .bp-an.is-teal{background:#007c88}
+.bulk-page .bp-mini .bp-mh{background:#f5f6f8;color:#09234b;border-bottom:1px solid var(--bp-line)}
+.bulk-page .bp-price b{font-size:18px;font-weight:800}.bulk-page .bp-price small{font-size:12.5px}
+.bulk-page .bp-alert{flex-wrap:wrap;align-items:center}.bulk-page .bp-alert span{flex:1;min-width:200px}
+.bulk-page .bp-fix{min-height:38px;padding:0 14px;border-radius:999px;border:0;background:#1b6fe0;color:#fff;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.bulk-page .bp-item.is-fixed{border-color:#bfe3cc}
+.bulk-page .bp-fixed{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:-4px 0 14px;padding:10px 14px;border-radius:14px;background:#eef8f2;color:#1d7d45;font-size:15px;font-weight:700}
+.bulk-page .bp-fixed span{flex:1}
+.bulk-page .bp-fixed button{min-height:38px;padding:0 14px;border-radius:999px;border:1px solid #bfe3cc;background:#fff;color:#1d7d45;font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+.bulk-page .bp-more-fields{display:inline-flex;align-items:center;gap:6px;min-height:40px;margin-top:8px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:#1b6fe0;font:inherit;font-size:14.5px;font-weight:700;cursor:pointer}
+.bp-mobilebar{display:none}
+/* Press feedback on every button, at once. */
+.bulk-page button:not(:disabled){transition:transform .1s ease-out,background-color .15s ease}
+.bulk-page button:not(:disabled):active{transform:scale(.97)}
+.bulk-page .bp-drop{transition:background-color .12s ease,border-color .12s ease}
+@media(prefers-reduced-motion:reduce){.bulk-page button:not(:disabled){transition:none}.bulk-page button:not(:disabled):active{transform:none}}
+@media(max-width:900px){
+ .bulk-page .bp-review{padding-bottom:84px}
+ .bp-mobilebar{position:fixed;inset:auto 0 0;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px calc(10px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #e5e9ef;box-shadow:0 -8px 24px -18px #0b274d66;font-size:14px}
+ .bp-mobilebar .is-ok{color:#1d7d45}.bp-mobilebar .is-bad{color:#b42342}
+ .bp-mobilebar .bp-cta{width:auto;min-height:46px;padding:0 18px;font-size:15px}
+}
+/* The phone bar takes the bottom; the floating buttons move up above it, as they do over the checkout bar. */
+@media(max-width:900px){body:has(.bp-mobilebar) .floating-whatsapp{bottom:calc(84px + env(safe-area-inset-bottom))!important}body:has(.bp-mobilebar) .ml-a11y-fab{bottom:calc(148px + env(safe-area-inset-bottom))!important}}
