@@ -176,7 +176,78 @@ async function normalizeBundle(input: Row, prior: Row = {}) {
 // attached files are the same for all of them, so they are read once per request through this cache, not per site.
 type BriefCache = Map<string, Promise<any>>;
 const briefCached = <T>(cache: BriefCache | undefined, key: string, load: () => Promise<T>): Promise<T> => { if (!cache) return load(); if (!cache.has(key)) cache.set(key, load()); return cache.get(key)!; };
-async function validBrief(input: Row, w: Row, u: Row, cache?: BriefCache) { const d = { editorial: input.editorial === true, editorial_words: Math.max(100,Math.min(5000,Math.floor(Number(input.editorial_words)||400))), topic: maxText(input.topic, 500), brand: maxText(input.brand, 200), audience: maxText(input.audience, 500), style: maxText(input.style, 100), keywords: maxText(input.keywords, 300), target_url: httpUrl(input.target_url || ''), anchor: maxText(input.anchor, 200), target_url_2: httpUrl(input.target_url_2 || ''), anchor_2: maxText(input.anchor_2, 200), notes: maxText(input.notes, 6000), words: Math.max(300, Math.min(2500, Number(input.words) || 500)), content_type: input.content_type === PR_CONTENT_TYPE ? PR_CONTENT_TYPE : input.content_type === 'upload' ? 'upload' : 'ai', scheduled: input.scheduled || '', customer_id: input.customer_id || '', image_id: input.image_id || '', document_id: input.document_id || '', pixel: !!input.pixel, shared: !!input.shared }; assert(d.topic, 'יש להזין נושא לכתבה'); if (d.content_type === PR_CONTENT_TYPE) {
+// Bulk orders (owner 26.11.2026): an article marked "כתיבה עם AI" gets its draft only after the order is paid (card at once,
+// bank transfer when the admin approves; monthly accounts like any other workable order). A few per minute from the
+// maintenance tick. The draft waits for the customer to review and send; one email per order when the order's drafts are done.
+// A failed draft keeps the article's own retry ("יצירה מחדש"). Nothing runs while AI writing is not configured.
+async function autoAiDrafts(origin: string, perTick = 2) {
+ const c = await connection('ai'); if (!(c.enabled && c.secret)) return { ai_drafts: 0 };
+ const waiting = await all("SELECT * FROM articles WHERE status='draft' AND json_extract(data,'$.auto_ai')=1 AND json_extract(data,'$.auto_ai_started') IS NULL ORDER BY updated LIMIT 40");
+ if (!waiting.length) return { ai_drafts: 0 };
+ const orders = await mapIn('orders', 'id', waiting.map(a => a.order_id)), users = await mapIn('users', 'id', waiting.map(a => a.user_id));
+ const ready = waiting.filter(a => { const o = parse(orders.get(String(a.order_id)) || null); return o && canWorkOrder(o) && !o.demo && users.has(String(a.user_id)) && !String(a.content || '').trim(); }).slice(0, perTick);
+ let done = 0; const touched = new Set<string>();
+ for (const row of ready) {
+  const mark = await stmt("UPDATE articles SET data=json_set(data,'$.auto_ai_started',?) WHERE id=? AND json_extract(data,'$.auto_ai_started') IS NULL", now(), row.id).run();
+  if (!mark.meta.changes) continue; touched.add(String(row.order_id));
+  const a = (await one('SELECT * FROM articles WHERE id=?', row.id))!, u = users.get(String(row.user_id))!;
+  try { await claimAiBudget(u, 'article'); const { execute } = await prepareAiDraft(a, u, c); await execute(); done++; }
+  catch (e) { await audit(u, a.id, 'טיוטת AI אוטומטית לא נוצרה', { error: e instanceof Error ? e.message : String(e) }).catch(() => {}); }
+ }
+ for (const orderId of touched) {
+  const left = await one("SELECT COUNT(*) AS n FROM articles WHERE order_id=? AND json_extract(data,'$.auto_ai')=1 AND json_extract(data,'$.auto_ai_started') IS NULL", orderId);
+  if (Number(left?.n || 0)) continue;
+  const results = await all("SELECT (SELECT j.status FROM jobs j WHERE j.kind='ai_generation' AND json_extract(j.data,'$.article_id')=a.id ORDER BY j.updated DESC LIMIT 1) AS status FROM articles a WHERE a.order_id=? AND json_extract(a.data,'$.auto_ai')=1", orderId);
+  const ok = results.filter(x => x.status === 'succeeded').length, failed = results.length - ok;
+  const o = parse(orders.get(orderId) || null)!, to = users.get(String(o.user_id))?.email;
+  if (!to || !ok && !failed) continue;
+  await queueMail('email:ai-drafts:' + orderId, String(o.user_id), { to, subject: 'הטיוטות להזמנה ' + o.number + ' מוכנות', text: (ok ? 'ה־AI כתב טיוטות ל־' + ok + ' כתבות בהזמנה ' + o.number + '. הן מחכות לכם באזור האישי: בודקים, משנים מה שצריך ושולחים לפרסום.' : '') + (failed ? (ok ? ' ' : '') + (failed === 1 ? 'טיוטה אחת לא נוצרה. ' : failed + ' טיוטות לא נוצרו. ') + 'אפשר ללחוץ „יצירה מחדש” בכתבה.' : ''), button: { label: 'לכתבות שלי', url: origin + '/articles' }, order_id: orderId }).catch(() => {});
+ }
+ return { ai_drafts: done };
+}
+// The AI draft of one article: shared by the article's "יצירת טיוטה" and the automatic drafts of bulk orders after
+// payment (owner 26.11.2026). Claims the job (one at a time per version) and returns the work to run.
+async function prepareAiDraft(a: Row, u: Row, c: Row) {
+            const w = await website(a.website_id);
+            const d = JSON.parse(a.data);
+            const instructions = (await all("SELECT data FROM records WHERE kind='instruction'")).map(x => JSON.parse(x.data).text || '').join('\n');
+            const cap=Number(w.max_words||0),words=cap?Math.min(Number(d.words)||cap,cap):d.words; // the site's word limit caps the AI draft (owner 23.11.2026)
+            const prompt = `כתוב כתבה מקורית בעברית בנושא ${d.topic}. כ-${words} מילים${cap?' (לא יותר מ-'+cap+' מילים)':''}. סגנון: ${d.style}. קהל: ${d.audience}. מותג: ${d.brand}. מילות מפתח: ${d.keywords}. הערות: ${d.notes}. הנחיות אתר: ${w.publishing_restrictions || ''}. הנחיות מערכת: ${instructions}. החזר JSON בלבד עם title, content (מחרוזת HTML עם פסקאות בתגיות <p> וכותרות משנה בתגיות <h2> אמיתיות בלבד), meta_description. אין לכתוב H2 כסימון טקסטואלי ואין להשתמש ב-Markdown. הכותרת הראשית נפרדת בשדה title. אל תוסיף קישורים שלא נמסרו. אל תמציא עובדות או טענות שלא נמסרו. אין לפרסם אוטומטית.`;
+            const previousGeneration=await articleGenerationStatus(a.id);
+            assert(previousGeneration?.status!=='writing','המאמר כבר בהכנה. אפשר לחזור אליו בעוד כמה שניות.',409);
+            if(previousGeneration?.stale)await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.error',?),updated=? WHERE id=? AND status='writing'",previousGeneration.error,now(),previousGeneration.id).run();
+            const job = 'ai:' + a.id + ':' + a.version;
+            await stmt("DELETE FROM jobs WHERE id=? AND status='failed'",job).run();
+            let generated: Row = {};
+            const claimed=await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)', job, u.id, 'ai_generation', 'writing', JSON.stringify({ article_id: a.id }), now(), now()).run();
+            assert(claimed.meta.changes,'המאמר כבר בהכנה. אפשר לחזור אליו בעוד כמה שניות.',409);
+            const execute=async()=>{
+            try {
+                const { raw, provider, model } = await aiJson(c, prompt);
+                let data: Row;
+                try {
+                    data = JSON.parse(raw.replace(/^```json\s*|```$/g, ''));
+                }
+                catch {
+                    throw new ApiError(502, 'ה-AI החזיר תוכן בפורמט לא תקין');
+                }
+                assert(data.title && data.content, 'תשובת AI חסרה כותרת או תוכן', 502);
+                generated = { title: data.title, content: data.content };
+                const result = await stmt("UPDATE articles SET title=?,content=?,data=?,status='draft',version=version+1,updated=? WHERE id=? AND version=?", maxText(data.title, 300), await aiArticleHtml(maxText(data.content, 150000), d), JSON.stringify({ ...d, meta_description: maxText(data.meta_description, 350) }), now(), a.id, a.version).run();
+                assert(result.meta.changes, 'הכתבה עודכנה במהלך היצירה; הטקסט נמצא ביומן העבודה', 409);
+                await stmt("UPDATE jobs SET status='succeeded',data=?,updated=? WHERE id=?", JSON.stringify({ article_id: a.id, title: data.title, content: data.content }), now(), job).run();
+                await audit(u, a.id, 'נוצרה טיוטת AI', { provider, model });
+                return;
+            }
+            catch (e) {
+                const message=e instanceof GeminiRequestError?e.message:safeFailure(e);
+                await stmt("UPDATE jobs SET status='failed',data=?,updated=? WHERE id=?", JSON.stringify({ article_id: a.id, error: message, ...(e instanceof GeminiRequestError?{provider_error:e.diagnostic}:{}), ...generated }), now(), job).run();
+                throw e instanceof GeminiRequestError||e instanceof ApiError?e:new ApiError(502,message);
+            }
+            };
+            return { job, execute };
+}
+async function validBrief(input: Row, w: Row, u: Row, cache?: BriefCache) { const d = { editorial: input.editorial === true, editorial_words: Math.max(100,Math.min(5000,Math.floor(Number(input.editorial_words)||400))), topic: maxText(input.topic, 500), brand: maxText(input.brand, 200), audience: maxText(input.audience, 500), style: maxText(input.style, 100), keywords: maxText(input.keywords, 300), target_url: httpUrl(input.target_url || ''), anchor: maxText(input.anchor, 200), target_url_2: httpUrl(input.target_url_2 || ''), anchor_2: maxText(input.anchor_2, 200), notes: maxText(input.notes, 6000), words: Math.max(300, Math.min(2500, Number(input.words) || 500)), content_type: input.content_type === PR_CONTENT_TYPE ? PR_CONTENT_TYPE : input.content_type === 'upload' ? 'upload' : 'ai', scheduled: input.scheduled || '', customer_id: input.customer_id || '', image_id: input.image_id || '', document_id: input.document_id || '', pixel: !!input.pixel, shared: !!input.shared, auto_ai: input.auto_ai === true && input.editorial !== true }; assert(d.topic, 'יש להזין נושא לכתבה'); if (d.content_type === PR_CONTENT_TYPE) {
     // A PR article (owner, 17.11.2026): written by our interviewer after a phone call, so the writing service is always on.
     const group = String(input.interview_group || ''); assert(/^[0-9a-f-]{36}$/.test(group), 'חסר מזהה ראיון');
     Object.assign(d, { editorial: true, interview: validInterview(input.interview), interview_group: group });
@@ -204,7 +275,7 @@ async function handle(r: Request,access:ResponseAccess) {
     // Google sign-in: called only by the gateway over loopback, with the automation key (lib/google-account.ts).
     if(p[0]==='auth'&&p[1]==='google'&&['resolve','accept'].includes(p[2])&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(p[2]==='resolve'?await resolveGoogle(b):await acceptGoogle(b));}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));waitUntil(autoAiDrafts(origin).catch(()=>{}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
     if(p[0]==='export'){const res=await stagingExport(r,p);if(res)return res;}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
@@ -812,43 +883,7 @@ if (p[0] === 'cart') {
             const c = await connection('ai');
             assert(c.enabled && c.secret, 'יש להגדיר חיבור AI בצד הניהול', 503);
             await claimAiBudget(u,'article');
-            const w = await website(a.website_id);
-            const d = JSON.parse(a.data);
-            const instructions = (await all("SELECT data FROM records WHERE kind='instruction'")).map(x => JSON.parse(x.data).text || '').join('\n');
-            const cap=Number(w.max_words||0),words=cap?Math.min(Number(d.words)||cap,cap):d.words; // the site's word limit caps the AI draft (owner 23.11.2026)
-            const prompt = `כתוב כתבה מקורית בעברית בנושא ${d.topic}. כ-${words} מילים${cap?' (לא יותר מ-'+cap+' מילים)':''}. סגנון: ${d.style}. קהל: ${d.audience}. מותג: ${d.brand}. מילות מפתח: ${d.keywords}. הערות: ${d.notes}. הנחיות אתר: ${w.publishing_restrictions || ''}. הנחיות מערכת: ${instructions}. החזר JSON בלבד עם title, content (מחרוזת HTML עם פסקאות בתגיות <p> וכותרות משנה בתגיות <h2> אמיתיות בלבד), meta_description. אין לכתוב H2 כסימון טקסטואלי ואין להשתמש ב-Markdown. הכותרת הראשית נפרדת בשדה title. אל תוסיף קישורים שלא נמסרו. אל תמציא עובדות או טענות שלא נמסרו. אין לפרסם אוטומטית.`;
-            const previousGeneration=await articleGenerationStatus(a.id);
-            assert(previousGeneration?.status!=='writing','המאמר כבר בהכנה. אפשר לחזור אליו בעוד כמה שניות.',409);
-            if(previousGeneration?.stale)await stmt("UPDATE jobs SET status='failed',data=json_set(data,'$.error',?),updated=? WHERE id=? AND status='writing'",previousGeneration.error,now(),previousGeneration.id).run();
-            const job = 'ai:' + a.id + ':' + a.version;
-            await stmt("DELETE FROM jobs WHERE id=? AND status='failed'",job).run();
-            let generated: Row = {};
-            const claimed=await stmt('INSERT OR IGNORE INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)', job, u.id, 'ai_generation', 'writing', JSON.stringify({ article_id: a.id }), now(), now()).run();
-            assert(claimed.meta.changes,'המאמר כבר בהכנה. אפשר לחזור אליו בעוד כמה שניות.',409);
-            const execute=async()=>{
-            try {
-                const { raw, provider, model } = await aiJson(c, prompt);
-                let data: Row;
-                try {
-                    data = JSON.parse(raw.replace(/^```json\s*|```$/g, ''));
-                }
-                catch {
-                    throw new ApiError(502, 'ה-AI החזיר תוכן בפורמט לא תקין');
-                }
-                assert(data.title && data.content, 'תשובת AI חסרה כותרת או תוכן', 502);
-                generated = { title: data.title, content: data.content };
-                const result = await stmt("UPDATE articles SET title=?,content=?,data=?,status='draft',version=version+1,updated=? WHERE id=? AND version=?", maxText(data.title, 300), await aiArticleHtml(maxText(data.content, 150000), d), JSON.stringify({ ...d, meta_description: maxText(data.meta_description, 350) }), now(), a.id, a.version).run();
-                assert(result.meta.changes, 'הכתבה עודכנה במהלך היצירה; הטקסט נמצא ביומן העבודה', 409);
-                await stmt("UPDATE jobs SET status='succeeded',data=?,updated=? WHERE id=?", JSON.stringify({ article_id: a.id, title: data.title, content: data.content }), now(), job).run();
-                await audit(u, a.id, 'נוצרה טיוטת AI', { provider, model });
-                return;
-            }
-            catch (e) {
-                const message=e instanceof GeminiRequestError?e.message:safeFailure(e);
-                await stmt("UPDATE jobs SET status='failed',data=?,updated=? WHERE id=?", JSON.stringify({ article_id: a.id, error: message, ...(e instanceof GeminiRequestError?{provider_error:e.diagnostic}:{}), ...generated }), now(), job).run();
-                throw e instanceof GeminiRequestError||e instanceof ApiError?e:new ApiError(502,message);
-            }
-            };
+            const {job,execute}=await prepareAiDraft(a,u,c);
             if(query.get('background')==='1')return articleGenerationStream(job,execute);
             await execute();
             return response({ok:true});
