@@ -201,3 +201,18 @@ html body .catalog-paste-dialog .catalog-paste-count{display:inline-grid;place-i
 @media(prefers-reduced-motion:reduce){html body .catalog-paste-dialog .catalog-paste-clip{transition:none}}
 /* Each pasted line keeps its own direction (URLs stay readable) but everything lines up on the right */
 html body .catalog-paste-dialog #catalog-list-input,html body .catalog-paste-dialog #catalog-list-input::placeholder{unicode-bidi:plaintext;text-align:right!important}
+/* Publication notes (owner 25.11.2026): the same small window by the button, in the site's new look */
+html body .publication-notes-popover.catalog-notes-pop[data-slot=popover-content]{width:min(360px,calc(100vw - 24px));gap:12px;padding:16px;border:1px solid #e3e9f0;border-radius:22px;background:#fff;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:0 1px 2px #0b28500d,0 24px 50px -20px #0b285059}
+html body .catalog-notes-pop header h3{font:800 18px/1.3 Heebo,Arial,sans-serif;color:#0b1b2f}
+html body .catalog-notes-pop .publication-notes-close{min-width:32px;min-height:32px;width:32px;height:32px;border-radius:50%;background:#eef2f7;color:#4f5d6e}
+html body .catalog-notes-pop .catalog-notes-list{list-style:none;margin:0;padding:2px;border-radius:16px;background:#f4f7fb;overflow:auto;overscroll-behavior:contain;min-height:0}
+html body .catalog-notes-pop .catalog-notes-list li{display:flex;align-items:flex-start;gap:10px;padding:11px 12px}
+html body .catalog-notes-pop .catalog-notes-list li+li{box-shadow:0 -1px 0 rgba(11,40,80,.09)}
+html body .catalog-notes-pop .catalog-notes-list p{margin:0;padding-top:3px;font:500 15px/1.6 Heebo,Arial,sans-serif;color:#0b1b2f;white-space:pre-wrap;overflow-wrap:anywhere}
+html body .catalog-notes-pop .catalog-notes-icon{flex:none;display:grid;place-items:center;width:28px;height:28px;border-radius:9px;color:#fff;box-shadow:inset 0 1px 0 #ffffff59}
+html body .catalog-notes-pop .catalog-notes-icon.is-note{background:linear-gradient(180deg,#2f86f6,#1467cf)}
+html body .catalog-notes-pop .catalog-notes-icon.is-link{background:linear-gradient(180deg,#1fb5c2,#0e8a96)}
+html body .catalog-notes-pop .catalog-notes-icon.is-words{background:linear-gradient(180deg,#ff9a3d,#f07a1c)}
+html body .catalog-notes-pop .publication-notes-done{align-self:stretch;min-height:46px;border:0;border-radius:14px;padding:0 20px;font:700 16px Heebo,Arial,sans-serif;color:#fff;background:linear-gradient(180deg,#006ef6,#1467cf);box-shadow:inset 0 1px 0 #ffffff59,0 8px 18px -10px #1467cf}
+@media(hover:hover){html body .catalog-notes-pop .publication-notes-done:hover{background:linear-gradient(180deg,#1679f7,#0f5fc4)}html body .catalog-notes-pop .publication-notes-close:hover{background:#e3e9f1}}
+html body .catalog-notes-pop .publication-notes-done:active{transform:scale(.98)}
