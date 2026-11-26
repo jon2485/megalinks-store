@@ -84,6 +84,11 @@ export default function BulkView({ ctx }: { ctx: Ctx }) {
         const next = checked.find(c => c.error && c.row.id !== id);
         if (next && typeof document !== 'undefined') setTimeout(() => document.getElementById('bp-row-' + next.row.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 50);
     };
+    // Owner 26.11.2026: a friendly status that names the rows left, e.g. "רק לתקן את שורות 5 ו־6 וסיימנו!".
+    const badNumbers = bad.map(c => Number(c.row.id) + 1).sort((a, b) => a - b);
+    const joinHe = (n: number[]) => n.length < 2 ? String(n[0]) : n.slice(0, -1).join(', ') + ' ו־' + n[n.length - 1];
+    const status = !rows.length ? '' : !badNumbers.length ? `הכול תקין! ${rows.length} כתבות מוכנות לסל` : badNumbers.length === 1 ? `רק לתקן את שורה ${badNumbers[0]} וסיימנו!` : badNumbers.length <= 4 ? `רק לתקן את שורות ${joinHe(badNumbers)} וסיימנו!` : `עוד ${badNumbers.length} שורות לתיקון, ואז מוסיפים לסל`;
+    const goNextBad = () => { const next = checked.find(c => c.error); if (next && typeof document !== 'undefined') document.getElementById('bp-row-' + next.row.id)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
     const addLabel = busy ? 'מוסיף לסל…' : `הוספת ${rows.length} כתבות לסל`, canAdd = ready && !busy && rows.length > 0 && bad.length === 0;
     const fileField = <input ref={fileInput} type="file" accept=".xlsx,.csv" className="bp-hidden" aria-label="קובץ הזמנות" disabled={!ready || busy || loading} onChange={e => { const f = e.target.files?.[0]; if (f) void load(f); e.target.value = ''; }}/>;
     const stage = rows.length ? 3 : 2;
@@ -173,14 +178,14 @@ export default function BulkView({ ctx }: { ctx: Ctx }) {
                 <div className="bp-total"><span>סכום ביניים, לפני מע״מ{bad.length ? ' (שורות תקינות)' : ''}</span><b>{money(publication + editorial)}</b><span>הסיכום המלא, הנחות וקופון — בסל</span></div>
                 <div className="bp-actions">
                     <button type="button" className="bp-cta" disabled={!canAdd} onClick={add}>{addLabel}</button>
-                    {bad.length > 0 && <p className="bp-why">יש {bad.length} שורות לתיקון לפני ההוספה לסל</p>}
+                    {bad.length > 0 && <p className="bp-why">{status}</p>}
                     <button type="button" className="bp-sec" disabled={busy} onClick={choose}>העלאת קובץ אחר</button>
                 </div>
                 <ErrorBox error={error}/>
                 <p className="bp-after"><b>אחרי התשלום:</b> {anyAi ? 'כתבות עם AI נכתבות אוטומטית ומחכות לכם באזור האישי לבדיקה ושליחה. את השאר מכינים שם.' : 'כל כתבה מופיעה באזור האישי, ושם מכינים לה תוכן.'}</p>
             </aside>
             {/* Phones: the counts and the add button stay at the bottom of the screen (owner 26.11.2026). */}
-            <div className="bp-mobilebar" aria-label="סיכום והוספה לסל"><span><b className="is-ok">{good.length} תקינות</b>{bad.length > 0 && <b className="is-bad"> · {bad.length} לתיקון</b>}</span><button type="button" className="bp-cta" disabled={!canAdd} onClick={add}>{bad.length ? 'לתקן קודם' : addLabel}</button></div>
+            <div className={'bp-mobilebar' + (bad.length ? ' is-todo' : ' is-done')} aria-label="סיכום והוספה לסל" aria-live="polite"><span className="bp-status">{bad.length ? <AlertCircle size={18} aria-hidden="true"/> : <CircleCheck size={18} aria-hidden="true"/>}{status}</span>{bad.length ? <button type="button" className="bp-next" onClick={goNextBad}>לתיקון</button> : <button type="button" className="bp-cta" disabled={!canAdd} onClick={add}>{busy ? 'מוסיף…' : 'הוספה לסל'}</button>}</div>
         </section>}
     </div>;
 }
