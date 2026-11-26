@@ -2536,3 +2536,7 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - Branch `claude/bulk-order-build-20261126`, commit `9a6ea9e`: the bulk order redesign plus `claude/catalog-popovers-20261126` (`c461c25`: catalog windows keep the header, original sort buttons, homepage sentence). Included what Staging ran before (`dc7d942`).
 - Railway build succeeded, `/healthz` 200, the homepage serves the new sentence, `/bulk` asks for sign-in as expected.
 - **Still to check on Staging:** the AI drafts after payment and their email, with a paid test order (needs the AI connection on Staging).
+
+## 27.11.2026: add-site journey and homepage buttons (owner approved, deployed with "כן, וגם את שאר השינויים")
+- Add-site journey (`app/seller-site-form.tsx`, `app/site-application-brand.css`): calm background with slow lines, one white card per step, wide "המשך", "חזרה" by the counter, single focus ring, tidy centred summary (short addresses, chosen image, price with separator), image picker in the same look.
+- Homepage (`home/index.html` + regenerated `lib/home-page-html.ts`, `lib/pr-page-html.ts`): hero button "קחו אותי למחירון!"; signed-in visitors see "לאזור האישי" (to /purchased) instead of "כניסה למערכת".
