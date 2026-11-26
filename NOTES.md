@@ -2506,3 +2506,10 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 
 ## 26.11.2026: קובץ המסירה לענן עודכן
 `docs/cloud-handoff.md`: נוסף בראשו עדכון עם הענף העדכני, הגרסאות החיות, הכניסה עם Google, כללי הגיליון ותוכנית מעבר הדומיין. תיעוד בלבד, בלי שינוי קוד ובלי פריסה.
+
+## 26.11.2026: catalog "סינון ומיון" and "הדבקת רשימה" open like "קטגוריות"; clear sort names (owner approved the mockup: "ההדמיות מאושרות, תעלה")
+- **Branch:** `claude/catalog-popovers-20261126`, from `f07e453` (`claude/notes-dialog-20261125`).
+- **What:** on the computer (900px and up) both windows open under their own button inside the page, like the categories window: 520px wide for "סינון ומיון" (aligned to its button's right edge), 440px for "הדבקת רשימה" (left edge), up to 620px high, buttons fixed at the bottom, no dimmed or blurred page behind (the layer behind is not drawn; clicking outside or Escape closes). If the button is low on the screen, the page scrolls so the window has room. Phones keep the bottom sheet, the same as categories. Sort buttons: "מומלץ", "מחיר מהזול", "מחיר מהיקר", "DR מהגבוה" and new "DR מהנמוך" (sites without DR come last), three to a row.
+- **DR report:** not reproduced: "DR" sorted high to low and "50+" kept only DR 50+. The arrows on the old price buttons were the likely confusion; the names now say the direction.
+- **Files:** `app/catalog-view.tsx` (sort labels, `drlow`, `anchorUnder`, `openSort`/`openList`, refs on the two buttons, resize keeps them by the button), `app/catalog-filter-apple.css` (end of file). Same windows and contents, still Radix dialogs (focus and Escape as before).
+- **Checked locally (fictional data):** 1280×900, 1000×700, phone 390: windows open by their buttons and fit the screen, DR high/low order right, list review step stays by its button, Escape and outside click close, 0 page errors. Tests: tsc, build, the 3 Railway build tests, catalog-home-actions, catalog-home-layout, catalog-list-filter, catalog-grid pass; catalog-controls-browser ("mobile category w unchanged") and catalog-mobile-layout ("חיבור והוראות הפעלה") fail the same on `f07e453` without this change.
