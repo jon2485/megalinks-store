@@ -184,3 +184,9 @@
 @media(max-width:700px){.site-journey .journey-page>section{padding:20px 16px;border-radius:20px}.site-journey .journey-summary>div{grid-template-columns:1fr;gap:2px;padding:11px 14px}}
 @media(prefers-reduced-motion:reduce){.site-journey .journey-bgfx path{animation:none;stroke-dashoffset:0}.site-journey .journey-bgfx g{animation:none}}
 @media(forced-colors:active){.site-journey .journey-bgfx{display:none}}
+/* Owner 27.11.2026: the image picker in the same calm look as the fields (no light-blue tint, one quiet ring). */
+.site-journey .journey-upload{border:1px dashed #cfd9e2;background:#f8fafc}
+.site-journey .journey-upload:hover{background:#f2f6f9;border-color:#9fb6c6}
+.site-journey .journey-upload:focus-within{outline:0!important;border-color:var(--journey-teal);box-shadow:0 0 0 3px #007f8c1f}
+.site-journey .journey-upload .journey-file-input:focus,.site-journey .journey-upload .journey-file-input:focus-visible{outline:0!important}
+.site-journey .journey-upload-symbol{border:1px solid #e1e8ef}
