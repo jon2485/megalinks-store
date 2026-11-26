@@ -2506,3 +2506,14 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 
 ## 26.11.2026: קובץ המסירה לענן עודכן
 `docs/cloud-handoff.md`: נוסף בראשו עדכון עם הענף העדכני, הגרסאות החיות, הכניסה עם Google, כללי הגיליון ותוכנית מעבר הדומיין. תיעוד בלבד, בלי שינוי קוד ובלי פריסה.
+
+## 26.11.2026 night: bulk order redesign built (branch `claude/bulk-order-build-20261126`, local only)
+- **From:** `claude/bulk-order-redesign-20261125` (design files, owner approved), merged with `claude/notes-dialog-20261125` so it includes what Staging runs (`7abd56a`). Does **not** include the catalog-window fixes of `claude/catalog-popovers-20261126` (separate branch, also local).
+- **Template** (`lib/bulk-template.ts`): built per user in the browser. Sheets הזמנה (first, RTL, frozen headers, hidden "סוג שורה", orange banner + example row with "דוגמה:" in each cell, lists for site / content method / customer, whole words 100–5,000, red words cell for professional writing without words), איך ממלאים, אתרים (customer price), הלקוחות שלי. File name "הזמנה מרוכזת - מגה לינקס.xlsx". Opened in the owner's Excel without repair (validations, hidden column checked).
+- **Reading** (`lib/bulk-order.ts`): finds the header row, skips rows marked in "סוג שורה", keeps old files ("מילים לכתיבה בתשלום" = professional writing) and CSV. New rules: content method required to be one of the list; professional writing 100–5,000 words; AI needs topic, keyword or link; AI refused when not configured. `bulkSuggestSite` for "אולי התכוונתם".
+- **Page** (`app/bulk-order-view.tsx`, `app/bulk-order-page.css`): per `design/bulk-order/mockup.html`. Old `bulk-instructions.tsx` and `bulk-order-approved.css` removed. `GET /api/bulk-options` says whether AI is configured.
+- **AI after payment** (`app/api/[...path]/route.ts`): `validBrief` keeps `auto_ai`; `autoAiDrafts` runs from the every-minute maintenance tick (2 per tick) for workable orders, claims each article once (`auto_ai_started`), skips text already written, one email per order (`email:ai-drafts:<order>`). The article's "generate" and the tick share `prepareAiDraft`.
+- **Checked locally (fictional data):** tests bulk-order, bulk-template (new), bulk-auto-ai (new, source wiring), cart-add-feedback, seo, catalog-grid; customer-glass-actions bulk part passes (its last workspace check fails on Windows line endings, as before). Browser flow: template download → filled with openpyxl → upload → old-format file → CSV with errors → add to cart: the cart items carry auto_ai / editorial words as chosen. Screenshots: `design/bulk-order-build/`.
+- **Not tested:** the AI drafting itself (no AI key locally) and its email; run once on Staging with a paid test order.
+- **לפני העלאה:** the screenshots showed AI as available by faking `/api/bulk-options` in the screenshot script only; nothing in the code fakes it.
+- **Next:** owner approval for push and Staging.
