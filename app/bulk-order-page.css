@@ -166,3 +166,26 @@
  .bp-mobilebar .bp-next{flex:none;min-height:44px;padding:0 18px;border-radius:14px;border:1px solid #f0c98f;background:#fff7ec;color:#9a4a00;font:inherit;font-size:15px;font-weight:800;cursor:pointer}
 }
 .bulk-page .bp-why{color:#9a4a00}
+/* Owner 26.11.2026: every button and field shows it can be pressed. Colour follows meaning: red for removing,
+   blue for main actions and links, green for "fixed", orange for "to fix". Mouse only; touch keeps the press feedback. */
+.bulk-page :is(button,select,input,textarea,summary,.bp-drop){transition:background-color .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease,transform .1s ease-out}
+@media(hover:hover){
+ .bulk-page .bp-trash:not(:disabled):hover{background:#fdf0f2;border-color:#e8a5b3;color:#b42342}
+ .bulk-page .bp-cta:not(:disabled):hover{background:linear-gradient(180deg,#3b8ff5,#1765d2);box-shadow:0 12px 24px -12px #1b6fe0}
+ .bulk-page .bp-pick:not(:disabled):hover{background:#eef5ff;border-color:#1b6fe0}
+ .bulk-page .bp-drop:hover{border-color:#1b6fe0;background:#f5f8fd}
+ .bulk-page .bp-sec:not(:disabled):hover{background:#f5f6f8;border-color:#cfd6df}
+ .bulk-page .bp-tabs button:not([aria-pressed=true]):hover{background:#fff;color:#09234b}
+ .bulk-page .bp-tabs button.is-bad:not([aria-pressed=true]):hover{color:#b42342}
+ .bulk-page .bp-bar:hover{background:#eceff3}
+ .bulk-page .bp-more-fields:hover,.bulk-page .bp-more summary:hover{background:#f2f5fa;color:#1765d2}
+ .bulk-page .bp-fix:hover{background:#1765d2;box-shadow:0 8px 18px -10px #1b6fe0}
+ .bulk-page .bp-fixed button:hover{background:#1d7d45;border-color:#1d7d45;color:#fff}
+ .bp-mobilebar .bp-next:hover{background:#ffeed6;border-color:#e0a050}
+ .bulk-page .bp-f :is(input,select,textarea):not(:disabled):not(:focus):hover{border-color:#9fb3c8}
+ .bulk-page .bp-f .is-err:not(:focus):hover{border-color:#d6566d}
+}
+.bulk-page .bp-f :is(input,select,textarea):focus{outline:0;border-color:#1b6fe0;box-shadow:0 0 0 3px #1b6fe026}
+.bulk-page .bp-more summary{border-radius:10px}
+.bulk-page :is(.bp-drop,.bp-bar,.bp-more summary){cursor:pointer}
+@media(prefers-reduced-motion:reduce){.bulk-page :is(button,select,input,textarea,summary,.bp-drop){transition:none}}
