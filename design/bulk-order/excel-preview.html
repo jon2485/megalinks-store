@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>תבנית Excel · הדמיה</title>
+<!-- A picture of how the new template looks when opened in Excel (25.11.2026). The real file is next to it:
+     "הזמנה מרוכזת - מגה לינקס (הדמיה).xlsx". Site names/prices are from the Staging catalog; customers are fictional. -->
+<style>
+*{box-sizing:border-box}body{margin:0;background:#e9edf2;font-family:"Segoe UI",Arial,sans-serif;padding:24px}
+.win{width:1360px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 20px 50px -20px #0b274d66;border:1px solid #c9d3dd}
+.title{direction:ltr;height:34px;background:#107c41;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;position:relative}
+.title:before{content:"● ● ●";position:absolute;left:12px;color:#ffffffaa;letter-spacing:2px;font-size:10px}
+.ribbon{height:40px;background:#f3f3f3;border-bottom:1px solid #d6d6d6;display:flex;align-items:center;gap:18px;padding:0 16px;font-size:12.5px;color:#444;direction:ltr}
+.ribbon b{color:#107c41}
+.fx{display:flex;align-items:center;height:30px;border-bottom:1px solid #d6d6d6;font-size:13px;direction:rtl}
+.fx .nm{width:80px;border-left:1px solid #d6d6d6;height:100%;display:grid;place-items:center;color:#333}
+.fx .f{padding:0 10px;color:#666}.fx .f i{font-style:normal;color:#999;margin-left:8px}
+.grid{position:relative;overflow:hidden}
+table{border-collapse:collapse;font-size:13px;color:#09234b;table-layout:fixed}
+td,th{border:1px solid #e1e8ef;height:28px;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+th.cl,td.rn{background:#f3f5f7;color:#666;font-weight:400;text-align:center;border-color:#d8dde3}
+th.cl.sel,td.rn.sel{background:#d3eadb;color:#107c41;font-weight:600}
+.t1 td{height:40px;font-size:19px;font-weight:700;border-color:transparent}
+.t2 td{height:26px;color:#405a78;border-color:transparent}
+.hd td{background:#09234b;color:#fff;font-weight:700;height:34px}.hd td.req{background:#007c88}
+.hint td{background:#eef4f9;color:#52677e;font-style:italic;font-size:12px;height:30px;white-space:normal;line-height:1.25}
+.ex td{background:#e6f7fa;color:#2d6f7d;font-style:italic}
+tr.alt td:not(.rn){background:#fafcfe}
+td.act{outline:2px solid #107c41;outline-offset:-2px;position:relative}
+td.warn{background:#fde7ea!important}
+.dd{position:absolute;width:230px;background:#fff;border:1px solid #9aa7b4;box-shadow:0 8px 20px -8px #0005;font-size:13px;z-index:3}
+.dd div{padding:7px 10px}.dd div.h{background:#cce4f7}
+.tip{position:absolute;width:280px;background:#fffbe6;border:1px solid #d9c77a;padding:8px 10px;font-size:12.5px;line-height:1.45;color:#333;z-index:3;box-shadow:0 6px 14px -8px #0004}
+.tip b{display:block;margin-bottom:2px}
+.arrow{position:absolute;width:18px;height:22px;background:#f3f3f3;border:1px solid #9aa7b4;font-size:9px;display:grid;place-items:center;z-index:2}
+.tabs{display:flex;gap:2px;align-items:flex-end;height:34px;background:#f3f3f3;border-top:1px solid #d6d6d6;padding:0 12px;font-size:13px}
+.tabs span{padding:6px 16px;color:#444}.tabs span.on{background:#fff;color:#107c41;font-weight:700;border-bottom:3px solid #107c41}
+.cap{width:1360px;margin:14px auto 0;font:14px Arial;color:#405a78;text-align:right}
+</style>
+</head>
+<body>
+<div class="win">
+ <div class="title">הזמנה מרוכזת - מגה לינקס.xlsx — Excel</div>
+ <div class="ribbon"><b>Home</b><span>Insert</span><span>Page Layout</span><span>Formulas</span><span>Data</span><span>Review</span><span>View</span></div>
+ <div class="fx"><span class="nm">B6</span><span class="f"><i>fx</i>אני אכין את התוכן</span></div>
+ <div class="grid">
+ <table>
+  <colgroup><col style="width:40px"><col style="width:190px"><col style="width:180px"><col style="width:210px"><col style="width:120px"><col style="width:110px"><col style="width:140px"><col style="width:190px"><col style="width:140px"><col style="width:200px"></colgroup>
+  <tr><th class="cl"></th><th class="cl">A</th><th class="cl sel">B</th><th class="cl">C</th><th class="cl">D</th><th class="cl">E</th><th class="cl">F</th><th class="cl">G</th><th class="cl">H</th><th class="cl">I</th></tr>
+  <tr class="t1"><td class="rn">1</td><td colspan="9">הזמנה מרוכזת · מגה לינקס</td></tr>
+  <tr class="t2"><td class="rn">2</td><td colspan="9">שורה אחת לכל כתבה. רק עמודת האתר חובה. ההסבר המלא בלשונית „איך ממלאים”.</td></tr>
+  <tr class="hd"><td class="rn">3</td><td class="req">אתר ★</td><td>איך התוכן יוכן</td><td>נושא הכתבה</td><td>מספר מילים</td><td>מותג</td><td>מילת מפתח (עוגן)</td><td>קישור</td><td>לקוח הסוכנות</td><td>הנחיות</td></tr>
+  <tr class="hint"><td class="rn">4</td><td>בחרו מהרשימה · חובה</td><td>בחרו מהרשימה · ריק = אני אכין</td><td>לא חובה</td><td>100–5,000 · חובה לכתיבה מקצועית</td><td>לא חובה</td><td>לא חובה</td><td>לא חובה · https://…</td><td>בחרו מהרשימה · לא חובה</td><td>לא חובה</td></tr>
+  <tr class="ex"><td class="rn">5</td><td>מחשבים ודיגיטל</td><td>כתיבה עם AI</td><td>איך לבחור מנוף לעבודה בגובה</td><td>600</td><td>המותג שלי</td><td>השכרת מנוף</td><td dir="ltr">https://example.co.il</td><td>חברת אלפא</td><td>קהל יעד: ועדי בית ומנהלי עבודה</td></tr>
+  <tr><td class="rn sel">6</td><td>ווינט</td><td class="act">אני אכין את התוכן</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr class="alt"><td class="rn">7</td><td>גלובס</td><td>כתיבה מקצועית</td><td>מדריך לשיפוץ מרפסת</td><td>400</td><td></td><td>שיפוץ מרפסת</td><td dir="ltr">https://example.co.il/balcony</td><td>חברת בטא</td><td></td></tr>
+  <tr><td class="rn">8</td><td>מאקו</td><td>כתיבה מקצועית</td><td></td><td class="warn"></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr class="alt"><td class="rn">9</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td class="rn">10</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr class="alt"><td class="rn">11</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td class="rn">12</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr class="alt"><td class="rn">13</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+  <tr><td class="rn">14</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+ </table>
+ <span class="arrow" style="top:210px;right:401px">▼</span>
+ <div class="dd" style="top:233px;right:230px"><div class="h">אני אכין את התוכן</div><div>כתיבה עם AI</div><div>כתיבה מקצועית</div></div>
+ <div class="tip" style="top:233px;right:470px"><b>איך התוכן יוכן</b>אני אכין: בלי עלות, אחרי הרכישה. AI: בלי עלות, אוטומטי אחרי התשלום. מקצועית: 15 אג׳ למילה.</div>
+ </div>
+ <div class="tabs"><span class="on">הזמנה</span><span>איך ממלאים</span><span>אתרים</span><span>הלקוחות שלי</span></div>
+</div>
+<p class="cap">בעמודות „אתר”, „איך התוכן יוכן” ו„לקוח הסוכנות” בוחרים מרשימה נפתחת. תא „מספר מילים” נצבע באדום כשבחרו כתיבה מקצועית ולא מילאו מספר (שורה 8).</p>
+</body>
+</html>

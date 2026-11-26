@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>הזמנה מרוכזת · הדמיה 2</title>
+<title>הזמנה מרוכזת · הדמיה 3</title>
 <!-- Mockup v2 (25.11.2026). Built on the approved cart look (cart-checkout-refresh.css): waves ground, cart art,
      stepper, white panels, item cards with logo/name/domain/price, pale disclosure bar, summary column.
      The explanation keeps every line of the approved bulk-instructions, plus the content options from spec.md. -->
@@ -100,6 +100,38 @@ details.more{margin-top:14px;font-size:14px;line-height:1.8;color:var(--copy)}de
  .price{grid-column:1/-1;grid-row:3;border:0;padding:0;text-align:right;display:flex;align-items:baseline;gap:8px}.price b{font-size:23px}
  .fields{grid-template-columns:1fr}.bar{font-size:14px}.bar .meta{display:none}
 }
+
+/* v3: page layout like the cart: content panel + sticky action column */
+.start{display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:24px;align-items:start}
+.how{padding:26px 28px}
+.how-head h2{margin:0;font-size:26px;font-weight:850}.how-head p{margin:4px 0 0;color:var(--copy);font-size:16px}
+.steps4{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:0}
+.steps4>li{display:grid;grid-template-columns:44px minmax(0,1fr);gap:16px;padding:20px 0;border-top:1px solid var(--line)}
+.steps4>li:first-child{border-top:0;padding-top:6px}
+.sn{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:#e8f4ff;color:#0a64b8;font-size:19px;font-weight:850;box-shadow:inset 0 0 0 1px #cfe5fb}
+.steps4 h3{margin:4px 0 6px;font-size:19px;font-weight:800}.steps4 p{margin:0 0 4px;font-size:15.5px;line-height:1.75;color:#24476b}
+.mini{margin-top:10px;border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:14px;max-width:520px}
+.mini>div{display:grid;grid-template-columns:34px 130px 1fr;gap:8px;padding:8px 12px;border-top:1px solid var(--line)}
+.mini .mh{background:#09234b;color:#fff;font-weight:700;border:0}.mini .mute{color:#7a8ea3;font-style:italic}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:10px 0 8px}
+.tile{display:flex;flex-direction:column;gap:4px;padding:16px;border-radius:18px;border:1px solid var(--line);background:linear-gradient(180deg,#fff,#f7fbfe)}
+.tile .ti{display:grid;place-items:center;width:36px;height:36px;border-radius:12px;background:#eef5fb;color:var(--navy);font-size:18px;margin-bottom:4px}
+.tile.ai .ti{background:#e8f4ff;color:#0a64b8}.tile.pro .ti{background:#f1eeff;color:#5a3fc0}
+.tile b{font-size:16px}.tile p{font-size:14px!important;line-height:1.65!important;flex:1}
+.tile em{align-self:flex-start;font-style:normal;margin-top:6px;padding:3px 10px;border-radius:999px;font-size:12.5px;font-weight:800;background:#e7f6ee;color:var(--ok)}.tile.pro em{background:#f1eeff;color:#5a3fc0}
+.soft{font-size:14px!important;color:var(--muted)!important}
+.how .lamp{background:var(--ice)}
+.go-panel{position:sticky;top:16px;padding:0;overflow:hidden}
+.go-panel h2{display:flex;justify-content:space-between;margin:0;padding:20px 22px;font-size:24px;font-weight:850;background:linear-gradient(180deg,#eaf6ff,#f6fbff)}
+.act-block{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;padding:18px 22px;border-bottom:1px solid var(--line)}
+.act-block b{font-size:17px}.act-block p{margin:2px 0 10px;font-size:14px;color:var(--copy);line-height:1.6}.act-block small{display:block;margin-top:8px;color:var(--muted);font-size:13px}
+.an{display:grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#1b6fe0;color:#fff;font-weight:850}.an.t{background:#007c88}
+.dlb{width:100%;font-size:16px}
+.sheets{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}.sheets span{padding:2px 8px;border-radius:6px 6px 0 0;background:#eef3f8;color:#4a5d72;font-size:12px;border-bottom:2px solid #c9d8e6}.sheets span:first-child{background:#e3f3ea;color:#107c41;border-color:#107c41;font-weight:700}
+.drop2{display:grid;justify-items:center;gap:8px;margin-top:10px;padding:18px 12px;border:2px dashed #a6e2ea;border-radius:16px;background:#f7fcfe;text-align:center;font-weight:700;cursor:pointer}
+.pick2{min-height:44px;display:inline-grid;place-items:center;padding:0 20px;border-radius:12px;background:#fff;color:var(--blue);border:1px solid #9ccbe9}
+.go-panel .after{margin:16px 22px 22px}
+@media(max-width:900px){.start{grid-template-columns:1fr}.go-panel{position:static;order:-1}.how{padding:18px 14px}.tiles{grid-template-columns:1fr}.steps4>li{grid-template-columns:34px minmax(0,1fr);gap:10px}.sn{width:32px;height:32px;font-size:16px}.mini>div{grid-template-columns:24px 90px 1fr}}
 </style>
 </head>
 <body>
@@ -108,25 +140,32 @@ details.more{margin-top:14px;font-size:14px;line-height:1.8;color:var(--copy)}de
  <ol class="steps"><li class="step" id="st1"><i>1</i>מורידים תבנית</li><li class="step" id="st2"><i>2</i>ממלאים ומעלים</li><li class="step" id="st3"><i>3</i>בודקים ומוסיפים לסל</li></ol>
  <header class="hero"><img src="../../public/brand/cart-publication.webp" alt=""><div><h1><b>הזמנה</b> מרוכזת</h1><p>מעלים קובץ, בודקים את השורות ומוסיפים לסל.</p></div></header>
 
- <section class="guide" id="guide">
-  <h2>בוחרים עכשיו, מכינים תוכן מתי שנוח</h2>
-  <ol class="route">
-   <li><span class="no">1</span><div class="sc"><h3>מורידים תבנית ובוחרים אתרים</h3><p>מורידים את קובץ ה־Excel וממלאים שורה נפרדת לכל כתבה שרוצים להזמין.</p><p>אפשר לבחור אתרים בלבד, גם אם עדיין אין נושא, מאמר או הנחיות. את האתר בוחרים מרשימה נפתחת בקובץ.</p><button class="dl">⤓ הורדת תבנית Excel</button></div></li>
-   <li><span class="no">2</span><div class="sc"><h3>כל שורה היא כתבה בפני עצמה</h3><p>רוצים שתי כתבות באותו אתר? ממלאים שתי שורות נפרדות. לכל כתבה אפשר לתת נושא והנחיות משלה.</p><p>הנושא אינו חובה. אפשר להשאיר אותו ריק ולהשלים בהמשך באזור האישי.</p><div class="ex"><h4>דוגמה למילוי שתי שורות</h4><div><b>שורה 1</b><span>ישראל היום</span><span>נושא: איך לבחור שטיח</span></div><div><b>שורה 2</b><span>כלכליסט</span><span>נושא: משאירים ריק וממלאים בהמשך</span></div></div></div></li>
-   <li><span class="no">3</span><div class="sc"><h3>מוסיפים הנחיות עכשיו — או בהמשך</h3><p>כבר יודעים מה לפרסם? אפשר למלא מראש נושא, מותג, עוגן וקישור.</p><p>עדיין מתכננים? משאירים את השדות הרלוונטיים ריקים, ומשלימים אחרי הרכישה באזור האישי.</p></div></li>
-   <li><span class="no">4</span><div class="sc"><h3>בוחרים מי מכין את התוכן</h3><p>לכל שורה בקובץ בוחרים איך הכתבה תיכתב. אפשר לבחור לכל כתבה דרך אחרת:</p>
-    <div class="ways">
-     <div class="way"><b>אני אכין את התוכן</b><p>כותבים בעורך, מעלים מאמר מוכן מקובץ Word, או יוצרים טיוטה עם AI. הכול באזור האישי, אחרי הרכישה.</p><span class="tag">בלי עלות</span></div>
-     <div class="way"><b>כתיבה עם AI</b><p>המערכת כותבת טיוטה לבד מיד אחרי התשלום, לפי הנושא, מילת המפתח או הקישור. אתם בודקים ושולחים לפרסום.</p><span class="tag">בלי עלות</span></div>
-     <div class="way"><b>כתיבה מקצועית</b><p>כותב מקצועי שלנו כותב את הכתבה. ממלאים מספר מילים, בין 100 ל־5,000.</p><span class="tag pay">15 אג׳ למילה · 400 מילים = 60 ₪</span></div>
-    </div>
-    <p class="note"><span>ⓘ</span><span><strong>לא חובה להחליט עכשיו.</strong> אם לא בוחרים, אתם מכינים את התוכן. אחרי הרכישה אפשר לשנות, למשל להוסיף כתיבה מקצועית.</span></p></div></li>
-  </ol>
-  <p class="lamp"><span>💡</span><span><strong>לדוגמה:</strong> בוחרים 10 אתרים עכשיו, ומשלימים את התוכן לכל כתבה כשתהיו מוכנים.</span></p>
-  <details class="more"><summary>פרטים נוספים למילוי הקובץ</summary><p>שיוך ללקוח הסוכנות הוא לבחירה: בוחרים מהרשימה הנפתחת בקובץ (הלקוחות מ„הלקוחות שלי”), או מזינים שם, מייל או מזהה. אם יש שמות זהים, בוחרים את הלקוח במסך הבדיקה.</p><p>כתיבה מקצועית עולה 15 אגורות למילה, לפני מע״מ. כתיבה עם AI מתחילה רק אחרי שההזמנה שולמה.</p><p>עד 500 שורות בקובץ, כתבה אחת בכל שורה. שורת הדוגמה בקובץ להמחשה בלבד ואינה נוספת להזמנה.</p></details>
+ <section class="start" id="start">
+  <div class="panel how">
+   <div class="how-head"><h2>איך זה עובד</h2><p>בוחרים עכשיו, מכינים תוכן מתי שנוח</p></div>
+   <ol class="steps4">
+    <li><span class="sn">1</span><div><h3>מורידים תבנית ובוחרים אתרים</h3><p>מורידים את קובץ ה־Excel וממלאים שורה נפרדת לכל כתבה שרוצים להזמין. את האתר בוחרים מרשימה נפתחת בקובץ.</p><p>אפשר לבחור אתרים בלבד, גם אם עדיין אין נושא, מאמר או הנחיות.</p></div></li>
+    <li><span class="sn">2</span><div><h3>כל שורה היא כתבה בפני עצמה</h3><p>רוצים שתי כתבות באותו אתר? ממלאים שתי שורות נפרדות. לכל כתבה אפשר לתת נושא והנחיות משלה. הנושא אינו חובה, ואפשר להשלים אותו בהמשך באזור האישי.</p>
+     <div class="mini"><div class="mh"><span>#</span><span>אתר</span><span>נושא הכתבה</span></div><div><span>1</span><span>ישראל היום</span><span>איך לבחור שטיח</span></div><div><span>2</span><span>כלכליסט</span><span class="mute">משאירים ריק וממלאים בהמשך</span></div></div></div></li>
+    <li><span class="sn">3</span><div><h3>מוסיפים הנחיות עכשיו — או בהמשך</h3><p>כבר יודעים מה לפרסם? ממלאים מראש נושא, מותג, מילת מפתח וקישור. עדיין מתכננים? משאירים ריק, ומשלימים אחרי הרכישה באזור האישי.</p></div></li>
+    <li><span class="sn">4</span><div><h3>בוחרים מי מכין את התוכן</h3><p>בעמודה „איך התוכן יוכן” בוחרים לכל כתבה דרך משלה:</p>
+     <div class="tiles">
+      <div class="tile"><span class="ti">✎</span><b>אני אכין את התוכן</b><p>כותבים בעורך, מעלים מאמר מוכן מ־Word, או יוצרים טיוטה עם AI. באזור האישי, אחרי הרכישה.</p><em>בלי עלות</em></div>
+      <div class="tile ai"><span class="ti">✦</span><b>כתיבה עם AI</b><p>המערכת כותבת טיוטה לבד מיד אחרי התשלום, לפי הנושא, מילת המפתח או הקישור. אתם בודקים ושולחים לפרסום.</p><em>בלי עלות</em></div>
+      <div class="tile pro"><span class="ti">✍</span><b>כתיבה מקצועית</b><p>כותב מקצועי שלנו כותב את הכתבה. ממלאים מספר מילים, בין 100 ל־5,000.</p><em>15 אג׳ למילה · 400 מילים = 60 ₪</em></div>
+     </div>
+     <p class="soft">לא בחרתם? אתם מכינים את התוכן. אחרי הרכישה אפשר לשנות, למשל להוסיף כתיבה מקצועית.</p></div></li>
+   </ol>
+   <p class="lamp"><span>💡</span><span><strong>לדוגמה:</strong> בוחרים 10 אתרים עכשיו, ומשלימים את התוכן לכל כתבה כשתהיו מוכנים.</span></p>
+   <details class="more"><summary>פרטים נוספים למילוי הקובץ</summary><p>שיוך ללקוח הסוכנות הוא לבחירה: בוחרים מהרשימה הנפתחת בקובץ (הלקוחות מ„הלקוחות שלי”), או מזינים שם, מייל או מזהה. אם יש שמות זהים, בוחרים את הלקוח במסך הבדיקה.</p><p>כתיבה מקצועית עולה 15 אגורות למילה, לפני מע״מ. כתיבה עם AI מתחילה רק אחרי שההזמנה שולמה.</p><p>עד 500 שורות בקובץ, כתבה אחת בכל שורה. שורת הדוגמה בקובץ להמחשה בלבד ואינה נוספת להזמנה.</p></details>
+  </div>
+  <aside class="panel go-panel">
+   <h2>מתחילים כאן <span>📋</span></h2>
+   <div class="act-block"><span class="an">1</span><div><b>מורידים את התבנית</b><p>קובץ Excel עם רשימת האתרים והמחירים שלכם.</p><button class="cta dlb">⤓ הורדת תבנית Excel</button><div class="sheets"><span>הזמנה</span><span>איך ממלאים</span><span>אתרים</span><span>הלקוחות שלי</span></div></div></div>
+   <div class="act-block"><span class="an t">2</span><div><b>מעלים את הקובץ המלא</b><label class="drop2"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#007c88" stroke-width="2"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 20h16"/></svg><span>גוררים לכאן את הקובץ</span><span class="pick2">בחירת קובץ</span></label><small>Excel או CSV · עד 500 שורות</small></div></div>
+   <p class="after"><b>אחרי ההעלאה</b> תראו כל שורה, ומה צריך לתקן לפני ההוספה לסל.</p>
+  </aside>
  </section>
-
- <section class="upload" id="upload"><label class="drop"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#008d9d" stroke-width="2"><path d="M12 16V4m0 0-5 5m5-5 5 5M4 20h16"/></svg><b>מעלים את הקובץ ובודקים את השורות</b><small>גוררים לכאן קובץ Excel או CSV לפי התבנית, או</small><span class="pick">בחירת קובץ</span></label></section>
 
  <section class="review" id="review">
   <div class="panel">
@@ -192,6 +231,6 @@ details.more{margin-top:14px;font-size:14px;line-height:1.8;color:var(--copy)}de
 </main>
 <script>const s=new URLSearchParams(location.search).get('s')||'review';
 if(s==='empty'){document.getElementById('review').hidden=true;document.getElementById('st2').className='step on';}
-else{document.getElementById('st3').className='step on';document.getElementById('guide').hidden=true;document.getElementById('upload').hidden=true;}</script>
+else{document.getElementById('st3').className='step on';document.getElementById('start').hidden=true;}</script>
 </body>
 </html>
