@@ -45,7 +45,10 @@ export async function saveCatalogBatch(user:Row,input:Row){
   // (found on Staging 16.11.2026, a legacy invalid address stopped a whole Sheets sync). A new site, a site being made visible again
   // and a changed field are fully checked, as before.
   const strict=!prev||(values.active===true&&!prev.active);
-  if(strict||'url' in values)d.url=url(d.url,'כתובת האתר');if(d.logo_url&&(strict||'logo_url' in values))d.logo_url=url(d.logo_url,'כתובת תמונת הלוגו');
+  // A logo kept on our own server (a seller's upload, /api/selling/logo/<id>, or a catalog upload) is a short path without
+  // https://; it is valid as it is (owner 24.11.2026: such a logo blocked the admin from saving the site).
+  const ownLogo=(v:string)=>/^\/api\/(selling\/logo|catalog-logo)\/[0-9a-f-]{8,64}$/i.test(v);
+  if(strict||'url' in values)d.url=url(d.url,'כתובת האתר');if(d.logo_url&&(strict||'logo_url' in values)&&!ownLogo(String(d.logo_url)))d.logo_url=url(d.logo_url,'כתובת תמונת הלוגו');
   const canonical=(value:string)=>{try{const u=new URL(value);return u.hostname.toLowerCase().replace(/^www\./,'')+u.pathname.replace(/\/$/,'')+u.search;}catch{return '';}};const normalized=canonical(d.url);if(!prev||canonical(prev.url)!==normalized){assert(!seenUrls.has(normalized),'אותה כתובת אתר מופיעה פעמיים בקבוצה',409);seenUrls.add(normalized);assert(![...existing.values()].some(w=>w.id!==id&&canonical(w.url)===normalized),'כבר קיים אתר עם הכתובת הזו. ערכו את האתר הקיים במקום להוסיף כפילות',409);}
   if('example_articles' in values)d.example_articles=values.example_articles.map((value:string,index:number)=>url(value,'כתובת מאמר לדוגמה '+(index+1)));
   const amount=(v:unknown)=>{assert(v!==''&&v!==null&&typeof v!=='boolean','יש להזין מחיר');const n=Math.round(Number(v)*100);assert(Number.isSafeInteger(n)&&n>=0&&n<=100000000,'מחיר חייב להיות מספר לא שלילי');return n;};

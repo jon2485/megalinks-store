@@ -2540,3 +2540,7 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 ## 27.11.2026: add-site journey and homepage buttons (owner approved, deployed with "כן, וגם את שאר השינויים")
 - Add-site journey (`app/seller-site-form.tsx`, `app/site-application-brand.css`): calm background with slow lines, one white card per step, wide "המשך", "חזרה" by the counter, single focus ring, tidy centred summary (short addresses, chosen image, price with separator), image picker in the same look.
 - Homepage (`home/index.html` + regenerated `lib/home-page-html.ts`, `lib/pr-page-html.ts`): hero button "קחו אותי למחירון!"; signed-in visitors see "לאזור האישי" (to /purchased) instead of "כניסה למערכת".
+
+## 27.11.2026: customer logo no longer blocks the admin from saving a site (from branch claude/logo-fix-20261124, owner approved)
+- A site approved from a customer request keeps its logo as `/api/selling/logo/<id>`. The admin form field "או קישור ללוגו" was `type="url"` and the server demanded https, so the admin could not save. Now the field is text (`inputMode="url"`) and the server accepts our own logo paths (`ownLogo` in `lib/catalog-bulk.ts`); any other address is still checked.
+- Checked locally: tsc and build; the admin save with a customer logo path returns 200 and keeps it; "לא קישור" is refused with the clear message; the test site was restored. admin-suppliers, admin-pricing-save-contract and admin-website-save-contract fail the same with and without this change.
