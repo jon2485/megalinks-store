@@ -154,3 +154,7 @@
 }
 /* The phone bar takes the bottom; the floating buttons move up above it, as they do over the checkout bar. */
 @media(max-width:900px){body:has(.bp-mobilebar) .floating-whatsapp{bottom:calc(84px + env(safe-area-inset-bottom))!important}body:has(.bp-mobilebar) .ml-a11y-fab{bottom:calc(148px + env(safe-area-inset-bottom))!important}}
+/* Owner 26.11.2026: the label and its hint on one line, so fields side by side line up. */
+.bulk-page .bp-f{display:block}
+.bulk-page .bp-f small{margin-inline-start:4px}
+.bulk-page .bp-f input,.bulk-page .bp-f select,.bulk-page .bp-f textarea{display:block;margin-top:6px}
