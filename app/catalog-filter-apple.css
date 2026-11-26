@@ -217,15 +217,17 @@ html body .catalog-notes-pop .publication-notes-done{align-self:stretch;min-heig
 @media(hover:hover){html body .catalog-notes-pop .publication-notes-done:hover{background:linear-gradient(180deg,#1679f7,#0f5fc4)}html body .catalog-notes-pop .publication-notes-close:hover{background:#e3e9f1}}
 html body .catalog-notes-pop .publication-notes-done:active{transform:scale(.98)}
 /* 26.11.2026 (owner, approved mockup): on the computer "סינון ומיון" and "הדבקת רשימה" open under their button inside the page,
-   like "קטגוריות", not as a full-height side panel; the page behind is not dimmed. Phones keep the bottom sheet. Sort buttons
-   say the direction in words, three to a row. */
-.catalog-seg.catalog-seg-sort[data-slot=toggle-group]{grid-template-columns:repeat(3,minmax(0,1fr))}
-.catalog-seg.catalog-seg-sort .catalog-seg-item[data-slot=toggle-group-item]{font-size:13.5px!important;white-space:nowrap}
+   like "קטגוריות", not as a full-height side panel; the page behind is not dimmed. Phones keep the bottom sheet.
+   Owner 26.11.2026 evening: the sort buttons stay as they were (מומלץ, מחיר ↑, מחיר ↓, DR). */
 @media(min-width:900px){
  html body .catalog-sort-dialog.is-anchored[data-slot=dialog-content][dir=rtl]{inset:auto!important;top:var(--pop-top)!important;bottom:auto!important;right:var(--pop-right,auto)!important;left:var(--pop-left,auto)!important;width:var(--pop-w)!important;max-width:var(--pop-w)!important;height:auto!important;max-height:min(620px,calc(100dvh - var(--pop-top) - 16px))!important;padding:0 18px!important;border-radius:22px!important;background:#fff!important;box-shadow:0 0 0 1px #0b285014,0 24px 50px -20px #0b285066!important;transform-origin:top center;animation:cf-pop .3s var(--cf-ease)!important}
- html body .catalog-sort-dialog.is-anchored .catalog-sort-footer{margin:14px -18px 0!important;padding:12px 18px 14px!important}
+ html body .catalog-sort-dialog.is-anchored .catalog-sort-footer{margin:14px -18px 0!important;padding:12px 18px 14px!important;background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
  html body .catalog-sort-dialog.is-anchored .catalog-sheet-head{padding-top:14px!important}
  /* No dimmed or blurred page behind (the build drops a plain backdrop-filter override, so the layer is simply not drawn;
     clicking outside still closes the window). */
  body:has(.catalog-sort-dialog.is-anchored[data-state=open]) [data-slot=dialog-overlay]{display:none!important}
+ /* Owner 26.11.2026: the site header vanished while the window was open. The dialog's scroll lock sets overflow:hidden on
+    body, which turns body into the sticky header's scroll box, so the header left with the page. Keep body visible here;
+    the dialog still blocks wheel and touch scrolling of the page, so the window stays under its button. */
+ body:has(.catalog-sort-dialog.is-anchored[data-state=open]){overflow:visible!important}
 }
