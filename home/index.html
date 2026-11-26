@@ -1117,7 +1117,7 @@ a.search:focus-visible{outline:3px solid #fff;outline-offset:3px}
         <svg class="search__go" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 6l-6 6 6 6"/></svg>
       </a>
       <div class="hero__ctas" style="--n:2">
-        <a class="btn btn--white" href="/catalog">לכל האתרים והמחירים<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a>
+        <a class="btn btn--white" href="/catalog">קחו אותי למחירון!<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></a>
         <a class="btn btn--ghost" href="#what">מה זה קישור בכלל?</a>
       </div>
     </div>
@@ -1759,10 +1759,14 @@ a.search:focus-visible{outline:3px solid #fff;outline-offset:3px}
       var open=q.classList.toggle('is-open');b.setAttribute('aria-expanded',open?'true':'false');
     });
   });
-  /* "כניסה למערכת" opens the catalog (owner, 18.11.2026): signed-in visitors go straight there, the rest sign in first */
-  [].slice.call(document.querySelectorAll('a[data-login]')).forEach(function(a){a.addEventListener('click',function(e){
-    if(e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();
-    fetch('/api/me',{credentials:'same-origin'}).then(function(r){location.href=r.ok?'/catalog':a.href;},function(){location.href=a.href;});
+  /* "כניסה למערכת" (owner, 18.11.2026): signed-in visitors go straight in, the rest sign in first.
+     Owner 27.11.2026: a visitor who is already signed in sees "לאזור האישי" there, and it opens the personal area. */
+  var logins=[].slice.call(document.querySelectorAll('a[data-login]')),signedIn=null;
+  function markSignedIn(){signedIn=true;logins.forEach(function(a){a.href='/purchased';a.setAttribute('aria-label','לאזור האישי');var t=a.querySelector('span');if(t)t.textContent='לאזור האישי';});}
+  if(logins.length)fetch('/api/me',{credentials:'same-origin'}).then(function(r){if(r.ok)markSignedIn();else signedIn=false;},function(){signedIn=false;});
+  logins.forEach(function(a){a.addEventListener('click',function(e){
+    if(signedIn!==null||e.metaKey||e.ctrlKey||e.shiftKey||e.button)return;e.preventDefault();
+    fetch('/api/me',{credentials:'same-origin'}).then(function(r){location.href=r.ok?'/purchased':a.href;},function(){location.href=a.href;});
   });});
   /* accessibility menu */
   var ab=document.querySelector('.fab__a11y'),ap=document.getElementById('a11y'),root=document.documentElement;
