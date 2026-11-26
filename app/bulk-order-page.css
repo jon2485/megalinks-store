@@ -1,17 +1,15 @@
 /* Bulk order page (owner approved 26.11.2026, design/bulk-order/mockup.html): the cart look. Light only. */
-.bulk-page{--bp-navy:#0b274d;--bp-ink:#09234b;--bp-copy:#405a78;--bp-muted:#52677e;--bp-line:#d6e6f0;--bp-ice:#f2f7fa;--bp-blue:#0876bf;--bp-err:#b42342;--bp-errbg:#fdf0f2;--bp-ok:#1d7d45;
- max-width:1320px;margin:0 auto;padding:8px 4px 60px;color:var(--bp-ink);font-family:Heebo,"Heebo ML",Arial,sans-serif;text-align:right;
- background:url("/brand/checkout-waves.webp") center top/100% 720px no-repeat}
+.bulk-page{--bp-navy:#0b274d;--bp-ink:#09234b;--bp-copy:#405a78;--bp-muted:#52677e;--bp-line:#e5e9ef;--bp-ice:#f5f6f8;--bp-blue:#0876bf;--bp-err:#b42342;--bp-errbg:#fdf0f2;--bp-ok:#1d7d45;
+ max-width:1320px;margin:0 auto;padding:8px 4px 60px;color:var(--bp-ink);font-family:Heebo,"Heebo ML",Arial,sans-serif;text-align:right}
 .bulk-page .bp-hidden{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
-.bp-steps{display:flex;justify-content:center;max-width:620px;margin:0 auto 10px;padding:0;list-style:none}
-.bp-step{flex:1;display:grid;justify-items:center;gap:6px;position:relative;font-size:13.5px;color:var(--bp-muted)}
-.bp-step:not(:last-child):after{content:"";position:absolute;top:18px;left:-50%;width:100%;height:1px;background:#a9d3ea}
-.bp-step i{z-index:1;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid #c9dfea;font-style:normal}
-.bp-step.is-on i{background:#0a8fca;border-color:#0a8fca;color:#fff}.bp-step.is-on{color:var(--bp-ink);font-weight:800}
-.bp-hero{display:flex;align-items:center;gap:26px;margin:10px 0 26px}
-.bp-hero img{width:160px;flex:none}
-.bp-hero h1{margin:0;font-size:46px;font-weight:850;letter-spacing:-.02em;line-height:1.15}.bp-hero h1 b{color:#0a8fca}
-.bp-hero p{margin:8px 0 0;font-size:17px;color:var(--bp-copy)}
+/* Owner 26.11.2026: no waves or illustration; the site's page header (big navy title, subtitle) and white panels. */
+.bp-hero{margin:18px 0 22px}
+.bp-hero h1{margin:0;font-size:43px;line-height:1.3;font-weight:800;letter-spacing:-.01em;color:#09234b}
+.bp-hero p{margin:6px 0 0;font-size:18px;color:var(--bp-copy)}
+.bp-steps{display:flex;align-items:center;gap:6px;margin:0 0 22px;padding:10px;list-style:none;background:#fff;border:1px solid #e3eef5;border-radius:24px;box-shadow:0 12px 34px -24px #0b274d40}
+.bp-step{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;min-height:56px;padding:0 12px;border-radius:16px;font-size:16px;font-weight:700;color:var(--bp-muted)}
+.bp-step i{display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--bp-ice);border:1px solid #d6e6f0;font-style:normal;font-size:14px;font-weight:800}
+.bp-step.is-on{background:#eef6ff;color:#0a64b8;box-shadow:inset 0 0 0 1px #cfe2f7}.bp-step.is-on i{background:#1b6fe0;border-color:#1b6fe0;color:#fff}
 .bp-panel{background:#fff;border-radius:26px;border:1px solid #e3eef5;box-shadow:0 12px 34px -20px #0b274d40;padding:22px}
 .bp-start,.bp-review{display:grid;grid-template-columns:minmax(0,1fr) 352px;gap:24px;align-items:start}
 .bp-how{padding:26px 28px}
@@ -88,8 +86,9 @@
 .bp-why{margin:0;font-size:13.5px;color:var(--bp-err);font-weight:700;text-align:center}
 .bulk-page :focus-visible{outline:3px solid #0a8fca;outline-offset:2px}
 @media(max-width:900px){
- .bulk-page{padding:4px 0 40px;background-size:auto 520px}
- .bp-hero{gap:12px;margin:6px 0 16px}.bp-hero img{width:96px}.bp-hero h1{font-size:31px}.bp-hero p{font-size:15px}
+ .bulk-page{padding:4px 0 40px}
+ .bp-hero{margin:8px 0 14px}.bp-hero h1{font-size:32px}.bp-hero p{font-size:15.5px}
+ .bp-steps{gap:4px;padding:6px;border-radius:18px;margin-bottom:16px}.bp-step{flex-direction:column;gap:4px;min-height:64px;padding:6px 4px;font-size:12.5px;text-align:center;line-height:1.3}
  .bp-start,.bp-review{grid-template-columns:1fr;gap:16px}
  .bp-go,.bp-sum{position:static}.bp-go{order:-1}
  .bp-panel{padding:14px;border-radius:22px}.bp-how{padding:18px 14px}.bp-go,.bp-sum{padding:0}
@@ -103,3 +102,28 @@
  .bp-main .bp-trash{grid-column:2;grid-row:1}
  .bp-fields{grid-template-columns:1fr}.bp-meta{display:none}
 }
+
+/* Owner 26.11.2026 evening: lighter and plainer. One even page background, white panels, neutral greys instead of the
+   light-blue tints; colour stays only in the buttons, numbers, icons and status text. */
+.workspace-page-content:has(.bulk-page),.workspace-page-shell:has(.bulk-page){background:#f7f8fa!important;background-image:none!important}
+.bulk-page .bp-panel{border-color:#e8ecf1;box-shadow:0 1px 2px #0b274d0a,0 10px 30px -24px #0b274d33}
+.bulk-page .bp-steps{border-color:#e8ecf1;box-shadow:0 1px 2px #0b274d0a}
+.bulk-page .bp-step.is-on{background:#f5f6f8;color:#09234b;box-shadow:inset 0 0 0 1px #e5e9ef}
+.bulk-page .bp-step i{background:#fff;border-color:#dfe4ea}
+.bulk-page .bp-go h2,.bulk-page .bp-sum h2{background:#fff;border-bottom:1px solid var(--bp-line)}
+.bulk-page .bp-sn{background:#f5f6f8;color:#09234b;box-shadow:inset 0 0 0 1px #e5e9ef}
+.bulk-page .bp-tile{background:#fff;border-color:var(--bp-line)}
+.bulk-page .bp-ti,.bulk-page .bp-tile.is-ai .bp-ti,.bulk-page .bp-tile.is-pro .bp-ti{background:#f5f6f8}
+.bulk-page .bp-tile.is-ai .bp-ti{color:#1b6fe0}.bulk-page .bp-tile.is-pro .bp-ti{color:#5a3fc0}
+.bulk-page .bp-drop{background:#fafbfc;border-color:#cfd6df}.bulk-page .bp-drop.is-over{background:#f2f4f7;border-color:#1b6fe0}
+.bulk-page .bp-drop svg{color:#52677e}
+.bulk-page .bp-pick{border-color:#cfd6df;color:#1b6fe0}
+.bulk-page .bp-sheets span{background:#f5f6f8;border-color:#dfe4ea}
+.bulk-page .bp-bar{background:#f5f6f8;color:#09234b}
+.bulk-page .bp-pill.is-ai,.bulk-page .bp-pill.is-pro{background:#f5f6f8}
+.bulk-page .bp-pill.is-ai{color:#1b6fe0}.bulk-page .bp-pill.is-pro{color:#5a3fc0}
+.bulk-page .bp-total{background:#f7f8fa;border-color:var(--bp-line)}.bulk-page .bp-total b{color:#09234b}
+.bulk-page .bp-item.is-bad{background:#fff;border-color:#f0c4cd}
+.bulk-page .bp-suggest{background:#fff;border-color:#cfd6df;color:#1b6fe0}
+.bulk-page .bp-f input,.bulk-page .bp-f select,.bulk-page .bp-f textarea{border-color:#d8dee6}
+.bulk-page .bp-step.is-on i{background:#1b6fe0;border-color:#1b6fe0;color:#fff}

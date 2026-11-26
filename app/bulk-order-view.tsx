@@ -58,8 +58,8 @@ export default function BulkView({ ctx }: { ctx: Ctx }) {
     const fileField = <input ref={fileInput} type="file" accept=".xlsx,.csv" className="bp-hidden" aria-label="קובץ הזמנות" disabled={!ready || busy || loading} onChange={e => { const f = e.target.files?.[0]; if (f) void load(f); e.target.value = ''; }}/>;
     const stage = rows.length ? 3 : 2;
     return <div dir="rtl" className="bulk-page">
+        <header className="bp-hero"><div><h1>הזמנה מרוכזת</h1><p>מעלים קובץ, בודקים את השורות ומוסיפים לסל.</p></div></header>
         <ol className="bp-steps" aria-label="שלבי ההזמנה המרוכזת">{['מורידים תבנית', 'ממלאים ומעלים', 'בודקים ומוסיפים לסל'].map((label, i) => <li key={label} className={'bp-step' + (i + 1 === stage ? ' is-on' : '')} aria-current={i + 1 === stage ? 'step' : undefined}><i>{i + 1}</i>{label}</li>)}</ol>
-        <header className="bp-hero"><img src="/brand/cart-publication.webp" alt=""/><div><h1><b>הזמנה</b> מרוכזת</h1><p>מעלים קובץ, בודקים את השורות ומוסיפים לסל.</p></div></header>
         {fileField}
         {!rows.length ? <section className="bp-start">
             <div className="bp-panel bp-how">
