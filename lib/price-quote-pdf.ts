@@ -19,10 +19,10 @@ export async function makePriceQuotePdf(v:Row,name:string,link:string,fontBytes:
  const text=(s:string,x:number,top:number,size=11,color=ink,align:'right'|'left'|'center'='right')=>{const value=shape(String(s)),w=font.widthOfTextAtSize(value,size);const left=align==='right'?x-w:align==='center'?x-w/2:x;page.drawText(value,{x:left,y:H-top,size,font,color});return {left,w};};
  const fit=(s:string,max:number,size:number)=>{let out=String(s);while(out.length>3&&width(out,size)>max)out=out.slice(0,-2);return out===String(s)?out:out.trimEnd()+'…';};
  const linkAt=(x:number,top:number,w:number,h:number,url:string)=>{const ref=pdf.context.register(pdf.context.obj({Type:'Annot',Subtype:'Link',Rect:[x,H-top-h,x+w,H-top],Border:[0,0,0],A:{Type:'Action',S:'URI',URI:PDFString.of(url)}}));const annots=page.node.lookup(PDFName.of('Annots'));if(annots)annots.push(ref);else page.node.set(PDFName.of('Annots'),pdf.context.obj([ref]));};
- const newPage=(first:boolean)=>{page=pdf.addPage([W,H]);page.drawRectangle({x:0,y:H-96,width:W,height:96,color:navy});page.drawImage(logo,{x:R-170,y:H-67,width:170,height:37});text('הצעת מחיר מס׳ '+v.number,L,54,17,white,'left');text(new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()),L,74,10,rgb(.82,.87,.94),'left');y=first?132:126;};
+ const newPage=(first:boolean)=>{page=pdf.addPage([W,H]);page.drawRectangle({x:0,y:H-96,width:W,height:96,color:navy});page.drawImage(logo,{x:R-170,y:H-67,width:170,height:37});text((v.revised?'הצעת מחיר מתוקנת מס׳ ':'הצעת מחיר מס׳ ')+v.number,L,54,v.revised?15:17,white,'left');text(new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date()),L,74,10,rgb(.82,.87,.94),'left');y=first?132:126;};
  newPage(true);
- text('הצעת מחיר'+(v.domain?' לאתר '+v.domain:''),R,y,21);y+=26;
- text('שלום '+(name||'')+', זו ההצעה שהכנו עבורך.',R,y,12.5,muted);y+=22;
+ text((v.revised?'הצעת מחיר מתוקנת':'הצעת מחיר')+(v.domain?' לאתר '+v.domain:''),R,y,21);y+=26;
+ text('שלום '+(name||'')+', '+(v.revised?'מצורפת ההצעה המתוקנת, לבקשתך. ההצעה הקודמת אינה תקפה עוד.':'זו ההצעה שהכנו עבורך.'),R,y,12.5,muted);y+=22;
  // The summary rows: one line for each detail, the value bold-sized on the left.
  const rows:[string,string,any,number,boolean][]=[['מספר הצעה',String(v.number),ink,13,false]];
  if(v.domain)rows.push(['לאתר',v.domain,ink,13,false]);if(v.budget_ils)rows.push(['תקציב',ils(v.budget_ils*100),ink,13,false]);

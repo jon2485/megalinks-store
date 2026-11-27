@@ -41,7 +41,7 @@ const base={number:1042,status:'sent',target_url:'run-shop.example',budget_ils:1
 // --- 1. the customer's view ---
 const q=record('q1',base);
 const view=await m.customerQuote(q);
-assert.deepEqual(Object.keys(view).sort(),['before_cents','budget_ils','count','domain','expires','id','items','number','percent_off','saving_cents','status','target_url','total_cents'].sort());
+assert.deepEqual(Object.keys(view).sort(),['before_cents','budget_ils','count','domain','expires','id','items','number','percent_off','revised','saving_cents','status','target_url','total_cents'].sort());
 assert.deepEqual(Object.keys(view.items[0]).sort(),['before_cents','name','percent_off','price_cents','url','website_id']);
 // "before" is the original list price (1,000 and 450), not the customer's own price (900 and 405)
 assert.equal(view.before_cents,145000);assert.equal(view.total_cents,124000);assert.equal(view.saving_cents,21000);assert.equal(view.count,2);
@@ -64,6 +64,10 @@ const adminView=await m.adminQuote(q);
 assert.equal(adminView.items[0].cost_cents,62000);assert.equal(adminView.items[0].profit_cents,23000);assert.equal(adminView.totals.profit_cents,124000-88000);assert.equal(adminView.items[0].base_cents,100000);assert.equal(adminView.items[0].list_cents,90000);
 assert.equal((await m.adminQuote(record('q-low',{...base,items:[{website_id:'a',price_cents:50000,list_cents:100000}]}))).items[0].below_cost,true);
 
+// --- 1b. a corrected quote: the wording, and the earlier version is not valid any more ---
+{const rev=await m.customerQuote(record('q-rev',{...base,revision:1}));assert.equal(rev.revised,true);assert.equal(view.revised,false);
+ const h=m.quoteMailHtml(rev,'דני','https://app.example',false);for(const t of ['הצעת מחיר מתוקנת מס׳ 1042','מצורפת ההצעה המתוקנת, לבקשתך','ההצעה הקודמת אינה תקפה עוד'])assert(h.includes(t),t);assert(!html.includes('מתוקנת'));assert(!leak.test(JSON.stringify(rev)));}
+assert.equal(m.quoteStatus({status:'revising',expires:future}),'revising');
 // --- 2. status and expiry ---
 assert.equal(m.quoteStatus({status:'sent',expires:future}),'sent');assert.equal(m.quoteStatus({status:'sent',expires:past}),'expired');
 assert.equal(m.quoteStatus({status:'accepted',expires:past}),'expired');assert.equal(m.quoteStatus({status:'ordered',expires:past}),'ordered');assert.equal(m.quoteStatus({}),'draft');
@@ -81,7 +85,7 @@ c=await m.applyQuotePrices({id:'cust'},[line('l1','a','q2',100000,{quantity:3}),
 // one site missing: the regular prices
 c=await m.applyQuotePrices({id:'cust'},[line('l1','a','q2',100000)]);assert.equal(c[0].price,100000);assert.equal(c[0].quote_applied,false);assert.equal(c[0].quote_number,1042);
 // expired, not approved yet, cancelled, another customer's quote, an unknown quote: the regular prices
-for(const [id,data,user] of [['q3',{...base,status:'accepted',expires:past}],['q4',{...base,status:'sent'}],['q5',{...base,status:'cancelled'}],['q6',{...base,status:'accepted'},'other']]){record(id,data,user);c=await m.applyQuotePrices({id:'cust'},[line('l1','a',id,100000),line('l2','b',id,45000)]);assert.deepEqual(c.map(i=>i.price),[100000,45000],id);assert.equal(c[0].quote_applied,false,id);}
+for(const [id,data,user] of [['q3',{...base,status:'accepted',expires:past}],['q4',{...base,status:'sent'}],['q5',{...base,status:'cancelled'}],['q5r',{...base,status:'revising'}],['q6',{...base,status:'accepted'},'other']]){record(id,data,user);c=await m.applyQuotePrices({id:'cust'},[line('l1','a',id,100000),line('l2','b',id,45000)]);assert.deepEqual(c.map(i=>i.price),[100000,45000],id);assert.equal(c[0].quote_applied,false,id);}
 c=await m.applyQuotePrices({id:'cust'},[line('l1','a','nope',100000)]);assert.equal(c[0].price,100000);
 // a site that left the catalog blocks the quote price
 c=await m.applyQuotePrices({id:'cust'},[line('l1','a','q2',100000,{active:0}),line('l2','b','q2',45000)]);assert.equal(c[1].price,45000);

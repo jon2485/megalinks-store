@@ -74,7 +74,7 @@ export async function customerQuote(q:Row){
  const items:Item[]=q.items||[];const sites=await mapIn('websites','id',items.map(i=>i.website_id));
  const rows=items.map(i=>{const s=sites.get(i.website_id);const before=beforeOf(i);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:before,price_cents:i.price_cents,percent_off:percentOff(before,i.price_cents)};});
  const before=rows.reduce((t,r)=>t+r.before_cents,0),total=rows.reduce((t,r)=>t+r.price_cents,0);
- return {id:q.id,number:q.number,status:quoteStatus(q),target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:rows.length,expires:q.expires||null,items:rows,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total)};
+ return {id:q.id,number:q.number,status:quoteStatus(q),target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:rows.length,expires:q.expires||null,items:rows,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total),revised:Number(q.revision)>0};
 }
 
 // ---------- admin actions ----------
@@ -88,24 +88,34 @@ async function createQuote(u:Row,b:Row){
  return load(id);
 }
 async function patchQuote(q:Row,b:Row){
- assert(['draft','sent','expired','declined'].includes(quoteStatus(q)),'אי אפשר לשנות הצעה שכבר אושרה. פתחו הצעה חדשה.',409);
+ assert(['draft','sent','expired','declined','accepted','revising'].includes(quoteStatus(q)),'אי אפשר לשנות הצעה שכבר הוזמנה או בוטלה. פתחו הצעה חדשה.',409);
  const patch:Row={};
- if(b.items!==undefined)patch.items=cleanItems(b.items,await pricedFor(q.user_id,(Array.isArray(b.items)?b.items:[]).map((i:Row)=>String(i?.website_id||''))));
+ if(b.items!==undefined){
+  patch.items=cleanItems(b.items,await pricedFor(q.user_id,(Array.isArray(b.items)?b.items:[]).map((i:Row)=>String(i?.website_id||''))));
+  // A quote that already went out and now changes: the earlier version stops being valid at once. Its lines leave
+  // the customer's cart (approving the corrected quote adds them again; left behind they would double the order),
+  // and the customer can approve only the corrected quote, once it is sent.
+  const same=JSON.stringify((q.items||[]).map((i:Item)=>[i.website_id,i.price_cents]))===JSON.stringify(patch.items.map((i:Item)=>[i.website_id,i.price_cents]));
+  if(q.sent_at&&!same){patch.status='revising';await stmt("DELETE FROM cart WHERE user_id=? AND json_extract(data,'$.quote_id')=?",q.user_id,q.id).run();}
+ }
  if(b.days!==undefined){patch.days=days(b.days);if(q.sent_at&&quoteStatus(q)!=='draft'){patch.expires=new Date(new Date(q.sent_at).getTime()+patch.days*DAY).toISOString();patch.reminded=false;}}
  if(b.budget_ils!==undefined)patch.budget_ils=Math.max(0,Math.round(Number(b.budget_ils)||0));
  if(b.target_url!==undefined)patch.target_url=String(b.target_url||'').trim().slice(0,300);
  return save(q,patch);
 }
 async function sendQuote(u:Row,q:Row,origin:string){
- assert(['draft','sent','expired','declined'].includes(quoteStatus(q)),'ההצעה כבר אושרה',409);assert((q.items||[]).length,'אין אתרים בהצעה');
+ assert(['draft','sent','expired','declined','accepted','revising'].includes(quoteStatus(q)),'ההצעה כבר הוזמנה או בוטלה',409);assert((q.items||[]).length,'אין אתרים בהצעה');
  const customer=await one('SELECT id,name,email FROM users WHERE id=?',q.user_id);assert(customer?.email,'ללקוח אין כתובת מייל');
  // The "before" price is fixed at the moment of sending, so the document does not change later.
  const sites=await pricedFor(q.user_id,q.items.map((i:Item)=>i.website_id));
  const items=cleanItems(q.items,sites),sent=now(),expires=new Date(Date.now()+days(q.days)*DAY).toISOString();
- const next=await save(q,{items,status:'sent',sent_at:sent,expires,reminded:false});
+ // Sent before: this is a corrected quote. An approved one that is sent again must be approved again.
+ const revised=!!q.sent_at,revision=(Number(q.revision)||0)+(revised?1:0);
+ if(revised)await stmt("DELETE FROM cart WHERE user_id=? AND json_extract(data,'$.quote_id')=?",q.user_id,q.id).run();
+ const next=await save(q,{items,status:'sent',sent_at:sent,expires,reminded:false,revision});
  const view=await customerQuote(next);
- await queueMail('email:price-quote:'+q.id+':'+sent,customer.id,{to:customer.email,subject:'הצעת מחיר מס׳ '+q.number+' ממגה לינקס',text:quoteMailText(view,customer.name,false),html:quoteMailHtml(view,customer.name,origin,false),origin,attach_price_quote:q.id});
- await audit(u,'price_quote','send',{id:q.id,number:q.number,total:view.total_cents});
+ await queueMail('email:price-quote:'+q.id+':'+sent,customer.id,{to:customer.email,subject:(revised?'הצעת מחיר מתוקנת מס׳ ':'הצעת מחיר מס׳ ')+q.number+' ממגה לינקס',text:quoteMailText(view,customer.name,false),html:quoteMailHtml(view,customer.name,origin,false),origin,attach_price_quote:q.id});
+ await audit(u,'price_quote',revised?'resend':'send',{id:q.id,number:q.number,total:view.total_cents,revision});
  return next;
 }
 
@@ -117,7 +127,7 @@ export async function pendingQuotes(u:Row){
  const sites=await mapIn('websites','id',rows.flatMap(q=>(q.items||[]).map((i:Item)=>i.website_id)));
  return rows.map(q=>{const items=(q.items||[]).map((i:Item)=>{const s=sites.get(i.website_id);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:beforeOf(i),price_cents:i.price_cents,percent_off:percentOff(beforeOf(i),i.price_cents)};});
   const before=items.reduce((t:number,r:Row)=>t+r.before_cents,0),total=items.reduce((t:number,r:Row)=>t+r.price_cents,0);
-  return {id:q.id,number:q.number,status:'sent',target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total)};});
+  return {id:q.id,number:q.number,status:'sent',target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total),revised:Number(q.revision)>0};});
 }
 type Brief=(input:Row,w:Row,u:Row)=>Promise<Row>;
 async function acceptQuote(u:Row,q:Row,validBrief:Brief){
@@ -171,7 +181,7 @@ export async function quotesOrdered(items:Row[],orderId:string){
 
 // ---------- the e-mail (this is also the quote document) ----------
 function quoteMailText(v:Row,name:string,reminder:boolean){
- return ['שלום '+(name||'')+',','',reminder?'הצעת מחיר מס׳ '+v.number+' בתוקף לעוד 24 שעות.':'הכנו עבורך הצעת מחיר מס׳ '+v.number+(v.domain?' לאתר '+v.domain:'')+'.',
+ return ['שלום '+(name||'')+',','',reminder?'הצעת מחיר מס׳ '+v.number+' בתוקף לעוד 24 שעות.':v.revised?'מצורפת ההצעה המתוקנת, לבקשתך: הצעת מחיר מס׳ '+v.number+(v.domain?' לאתר '+v.domain:'')+'. ההצעה הקודמת אינה תקפה עוד.':'הכנו עבורך הצעת מחיר מס׳ '+v.number+(v.domain?' לאתר '+v.domain:'')+'.',
   ...v.items.map((i:Row,n:number)=>(n+1)+'. '+i.name+' ('+i.url+'): '+ils(i.before_cents)+' לפני הנחה, '+ils(i.price_cents)+' אחרי הנחה'+(i.percent_off?' ('+i.percent_off+'% הנחה)':'')),
   'סה״כ: '+ils(v.total_cents)+' לפני מע״מ (במקום '+ils(v.before_cents)+(v.percent_off?', '+v.percent_off+'% הנחה':'')+').','ההצעה בתוקף עד '+dateTimeHe(v.expires)+'.'].join('\n');
 }
@@ -187,10 +197,10 @@ export function quoteMailHtml(v:Row,name:string,origin:string,reminder:boolean){
  const p='margin:0 0 18px;font-size:16px;line-height:1.6;color:#22364f;font-family:'+font;
  return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>הצעת מחיר מס׳ ${e(v.number)}</title></head><body style="margin:0;background:#e9eef5;padding:24px 12px;font-family:${font}">
 <table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" align="center" style="width:100%;max-width:680px;background:#ffffff;border-radius:18px;overflow:hidden">
-<tr><td style="background:#0b2850;padding:22px 28px"><table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:24px;font-weight:bold;color:#ffffff;font-family:${font}">MegaLinks</td><td align="left" style="font-size:16px;font-weight:bold;color:#ffffff;font-family:${font}">${reminder?'תזכורת':'הצעת מחיר מס׳ '+e(v.number)}</td></tr></table></td></tr>
+<tr><td style="background:#0b2850;padding:22px 28px"><table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:24px;font-weight:bold;color:#ffffff;font-family:${font}">MegaLinks</td><td align="left" style="font-size:16px;font-weight:bold;color:#ffffff;font-family:${font}">${reminder?'תזכורת':(v.revised?'הצעת מחיר מתוקנת מס׳ ':'הצעת מחיר מס׳ ')+e(v.number)}</td></tr></table></td></tr>
 <tr><td style="padding:28px">
-<h1 style="margin:0 0 10px;font-size:22px;line-height:1.35;font-weight:bold;color:#09234b;font-family:${font}">${reminder?'ההצעה שלך בתוקף לעוד 24 שעות':'הצעת מחיר'+(v.domain?' לאתר <span dir="ltr">'+e(v.domain)+'</span>':'')}</h1>
-<p style="${p}">שלום ${e(name||'')}, ${reminder?'קיבלת מאיתנו הצעת מחיר ועוד לא אישרת אותה.':'זו ההצעה שהכנו עבורך.'}</p>
+<h1 style="margin:0 0 10px;font-size:22px;line-height:1.35;font-weight:bold;color:#09234b;font-family:${font}">${reminder?'ההצעה שלך בתוקף לעוד 24 שעות':(v.revised?'הצעת מחיר מתוקנת':'הצעת מחיר')+(v.domain?' לאתר <span dir="ltr">'+e(v.domain)+'</span>':'')}</h1>
+<p style="${p}">שלום ${e(name||'')}, ${reminder?'קיבלת מאיתנו הצעת מחיר ועוד לא אישרת אותה.':v.revised?'מצורפת ההצעה המתוקנת, לבקשתך. ההצעה הקודמת אינה תקפה עוד.':'זו ההצעה שהכנו עבורך.'}</p>
 <table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e3eaf3;border-radius:14px;border-collapse:separate;overflow:hidden">
 ${row('מספר הצעה',e(v.number))}${v.domain?row('לאתר','<span dir="ltr">'+e(v.domain)+'</span>'):''}${v.budget_ils?row('תקציב',e(ils(v.budget_ils*100))):''}${row('כמות אתרים',String(v.count))}${v.before_cents>v.total_cents?row('מחיר מחירון','<s>'+e(ils(v.before_cents))+'</s>','color:#7a8aa0;font-weight:normal'):''}${v.percent_off?row('הנחה',off(v.percent_off)+' &nbsp;'+e(ils(v.saving_cents)),'color:#15803d'):''}${row('מחיר אחרי הנחה (לפני מע״מ)',e(ils(v.total_cents)),'font-size:20px;background:#f2f7ff')}${row('בתוקף עד',e(dateTimeHe(v.expires)),'color:#9a5b00',true)}
 </table>
@@ -228,7 +238,7 @@ export async function quoteReminders(origin:string){
 function customerQuoteFrom(q:Row,sites:Map<string,Row>){
  const items=(q.items||[]).map((i:Item)=>{const s=sites.get(i.website_id);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:beforeOf(i),price_cents:i.price_cents,percent_off:percentOff(beforeOf(i),i.price_cents)};});
  const before=items.reduce((t:number,r:Row)=>t+r.before_cents,0),total=items.reduce((t:number,r:Row)=>t+r.price_cents,0);
- return {id:q.id,number:q.number,target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total)};
+ return {id:q.id,number:q.number,target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total),revised:Number(q.revision)>0};
 }
 
 // ---------- the chat with Claude ----------
@@ -284,7 +294,7 @@ function systemPrompt(v:Row){
 }
 async function chat(q:Row,message:string){
  const text=String(message||'').trim();assert(text.length>0&&text.length<=4000,'כתבו הודעה (עד 4,000 תווים)');
- assert(['draft','sent','expired','declined'].includes(quoteStatus(q)),'אי אפשר לשנות הצעה שכבר אושרה. פתחו הצעה חדשה.',409);
+ assert(['draft','sent','expired','declined','accepted','revising'].includes(quoteStatus(q)),'אי אפשר לשנות הצעה שכבר הוזמנה או בוטלה. פתחו הצעה חדשה.',409);
  const c=await connection('ai');assert(c.enabled&&c.secret,'חיבור ה-AI אינו פעיל. מגדירים אותו ב״חיבורים והגדרות״.',503);
  assert(aiProvider(c)==='anthropic','הצ׳אט של הצעות המחיר עובד עם Claude. בחרו ב-Claude בהגדרת ״כתיבה עם AI״.',503);
  const client=anthropicClient(c.secret,externalFetch);

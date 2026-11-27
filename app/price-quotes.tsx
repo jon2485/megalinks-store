@@ -10,7 +10,7 @@ import './price-quotes.css';
 // "הצעות מחיר" (owner 27.11.2026, mockups design/quotes 1-5): a free chat with Claude about one customer's quote, and
 // beside it the quote itself. The cost and profit columns are the admin's only; the customer's document is built by
 // the server from its own fields.
-const STATUS:Record<string,[string,string]>={draft:['טיוטה','gray'],sent:['נשלחה','blue'],accepted:['אושרה, בסל','green'],ordered:['הוזמנה','green'],declined:['הלקוח הסיר מהסל','amber'],expired:['פג תוקף','amber'],cancelled:['בוטלה','gray']};
+const STATUS:Record<string,[string,string]>={draft:['טיוטה','gray'],sent:['נשלחה','blue'],accepted:['אושרה, בסל','green'],ordered:['הוזמנה','green'],declined:['הלקוח הסיר מהסל','amber'],expired:['פג תוקף','amber'],revising:['בעריכה, עוד לא נשלחה מחדש','amber'],cancelled:['בוטלה','gray']};
 // Whole shekels without ".00", so the table stays narrow.
 const money=(cents:number)=>'₪'+(Math.round(cents)/100).toLocaleString('he-IL',{maximumFractionDigits:2});
 const dateHe=(iso?:string|null)=>iso?new Intl.DateTimeFormat('he-IL',{day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(iso)):'';
@@ -63,7 +63,7 @@ function QuoteEditor({ctx,id,onBack}:{ctx:Ctx;id:string;onBack:()=>void}){
  useEffect(()=>{end.current?.scrollIntoView({block:'end'});},[q?.messages?.length,thinking]);
  if(state.error&&!q)return <div className="pq" dir="rtl"><p className="pq-empty">{state.error}</p><button type="button" className="pq-btn is-white" onClick={onBack}>חזרה</button></div>;
  if(!q)return <div className="pq" dir="rtl"><p className="pq-empty">טוענים…</p></div>;
- const locked=!['draft','sent','expired','declined'].includes(q.status);
+ const locked=!['draft','sent','expired','declined','accepted','revising'].includes(q.status);
  const say=async(e?:React.FormEvent)=>{e?.preventDefault();const message=text.trim();if(!message||thinking||locked)return;setText('');setPending(message);setThinking(true);
   try{setQ(await api('admin/quotes/'+id+'/chat','POST',{message},{background:true}));}catch(err){toast.error((err as Error).message);setText(message);}finally{setThinking(false);setPending('');}};
  const patch=async(body:Row,key:string)=>{setBusy(key);try{setQ(await api('admin/quotes/'+id,'PATCH',body,{background:true}));}catch(err){toast.error((err as Error).message);setQ(x=>x?{...x}:x);}finally{setBusy('');}};
@@ -105,8 +105,10 @@ function QuoteEditor({ctx,id,onBack}:{ctx:Ctx;id:string;onBack:()=>void}){
      <button type="button" className="pq-btn is-white" disabled={!q.items.length||!!busy} onClick={()=>void showPreview()}>{busy==='preview'?<Loader2 className="pq-spin" size={18}/>:<Eye size={18}/>}תצוגה מקדימה</button>
      <a className={'pq-btn is-white'+(!q.items.length?' is-off':'')} href={'/api/admin/quotes/'+id+'/pdf'} download aria-disabled={!q.items.length}><Download size={18}/>הורדת PDF</a>
      {!locked&&(confirmSend?<><button type="button" className="pq-btn is-orange" disabled={!!busy} onClick={()=>void send()}>{busy==='send'?<Loader2 className="pq-spin" size={18}/>:<Send size={18}/>}כן, לשלוח ל־{q.customer.email}</button><button type="button" className="pq-btn is-white" onClick={()=>setConfirmSend(false)}>ביטול</button></>
-      :<button type="button" className="pq-btn is-orange" disabled={!q.items.length||!!busy} onClick={()=>setConfirmSend(true)}><Send size={18}/>{q.status==='draft'?'שליחה במייל ללקוח':'שליחה מחדש ללקוח'}</button>)}
+      :<button type="button" className="pq-btn is-orange" disabled={!q.items.length||!!busy} onClick={()=>setConfirmSend(true)}><Send size={18}/>{q.status==='draft'?'שליחה במייל ללקוח':'שליחת ההצעה המתוקנת'}</button>)}
     </div>
+    {q.status==='revising'&&<p className="pq-note is-bad" role="status">ההצעה שונתה אחרי שנשלחה. הגרסה הקודמת כבר לא תקפה אצל הלקוח. שלחו מחדש כדי שיקבל את ההצעה המתוקנת.</p>}
+    {q.status==='accepted'&&<p className="pq-note">הלקוח אישר את ההצעה והיא בסל שלו. שינוי של אתר או מחיר יוציא את אתרי ההצעה מהסל שלו, עד שתשלחו את ההצעה המתוקנת והוא יאשר שוב.</p>}
     {q.status==='sent'&&<p className="pq-note">נשלחה ב־{dateHe(q.sent_at)}, עם קובץ PDF מצורף. הלקוח יקבל תזכורת 24 שעות לפני סוף התוקף.</p>}
    </section>
   </div>
