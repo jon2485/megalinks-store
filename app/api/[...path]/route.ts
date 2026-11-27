@@ -26,6 +26,8 @@ import {customerArticleData,customerActivity,customerSharedRecord,supplierDelive
 import {geminiEnvironmentConfigured} from '@/lib/server';
 import {geminiRequest,GeminiRequestError} from '@/lib/gemini-request';
 import {availableGeminiModels} from '@/lib/gemini-model-list';
+import {ANTHROPIC_DEFAULT_MODEL,ANTHROPIC_MODEL_FORMAT_ERROR,aiProvider,normalizeAnthropicModel,validAnthropicModel} from '@/lib/anthropic-model';
+import {anthropicJson,anthropicModelCheck} from '@/lib/anthropic-request';
 import {GEMINI_DEFAULT_MODEL,GEMINI_MODEL_FORMAT_ERROR,normalizeGeminiModel,validGeminiModel,geminiModelFailure} from '@/lib/gemini-model';
 import {writingBriefLink} from '@/lib/writing-brief-validation';
 import {contentStages} from '@/lib/content-presentation';
@@ -105,10 +107,14 @@ const activityFor=(rows:Row[],u:Row)=>u.role==='admin'?rows:rows.map(row=>custom
 const maxText = (s: any, max = 10000) => String(s || '').slice(0, max);
 const adminKinds = ['supplier', 'bundle', 'instruction', 'package', 'announcement', 'newsletter', 'template'];
 const ownKinds = ['customer', 'strategy', 'ticket', 'affiliate', 'payout'];
-const aiDefaultModel = (provider = 'openai') => provider === 'gemini' ? GEMINI_DEFAULT_MODEL : provider === 'openai' ? 'gpt-4.1-mini' : '';
+const aiDefaultModel = (provider = 'anthropic') => provider === 'anthropic' ? ANTHROPIC_DEFAULT_MODEL : provider === 'gemini' ? GEMINI_DEFAULT_MODEL : provider === 'openai' ? 'gpt-4.1-mini' : '';
 async function aiJson(c: Row, prompt: string) {
-    const provider = c.provider || 'openai';
-    const model = provider==='gemini'?normalizeGeminiModel(c.model||GEMINI_DEFAULT_MODEL):c.model||aiDefaultModel(provider);
+    const provider = aiProvider(c);
+    const model = provider==='gemini'?normalizeGeminiModel(c.model||GEMINI_DEFAULT_MODEL):provider==='anthropic'?normalizeAnthropicModel(c.model)||ANTHROPIC_DEFAULT_MODEL:c.model||aiDefaultModel(provider);
+    if (provider === 'anthropic') {
+        assert(validAnthropicModel(model), ANTHROPIC_MODEL_FORMAT_ERROR);
+        return { raw: await anthropicJson(c.secret, model, prompt, externalFetch), provider, model };
+    }
     if (provider === 'gemini') {
         assert(validGeminiModel(model), GEMINI_MODEL_FORMAT_ERROR);
         const res = await geminiRequest('https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(model) + ':generateContent', {
@@ -1359,7 +1365,7 @@ if (p[0] === 'cart') {
                 const connections: Row = {};
                 const stored = await settingsByKey([...keys.map(k => 'integration_' + k), 'vat', 'brand'], { ...Object.fromEntries(keys.map(k => ['integration_' + k, {}])), vat: 18, brand: 'פוסטפלואו' });
                 for (const k of keys) {
-                    const c = stored['integration_' + k];
+                    const c = k==='ai'?{...stored['integration_' + k],provider:aiProvider(stored['integration_' + k])}:stored['integration_' + k];
                     const gemini=k==='ai'&&c.provider==='gemini',runtime=gemini?geminiEnvironmentConfigured():!!integrationEnvironmentSecret(k,c.provider);
                     const storage=c.secret_storage||(gemini?'environment':runtime?'environment':'encrypted_server');
                     connections[k] = { ...integrationMetadata(k,c),secret_storage:storage,has_secret:storage==='environment'?!!runtime:!!c.secret,has_environment_secret:!!runtime,has_stored_secret:!!c.secret,environment_key:integrationEnvironmentName(k,c.provider) };
@@ -1429,6 +1435,12 @@ if (p[0] === 'cart') {
                 if (key === 'wordpress') {
                     const res = await externalFetch(new URL('/wp-json/wp/v2/users/me', c.url).href, { headers: { Authorization: basicAuth(c.username, c.secret) } });
                     assert(res.ok, 'החיבור נכשל. בדקו כתובת, משתמש וסיסמת אפליקציה', 502);
+                    return response({ ok: true });
+                }
+                if (key === 'ai' && c.provider === 'anthropic') {
+                    const model=normalizeAnthropicModel(c.model)||ANTHROPIC_DEFAULT_MODEL;
+                    assert(validAnthropicModel(model),ANTHROPIC_MODEL_FORMAT_ERROR);
+                    await anthropicModelCheck(c.secret,model,externalFetch);
                     return response({ ok: true });
                 }
                 if (key === 'ai') {

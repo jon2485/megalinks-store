@@ -3,6 +3,7 @@ import catalog from '@/data/catalog.json';
 import { getChatGPTUser } from '@/app/chatgpt-auth';
 import { Row, httpUrl, websitePricing } from './shared';
 import {integrationEnvironmentSecret} from './integration-security';
+import {aiProvider} from './anthropic-model';
 import {customerWebsiteData} from './customer-privacy';
 export const now = () => new Date().toISOString();
 export const uid = () => crypto.randomUUID();
@@ -116,8 +117,8 @@ export function externalUrl(value: string) {
     assert(!/^(localhost|.*\.local|.*\.internal|.*\.localhost)$/i.test(host)&&!/^\d+(\.\d+){3}$/.test(host)&&!host.includes(':')&&host.includes('.'),'יש להזין כתובת ציבורית תקינה');
     return u;
 }
-export async function externalFetch(url: string, init: RequestInit) { externalUrl(url); let res:Response;try{res = await fetch(url, { ...init, redirect: 'manual', signal: AbortSignal.timeout(45000) });}catch{throw new ApiError(502,'החיבור לשירות החיצוני נכשל או שזמן ההמתנה הסתיים');} assert(res.status < 300 || res.status >= 400, 'השירות החיצוני החזיר הפניה לכתובת אחרת', 502); return res; }
-export async function connection(key: string) { const x = await setting('integration_' + key, {}); if (key === 'ai' && x.provider === 'gemini') return { ...x, secret: x.secret_storage==='encrypted_server'?(x.secret?await decrypt(x.secret):''):await geminiServerKey() }; const runtime=integrationEnvironmentSecret(key,x.provider);return {...x,secret:x.secret_storage==='environment'?runtime:x.secret_storage==='encrypted_server'?(x.secret?await decrypt(x.secret):''):runtime||(x.secret?await decrypt(x.secret):'')}; }
+export async function externalFetch(url: string, init: RequestInit, timeoutMs = 45000) { externalUrl(url); let res:Response;try{res = await fetch(url, { ...init, redirect: 'manual', signal: AbortSignal.timeout(timeoutMs) });}catch{throw new ApiError(502,'החיבור לשירות החיצוני נכשל או שזמן ההמתנה הסתיים');} assert(res.status < 300 || res.status >= 400, 'השירות החיצוני החזיר הפניה לכתובת אחרת', 502); return res; }
+export async function connection(key: string) { const stored = await setting('integration_' + key, {}); if (key === 'ai' && stored.provider === 'gemini') return { ...stored, secret: stored.secret_storage==='encrypted_server'?(stored.secret?await decrypt(stored.secret):''):await geminiServerKey() }; const x=key==='ai'?{...stored,provider:aiProvider(stored)}:stored; const runtime=integrationEnvironmentSecret(key,x.provider);return {...x,secret:x.secret_storage==='environment'?runtime:x.secret_storage==='encrypted_server'?(x.secret?await decrypt(x.secret):''):runtime||(x.secret?await decrypt(x.secret):'')}; }
 export async function notify(u: Row, kind: string, data: any) { await stmt('INSERT INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)', uid(), u.id, kind, 'requested', JSON.stringify(data), now(), now()).run(); }
 export async function syncOrder(id: string) { const outstanding = await one("SELECT COUNT(*) AS n FROM articles WHERE order_id=? AND status NOT IN ('published','cancelled','demo_completed')", id); const started = await one("SELECT COUNT(*) AS n FROM articles WHERE order_id=? AND status NOT IN ('draft','cancelled')", id); if (!outstanding?.n)
     await stmt("UPDATE orders SET status='completed',updated=? WHERE id=? AND (paid=1 OR json_extract(data,'$.demo')=1 OR json_extract(data,'$.on_account')=1) AND status<>'cancelled'", now(), id).run();
