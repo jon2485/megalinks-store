@@ -1,0 +1,57 @@
+/* Owner 27.11.2026 (approved mockup): "כתבות לפרסום" of a site owner. Every article is a tidy white row with the site,
+   the title and the date it was sent; the blue "דיווח פרסום" opens a small window (a sheet from the bottom on phones). */
+.s8-articles .s8-artlist{list-style:none;margin:0;padding:6px 16px 16px;display:grid;gap:10px}
+.s8-articles .s8-art2{display:grid;grid-template-columns:44px minmax(0,1fr) auto;grid-template-areas:"ic site act" "ic title act" "ic date act";column-gap:14px;row-gap:3px;align-items:center;padding:16px 18px;border:1px solid #e6ecf2;border-radius:18px;background:#fff;box-shadow:0 1px 2px #0b274d0a;transition:border-color .15s ease,box-shadow .15s ease}
+.s8-articles .s8-art2:hover{border-color:#cfe0f5;box-shadow:0 6px 18px -14px #0b274d66}
+.s8-art2-ic{grid-area:ic;align-self:start;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:#eef5ff;color:#1b6fe0}
+.s8-art2[data-state=published] .s8-art2-ic{background:#e7f7ed;color:#16a34a}
+.s8-art2-site{grid-area:site;font-size:13px;font-weight:700;color:#0a64b8;min-width:0}
+.s8-art2-site a{color:inherit;text-decoration:none}
+.s8-art2-site a:hover{text-decoration:underline}
+.s8-art2-title{grid-area:title;font-size:16px;font-weight:800;line-height:1.4;color:#09234b;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere}
+.s8-art2-date{grid-area:date;font-size:13px;color:#52677e}
+.s8-art2-act{grid-area:act;display:flex;align-items:center;justify-content:flex-end}
+.s8-articles .s8-art2-btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 20px;border:0;border-radius:12px;background:linear-gradient(180deg,#2f86f2,#1b6fe0);color:#fff;font-size:15px;font-weight:800;white-space:nowrap;box-shadow:0 8px 18px -12px #1b6fe0;transition:filter .15s ease,transform .1s ease,box-shadow .15s ease}
+.s8-articles .s8-art2-btn:hover{filter:brightness(1.07);box-shadow:0 10px 22px -12px #1467cf}
+.s8-articles .s8-art2-btn:active{transform:scale(.98)}
+.s8-articles .s8-art2-btn:focus-visible,.s8-art2-link:focus-visible{outline:3px solid #1b6fe055;outline-offset:2px}
+.s8-art2-link{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 16px;border-radius:12px;background:#f2f6fb;color:#0a64b8;font-size:14px;font-weight:700;text-decoration:none;white-space:nowrap}
+.s8-art2-link:hover{background:#e6effa}
+@media(max-width:700px){
+ .s8-articles .s8-artlist{padding:4px 10px 12px}
+ .s8-articles .s8-art2{grid-template-columns:40px minmax(0,1fr);grid-template-areas:"ic site" "ic title" "ic date" "act act";padding:14px}
+ .s8-art2-ic{width:40px;height:40px}
+ .s8-art2-act{margin-top:10px}
+ .s8-articles .s8-art2-btn,.s8-art2-act .s8-art2-link{width:100%;min-height:48px}
+}
+/* the small window */
+.s8-dlg-scrim{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:16px;background:#0b274d40;animation:s8-dlg-fade .18s ease}
+.s8-dlg{width:min(440px,100%);max-height:calc(100dvh - 32px);overflow:auto;padding:20px;border-radius:22px;background:#fff;color:#09234b;box-shadow:0 1px 2px #0b285014,0 30px 60px -24px #0b285073;direction:rtl;text-align:right;animation:s8-dlg-in .22s cubic-bezier(.16,1,.3,1)}
+.s8-dlg>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.s8-dlg h3{margin:0;font-size:20px;font-weight:800;color:#09234b}
+.s8-dlg-x{display:grid;place-items:center;width:36px;height:36px;border:0;border-radius:50%;background:#eef2f7;color:#4f5d6e;cursor:pointer;transition:background .15s ease}
+.s8-dlg-x:hover{background:#e2e8f0;color:#09234b}
+.s8-dlg-sum{display:grid;gap:2px;margin-bottom:16px;padding:12px 14px;border-radius:14px;background:#f5f7fa}
+.s8-dlg-sum b{font-size:15px;line-height:1.4;overflow-wrap:anywhere}
+.s8-dlg-sum small{font-size:13px;color:#52677e}
+.s8-dlg .seller-report{display:block;margin:0;padding:0;border:0;background:none}
+.s8-dlg .seller-report>label{display:block;margin:0 0 6px;font-size:14px;font-weight:700;color:#09234b}
+.s8-dlg .seller-report input{width:100%;height:auto;min-height:48px;padding:0 14px;border:1px solid #cfd8e2;border-radius:12px;background:#fff;font-size:16px;text-align:left;box-shadow:none}
+.s8-dlg .seller-report input:focus,.s8-dlg .seller-report input:focus-visible{outline:0;border-color:#1b6fe0;box-shadow:0 0 0 3px #1b6fe026}
+.s8-dlg .seller-report input[aria-invalid=true]{border-color:#d92d20}
+.s8-dlg .seller-report-hint{margin:6px 0 16px;font-size:13px;color:#52677e}
+.s8-dlg .seller-report-error{margin:6px 0 0;font-size:13px;font-weight:600;color:#b42318}
+.s8-dlg .seller-report-acts{display:grid;gap:6px}
+.s8-dlg .seller-report-acts button{width:100%;min-height:50px;border-radius:14px;font-size:16px;font-weight:800}
+.s8-dlg .seller-report-acts button[type=submit]{border:0;background:linear-gradient(180deg,#2f86f2,#1b6fe0);color:#fff;box-shadow:0 8px 18px -12px #1b6fe0}
+.s8-dlg .seller-report-acts button[type=submit]:hover:not(:disabled){filter:brightness(1.07)}
+.s8-dlg .seller-report-acts .seller-report-cancel{min-height:44px;border:0;background:transparent;color:#52677e;font-size:15px;font-weight:700}
+.s8-dlg .seller-report-acts .seller-report-cancel:hover{background:#f2f5f9;color:#09234b}
+@keyframes s8-dlg-fade{from{opacity:0}}
+@keyframes s8-dlg-in{from{opacity:0;transform:translateY(10px) scale(.98)}}
+@media(max-width:700px){
+ .s8-dlg-scrim{place-items:end stretch;padding:0}
+ .s8-dlg{width:100%;max-height:calc(100dvh - 40px);padding:20px 18px calc(22px + env(safe-area-inset-bottom));border-radius:22px 22px 0 0}
+ @keyframes s8-dlg-in{from{transform:translateY(100%)}}
+}
+@media(prefers-reduced-motion:reduce){.s8-dlg-scrim,.s8-dlg{animation:none}}

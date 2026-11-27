@@ -2544,3 +2544,10 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 ## 27.11.2026: customer logo no longer blocks the admin from saving a site (from branch claude/logo-fix-20261124, owner approved)
 - A site approved from a customer request keeps its logo as `/api/selling/logo/<id>`. The admin form field "או קישור ללוגו" was `type="url"` and the server demanded https, so the admin could not save. Now the field is text (`inputMode="url"`) and the server accepts our own logo paths (`ownLogo` in `lib/catalog-bulk.ts`); any other address is still checked.
 - Checked locally: tsc and build; the admin save with a customer logo path returns 200 and keeps it; "לא קישור" is refused with the clear message; the test site was restored. admin-suppliers, admin-pricing-save-contract and admin-website-save-contract fail the same with and without this change.
+
+## 27.11.2026: homepage (approved mockup), offers tab speed, site-owner articles screen (local only, not pushed)
+- 83980f7 homepage: "כתבות החל מ־50 ₪" in the hero sentence and next to the "אלפי אתרים" button, logos strip right under the hero, button texts by place. The 6 steps were not touched (owner).
+- 76130e2 offers: Staging has 541 sale sites and "אתרים בודדים במבצע" drew them all at once (8-10 s on a slowed phone). Now 24 cards, more while scrolling, and a "הצגת עוד אתרים במבצע" button. Measured locally with the Staging catalog: under 1 s.
+- Site owner "כתבות לפרסום" (`app/seller-articles.tsx`, new `app/seller-articles.css`), approved mockup in `design/seller-articles/`: tidy rows (site, title, "נשלחה לפרסום" + full date) with a blue "דיווח פרסום"; it opens a small window (a sheet from the bottom on phones) with the article summary, the link field and hint, "שמירת קישור" and "ביטול". Escape and the X close and return focus, Tab stays in the window, the page behind does not scroll, the window closes after a successful save.
+- Checked: tsc, build, seller-refinements-ui, customer-sellers-ui, bundle-feedback (Windows copy). customer-sellers and integration fail on the link check of the report the same before these changes.
+- Next: Staging deploy only when the owner approves.
