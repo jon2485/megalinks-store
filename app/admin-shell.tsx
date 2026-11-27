@@ -18,7 +18,7 @@ import {WorkspaceAccountControls} from './workspace-account-controls';
 import AdminUpdateFeed from './admin-update-feed';
 import {adminMenuSections,adminAreaLabel,useAdminAttention,AdminAttentionBadge} from './admin-attention';
 
-const icons=[LayoutDashboard,ShoppingCart,FileText,Users,Globe,Building2,Tag,MessageSquare,Settings];
+const icons=[LayoutDashboard,ShoppingCart,FileText,Users,Globe,Building2,Tag,MessageSquare,Settings,ReceiptText];
 export function AdminMenuContent({ctx,view,onSelect=()=>{}}:{ctx:Ctx;view:string;onSelect?:()=>void}){
  const [search,setSearch]=useState(''),input=useRef<HTMLInputElement>(null),active=adminArea(view),attention=useAdminAttention(ctx);
  const q=search.trim().toLocaleLowerCase('he');

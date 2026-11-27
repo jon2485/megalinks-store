@@ -5,9 +5,11 @@ export const adminAreas = [
  {id:'admin-users',label:'לקוחות והרשאות',description:'תיקי לקוח, הרשאות ומסגרות אשראי.',pages:[['admin-users','לקוחות והרשאות']]},
  {id:'admin-websites',label:'קטלוג ותמחור',description:'אתרים, סנכרון Google Sheets ומחירים ללקוחות.',pages:[['admin-websites','קטלוג ותמחור']]},
  {id:'admin-suppliers',label:'ספקים',description:'פרטי ספקים, האתרים שלהם ותשלומים על פרסומים.',pages:[['admin-supplier-overview','סקירה'],['admin-suppliers','כל הספקים'],['admin-seller-requests','בקשות וחשבוניות'],['admin-supplier-finance','התחשבנות']]},
- {id:'admin-promotions',label:'מבצעים וחבילות',description:'חבילות פרסום, מבצעים, קופונים וחבילות יתרה.',pages:[['admin-promotions','מבצעים וחבילות'],['admin-quotes','הצעות מחיר']]},
+ {id:'admin-promotions',label:'מבצעים וחבילות',description:'חבילות פרסום, מבצעים, קופונים וחבילות יתרה.',pages:[['admin-promotions','מבצעים וחבילות']]},
  {id:'admin-support',label:'פניות שירות',description:'פניות הלקוחות והמשך הטיפול בהן.',pages:[['admin-support','פניות']]},
  {id:'admin-connections',label:'מערכת ודוחות',description:'הגדרות, דוחות, דיוור והיסטוריית פעולות.',pages:[['admin-connections','חיבורים והגדרות'],['admin-reports','דוחות'],['admin-notifications','דיוור'],['admin-jobs','יומן חיבורים'],['admin-audit','יומן פעילות']]},
+ // Owner 27.11.2026: its own item in the menu. Kept last here: adminArea() below points at the others by position.
+ {id:'admin-quotes',label:'הצעות מחיר',description:'צ׳אט עם Claude על הצעה ללקוח, שליחה במייל ואישור לסל.',pages:[['admin-quotes','הצעות מחיר']]},
 ] as const;
 export function adminArea(view:string){
  if(/^admin-supplier(-articles|-stock|-billing|-order|-package)?\//.test(view)||view.startsWith('admin-supplier-invoice/')||view.startsWith('admin-seller-request/'))return adminAreas[5];

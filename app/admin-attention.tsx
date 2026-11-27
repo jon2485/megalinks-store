@@ -9,7 +9,7 @@ type AttentionState=ReturnType<typeof useData>;
 const AttentionContext=createContext<AttentionState|null>(null);
 export const adminMenuSections=[
  {label:'עבודה שוטפת',areas:['admin','admin-orders','admin-approvals','admin-support']},
- {label:'מסחר וחשבונות',areas:['admin-users','admin-websites','admin-suppliers','admin-promotions']},
+ {label:'מסחר וחשבונות',areas:['admin-users','admin-websites','admin-suppliers','admin-promotions','admin-quotes']},
  {label:'מערכת ובקרה',areas:['admin-connections']},
 ] as const;
 export const adminQueueSections=[
