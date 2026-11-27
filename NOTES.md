@@ -2567,3 +2567,12 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - Safety: the callback needs the `hash` header (HMAC-SHA256 base64 with the secret key) and user-agent PayPlus, then a second look-up at PayPlus (`PaymentPages/ipn`: status 000, same amount, ILS). Then the old paid flow (amount check, duplicates, unapplied money, Green Invoice). PayPlus invoice is off on every link.
 - Not verified: PayPlus's docs don't define the IPN answer layout or whether the hash is over the raw body. Both are handled defensively; confirm with a real sandbox payment on Staging before Production.
 - Before upload/use: the owner sets the PayPlus test keys in Railway Staging, pastes `<staging>/api/payplus/callback` in the PayPlus panel, presses "בדיקת חיבור", then a test payment.
+
+## 27.11.2026 (afternoon): e-mails, AI article phrases, writing notice, image search (on Staging, b3d2d9d)
+- E-mails removed (owner): "פירוט פרסומים לחודש" to regular suppliers (button only for a supplier with an account), "מצב חבילת הפרסומים" e-mail and its button, "מאמר חדש ממתין לאישור" to admins.
+- AI article: the prompt names the link phrases and asks for each once in a natural sentence of a body paragraph (Google's link guidance: descriptive anchor, context around it, spaced apart, no stuffing). `placeLinks` in `lib/ai-article-content.ts` links the phrase where written; a skipped phrase is woven into the most related paragraph, never a lone line at the end. Note for the owner: Google asks paid links to carry rel="sponsored"; the system does not add it (business decision, unchanged).
+- "המאמר שלך בהכנה" is now a green check with a moving pen and "עובדים על המאמר שלך" with growing/shrinking dots (`app/ai-writing-notice.tsx`).
+- Image library search and pick run with `{background:true}`: no whole-page loader.
+- Staging gate: POST /api/payplus/callback with the PayPlus user-agent passes; /homepage/* readable signed out (fixed the home page for visitors).
+- AI ideas mockups (not built): design/ai-ideas (lobby "מה חשוב היום", support draft reply, catalog "איזה אתר מתאים לי?").
+- Known failing tests unrelated to today: admin-content (hidden drafts), admin-suppliers (400), pricing-admin-ui, admin-foundation-stage-a, pr-page (page is "בונים פה" on purpose), plus Windows-only ESM/asset path failures.
