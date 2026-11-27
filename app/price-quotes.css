@@ -10,6 +10,7 @@
 .pq-pill.is-green{background:#e7f7ed;color:#15803d}.pq-pill.is-blue{background:#eaf2ff;color:#1b6fe0}.pq-pill.is-amber{background:#fff4e0;color:#9a5b00}
 .pq-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 18px;border:0;border-radius:14px;background:linear-gradient(180deg,#2f86f2,#1b6fe0);color:#fff;font:inherit;font-weight:800;font-size:15px;cursor:pointer;white-space:nowrap}
 .pq-btn:hover:not(:disabled){filter:brightness(1.05)}.pq-btn:disabled{opacity:.55;cursor:default}.pq-btn:focus-visible{outline:3px solid #1b6fe055;outline-offset:2px}
+.pq-btn{text-decoration:none}.pq-btn.is-off{opacity:.55;pointer-events:none}
 .pq-btn.is-orange{background:linear-gradient(180deg,#ff9a3c,#f47b16)}.pq-btn.is-white{background:#fff;border:1px solid #d6e2f0;color:#0a64b8}.pq-btn.is-small{min-height:38px;padding:0 13px;font-size:13.5px;border-radius:11px}
 .pq-spin{animation:pq-spin 1s linear infinite}@keyframes pq-spin{to{transform:rotate(360deg)}}
 .pq-new{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.2fr) minmax(110px,.6fr) auto;gap:12px;align-items:end;padding:16px 18px}
@@ -25,7 +26,8 @@
 .pq-t td{padding:12px;border-bottom:1px solid #edf1f6;font-size:14.5px;font-variant-numeric:tabular-nums;vertical-align:middle}
 .pq-t tbody tr:last-child td{border-bottom:0}.pq-t td b{font-size:15px}.pq-t td small{display:block;color:#5b6f86;font-size:12.5px}.pq-t s{color:#7a8aa0}
 .pq-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px;align-items:start}
-.pq-chat{display:grid;grid-template-rows:minmax(0,1fr) auto;height:min(760px,calc(100vh - 190px));min-height:460px}
+/* The chat fits the window, so the message box is always in view without scrolling the page. */
+.pq-chat{display:grid;grid-template-rows:minmax(0,1fr) auto;height:min(760px,calc(100vh - 300px));min-height:380px}
 .pq-msgs{padding:16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto}
 .pq-me{align-self:flex-start;max-width:85%;background:#1b6fe0;color:#fff;padding:10px 14px;border-radius:16px 16px 16px 4px;font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
 .pq-ai{align-self:flex-end;max-width:94%;background:#f2f6fb;padding:12px 14px;border-radius:16px 16px 4px 16px;font-size:14.5px;line-height:1.6;overflow-wrap:anywhere}

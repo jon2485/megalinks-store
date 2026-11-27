@@ -449,7 +449,7 @@ async function handle(r: Request,access:ResponseAccess) {
     const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
     const pricingResponse=await pricingRoutes(r,p,u,json);if(pricingResponse)return pricingResponse;
     // "הצעות מחיר" (owner 27.11.2026): the admin's quotes and chat, and the customer's pending quotes and approval.
-    {const quoteResult=await priceQuoteRoutes(r,p,u,json,validBrief);if(quoteResult)return response(quoteResult);}
+    {const quoteResult=await priceQuoteRoutes(r,p,u,json,validBrief);if(quoteResult)return quoteResult instanceof Response?quoteResult:response(quoteResult);}
     const financeResponse=await financeRoutes(r,p,u,json);if(financeResponse)return financeResponse;
     const accountResponse=await accountManagementRoutes(r,p,u);if(accountResponse)return accountResponse;
     const workflowResponse=await workflowRoutes(r,p,u);if(workflowResponse)return workflowResponse;

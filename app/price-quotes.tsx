@@ -1,6 +1,6 @@
 'use client';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {ArrowRight,Eye,FileText,Loader2,Lock,Plus,Printer,Send,Sparkles,Trash2,X} from 'lucide-react';
+import {ArrowRight,Download,Eye,FileText,Loader2,Lock,Plus,Printer,Send,Sparkles,Trash2,X} from 'lucide-react';
 import {toast} from 'sonner';
 import {api,useData} from '@/lib/client';
 import type {Row} from '@/lib/shared';
@@ -102,11 +102,12 @@ function QuoteEditor({ctx,id,onBack}:{ctx:Ctx;id:string;onBack:()=>void}){
     {q.budget_ils>0&&q.totals.price_cents>q.budget_ils*100&&<p className="pq-note is-bad">ההצעה גבוהה מהתקציב ב־{money(q.totals.price_cents-q.budget_ils*100)}.</p>}
     <p className="pq-note"><Lock size={15}/>העמודות הצהובות (עלות ורווח) נראות רק לכם. הן לא נכנסות למסמך ולא למייל של הלקוח.</p>
     <div className="pq-acts">
-     <button type="button" className="pq-btn is-white" disabled={!q.items.length||!!busy} onClick={()=>void showPreview()}>{busy==='preview'?<Loader2 className="pq-spin" size={18}/>:<Eye size={18}/>}תצוגה מקדימה והדפסה</button>
+     <button type="button" className="pq-btn is-white" disabled={!q.items.length||!!busy} onClick={()=>void showPreview()}>{busy==='preview'?<Loader2 className="pq-spin" size={18}/>:<Eye size={18}/>}תצוגה מקדימה</button>
+     <a className={'pq-btn is-white'+(!q.items.length?' is-off':'')} href={'/api/admin/quotes/'+id+'/pdf'} download aria-disabled={!q.items.length}><Download size={18}/>הורדת PDF</a>
      {!locked&&(confirmSend?<><button type="button" className="pq-btn is-orange" disabled={!!busy} onClick={()=>void send()}>{busy==='send'?<Loader2 className="pq-spin" size={18}/>:<Send size={18}/>}כן, לשלוח ל־{q.customer.email}</button><button type="button" className="pq-btn is-white" onClick={()=>setConfirmSend(false)}>ביטול</button></>
       :<button type="button" className="pq-btn is-orange" disabled={!q.items.length||!!busy} onClick={()=>setConfirmSend(true)}><Send size={18}/>{q.status==='draft'?'שליחה במייל ללקוח':'שליחה מחדש ללקוח'}</button>)}
     </div>
-    {q.status==='sent'&&<p className="pq-note">נשלחה ב־{dateHe(q.sent_at)}. הלקוח יקבל תזכורת 24 שעות לפני סוף התוקף.</p>}
+    {q.status==='sent'&&<p className="pq-note">נשלחה ב־{dateHe(q.sent_at)}, עם קובץ PDF מצורף. הלקוח יקבל תזכורת 24 שעות לפני סוף התוקף.</p>}
    </section>
   </div>
   {preview&&<div className="pq-scrim" onMouseDown={e=>{if(e.target===e.currentTarget)setPreview('');}}><div className="pq-preview" role="dialog" aria-modal="true" aria-label="תצוגה מקדימה של ההצעה"><header><b><FileText size={18}/>כך הלקוח יראה את ההצעה</b><span><button type="button" className="pq-btn is-white is-small" onClick={()=>frame.current?.contentWindow?.print()}><Printer size={16}/>הדפסה / שמירה כ-PDF</button><button type="button" className="pq-x" aria-label="סגירה" onClick={()=>setPreview('')}><X size={18}/></button></span></header><iframe ref={frame} title="הצעת המחיר" sandbox="allow-same-origin allow-modals" srcDoc={preview}/></div></div>}

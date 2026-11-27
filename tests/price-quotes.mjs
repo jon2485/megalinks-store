@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {realpathSync} from 'node:fs';
+import {realpathSync,readFileSync} from 'node:fs';
 const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
 // "הצעות מחיר" (owner 27.11.2026). The real module, with the database and the mail queue replaced by small fakes:
 // 1. nothing about cost, profit, supplier or the chat reaches what the customer sees (JSON and e-mail);
@@ -19,13 +19,14 @@ const fakes={
   export const stmt=(sql,...a)=>({sql,a,run:async()=>{if(/^UPDATE records SET data/.test(sql)){const r=T.records.get(a[2]);r.data=a[0];}}});
   export const db=()=>({batch:async list=>{for(const s of list)await s.run();}});
   export const setting=async(k,f)=>f;export const saveSetting=async()=>{};export const audit=async()=>{};export const connection=async()=>({});export const externalFetch=async()=>{throw new Error('no network in tests');};`,
+ 'cloudflare:workers':`export const env={};`,
  './pricing':`export const pricingContext=async()=>({});export const pricedSite=row=>({...row,...JSON.parse(row.data||'{}'),price_cents:row.price});`,
  './mail':`export const queueMail=async(id,user,data)=>{globalThis.__pq.mail.push({id,user,data});};`,
  './site-match':`export const domainHistory=async()=>({used:[],anchors:[]});`,
  './anthropic-request':`export const anthropicClient=()=>{throw new Error('no Claude in tests');};export const anthropicFailure=e=>e;`,
  './anthropic-model':`export const aiProvider=()=>'anthropic';`
 };
-const out=await build({entryPoints:['lib/price-quotes.ts'],bundle:true,platform:'node',format:'esm',write:false,plugins:[{name:'fakes',setup(b){b.onResolve({filter:/^\.\//},a=>fakes[a.path]?{path:a.path,namespace:'fake'}:null);b.onLoad({filter:/.*/,namespace:'fake'},a=>({contents:fakes[a.path],loader:'js'}));}}]});
+const out=await build({entryPoints:['lib/price-quotes.ts'],bundle:true,platform:'node',format:'esm',write:false,plugins:[{name:'fakes',setup(b){b.onResolve({filter:/^(\.\/|cloudflare:)/},a=>fakes[a.path]?{path:a.path,namespace:'fake'}:null);b.onLoad({filter:/.*/,namespace:'fake'},a=>({contents:fakes[a.path],loader:'js'}));}}]});
 const m=await import('data:text/javascript;base64,'+Buffer.from(out.outputFiles[0].text).toString('base64'));
 const T=globalThis.__pq;
 const site=(id,name,price,cost)=>T.websites.set(id,{id,name,url:'https://'+id+'.example',price,active:1,dr:40,category:'sport',data:JSON.stringify({cost_cents:cost,supplier_id:'sup-secret',supplier_email:'supplier@secret.example'})});
@@ -83,4 +84,16 @@ await m.quoteLineRemoved({id:'cust'},{data:'{}'});
 // --- 5. after an order ---
 record('q7',{...base,status:'accepted'});await m.quotesOrdered([{quote_id:'q7',quote_applied:true},{quote_id:'q4',quote_applied:false}],'order-1');
 assert.equal(JSON.parse(T.records.get('q7').data).status,'ordered');assert.equal(JSON.parse(T.records.get('q4').data).status,'sent');
+// --- 6. the PDF: built from the customer's view, with a link for every site and for the button ---
+{const pdfOut=await build({stdin:{contents:"export {makePriceQuotePdf} from './lib/price-quote-pdf';export {PDFDocument,PDFName,PDFArray,PDFDict} from 'pdf-lib';",resolveDir:process.cwd()},bundle:true,platform:'node',format:'esm',write:false});
+ const pm=await import('data:text/javascript;base64,'+Buffer.from(pdfOut.outputFiles[0].text).toString('base64'));
+ const bytes=await pm.makePriceQuotePdf(view,'דני','https://app.example/catalog?quote=q1',readFileSync('public/brand/pdf-hebrew.ttf'),readFileSync('public/brand/megalinks-logo.png'));
+ const doc=await pm.PDFDocument.load(bytes);assert.equal(doc.getPageCount(),1);
+ const annots=doc.getPage(0).node.lookup(pm.PDFName.of('Annots'),pm.PDFArray),uris=[];
+ for(let i=0;i<annots.size();i++)uris.push(annots.lookup(i,pm.PDFDict).lookup(pm.PDFName.of('A'),pm.PDFDict).lookup(pm.PDFName.of('URI')).decodeText());
+ assert.deepEqual(uris.sort(),['https://a.example','https://app.example/catalog?quote=q1','https://b.example'].sort());
+ // 40 sites: more than one page, still one link per site and one button
+ const many={...view,count:40,items:Array.from({length:40},(_,i)=>({website_id:'w'+i,name:'אתר '+i,url:'https://s'+i+'.example',before_cents:50000,price_cents:45000}))};
+ const big=await pm.PDFDocument.load(await pm.makePriceQuotePdf(many,'דני','https://app.example/catalog?quote=q1',readFileSync('public/brand/pdf-hebrew.ttf'),readFileSync('public/brand/megalinks-logo.png')));
+ assert(big.getPageCount()>1);let links=0;for(const pg of big.getPages()){const a=pg.node.lookup(pm.PDFName.of('Annots'));if(a)links+=a.size();}assert.equal(links,41);}
 console.log('price-quotes: ok');

@@ -30,6 +30,8 @@ export async function mailFiles(job:Row):Promise<MailFile[]>{
  // A stored document (the Green Invoice PDF of a payment, 23.11.2026).
  if(job.attach_file_id){const s=await storedFile(await one('SELECT * FROM files WHERE id=?',job.attach_file_id),MAIL_FILE_MAX);if(s)files.push({filename:String(s.file.name||'document.pdf'),content_type:String(s.file.type||'application/pdf'),bytes:s.bytes,label:'חשבונית מס/קבלה'});}
  if(job.attach_order_statement){const {storedOrderPdf}=await import('./order-statement');const pdf=await storedOrderPdf(job.attach_order_statement,job.origin);files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'סיכום ההזמנה'});}
+ // The price quote as a PDF (owner 27.11.2026). A failure here must not hold the e-mail: the e-mail itself is the quote.
+ if(job.attach_price_quote){try{const {quotePdfFile}=await import('./price-quotes');const pdf=await quotePdfFile(job.attach_price_quote,job.origin);files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'הצעת המחיר (PDF)'});}catch{/* sent without the file */}}
  if(job.attach_writing_brief){const {writingBriefFile}=await import('./writing-brief-file');const pdf=await writingBriefFile(job.attach_writing_brief,job.origin);files.length=0;files.push({filename:pdf.filename,content_type:'application/pdf',bytes:pdf.bytes,label:'פרטי הכתיבה'});}
  if(job.attach_article){const a=await one('SELECT * FROM articles WHERE id=?',job.attach_article);if(a){
   // Staging 22.11.2026: one image Word cannot show (WEBP, HEIC, a damaged or missing file) failed the whole supplier

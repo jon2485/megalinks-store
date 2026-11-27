@@ -7,6 +7,7 @@
 // Privacy: everything the customer sees is built by customerQuote() from its own short list of fields. Cost, profit,
 // supplier and the chat never enter it, so nothing Claude writes can leak into the customer's document.
 // Numbers: Claude never computes money. The tools return figures computed here, in agorot.
+import {env} from 'cloudflare:workers';
 import type {Row} from './shared';
 import {db,all,one,stmt,parse,now,uid,assert,admin,ApiError,externalFetch,setting,saveSetting,mapIn,connection,audit} from './server';
 import {pricingContext,pricedSite} from './pricing';
@@ -99,7 +100,7 @@ async function sendQuote(u:Row,q:Row,origin:string){
  const items=cleanItems(q.items,sites),sent=now(),expires=new Date(Date.now()+days(q.days)*DAY).toISOString();
  const next=await save(q,{items,status:'sent',sent_at:sent,expires,reminded:false});
  const view=await customerQuote(next);
- await queueMail('email:price-quote:'+q.id+':'+sent,customer.id,{to:customer.email,subject:'הצעת מחיר מס׳ '+q.number+' ממגה לינקס',text:quoteMailText(view,customer.name,false),html:quoteMailHtml(view,customer.name,origin,false),origin});
+ await queueMail('email:price-quote:'+q.id+':'+sent,customer.id,{to:customer.email,subject:'הצעת מחיר מס׳ '+q.number+' ממגה לינקס',text:quoteMailText(view,customer.name,false),html:quoteMailHtml(view,customer.name,origin,false),origin,attach_price_quote:q.id});
  await audit(u,'price_quote','send',{id:q.id,number:q.number,total:view.total_cents});
  return next;
 }
@@ -187,6 +188,18 @@ ${row('מספר הצעה',e(v.number))}${v.domain?row('לאתר','<span dir="ltr
 <p style="margin:18px 0 0;font-size:15px;line-height:1.7;color:#52677e;font-family:${font}">הכפתור מעביר למערכת מגה לינקס ומוסיף את האתרים לסל במחירי ההצעה. המחירים לפני מע״מ. המחירים המיוחדים חלים על ההצעה כולה: הסרת אתר מהסל מחזירה את שאר האתרים למחיר הרגיל. אחרי ${e(dateTimeHe(v.expires))} המחירים המיוחדים לא יחולו.</p>
 </td></tr></table></body></html>`;
 }
+/** The quote as a PDF file: the customer's view only, with the brand font and logo. */
+export async function quotePdfFile(id:string,origin:string){
+ const q=await load(id);assert((q.items||[]).length,'אין אתרים בהצעה');
+ const assets=(env as typeof env & {ASSETS?:Fetcher}).ASSETS;assert(assets,'קבצי הפקת המסמך אינם זמינים',503);
+ const [font,logo,customer,sites]=await Promise.all([assets.fetch(new Request(origin+'/brand/pdf-hebrew.ttf')),assets.fetch(new Request(origin+'/brand/megalinks-logo.png')),one('SELECT name FROM users WHERE id=?',q.user_id),pricedFor(q.user_id,q.items.map((i:Item)=>i.website_id))]);
+ assert(font.ok&&logo.ok,'קבצי המיתוג להפקת PDF אינם זמינים',503);
+ // A draft has no sending date yet: the list prices and the expiry are the ones it would get if sent now.
+ const view=await customerQuote(q.sent_at?q:{...q,items:cleanItems(q.items,sites),expires:new Date(Date.now()+days(q.days)*DAY).toISOString()});
+ const {makePriceQuotePdf}=await import('./price-quote-pdf');
+ const bytes=await makePriceQuotePdf(view,customer?.name||'',origin+'/catalog?quote='+encodeURIComponent(q.id),new Uint8Array(await font.arrayBuffer()),new Uint8Array(await logo.arrayBuffer()));
+ return {filename:'megalinks-quote-'+q.number+'.pdf',bytes};
+}
 /** The maintenance tick: one reminder, 24 hours before a sent quote expires. */
 export async function quoteReminders(origin:string){
  const at=Date.now();
@@ -196,7 +209,7 @@ export async function quoteReminders(origin:string){
  for(const q of due){
   const customer=users.get(q.user_id);await save(q,{reminded:true});if(!customer?.email)continue;
   const view=customerQuoteFrom(q,sites);
-  await queueMail('email:price-quote-reminder:'+q.id+':'+q.sent_at,customer.id,{to:customer.email,subject:'הצעת מחיר מס׳ '+q.number+' בתוקף לעוד 24 שעות',text:quoteMailText(view,customer.name,true),html:quoteMailHtml(view,customer.name,origin,true),origin}).catch(()=>{});sent++;
+  await queueMail('email:price-quote-reminder:'+q.id+':'+q.sent_at,customer.id,{to:customer.email,subject:'הצעת מחיר מס׳ '+q.number+' בתוקף לעוד 24 שעות',text:quoteMailText(view,customer.name,true),html:quoteMailHtml(view,customer.name,origin,true),origin,attach_price_quote:q.id}).catch(()=>{});sent++;
  }
  return sent;
 }
@@ -302,6 +315,7 @@ export async function priceQuoteRoutes(r:Request,p:string[],u:Row,json:(r:Reques
   if(p[3]==='chat'&&method==='POST')return adminQuote(await chat(q,(await json(r)).message));
   if(p[3]==='send'&&method==='POST')return adminQuote(await sendQuote(u,q,origin));
   if(p[3]==='preview'&&method==='GET'){assert((q.items||[]).length,'אין אתרים בהצעה');const customer=await one('SELECT name FROM users WHERE id=?',q.user_id);const sites=await pricedFor(q.user_id,q.items.map((i:Item)=>i.website_id));const view=await customerQuote({...q,items:cleanItems(q.items,sites),expires:q.expires||new Date(Date.now()+days(q.days)*DAY).toISOString()});return {html:quoteMailHtml(view,customer?.name||'',origin,false)};}
+  if(p[3]==='pdf'&&method==='GET'){const file=await quotePdfFile(q.id,origin);return new Response(file.bytes as unknown as BodyInit,{headers:{'Content-Type':'application/pdf','Content-Disposition':'attachment; filename="'+file.filename+'"','Cache-Control':'no-store'}});}
   if(p[3]==='cancel'&&method==='POST'){assert(quoteStatus(q)!=='ordered','ההצעה כבר הוזמנה',409);await audit(u,'price_quote','cancel',{id:q.id});return adminQuote(await save(q,{status:'cancelled'}));}
   return null;
  }
