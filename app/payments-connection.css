@@ -50,5 +50,9 @@
 .pp-save:hover:not(:disabled){filter:brightness(1.07)}
 .pp-test:disabled,.pp-save:disabled{opacity:.55;cursor:not-allowed}
 .pp-form :is(button,a):focus-visible{outline:3px solid #1b6fe055;outline-offset:2px}
+/* The dialog's shared control rules make every button 44px+ and resize small text; keep this window's own sizes. */
+.pp-form .pp-tog{width:46px!important;height:28px!important;min-width:46px!important;min-height:28px!important;max-height:28px;padding:0!important;border-radius:999px!important;align-self:center}
+.pp-form .pp-switch small,.pp-form .pp-note,.pp-form .pp-hint,.pp-form .pp-warn{font-size:13px!important;line-height:1.5!important}
+.pp-form .pp-key code{font-size:12px!important}
 @media (max-width:520px){.pp-acts{grid-template-columns:1fr}}
 @media (prefers-reduced-motion:reduce){.pp-tog,.pp-tog i,.pp-seg button{transition:none}}
