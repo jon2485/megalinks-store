@@ -3,19 +3,20 @@ import {financialGuard} from './monthly-order';
 import type {Row} from './shared';
 import {env} from 'cloudflare:workers';
 import {issueInvoiceSafely} from './auto-invoice';
+import {cardReady,gatewayPaymentUrl} from './payment-gateway';
 const siteOrigin=()=>{for(const v of [(env as any).POSTFLOW_PUBLIC_ORIGIN,(env as any).POSTFLOW_STAGING_ORIGIN]){try{if(v)return new URL(String(v)).origin;}catch{}}return '';};
 
 // Credit is granted only by a signed, amount-checked provider callback, never a browser return.
 export async function createWalletCard(r:Request,u:Row,b:Row){
  const amount=Number(b.amount_cents),request=String(b.request_id||'');
  assert(Number.isSafeInteger(amount)&&amount>0&&amount<=100000000,'סכום אינו תקין');assert(/^[\w-]{8,80}$/.test(request),'מזהה בקשה אינו תקין');
- const c=await connection('payments');assert(c.enabled&&c.url&&c.secret,'חיבור הסליקה טרם הוגדר. לא בוצע חיוב או שינוי ביתרה',503);
+ const c=await connection('payments');assert(cardReady(c),'חיבור הסליקה טרם הוגדר. לא בוצע חיוב או שינוי ביתרה',503);
  const id='topup:'+u.id+':'+request,prior=parse(await one('SELECT * FROM records WHERE id=?',id));
  if(prior){assert(prior.payment_method==='card'&&prior.amount_cents===amount,'הבקשה כבר נשמרה עם פרטים אחרים',409);if(prior.payment_url)return {payment_url:prior.payment_url,id};assert(prior.decision==='awaiting_gateway','הבקשה כבר נסגרה',409);}
  else await stmt('INSERT OR IGNORE INTO records(id,kind,user_id,data,created,updated) VALUES (?,?,?,?,?,?)',id,'wallet_topup',u.id,JSON.stringify({name:'הטענת יתרה באשראי',payment_method:'card',amount_cents:amount,decision:'awaiting_gateway',status:'open'}),now(),now()).run();
  const stored=parse(await one('SELECT * FROM records WHERE id=?',id));assert(stored?.amount_cents===amount&&stored.payment_method==='card','הבקשה כבר נשמרה עם פרטים אחרים',409);
- const response=await externalFetch(c.url,{method:'POST',headers:{Authorization:'Bearer '+c.secret,'Content-Type':'application/json','Idempotency-Key':id},body:JSON.stringify({event:'create_payment',purpose:'wallet_topup',topup_id:id,order_id:id,amount_cents:amount,currency:'ILS',customer:{name:u.name,email:u.email},return_url:new URL('/wallet',r.url).href,cancel_url:new URL('/wallet',r.url).href,callback_url:new URL('/api/payment-callback',r.url).href})});
- assert(response.ok,'ספק הסליקה לא החזיר קישור תשלום. ניתן לנסות שוב; היתרה לא עודכנה',502);const payload=await response.json() as Row,payment_url=externalUrl(payload.payment_url).href;
+ const payment_url=await gatewayPaymentUrl(c,id,{event:'create_payment',purpose:'wallet_topup',topup_id:id,order_id:id,amount_cents:amount,currency:'ILS',customer:{name:u.name,email:u.email},return_url:new URL('/wallet',r.url).href,cancel_url:new URL('/wallet',r.url).href,callback_url:new URL('/api/payment-callback',r.url).href},{name:u.name,email:u.email});
+ 
  await stmt("UPDATE records SET data=json_set(data,'$.payment_url',?),updated=? WHERE id=?",payment_url,now(),id).run();return {id,payment_url};
 }
 export async function completeWalletCard(b:Row){

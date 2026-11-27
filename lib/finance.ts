@@ -1,3 +1,4 @@
+import {cardReady} from './payment-gateway';
 import {createWalletCard} from './wallet-card';
 import {dateRangeClause} from './admin-date-range';
 import {connection} from './server';
@@ -26,7 +27,7 @@ export async function financeRoutes(r:Request,p:string[],u:Row,readBody:(r:Reque
   await saveSetting('bank_details',bank);await audit(u,'bank_details','פרטי בנק עודכנו');return output({ok:true});
  }
  if(p[0]==='wallet-topups'){
-  if(r.method==='GET'&&p[1]==='config'){const c=await connection('payments');return output({card_enabled:!!(c.enabled&&c.url&&c.secret)});}
+  if(r.method==='GET'&&p[1]==='config'){const c=await connection('payments');return output({card_enabled:cardReady(c)});}
   if(r.method==='GET'&&!p[1]){
    const scope=u.role==='admin'&&query.get('scope')==='all';const page=Math.max(1,Math.floor(Number(query.get('page'))||1));
    const filters=[topupWhere],args:any[]=[];

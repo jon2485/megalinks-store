@@ -10,22 +10,27 @@ export function integrationEnvironmentName(key:string,provider='openai') {
 export function integrationEnvironmentSecret(key:string,provider?:string) {
     const name=integrationEnvironmentName(key,provider);return name?String((env as any)[name]||'').trim():'';
 }
+// PayPlus keys are Railway variables only, one set per environment (owner 27.11.2026). PAYPLUS_ENV=production means
+// live keys; anything else is the PayPlus test environment.
+export function payplusEnvironment(){const e=env as any,v=(k:string)=>String(e[k]||'').trim();return {api_key:v('PAYPLUS_API_KEY'),secret_key:v('PAYPLUS_SECRET_KEY'),page_uid:v('PAYPLUS_PAGE_UID'),production:v('PAYPLUS_ENV').toLowerCase()==='production'};}
 // Only documented configuration fields may be persisted or returned. In
 // particular, never spread arbitrary password/token fields into API responses.
 export function integrationMetadata(key:string,config:Row):Row {
-    const fields=['enabled','url','username','auto_publish','secret_storage',...(key==='ai'?['provider','model']:[]),...(key==='email'?['provider','from','test_to','reply_to']:[]),...(key==='invoices'?['environment']:[])];
+    const fields=['enabled','url','username','auto_publish','secret_storage',...(key==='ai'?['provider','model']:[]),...(key==='payments'?['provider']:[]),...(key==='email'?['provider','from','test_to','reply_to']:[]),...(key==='invoices'?['environment']:[])];
     const result:Row={};for(const field of fields)if(config[field]!==undefined)result[field]=config[field];
     if(result.url){try{const url=new URL(result.url);url.username='';url.password='';url.search='';url.hash='';result.url=url.href;}catch{delete result.url;}}
     return result;
 }
 export async function updatedIntegration(key:string,b:Row,prev:Row) {
-    const fields=['enabled','url','username','auto_publish','secret','clear_secret','secret_storage',...(key==='ai'?['provider','model']:[]),...(key==='email'?['provider','from','test_to','reply_to']:[]),...(key==='invoices'?['environment']:[])];
+    const fields=['enabled','url','username','auto_publish','secret','clear_secret','secret_storage',...(key==='ai'?['provider','model']:[]),...(key==='payments'?['provider']:[]),...(key==='email'?['provider','from','test_to','reply_to']:[]),...(key==='invoices'?['environment']:[])];
     assert(Object.keys(b).every(k=>fields.includes(k)),'הגדרות החיבור מכילות שדה שאינו נתמך');
     for(const field of ['enabled','auto_publish','clear_secret'])assert(b[field]===undefined||typeof b[field]==='boolean','מצב החיבור אינו תקין');
     for(const field of ['url','username','model'])assert(b[field]===undefined||typeof b[field]==='string'&&b[field].length<=(field==='url'?2000:200),'פרטי החיבור אינם תקינים');
     assert(b.secret===undefined||typeof b.secret==='string'&&b.secret.length<=4000,'מפתח החיבור אינו תקין');
     const value={...integrationMetadata(key,prev),...Object.fromEntries(Object.entries(b).filter(([k])=>!['secret','clear_secret'].includes(k)))};
     if(key==='ai')assert(['openai','groq','grok'].includes(value.provider||'openai'),'ספק AI אינו נתמך');
+    // Card payments: the original webhook, or PayPlus (owner 27.11.2026). PayPlus has no URL and no key here.
+    if(key==='payments'){value.provider=(b.provider??(b.url!==undefined?'webhook':value.provider))==='payplus'?'payplus':'webhook';if(value.provider==='payplus'){assert(!b.secret,'את מפתחות PayPlus מגדירים ב-Railway בלבד');delete value.url;value.secret='';value.secret_storage='environment';if(b.clear_secret)value.enabled=false;if(b.enabled===true){const p=payplusEnvironment();assert(p.api_key&&p.secret_key&&p.page_uid,'יש להגדיר ב-Railway את PAYPLUS_API_KEY, PAYPLUS_SECRET_KEY ו-PAYPLUS_PAGE_UID לפני הפעלת החיבור');}return value;}}
     // Email can go to a webhook (Zapier and the like) or straight to Resend (owner, 16.11.2026). Resend has a fixed address;
     // `test_to` sends every message to one inbox only, with the real recipient in the subject. `reply_to` is where a
     // customer's "reply" lands, as an ordinary email in that inbox (owner, 22.11.2026).

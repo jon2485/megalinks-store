@@ -1,3 +1,4 @@
+import {cardReady} from './payment-gateway';
 import {walletAvailable} from './split-payment';
 import {cleanTaxId} from './green-invoice';
 import {LEGAL_CONTENT} from './legal-content.generated';
@@ -23,7 +24,7 @@ export async function createOrder(user:Row,actor:Row,q:Row,b:Row){
  const target=(await one('SELECT * FROM users WHERE id=?',user.id))!,id=existing?.id||uid();
 
  const available=await walletAvailable(target),walletAmount=b.payment==='credits'?Math.min(q.total,available):0,split=b.payment==='credits'&&walletAmount<q.total;
- if(split||b.payment==='card'){const c=await connection('payments');assert(c.enabled&&c.url&&c.secret,'נדרשת השלמה באשראי, אך חיבור הסליקה טרם הופעל. היתרה לא חויבה',503);}
+ if(split||b.payment==='card'){const c=await connection('payments');assert(cardReady(c),'נדרשת השלמה באשראי, אך חיבור הסליקה טרם הופעל. היתרה לא חויבה',503);}
  const payment=split?'credits_card':b.payment;
  const status=monthly?(demo?'demo_monthly':'on_account'):demo?'demo_paid':exchange||b.payment==='credits'&&!split?'paid':'pending';
  // The customer's approval of the terms at checkout is kept with the order: when it was given and which versions of

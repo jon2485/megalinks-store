@@ -18,6 +18,8 @@ import {normalizeRequestedPublication} from '@/lib/publication-date';
 import {articleGenerationStatus,articleGenerationStream} from '@/lib/article-generation';
 import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server';
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
+import {payplusEnvironment} from '@/lib/integration-security';
+import {cardReady,gatewayPaymentUrl,payplusCallbackEvent,payplusConfigured,testPayplus} from '@/lib/payment-gateway';
 import {englishQuery,pixabaySearchBroad,pixabayPhoto,pixabayImageHost,pixabayKeyWorks,cacheDrop} from '@/lib/image-search';
 import {claimAiBudget,safeFailure} from '@/lib/security';
 import {customerArticleData,customerActivity,customerSharedRecord,supplierDelivery,protectCustomerResponse} from '@/lib/customer-privacy';
@@ -126,6 +128,38 @@ async function aiJson(c: Row, prompt: string) {
     const raw = output.choices?.[0]?.message?.content;
     assert(raw, 'לא התקבל תוכן משירות ה-AI', 502);
     return { raw, provider, model: model || 'gpt-4.1-mini' };
+}
+// A verified card payment event (webhook or PayPlus), in one shape: {status:'paid',currency:'ILS',event_id,amount_cents,order_id|topup_id}.
+async function applyPaymentEvent(b: Row, r: Request) {
+        if(b.topup_id||String(b.order_id||'').startsWith('topup:'))return response(await completeWalletCard(b));
+        assert(b.status === 'paid' && b.currency === 'ILS' && b.event_id, 'אירוע התשלום אינו תקין');
+        const order = await one('SELECT * FROM orders WHERE id=?', b.order_id);
+        // The callback is signed by the provider, so the card was really charged. Money that cannot be applied to the
+        // order is never dropped: it is recorded once for the admin (no credit and no refund happen here).
+        const eventId = maxText(b.event_id, 100), event = 'payment:' + eventId;
+        const payable = !!order && (isCardPayment(order)||((['invoice','bank_transfer','monthly'].includes(order.payment))&&!!await one("SELECT id FROM jobs WHERE id=? AND kind='payment_link' AND status='succeeded'",'payment-link:'+order.id))) && order.status!=='cancelled' && (order.paid||order.status==='pending'||order.payment==='monthly');
+        if (order && !payable) await recordUnappliedPayment(order, eventId, b.amount_cents, 'order_not_payable');
+        assert(order && payable, 'הזמנה אינה זמינה לתשלום', 409);
+        if (order.paid) {
+            if (await one('SELECT id FROM records WHERE id IN (?,?)', event, unappliedId(eventId))) return response({ ok: true, duplicate: true });
+            await recordUnappliedPayment(order, eventId, b.amount_cents, 'order_already_paid');
+            return response({ ok: true, unapplied: true });
+        }
+        // The customer may pay through a link made before an item was removed. That money was really charged, so the
+        // order is settled and the difference goes to the wallet. Any other amount is refused.
+        const dueNow=cardAmount(order),got=Number(b.amount_cents),linkJob=await one("SELECT data FROM jobs WHERE id=?",'payment-link:'+order.id),sent:number[]=linkJob?(JSON.parse(linkJob.data||'{}').amounts||[]):[];
+        const surplus=got>dueNow&&Number.isSafeInteger(got)&&sent.includes(got)?got-dueNow:0;
+        if (!(got===dueNow||surplus>0)) await recordUnappliedPayment(order, eventId, got, 'amount_mismatch');
+        assert(got===dueNow||surplus>0, 'סכום התשלום אינו תואם', 409);
+        if (await one('SELECT id FROM records WHERE id=?', event))
+            return response({ ok: true, duplicate: true });
+        const done = await completeOrderPayment(order,event,{amount_cents:b.amount_cents,payment_method:'card',reference:maxText(b.event_id,100),...(surplus?{surplus_credit:surplus}:{})},surplus?[stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),order.user_id,surplus,'זיכוי הפרש תשלום '+order.number,'payment-surplus:'+order.id,now()),stmt('UPDATE users SET credits=credits+? WHERE id=?',surplus,order.user_id)]:[]);
+        // Nothing was applied (the order was settled in the meantime): record it instead of reporting a verified payment.
+        if ((done as Row).duplicate) { await recordUnappliedPayment(order, eventId, got, 'order_already_paid'); return response({ ok: true, unapplied: true }); }
+        await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
+        // Owner 23.11.2026: a card payment gets its חשבונית מס/קבלה from Green Invoice at once (only the card part of a split).
+        await issueInvoiceSafely('greeninvoice:'+event,{kind:'order',target:order.id,user_id:order.user_id,method:'card',amount_cents:got,reference:eventId,split:order.payment==='credits_card'},new URL(r.url).origin);
+        return response({ ok: true });
 }
 async function coupon(code: string, u: Row, subtotal: number) { if (!code)
     return null; const c = await one('SELECT * FROM coupons WHERE code=?', code.trim().toUpperCase()); assert(c && c.active, 'הקופון אינו זמין'); assert(!c.expires || new Date(c.expires).getTime() > Date.now(), 'תוקף הקופון הסתיים'); assert(!c.max_uses || c.uses < c.max_uses, 'הקופון נוצל במלואו'); assert(!c.user_email || c.user_email.toLowerCase() === u.email, 'הקופון אישי ללקוח אחר'); assert(subtotal >= c.min_total, 'סכום ההזמנה נמוך מהמינימום לקופון'); return c; }
@@ -307,36 +341,10 @@ async function handle(r: Request,access:ResponseAccess) {
         catch {
             throw new ApiError(400, 'JSON לא תקין');
         }
-        if(b.topup_id||String(b.order_id||'').startsWith('topup:'))return response(await completeWalletCard(b));
-        assert(b.status === 'paid' && b.currency === 'ILS' && b.event_id, 'אירוע התשלום אינו תקין');
-        const order = await one('SELECT * FROM orders WHERE id=?', b.order_id);
-        // The callback is signed by the provider, so the card was really charged. Money that cannot be applied to the
-        // order is never dropped: it is recorded once for the admin (no credit and no refund happen here).
-        const eventId = maxText(b.event_id, 100), event = 'payment:' + eventId;
-        const payable = !!order && (isCardPayment(order)||((['invoice','bank_transfer','monthly'].includes(order.payment))&&!!await one("SELECT id FROM jobs WHERE id=? AND kind='payment_link' AND status='succeeded'",'payment-link:'+order.id))) && order.status!=='cancelled' && (order.paid||order.status==='pending'||order.payment==='monthly');
-        if (order && !payable) await recordUnappliedPayment(order, eventId, b.amount_cents, 'order_not_payable');
-        assert(order && payable, 'הזמנה אינה זמינה לתשלום', 409);
-        if (order.paid) {
-            if (await one('SELECT id FROM records WHERE id IN (?,?)', event, unappliedId(eventId))) return response({ ok: true, duplicate: true });
-            await recordUnappliedPayment(order, eventId, b.amount_cents, 'order_already_paid');
-            return response({ ok: true, unapplied: true });
-        }
-        // The customer may pay through a link made before an item was removed. That money was really charged, so the
-        // order is settled and the difference goes to the wallet. Any other amount is refused.
-        const dueNow=cardAmount(order),got=Number(b.amount_cents),linkJob=await one("SELECT data FROM jobs WHERE id=?",'payment-link:'+order.id),sent:number[]=linkJob?(JSON.parse(linkJob.data||'{}').amounts||[]):[];
-        const surplus=got>dueNow&&Number.isSafeInteger(got)&&sent.includes(got)?got-dueNow:0;
-        if (!(got===dueNow||surplus>0)) await recordUnappliedPayment(order, eventId, got, 'amount_mismatch');
-        assert(got===dueNow||surplus>0, 'סכום התשלום אינו תואם', 409);
-        if (await one('SELECT id FROM records WHERE id=?', event))
-            return response({ ok: true, duplicate: true });
-        const done = await completeOrderPayment(order,event,{amount_cents:b.amount_cents,payment_method:'card',reference:maxText(b.event_id,100),...(surplus?{surplus_credit:surplus}:{})},surplus?[stmt('INSERT INTO ledger(id,user_id,amount,reason,reference,created) VALUES (?,?,?,?,?,?)',uid(),order.user_id,surplus,'זיכוי הפרש תשלום '+order.number,'payment-surplus:'+order.id,now()),stmt('UPDATE users SET credits=credits+? WHERE id=?',surplus,order.user_id)]:[]);
-        // Nothing was applied (the order was settled in the meantime): record it instead of reporting a verified payment.
-        if ((done as Row).duplicate) { await recordUnappliedPayment(order, eventId, got, 'order_already_paid'); return response({ ok: true, unapplied: true }); }
-        await audit({ id: order.user_id }, order.id, 'תשלום אומת באמצעות הספק', { event_id: b.event_id, amount: order.total });
-        // Owner 23.11.2026: a card payment gets its חשבונית מס/קבלה from Green Invoice at once (only the card part of a split).
-        await issueInvoiceSafely('greeninvoice:'+event,{kind:'order',target:order.id,user_id:order.user_id,method:'card',amount_cents:got,reference:eventId,split:order.payment==='credits_card'},new URL(r.url).origin);
-        return response({ ok: true });
+        return await applyPaymentEvent(b, r);
     }
+    // PayPlus calls here after a charge (owner 27.11.2026): signature and a fresh look-up at PayPlus, then the same flow.
+    if (p[0] === 'payplus' && p[1] === 'callback' && method === 'POST') { const b = await payplusCallbackEvent(r); return b ? await applyPaymentEvent(b, r) : response({ ok: true, ignored: true }); }
     // A file from an email: the address carries the personal token of that message, so no sign-in is needed.
     if (p[0] === 'mail-file' && p[1] && method === 'GET') { const file = await mailFileByToken(p[1], Number(p[2])); assert(file, 'הקובץ אינו זמין. ייתכן שתוקף הקישור פג.', 404); return new Response(file.bytes as BodyInit, { headers: { 'Content-Type': file.content_type || 'application/octet-stream', 'Content-Disposition': "attachment; filename*=UTF-8''" + encodeURIComponent(file.filename), 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'", 'X-Robots-Tag': 'noindex' } }); }
     if (p[0] === 'supplier-invoice' && p[1]) return response(await supplierInvoiceRoute(r, p[1], method));
@@ -579,7 +587,7 @@ if (p[0] === 'cart') {
         assert(!demo||(env as any).POSTFLOW_ALLOW_DEMO_CHECKOUT==='true','מסלולי הדגמה אינם זמינים לרכישה באתר',403);
         assert(['card','invoice', 'credits','demo_card','demo_bit','demo_transfer','demo_credits','demo_monthly','monthly'].includes(b.payment), 'אמצעי תשלום אינו זמין');
         assert(b.accepted === true, 'יש לאשר את תנאי ההזמנה');
-        if(b.payment==='card'||(b.payment==='credits'&&await walletAvailable(u)<q.total)){const c=await connection('payments');assert(c.enabled&&c.url&&c.secret,'נדרשת השלמה באשראי, אך חיבור הסליקה טרם הופעל. היתרה לא חויבה וההזמנה לא בוצעה',503);}
+        if(b.payment==='card'||(b.payment==='credits'&&await walletAvailable(u)<q.total)){const c=await connection('payments');assert(cardReady(c),'נדרשת השלמה באשראי, אך חיבור הסליקה טרם הופעל. היתרה לא חויבה וההזמנה לא בוצעה',503);}
 
         const created=await createOrder(u,u,q,b);
         // The newsletter box at checkout is separate and optional: only a ticked box subscribes; an empty box changes nothing.
@@ -619,7 +627,7 @@ if (p[0] === 'cart') {
         if (p[2] === 'payment-link' && method === 'POST') {
             assert(!JSON.parse(order.data).demo && !order.paid && order.status!=='cancelled'&&(isCardPayment(order)||order.payment==='monthly'), 'קישור אשראי זמין רק להזמנה שנבחר לה תשלום באשראי');
             const c = await connection('payments');
-            assert(c.enabled && c.url && c.secret, 'סליקה טרם הוגדרה. ניתן לפנות למנהל לאימות העברה', 503);
+            assert(cardReady(c), 'סליקה טרם הוגדרה. ניתן לפנות למנהל לאימות העברה', 503);
             if(order.payment==='monthly'){const owner=await one('SELECT * FROM users WHERE id=?',order.user_id);assert(owner,'לקוח לא נמצא',404);const closing=await prepareOrderStatement(order.user_id,order.id,order.total,u.id,new URL(r.url).origin);if(closing.operations.length)await db().batch([financialGuard(owner),...closing.operations]);}
             const job = 'payment-link:' + order.id;
             const prior = await one('SELECT * FROM jobs WHERE id=?', job);
@@ -632,10 +640,8 @@ if (p[0] === 'cart') {
             if(stale){const again=await stmt("UPDATE jobs SET status='writing',updated=? WHERE id=? AND status='succeeded'",now(),job).run();assert(again.meta.changes,'בקשת הסליקה כבר בטיפול',409);}
             else if(prior){assert(prior.status==='failed','בקשת הסליקה כבר בטיפול. נסו שוב בעוד רגע',409);const retry=await stmt("UPDATE jobs SET status='writing',updated=? WHERE id=? AND status='failed'",now(),job).run();assert(retry.meta.changes,'בקשת הסליקה כבר בטיפול',409);}else await stmt('INSERT INTO jobs(id,user_id,kind,status,data,created,updated) VALUES (?,?,?,?,?,?,?)', job, u.id, 'payment_link', 'writing', JSON.stringify({ order_id: order.id }), now(), now()).run();
             try {
-                const res = await externalFetch(c.url, { method: 'POST', headers: { Authorization: 'Bearer ' + c.secret, 'Content-Type': 'application/json', 'Idempotency-Key': job+':'+due }, body: JSON.stringify({ event: 'create_payment', order_id: order.id, order_number: order.number, amount_cents: due, currency: 'ILS', customer: JSON.parse(order.data), return_url:new URL('/order-confirmed/'+order.id,r.url).href,cancel_url:new URL('/wallet',r.url).href,callback_url: new URL('/api/payment-callback', r.url).href }) });
-                assert(res.ok, 'ספק הסליקה דחה את הבקשה', 502);
-                const payload: any = await res.json();
-                const payment_url = externalUrl(payload.payment_url).href;
+                const payer = await one('SELECT name,email FROM users WHERE id=?', order.user_id), orderData = JSON.parse(order.data);
+                const payment_url = await gatewayPaymentUrl(c, job+':'+due, { event: 'create_payment', order_id: order.id, order_number: order.number, amount_cents: due, currency: 'ILS', customer: orderData, return_url:new URL('/order-confirmed/'+order.id,r.url).href,cancel_url:new URL('/wallet',r.url).href,callback_url: new URL('/api/payment-callback', r.url).href }, { name: orderData.invoice_name || payer?.name, email: payer?.email, phone: orderData.phone });
                 await stmt("UPDATE jobs SET status='succeeded',data=?,updated=? WHERE id=?", JSON.stringify({ payment_url, order_id: order.id, amount_cents: due, amounts: [...new Set([...issued,...(priorData.amount_cents!==undefined?[Number(priorData.amount_cents)]:[]),due])] }), now(), job).run();
                 return response({ payment_url });
             }
@@ -1357,6 +1363,7 @@ if (p[0] === 'cart') {
                     const gemini=k==='ai'&&c.provider==='gemini',runtime=gemini?geminiEnvironmentConfigured():!!integrationEnvironmentSecret(k,c.provider);
                     const storage=c.secret_storage||(gemini?'environment':runtime?'environment':'encrypted_server');
                     connections[k] = { ...integrationMetadata(k,c),secret_storage:storage,has_secret:storage==='environment'?!!runtime:!!c.secret,has_environment_secret:!!runtime,has_stored_secret:!!c.secret,environment_key:integrationEnvironmentName(k,c.provider) };
+                    if (k === 'payments') { const pp = payplusEnvironment(), ready = payplusConfigured(); connections[k].payplus = { api_key: !!pp.api_key, secret_key: !!pp.secret_key, page_uid: !!pp.page_uid, environment: pp.production ? 'production' : 'test' }; if (c.provider === 'payplus') Object.assign(connections[k], { secret_storage: 'environment', has_secret: ready, has_environment_secret: ready, environment_key: 'PAYPLUS_API_KEY' }); }
                 }
                 return response({ vat: stored.vat, brand: stored.brand, connections });
             }
@@ -1415,6 +1422,7 @@ if (p[0] === 'cart') {
                 return response({ ok: true });
             }
             if (p[3] === 'test' && method === 'POST') {
+                if (key === 'payments') { const pc = await connection('payments'); assert(pc.provider === 'payplus', 'בדיקת חיבור זמינה ל-PayPlus'); return response(await testPayplus(new URL(r.url).origin)); }
                 const c = await connection(key);
                 assert(c.secret, 'לא הוגדר מפתח');
                 if (key === 'invoices') { resetGreenInvoiceToken(); await greenInvoiceToken(c); return response({ ok: true }); }

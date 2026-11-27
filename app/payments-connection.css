@@ -1,0 +1,54 @@
+/* "סליקה ותשלומים" window (owner 27.11.2026, mockup design/payplus). Light only; the PayPlus choice is a light
+   segment, not a dark chip (owner: "למה הכפתור של פייפלוס בצבע כחול כהה מאוד"). */
+.pp-form{display:grid!important;grid-template-columns:minmax(0,1fr);gap:18px!important;min-width:0}
+.pp-form *{box-sizing:border-box}
+.pp-form>*{min-width:0}
+.pp-sec{display:grid;gap:8px;min-width:0}
+.pp-lbl{display:block;font-size:14px;font-weight:700;color:#09234b}
+.pp-seg{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:#eef2f7}
+.pp-seg button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:0;border-radius:11px;background:transparent;color:#4f5d6e;font:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:background .15s ease,color .15s ease}
+.pp-seg button:hover:not(.on){color:#09234b;background:#e3e9f1}
+.pp-seg button.on{background:#fff;color:#0a64b8;box-shadow:0 1px 3px #0b274d1f}
+.pp-seg button.on svg{color:#1b6fe0}
+.pp-switch{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 16px;border-radius:14px;background:#f5f7fa}
+.pp-switch b{display:block;font-size:15px;color:#09234b}
+.pp-switch small{display:block;margin-top:2px;font-size:13px;line-height:1.5;color:#52677e}
+.pp-tog{position:relative;flex:none;width:46px;height:28px;padding:0;border:0;border-radius:999px;background:#cbd5e1;cursor:pointer;transition:background .18s ease}
+.pp-tog i{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .18s ease}
+.pp-tog.on{background:#1b6fe0}
+.pp-tog.on i{transform:translateX(-18px)}
+.pp-keys{border:1px solid #e6ecf2;border-radius:16px;overflow:hidden}
+.pp-keys>header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;background:#f8fafc;border-bottom:1px solid #e6ecf2}
+.pp-keys>header b{font-size:14px;color:#09234b}
+.pp-env{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:#fff4e0;color:#9a5b00;font-size:13px;font-weight:800}
+.pp-env::before{content:"";width:7px;height:7px;border-radius:50%;background:#e08a00}
+.pp-env.is-live{background:#e7f7ed;color:#15803d}.pp-env.is-live::before{background:#16a34a}
+.pp-key{display:grid;grid-template-columns:26px minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 16px;border-top:1px solid #eef2f6}
+.pp-keys>header+.pp-key{border-top:0}
+.pp-ok,.pp-miss{display:grid;place-items:center;width:24px;height:24px;border-radius:50%}
+.pp-ok{background:#e7f7ed;color:#16a34a}.pp-miss{background:#fdecec;color:#c0262d}
+.pp-key b{display:block;font-size:14px;font-weight:700;color:#09234b}
+.pp-key code{display:block;direction:ltr;text-align:right;font:600 12px/1.4 ui-monospace,Consolas,monospace;color:#52677e}
+.pp-key em{font-style:normal;font-size:13px;font-weight:700;color:#15803d}.pp-key em.is-miss{color:#c0262d}
+.pp-note{margin:0;padding:10px 16px 12px;font-size:13px;line-height:1.5;color:#52677e;background:#fbfcfe;border-top:1px solid #eef2f6}
+.pp-warn{display:flex;gap:8px;align-items:flex-start;margin:0;padding:10px 14px;border-radius:12px;background:#fff7e6;color:#8a5300;font-size:13.5px;line-height:1.5}
+.pp-warn svg{flex:none;margin-top:2px}
+.pp-cb{display:flex;align-items:center;gap:8px;min-width:0;padding:6px 12px 6px 6px;border:1px solid #e1e7ee;border-radius:14px;background:#f5f7fa}
+.pp-cb code{flex:1;min-width:0;direction:ltr;text-align:left;font:600 13px/1.3 ui-monospace,Consolas,monospace;color:#09234b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pp-copy{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:0 14px;border:1px solid #d9e2ec;border-radius:10px;background:#fff;color:#0a64b8;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.pp-copy:hover{background:#f2f7fd;border-color:#bcd3ee}
+.pp-hint{margin:0;font-size:13px;line-height:1.5;color:#52677e}
+.pp-res{display:grid;grid-template-columns:28px 1fr;gap:10px;align-items:start;padding:12px 14px;border-radius:14px;background:#ecfdf3;border:1px solid #c6f0d6;color:#14532d;font-size:14px;line-height:1.5}
+.pp-res i{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;background:#16a34a;color:#fff;font-style:normal}
+.pp-res b{display:block;font-size:15px}
+.pp-res.is-fail{background:#fdf0f0;border-color:#f6caca;color:#7f1d1d}.pp-res.is-fail i{background:#d92d20}
+.pp-acts{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
+.pp-test,.pp-save{display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;border-radius:14px;font:inherit;font-size:15px;font-weight:800;cursor:pointer;transition:filter .15s ease,background .15s ease}
+.pp-test{border:1px solid #cfdcec;background:#fff;color:#0a64b8}
+.pp-test:hover:not(:disabled){background:#f2f7fd}
+.pp-save{border:0;background:#0b74e5;color:#fff;box-shadow:0 8px 18px -12px #0b74e5}
+.pp-save:hover:not(:disabled){filter:brightness(1.07)}
+.pp-test:disabled,.pp-save:disabled{opacity:.55;cursor:not-allowed}
+.pp-form :is(button,a):focus-visible{outline:3px solid #1b6fe055;outline-offset:2px}
+@media (max-width:520px){.pp-acts{grid-template-columns:1fr}}
+@media (prefers-reduced-motion:reduce){.pp-tog,.pp-tog i,.pp-seg button{transition:none}}

@@ -7,6 +7,7 @@ import type {Ctx} from './workspace';
 import {OrdersAreaHead} from './orders-area-head';
 import {ConnectionForm,KeyPlace,connectionMeta} from './screens';
 import {BankSettings} from './admin-finance';
+import {PaymentsConnectionForm} from './payments-connection-form';
 import './supplier-v2.css';
 import './admin-system-connections.css';
 
@@ -28,7 +29,7 @@ export function AdminConnectionsPage({ctx}:{ctx:Ctx}){
  const keys=Object.keys(connectionMeta),connections:Row=settings?.connections||{},of=(k:string)=>connections[k]||{};
  const need=keys.filter(k=>!ready(of(k))),done=keys.filter(k=>ready(of(k)));
  const shown=filter==='need'?need:filter==='ok'?done:[...need,...done];
- const setup=(key:string)=>{const meta=connectionMeta[key],c=of(key);ctx.open({kind:'connection',title:'הגדרת '+meta.name,description:meta.description,render:(close:()=>void)=><ConnectionForm ctx={ctx} name={key} connection={c} close={close}/>});};
+ const setup=(key:string)=>{const meta=connectionMeta[key],c=of(key);ctx.open({kind:'connection',title:'הגדרת '+meta.name,description:key==='payments'?'תשלום באשראי בדף מאובטח. הזמנה מסומנת כשולמה רק אחרי אישור חתום ובדיקה חוזרת מול ספק הסליקה.':meta.description,render:(close:()=>void)=>key==='payments'?<PaymentsConnectionForm ctx={ctx} connection={c} close={close}/>:<ConnectionForm ctx={ctx} name={key} connection={c} close={close}/>});};
  const chips:[Filter,string,number][]=[['all','הכל',keys.length],['need','דורשים הגדרה',need.length],['ok','פעילים',done.length]];
  return <section className="orders-match-screen sv2 sv2-orders sv2-fin sys-connections" dir="rtl">
   <OrdersAreaHead ctx={ctx} current="admin-connections" title="חיבורים והגדרות" sub="מפתחות נשמרים מוצפנים בצד השרת. כל חיבור מופעל בנפרד."/>
@@ -65,6 +66,7 @@ function facts(name:string,c:Row){
  if(name==='ai'&&c.model)list.push(<bdi key="m" dir="ltr">{c.model}</bdi>);
  if(name==='email'&&c.provider==='resend'&&c.from)list.push(<span key="f">שולח <bdi dir="ltr">{c.from}</bdi></span>);
  if(c.url&&!(name==='email'&&c.provider==='resend'))list.push(<bdi key="u" dir="ltr" title={c.url}>{shortUrl(c.url)}</bdi>);
+ if(name==='payments'&&c.provider==='payplus')list.push(<span key="pp">PayPlus · {c.payplus?.environment==='production'?'אמיתי':'בדיקה'}</span>);
  if(name==='invoices'&&c.environment)list.push(<span key="e">{c.environment==='sandbox'?'סביבת ניסיון':'חשבון אמיתי'}</span>);
  if(name==='wordpress'&&c.username)list.push(<span key="n">משתמש <bdi dir="ltr">{c.username}</bdi></span>);
  if(name==='wordpress'&&c.url&&c.auto_publish!==undefined)list.push(<span key="a">{c.auto_publish?'פרסום חי אחרי אישור':'נשמר כטיוטה ב־WordPress'}</span>);
@@ -72,17 +74,18 @@ function facts(name:string,c:Row){
 }
 
 function ConnectionRow({ctx,name,c,setup}:{ctx:Ctx;name:string;c:Row;setup:()=>void}){
- const meta=connectionMeta[name],Icon=meta.icon,ok=ready(c),details=facts(name,c);
+ const meta=connectionMeta[name],Icon=meta.icon,ok=ready(c),details=facts(name,c),canTest=testable.includes(name)||name==='payments'&&c.provider==='payplus';
+ const desc=name==='payments'&&c.provider==='payplus'?'PayPlus · אשראי, ביט, Apple Pay ו-Google Pay':meta.description;
  const [test,setTest]=useState<{busy?:boolean;ok?:boolean;text?:string}>({});
  const runTest=()=>{if(test.busy)return;setTest({busy:true});ctx.run(()=>api('admin/integration/'+name+'/test','POST',{}),'החיבור אומת').then(()=>setTest({ok:true,text:'החיבור אומת עכשיו'})).catch(e=>setTest({ok:false,text:(e as Error).message||'הבדיקה נכשלה'}));};
  return <div className="sv2-tr scx-row" style={cols}>
-  <div className="sv2-who"><span className="sv2-thumb scx-ico" aria-hidden="true"><Icon size={20}/></span><span><b>{meta.name}</b><small title={meta.description}>{meta.description}</small></span></div>
+  <div className="sv2-who"><span className="sv2-thumb scx-ico" aria-hidden="true"><Icon size={20}/></span><span><b>{meta.name}</b><small title={desc}>{desc}</small></span></div>
   <span className="scx-facts"><small className="sv2-ml">פרטים שמורים</small>{details.length?details.map((d,i)=><React.Fragment key={i}>{i>0&&<i aria-hidden="true">·</i>}{d}</React.Fragment>):<em>—</em>}</span>
   <span className="scx-key"><small className="sv2-ml">מפתח</small><KeyPlace c={c} compact/></span>
   <span className={'sv2-state '+(ok?'on':'wait')}><i/>{ok?'פעיל':'דורש הגדרה'}</span>
   <span className="sv2-rowact">
    <button type="button" className={'sv2-btn sm '+(ok?'tint':'primary')} onClick={setup}><Settings size={15} aria-hidden="true"/>הגדרה</button>
-   {testable.includes(name)&&<button type="button" className="sv2-btn quiet sm" disabled={!c.has_secret} aria-busy={test.busy||undefined} title={c.has_secret?undefined:'אפשר לבדוק אחרי שמגדירים מפתח'} onClick={runTest}>{test.busy?<Loader2 className="om-spin" size={15} aria-hidden="true"/>:<Plug size={15} aria-hidden="true"/>}{test.busy?'בודק…':'בדיקה'}</button>}
+   {canTest&&<button type="button" className="sv2-btn quiet sm" disabled={!c.has_secret} aria-busy={test.busy||undefined} title={c.has_secret?undefined:'אפשר לבדוק אחרי שמגדירים מפתח'} onClick={runTest}>{test.busy?<Loader2 className="om-spin" size={15} aria-hidden="true"/>:<Plug size={15} aria-hidden="true"/>}{test.busy?'בודק…':'בדיקה'}</button>}
   </span>
   {(c.has_secret&&!c.enabled||name==='email'&&c.provider==='resend'&&c.test_to||test.text&&!test.busy)&&<div className="scx-notes">
    {c.has_secret&&!c.enabled&&<p className="scx-hint"><TriangleAlert size={15} aria-hidden="true"/><span>יש מפתח, אבל החיבור כבוי. מפעילים אותו בהגדרת החיבור.</span></p>}
