@@ -2576,3 +2576,8 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - Staging gate: POST /api/payplus/callback with the PayPlus user-agent passes; /homepage/* readable signed out (fixed the home page for visitors).
 - AI ideas mockups (not built): design/ai-ideas (lobby "מה חשוב היום", support draft reply, catalog "איזה אתר מתאים לי?").
 - Known failing tests unrelated to today: admin-content (hidden drafts), admin-suppliers (400), pricing-admin-ui, admin-foundation-stage-a, pr-page (page is "בונים פה" on purpose), plus Windows-only ESM/asset path failures.
+
+## 27.11.2026 (evening): waiting for the next Staging upload (owner: "שמור לעדכון הבא")
+- 2c0296e: support chat shows a sent message at once; supplier reminder subject "תזכורת לכתבה מס׳ X לאתר ..."; "עובדים על המאמר שלך" window in the site's font, blue, bigger.
+- Staging e-mail is in test mode (Resend `test_to`): every e-mail goes only to the test inbox with "[בדיקה · אל: ...]".
+- "איזה אתר מתאים לי" plan + mockups (design/ai-ideas 4-5), not built: site analysis runs inside the system through the Claude API (owner: not from the chat); repeat protection by the customer's target domain (host without www), from paid/on-account non-cancelled articles; anchor mix per domain from past orders.
