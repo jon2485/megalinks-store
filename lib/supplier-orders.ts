@@ -100,19 +100,15 @@ export async function supplierPackage(siteId:string,number:number){
 
 export async function sendOrderSummary(origin:string,key:string,actor:Row){
  const d=await supplierOrder(key);assert(d.order.status!=='open','ההזמנה עדיין פתוחה. אפשר לשלוח פירוט אחרי שהחודש נסגר.',409);
- if(!d.supplier.account_user_id&&d.order.source!=='statement')return sendSupplierMonth(origin,d.supplier.id,d.order.month,actor.id,true);
+ // Owner 27.11.2026: a regular supplier (no account) gets only the monthly summary with the invoice request, never the
+ // "פירוט פרסומים לחודש" e-mail; the detail stays in the system.
+ if(!d.supplier.account_user_id){assert(d.order.source!=='statement','לספק רגיל לא נשלח פירוט במייל. הפירוט נמצא במערכת.',409);return sendSupplierMonth(origin,d.supplier.id,d.order.month,actor.id,true);}
  const user=d.supplier.account_user_id?await one('SELECT email FROM users WHERE id=?',d.supplier.account_user_id):null,to=user?.email||d.supplier.email;assert(to,'לספק אין מייל',409);
  await queueMail('email:supplier-order:'+key+':'+now(),actor.id,{to,subject:'פירוט פרסומים לחודש '+d.order.month,text:'פורסמו '+d.order.count+' כתבות. סכום לפני מע״מ: '+money(Number(d.order.net||0))+'.\n\n'+d.order.articles.map((a:Row,i:number)=>(i+1)+'. '+(a.site_name||'')+' · '+(a.title||'')+(a.url?' · '+a.url:'')).join('\n'),button:{label:'צפייה בפירוט באזור שלכם',url:origin+'/purchased/selling'}});
  await audit(actor,key,'נשלח לספק פירוט הזמנה',{month:d.order.month});return {sent:true};
 }
 
-export async function sendPackageStatus(siteId:string,number:number,actor:Row,origin=''){
- const d=await supplierPackage(siteId,number),w=parse(await one('SELECT * FROM websites WHERE id=?',siteId))!;
- const s=w.supplier_id?parse(await one("SELECT * FROM records WHERE id=? AND kind='supplier'",w.supplier_id)):null,to=String(w.supplier_email||s?.email||'');assert(to,'לספק אין מייל',409);
- const p=d.package;
- await queueMail('email:supplier-package:'+siteId+':'+number+':'+now(),actor.id,{to,subject:'מצב חבילת הפרסומים ב'+d.site.name,text:'חבילה '+p.number+' באתר '+d.site.name+'\nשומשו: '+p.used+' מתוך '+p.quantity+'\nנותרו: '+p.left+'\nממתינות לפרסום: '+p.waiting+'\n\n'+p.slots.map((x:Row)=>x.position+'. '+(x.title||'כתבה')+' · '+(x.status==='published'?'פורסמה':'ממתינה לפרסום')).join('\n'),origin});
- await audit(actor,siteId,'נשלח לספק מצב חבילה',{number});return {sent:true};
-}
+// Owner 27.11.2026: the package status is no longer e-mailed to the supplier; it is seen in the system.
 
 export async function updatePackagePayment(actor:Row,siteId:string,number:number,b:Row){
  const d=await supplierPackage(siteId,number);assert(!d.package.opening,'למלאי הקודם לא נרשם תשלום. הוסיפו חבילה חדשה.',409);

@@ -80,7 +80,7 @@ import { sanitizeRichHtml, inlineImages, supplierContent } from '@/lib/rich-cont
 import { dispatchArticle,adminArticleExtras } from '@/lib/publication';
 import { siteStock, addStockPackage, linkOrphanSites, releaseSlotStatements } from '@/lib/supplier-stock';
 import { addPoolStock } from '@/lib/supplier-pool';
-import { supplierBilling, supplierOrder, supplierPackage, sendOrderSummary, sendPackageStatus, updatePackagePayment } from '@/lib/supplier-orders';
+import { supplierBilling, supplierOrder, supplierPackage, sendOrderSummary, updatePackagePayment } from '@/lib/supplier-orders';
 import { supplierInvoiceRoute, supplierInvoiceFile, sendSupplierMonth, closeManualSupplierMonths } from '@/lib/supplier-month';
 import { DEFAULT_SUPPLIER_EMAIL } from '@/lib/supplier-presentation';
 import { contentHtml, signature, matchingSignature } from '@/lib/integrations';
@@ -1230,7 +1230,7 @@ if (p[0] === 'cart') {
         if(p[1]==='supplier-stock'&&p[2]){const site=decodeURIComponent(p[2]);if(method==='GET')return response(await siteStock(site));assert(method==='POST','פעולה לא נתמכת',405);const result=await addStockPackage(u,site,await json(r));let resent=0;const retryRows=await mapIn('articles','id',result.retry);for(const id of result.retry){const a=parse(retryRows.get(String(id))||null);if(!a)continue;try{const job=await dispatchArticle(a,u,new URL(r.url).origin);if(['succeeded','demo'].includes(job?.status))resent++;}catch{}}return response({...result,resent});}
         if(p[1]==='supplier-billing'&&p[2]&&method==='GET')return response(await supplierBilling(decodeURIComponent(p[2])));
         if(p[1]==='supplier-order'){if(method==='GET')return response(await supplierOrder(String(query.get('key')||'')));if(p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendOrderSummary(new URL(r.url).origin,String(b.key||''),u));}}
-        if(p[1]==='supplier-package'&&p[2]&&p[3]){const site=decodeURIComponent(p[2]),n=Number(p[3]);if(!p[4]&&method==='GET')return response(await supplierPackage(site,n));if(p[4]==='send'&&method==='POST')return response(await sendPackageStatus(site,n,u,new URL(r.url).origin));if(p[4]==='payment'&&method==='POST')return response(await updatePackagePayment(u,site,n,await json(r)));}
+        if(p[1]==='supplier-package'&&p[2]&&p[3]){const site=decodeURIComponent(p[2]),n=Number(p[3]);if(!p[4]&&method==='GET')return response(await supplierPackage(site,n));if(p[4]==='payment'&&method==='POST')return response(await updatePackagePayment(u,site,n,await json(r)));}
         if(p[1]==='supplier-overview'&&method==='GET')return response(await supplierOverview());
         if(p[1]==='supplier-invoice-file'&&method==='GET')return await supplierInvoiceFile(String(query.get('key')||''));
         if(p[1]==='supplier-months'&&p[2]==='send'&&method==='POST'){const b=await json(r);return response(await sendSupplierMonth(new URL(r.url).origin,String(b.supplier_id||''),String(b.month||''),u.id,true));}
