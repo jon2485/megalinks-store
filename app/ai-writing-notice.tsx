@@ -19,5 +19,6 @@ export function WritingMark({writing=true}:{writing?:boolean}){
  </span>;
 }
 export function WritingTitle({working,doneText='המאמר מוכן לעריכה'}:{working:boolean;doneText?:string}){
- return working?<>עובדים על המאמר שלך<WritingDots/></>:<>{doneText}</>;
+ // the last word and the dots never split across lines
+ return working?<>עובדים על המאמר <span className="aiw-last">שלך<WritingDots/></span></>:<>{doneText}</>;
 }

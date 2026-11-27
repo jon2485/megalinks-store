@@ -116,7 +116,9 @@ export async function sendQueuedMail(id:string){const job=parse(await one('SELEC
    // A subject another article already used (a stock slot freed by a recall and given to this one) gets the article's
    // short code, so two articles never share a subject.
    if(firstMail&&!opened?.thread_id){const taken=await one("SELECT id FROM jobs WHERE kind='email' AND id LIKE 'email:supplier:%' AND substr(id,1,?)<>? AND json_extract(data,'$.thread_subject')=? LIMIT 1",('email:supplier:'+a.id).length,'email:supplier:'+a.id,unique);if(taken)unique+=' · '+String(a.id).replace(/[^\w]/g,'').slice(0,6).toUpperCase();}
-   if(firstMail&&opened?.thread_id){payload.thread={id:String(opened.thread_id),subject:String(opened.thread_subject||unique)};payload.subject='Re: '+payload.thread.subject;payload.headers={'In-Reply-To':payload.thread.id,References:payload.thread.id};}
+   // Owner 27.11.2026: a reminder says so in its subject, "תזכורת לכתבה מס׳ X לאתר ...", and still answers the article's thread.
+   if(id.startsWith('reminder:')){payload.subject='תזכורת ל'+unique;if(opened?.thread_id)payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
+   else if(firstMail&&opened?.thread_id){payload.thread={id:String(opened.thread_id),subject:String(opened.thread_subject||unique)};payload.subject='Re: '+payload.thread.subject;payload.headers={'In-Reply-To':payload.thread.id,References:payload.thread.id};}
    else if(firstMail){payload.thread={id:supplierThreadId(a.id,String(c.from||RESEND_TEST_FROM)),subject:unique};payload.subject=unique;payload.headers={'Message-ID':payload.thread.id};}
    else if(opened?.thread_id){payload.subject='Re: '+opened.thread_subject;payload.headers={'In-Reply-To':opened.thread_id,References:opened.thread_id};}
    else payload.subject=job.supplier_followup==='hold'?'נא להמתין עם פרסום הכתבה · '+unique:job.supplier_followup==='update'?'הנחיות מעודכנות · '+unique:unique;

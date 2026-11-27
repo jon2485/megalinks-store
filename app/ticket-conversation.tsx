@@ -31,10 +31,10 @@ type Details=(row:Row,done:()=>void)=>React.ReactNode;
 
 /** The admin's full page for one ticket. */
 export function TicketConversationPage({ctx,id,details,onDirty}:{ctx:Ctx;id:string;details:Details;onDirty?:(value:boolean)=>void}){
- const state=useData('records/ticket/'+encodeURIComponent(id),ctx.revision,true,30000),row:Row|undefined=state.data?.record,customer:Row=state.data?.customer||{};
+ const {state,sent,withPending}=useLiveTicket(ctx,id),row:Row|undefined=state.data?.record,customer:Row=state.data?.customer||{};
  const [asking,setAsking]=useState(false),closeBox=useRef<HTMLDivElement>(null);
  if(!row)return <section className="tc tc-page" dir="rtl"><div className="tc-card tc-loading" role={state.error?'alert':'status'}>{state.error?<><p>{state.error}</p><button type="button" className="tc-btn" onClick={ctx.refresh}>ניסיון נוסף</button></>:state.loading?'טוען את הפנייה…':<><p>הפנייה לא נמצאה או שאינה זמינה עוד.</p><button type="button" className="tc-btn" onClick={()=>ctx.go('admin-support')}>לכל הפניות</button></>}</div></section>;
- const status=supportStatus(row),thread=ticketThread(row.data||row,row.created,row.updated);
+ const status=supportStatus(row),thread=withPending(ticketThread(row.data||row,row.created,row.updated));
  const link=(page:string)=>(e:React.MouseEvent)=>{if(!plainClick(e))return;e.preventDefault();ctx.go(page);};
  const askClose=()=>{setAsking(true);requestAnimationFrame(()=>closeBox.current?.scrollIntoView({behavior:'smooth',block:'center'}));};
  return <section className="tc tc-page" dir="rtl">
@@ -51,7 +51,7 @@ export function TicketConversationPage({ctx,id,details,onDirty}:{ctx:Ctx;id:stri
    <div className="tc-stack">
     <section className="tc-card" aria-label="השיחה"><header className="tc-card-head"><h2>השיחה</h2><span className="tc-mute">{thread.length===1?'הודעה אחת':thread.length+' הודעות'}</span></header>
      <TicketThread messages={thread} team customerName={row.user_name}/>
-     <Composer key={row.id} ctx={ctx} row={row} team onDirty={onDirty}/>
+     <Composer key={row.id} ctx={ctx} row={row} team onDirty={onDirty} onSent={sent}/>
     </section>
     <EditDetails row={row} details={details}/>
    </div>
@@ -70,15 +70,24 @@ export function TicketConversationPage({ctx,id,details,onDirty}:{ctx:Ctx;id:stri
  </section>;
 }
 
+/** The ticket with the messages just sent shown at once; the thread reloads right after a send. */
+function useLiveTicket(ctx:Ctx,id:string){
+ const [bump,setBump]=useState(0),[pending,setPending]=useState<TicketMessage[]>([]);
+ const state=useData('records/ticket/'+encodeURIComponent(id),Number(ctx.revision||0)+bump,true,30000);
+ const sent=(m:TicketMessage)=>{setPending(p=>[...p,m]);setBump(b=>b+1);};
+ const withPending=(thread:TicketMessage[])=>[...thread,...pending.filter(p=>!thread.some(m=>m.from===p.from&&m.text.trim()===p.text.trim()))];
+ return {state,sent,withPending};
+}
+
 /** The customer's conversation, shown inside the existing ticket dialog. */
 export function TicketConversationDialog({ctx,id,details,onNew}:{ctx:Ctx;id:string;details:Details;onNew:()=>void}){
- const state=useData('records/ticket/'+encodeURIComponent(id),ctx.revision,true,30000),row:Row|undefined=state.data?.record;
+ const {state,sent,withPending}=useLiveTicket(ctx,id),row:Row|undefined=state.data?.record;
  if(!row)return <div className="tc tc-dialog" dir="rtl"><p className="tc-loading" role={state.error?'alert':'status'}>{state.error||(state.loading?'טוען את השיחה…':'הפנייה לא נמצאה.')}</p></div>;
- const status=supportStatus(row),thread=ticketThread(row.data||row,row.created,row.updated);
+ const status=supportStatus(row),thread=withPending(ticketThread(row.data||row,row.created,row.updated));
  return <div className="tc tc-dialog" dir="rtl">
   <div className="tc-dialog-head"><span className={'tc-pill '+ticketPill[status]}>{supportStatusLabels[status]}</span>{row.order_number?<span className="tc-chip">הזמנה <bdi>{row.order_number}</bdi></span>:null}<span className="tc-chip">נפתחה <bdi>{when(row.created)}</bdi></span></div>
   <TicketThread messages={thread} customerName={row.user_name}/>
-  {status==='resolved'?<div className="tc-closed" role="status"><CheckCircle2 size={20} aria-hidden="true"/><div><b>הפנייה טופלה ונסגרה.</b><p>צריכים עוד עזרה? פתחו פנייה חדשה ונמשיך משם.</p></div><button type="button" className="tc-btn" onClick={onNew}><Plus size={16} aria-hidden="true"/>פנייה חדשה</button></div>:<Composer key={row.id} ctx={ctx} row={row}/>}
+  {status==='resolved'?<div className="tc-closed" role="status"><CheckCircle2 size={20} aria-hidden="true"/><div><b>הפנייה טופלה ונסגרה.</b><p>צריכים עוד עזרה? פתחו פנייה חדשה ונמשיך משם.</p></div><button type="button" className="tc-btn" onClick={onNew}><Plus size={16} aria-hidden="true"/>פנייה חדשה</button></div>:<Composer key={row.id} ctx={ctx} row={row} onSent={sent}/>}
   <EditDetails row={row} details={details}/>
  </div>;
 }
@@ -96,7 +105,7 @@ export function TicketThread({messages,team=false,customerName,limit}:{messages:
  </ol>;
 }
 
-function Composer({ctx,row,team=false,onDirty}:{ctx:Ctx;row:Row;team?:boolean;onDirty?:(value:boolean)=>void}){
+function Composer({ctx,row,team=false,onDirty,onSent}:{ctx:Ctx;row:Row;team?:boolean;onDirty?:(value:boolean)=>void;onSent?:(m:TicketMessage)=>void}){
  const [text,setText]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),lock=useRef(false),box=useRef<HTMLTextAreaElement>(null);
  const closed=supportStatus(row)==='resolved';
  useEffect(()=>{onDirty?.(!!text.trim());},[text,onDirty]);
@@ -105,7 +114,7 @@ function Composer({ctx,row,team=false,onDirty}:{ctx:Ctx;row:Row;team?:boolean;on
   e.preventDefault();if(lock.current)return;setError('');
   const value=text.trim();if(!value){setError(team?'יש לכתוב תשובה לפני השליחה.':'יש לכתוב הודעה לפני השליחה.');box.current?.focus();return;}
   lock.current=true;setBusy(true);
-  try{const res=await ctx.run(()=>api('records/ticket/'+encodeURIComponent(row.id)+'/messages','POST',{text:value}),'');setText('');if(team)mailToast(res?.mail_status,'התשובה נשלחה והמצב ״נענתה״.');else toast.success('ההודעה נשלחה לצוות');}
+  try{const res=await ctx.run(()=>api('records/ticket/'+encodeURIComponent(row.id)+'/messages','POST',{text:value}),'');setText('');onSent?.({id:'sent-'+Date.now(),from:team?'team':'customer',text:value,at:new Date().toISOString()});if(team)mailToast(res?.mail_status,'התשובה נשלחה והמצב ״נענתה״.');else toast.success('ההודעה נשלחה לצוות');}
   catch(err){setError((err as Error).message);}finally{lock.current=false;setBusy(false);}
  };
  return <form className="tc-composer" onSubmit={send} noValidate>
