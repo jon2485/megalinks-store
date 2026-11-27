@@ -1,0 +1,21 @@
+/* AI writing notice (owner 27.11.2026): green check, a pen that keeps writing, and dots that come and go. */
+.aiw-mark{position:relative;display:inline-grid;place-items:center;width:56px;height:56px;flex:none}
+.aiw-check{display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#e8f8ee;color:#16a34a;box-shadow:inset 0 0 0 2px #bfe9cf}
+.aiw-mark.is-writing .aiw-check{animation:aiw-breathe 2.4s ease-in-out infinite}
+.aiw-pen{position:absolute;left:-6px;bottom:-4px;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:#fff;color:#1b6fe0;box-shadow:0 2px 8px -2px #0b274d40;animation:aiw-write 1.1s ease-in-out infinite}
+.aiw-pen::after{content:"";position:absolute;left:24px;bottom:2px;height:2px;width:0;border-radius:2px;background:#1b6fe0;opacity:.55;animation:aiw-line 1.1s ease-in-out infinite}
+.aiw-dots{display:inline-block;width:1.4em;text-align:start;direction:ltr;unicode-bidi:isolate}
+.aiw-dots span{display:inline-block}
+/* Hebrew is written right to left: the pen moves left and its line trails behind it on the right. */
+@keyframes aiw-write{0%,100%{transform:translate(0,0) rotate(-8deg)}25%{transform:translate(-4px,-2px) rotate(4deg)}50%{transform:translate(-8px,0) rotate(-6deg)}75%{transform:translate(-4px,1px) rotate(5deg)}}
+@keyframes aiw-line{0%{width:0}60%{width:14px}100%{width:0}}
+@keyframes aiw-breathe{0%,100%{box-shadow:inset 0 0 0 2px #bfe9cf,0 0 0 0 #16a34a22}50%{box-shadow:inset 0 0 0 2px #bfe9cf,0 0 0 8px #16a34a12}}
+/* the popup */
+.studio-ai-notice .aiw-head{display:flex;align-items:center;gap:14px}
+.studio-ai-notice [data-slot=dialog-title]{font-size:1.2rem}
+/* the banner inside the article */
+.studio-ai-progress .aiw-mark,.studio-ai-progress .aiw-check{width:42px;height:42px}
+.studio-ai-progress .aiw-check svg{width:20px;height:20px}
+.studio-ai-progress .aiw-pen{width:22px;height:22px;left:-5px;bottom:-4px}
+.studio-ai-progress .aiw-pen svg{width:12px;height:12px}
+@media (prefers-reduced-motion:reduce){.aiw-pen,.aiw-pen::after,.aiw-mark.is-writing .aiw-check{animation:none}}

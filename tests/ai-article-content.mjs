@@ -16,5 +16,15 @@ try{
  assert.equal(await format('המושג H2 הוא סוג של כותרת.'),'<p>המושג H2 הוא סוג של כותרת.</p>');
  const safe=await format('<h2 onclick="alert(1)">בטוח</h2><script>alert(1)</script><p><a href="https://invented.example">מגה לינקס</a><img src=x onerror=alert(1)></p>',brief);assert(safe.includes('<h2>בטוח</h2>'));assert(!/script|onclick|onerror|invented|src=/.test(safe));assert(!safe.includes('alert(1)'));assert(safe.includes('example.com/one'));
  const docx=await mf.dispatchFetch('https://test.example',{method:'POST',body:JSON.stringify({content:'H2: כותרת משנה\n\nפסקה',docx:true})});const doc=strFromU8(unzipSync(new Uint8Array(await docx.arrayBuffer()))['word/document.xml']);assert(doc.includes('w:pStyle w:val="Heading2"'));assert(!doc.includes('H2:'));
+ // Owner 27.11.2026 (Google's link guidance): the phrases become links where the text says them, in different paragraphs,
+ // and a phrase the model did not write is woven into a body paragraph, never a lone line at the end.
+ {const two={target_url:'https://shop.example/a',anchor:'נעלי ריצה',target_url_2:'https://shop.example/b',anchor_2:'גרביים לספורט'};
+  const out=await format('<p>פתיחה על נעלי ריצה טובות.</p><h2>בחירה</h2><p>כדאי גם גרביים לספורט נושמות.</p><p>סיכום קצר.</p>',two);
+  assert(out.includes('<p>פתיחה על <a href="https://shop.example/a" rel="noopener noreferrer">נעלי ריצה</a> טובות.</p>'),out);
+  assert(out.includes('<p>כדאי גם <a href="https://shop.example/b" rel="noopener noreferrer">גרביים לספורט</a> נושמות.</p>'),out);
+  assert(!/<p><a [^>]*>[^<]*<\/a><\/p>$/.test(out),out);
+  const missing=await format('<p>פתיחה כללית על ריצה.</p><p>פסקה על ציוד ספורט ונעליים.</p><p>סיכום קצר.</p>',{target_url:'https://shop.example/a',anchor:'ציוד ספורט איכותי'});
+  assert.equal((missing.match(/<a /g)||[]).length,1);assert(!/<p><a [^>]*>[^<]*<\/a><\/p>/.test(missing),missing);assert(missing.endsWith('<p>סיכום קצר.</p>'),missing);
+  assert(missing.includes('<p>פסקה על ציוד ספורט ונעליים. למידע נוסף: <a href="https://shop.example/a" rel="noopener noreferrer">ציוד ספורט איכותי</a>.</p>'),missing);}
  console.log('AI article formatting passed: real H2 HTML, legacy/Markdown fallback, safe markup, contextual authorized links, literal mentions preserved, and DOCX Heading2 export.');
 }finally{await mf.dispose();}

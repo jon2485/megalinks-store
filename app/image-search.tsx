@@ -19,13 +19,15 @@ function Thumb({p}:{p:Row}){
 }
 const SOURCES:Record<string,[string,string]>={pixabay:['Pixabay','https://pixabay.com/'],pexels:['Pexels','https://www.pexels.com/']};
 
+// Owner 27.11.2026: searching and picking load only inside this panel (its own skeleton and "שומר…"), never the
+// whole page, so both calls run in the background.
 export function ImageSearch({onSelected}:{onSelected:(file:Row)=>void}){
  const [text,setText]=useState(''),[result,setResult]=useState<Result|null>(null),[busy,setBusy]=useState(false),[picking,setPicking]=useState(''),[error,setError]=useState(''),[editing,setEditing]=useState(false),[term,setTerm]=useState('');
  const retry=useRef<ReturnType<typeof setTimeout>|null>(null);
  useEffect(()=>()=>{if(retry.current)clearTimeout(retry.current);},[]);
  const run=async(q:string,exact=false,again=false)=>{
   if(!q.trim()||(busy&&!again))return;setBusy(true);setError('');setEditing(false);
-  try{const r=await api('image-search?query='+encodeURIComponent(q.trim())+(exact?'&exact=1':''));setResult(exact&&result?{...r,original:result.original,translated:true}:r);setTerm(r.query);setBusy(false);}
+  try{const r=await api('image-search?query='+encodeURIComponent(q.trim())+(exact?'&exact=1':''),'GET',undefined,{background:true});setResult(exact&&result?{...r,original:result.original,translated:true}:r);setTerm(r.query);setBusy(false);}
   catch(e){const message=(e as Error).message;
    // The library is busy for a few seconds: say so and search again by itself once.
    if(!again&&/עמוס/.test(message)){setError('מאגר התמונות עמוס לרגע. מנסים שוב אוטומטית…');retry.current=setTimeout(()=>void run(q,exact,true),8000);return;}
@@ -33,7 +35,7 @@ export function ImageSearch({onSelected}:{onSelected:(file:Row)=>void}){
  };
  const pick=async(p:Row)=>{
   if(picking)return;setPicking(p.source+':'+p.id);setError('');
-  try{onSelected(await api('image-import','POST',{photo_id:p.id,source:p.source}));}catch(e){setError((e as Error).message);}finally{setPicking('');}
+  try{onSelected(await api('image-import','POST',{photo_id:p.id,source:p.source},{background:true}));}catch(e){setError((e as Error).message);}finally{setPicking('');}
  };
  const [sourceName,sourceUrl]=SOURCES[result?.source||'']||SOURCES.pixabay;
  return <div className="isx" dir="rtl">
