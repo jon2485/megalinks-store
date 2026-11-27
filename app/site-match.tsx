@@ -1,6 +1,6 @@
 'use client';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
-import {Check,Loader2,Pencil,Plus,ShoppingCart,Sparkles,X} from 'lucide-react';
+import {Check,ExternalLink,Loader2,Pencil,Plus,ShoppingCart,Sparkles,X} from 'lucide-react';
 import {toast} from 'sonner';
 import {api} from '@/lib/client';
 import {money,type Row} from '@/lib/shared';
@@ -12,9 +12,15 @@ import './site-match.css';
 // "מצאו לי אתרים מתאימים" (owner 27.11.2026, mockups design/ai-ideas 4-10): the business, its site address and the
 // budget; Claude picks sites that fit and that do not already link to that address, with a phrase and a target page
 // for each (editable), and the phrase mix of the address before and after.
-type Pick={id:string;name:string;url:string;dr?:number;category?:string;price_cents:number;reason:string;anchor:string;anchor_type:AnchorType;target_url:string;alternatives:string[];added?:boolean};
+type Pick={id:string;name:string;url:string;dr?:number;ur?:number;category?:string;price_cents:number;reason:string;anchor:string;anchor_type:AnchorType;target_url:string;alternatives:string[];added?:boolean};
 type Result={domain:string;brand:string;keywords:string[];used:Row[];history:Record<AnchorType,number>;history_total:number;picks:Pick[];total_cents:number;note:string};
 const TYPES:AnchorType[]=['brand','naked','partial','exact'];
+// The table's small helpers: the phrase's length note and the target page as a link.
+const words=(v:string)=>v.trim().split(/\s+/).filter(Boolean).length;
+const wordCount=(v:string)=>{const n=words(v);return n===1?'מילה אחת':n+' מילים';};
+const tailLabel=(p:Pick)=>p.anchor_type==='brand'?'שם העסק':p.anchor_type==='naked'?'כתובת':words(p.anchor)>=3?'זנב ארוך':'זנב קצר';
+const pageHref=(v:string)=>/^https?:\/\//i.test(v.trim())?v.trim():'https://'+v.trim();
+const pageText=(v:string)=>v.trim().replace(/^https?:\/\//i,'').replace(/\/$/,'');
 
 export function SiteMatchButton({ctx,className='',label='מצאו לי אתרים מתאימים',initial={}}:{ctx:Ctx;className?:string;label?:string;initial?:{target_url?:string;business?:string;customer_id?:string;customer_name?:string}}){
  const [open,setOpen]=useState(false);
@@ -41,6 +47,7 @@ function SiteMatchWindow({ctx,initial,onClose}:{ctx:Ctx;initial:{target_url?:str
  const update=(id:string,patch:Partial<Pick>)=>setResult(r=>r?{...r,picks:r.picks.map(p=>p.id===id?{...p,...patch,...(patch.anchor!==undefined?{anchor_type:classifyAnchor(patch.anchor,context)}:{})}:p)}:r);
  const after=useMemo(()=>{const c={...(result?.history||{brand:0,naked:0,partial:0,exact:0,other:0})};for(const p of result?.picks||[])c[p.anchor_type]=(c[p.anchor_type]||0)+1;return c;},[result]);
  const scale=Math.max(1,...TYPES.map(t=>after[t]||0));
+ const totalAfter=(result?.history_total||0)+(result?.picks.length||0);
  const topic=keywords[0]?'כתבה בנושא '+keywords[0]:business.trim();
  const add=async(p:Pick)=>{const res=await addToCartChecked({website_id:p.id,topic,anchor:p.anchor,target_url:p.target_url,quantity:1,customer_id:initial.customer_id||'',notes:''},{background:true});if(res!==null)update(p.id,{added:true});return res!==null;};
  const addOne=async(p:Pick)=>{if(adding)return;setAdding(p.id);try{if(await add(p)){toast.success(p.name+' נוסף לסל עם הביטוי');ctx.refresh();}}catch(err){toast.error((err as Error).message);}finally{setAdding('');}};
@@ -60,22 +67,33 @@ function SiteMatchWindow({ctx,initial,onClose}:{ctx:Ctx;initial:{target_url?:str
    {busy&&<div className="sm-busy" role="status"><Loader2 className="sm-spin" size={22}/><div><b>מחפשים את האתרים המתאימים</b><small>בודקים את הקטלוג, את האתרים שכבר קישרו אליכם ואת הביטויים. זה לוקח עד חצי דקה.</small></div></div>}
    {result&&<section className="sm-results" aria-label="ההמלצה">
     {result.used.length?<div className="sm-used"><span>ל־<bdi dir="ltr">{result.domain}</bdi> כבר יש קישורים מ־<b>{result.used.length===1?'אתר אחד':result.used.length+' אתרים'}</b>. הם לא יוצעו שוב.</span><button type="button" onClick={()=>setShowUsed(v=>!v)}>{showUsed?'הסתרה':'הצגת הרשימה'}</button>{showUsed&&<ul>{result.used.map(s=><li key={s.id}>{s.name} <bdi dir="ltr">{siteDomain(s.url||'')}</bdi></li>)}</ul>}</div>:<div className="sm-used"><span>ל־<bdi dir="ltr">{result.domain}</bdi> עוד אין קישורים מהחשבון שלכם, אז כל האתרים פתוחים.</span></div>}
-    <div className="sm-grid">
-     <div className="sm-list">{result.picks.map(p=><article key={p.id} className={'sm-card'+(p.added?' is-added':'')}>
-      <div className="sm-top"><b>{p.name}</b><bdi dir="ltr" className="sm-dom">{siteDomain(p.url)}</bdi><span className="sm-tags">{p.dr?<span>DR {p.dr}</span>:null}{p.category?<span>{p.category}</span>:null}</span></div>
-      <p className="sm-why">{p.reason}</p>
-      {editing===p.id?<div className="sm-edit">
-       <div className="sm-edit-row"><input aria-label="הביטוי" value={p.anchor} onChange={e=>update(p.id,{anchor:e.target.value})} maxLength={100}/><input aria-label="עמוד היעד" dir="ltr" value={p.target_url} onChange={e=>update(p.id,{target_url:e.target.value})}/><button type="button" className="sm-save" onClick={()=>setEditing('')}><Check size={16}/>שמירה</button></div>
-       {p.alternatives.length?<div className="sm-alts"><span>הצעות נוספות:</span>{p.alternatives.map(a=><button key={a} type="button" onClick={()=>update(p.id,{anchor:a})}>{a}</button>)}</div>:null}
-       <small>סוג הביטוי מתעדכן לבד (עכשיו: {anchorTypeLabels[p.anchor_type]}), וגם החלוקה בצד.</small>
-      </div>:<div className="sm-anchor"><span className={'sm-type t-'+p.anchor_type}>{anchorTypeLabels[p.anchor_type]}</span>ביטוי מומלץ: <q>{p.anchor}</q><span className="sm-arrow" aria-hidden="true">←</span><bdi dir="ltr" className="sm-page">{p.target_url.replace(/^https?:\/\//,'').replace(/\/$/,'')}</bdi>{!p.added&&<button type="button" className="sm-edit-btn" onClick={()=>setEditing(p.id)}><Pencil size={13}/>שינוי</button>}</div>}
-      <div className="sm-side"><span className="sm-price">{money(p.price_cents)}</span>{p.added?<span className="sm-added"><Check size={15}/>בסל</span>:<button type="button" className="sm-add" disabled={!!adding} onClick={()=>void addOne(p)}>{adding===p.id?<Loader2 className="sm-spin" size={15}/>:<Plus size={15}/>}הוספה לסל</button>}</div>
-     </article>)}</div>
-     <aside className="sm-plan"><h3>חלוקת הביטויים ל־<bdi dir="ltr">{result.domain}</bdi></h3><small>מה יש היום, ומה יהיה אחרי ההזמנה</small>
-      {TYPES.map(t=>{const now=result.history[t]||0,next=after[t]||0;return <div key={t} className="sm-bar"><header><span>{anchorTypeLabels[t]}</span><span dir="ltr">{next>now?now+' → '+next:now}</span></header><div className="sm-track"><i className="now" style={{width:now/scale*100+'%'}}/><i className="add" style={{width:(next-now)/scale*100+'%'}}/></div></div>;})}
-      <p className="sm-note">{result.note||'רוב הקישורים על שם העסק או הכתובת, חלק ביטויים חלקיים ומעט מדויקים. כך הפרופיל נראה טבעי.'}</p>
-     </aside>
-    </div>
+    <div className="smt-wrap"><table className="smt">
+     <thead><tr><th scope="col">אתר</th><th scope="col" className="smt-d">DR / UR</th><th scope="col">ביטוי וקישור</th><th scope="col" className="smt-d">סוג הביטוי</th><th scope="col" className="smt-d">כמות מהסוג</th><th scope="col" className="smt-d">למה האתר הזה</th><th scope="col" className="smt-d">מחיר</th><th scope="col"><span className="sr-only">פעולות</span></th></tr></thead>
+     <tbody>{result.picks.map((p,i)=>{const open=editing===p.id,was=result.history[p.anchor_type]||0,will=was+result.picks.slice(0,i+1).filter(x=>x.anchor_type===p.anchor_type).length;return <React.Fragment key={p.id}>
+      <tr className={(p.added?'is-added':'')+(open?' is-open':'')}>
+       <td><div className="smt-site"><span className="smt-logo smt-d" aria-hidden="true">{p.name.trim().slice(0,1)}</span><div><b>{p.name}</b><bdi dir="ltr" className="smt-d">{siteDomain(p.url)}</bdi><small className="smt-m">{p.dr?'DR '+p.dr+' · ':''}{money(p.price_cents)}</small></div></div></td>
+       <td className="smt-d smt-num"><b>{p.dr||'–'}</b><small>UR {p.ur||'–'}</small></td>
+       <td><a className="smt-a" href={pageHref(p.target_url)} target="_blank" rel="noopener noreferrer" title="פתיחת עמוד היעד בלשונית חדשה">{p.anchor}<ExternalLink size={12} aria-hidden="true"/></a><bdi dir="ltr" className="smt-page smt-d">{pageText(p.target_url)}</bdi></td>
+       <td className="smt-d"><span className={'sm-type t-'+p.anchor_type}>{anchorTypeLabels[p.anchor_type]}</span><span className="smt-tail">{tailLabel(p)} · {wordCount(p.anchor)}</span></td>
+       <td className="smt-d smt-qty"><b dir="ltr">{was} → {will}</b><small>מתוך {totalAfter} קישורים</small></td>
+       <td className="smt-d smt-why">{p.reason}</td>
+       <td className="smt-d smt-price">{money(p.price_cents)}</td>
+       <td><div className="smt-acts">{p.added?<span className="sm-added"><Check size={15}/>בסל</span>:<><button type="button" className="smt-btn" aria-expanded={open} onClick={()=>setEditing(open?'':p.id)}><Pencil size={14}/>{open?'סגירה':'שינוי'}</button><button type="button" className="smt-btn smt-add smt-d" disabled={!!adding} onClick={()=>void addOne(p)}>{adding===p.id?<Loader2 className="sm-spin" size={15}/>:<Plus size={15}/>}לסל</button></>}</div></td>
+      </tr>
+      {open&&!p.added&&<tr className="smt-editrow"><td colSpan={8}><div className="smt-ed">
+       <div className="smt-info smt-m"><span><span className={'sm-type t-'+p.anchor_type}>{anchorTypeLabels[p.anchor_type]}</span> {tailLabel(p)}</span><span>{p.ur?'UR '+p.ur+' · ':''}<bdi dir="ltr">{siteDomain(p.url)}</bdi></span><p>{p.reason}</p></div>
+       <label><span>הביטוי</span><input value={p.anchor} onChange={e=>update(p.id,{anchor:e.target.value})} maxLength={100}/></label>
+       <label><span>עמוד היעד</span><input dir="ltr" value={p.target_url} onChange={e=>update(p.id,{target_url:e.target.value})}/></label>
+       <button type="button" className="sm-save" onClick={()=>setEditing('')}><Check size={16}/>שמירה</button>
+       <button type="button" className="smt-btn smt-add smt-m" disabled={!!adding} onClick={()=>void addOne(p)}>{adding===p.id?<Loader2 className="sm-spin" size={15}/>:<Plus size={15}/>}הוספה לסל</button>
+       <div className="sm-alts">{p.alternatives.length?<><span>הצעות נוספות:</span>{p.alternatives.map(a=><button key={a} type="button" onClick={()=>update(p.id,{anchor:a})}>{a}</button>)}</>:null}<span>סוג הביטוי מתעדכן לבד (עכשיו: {anchorTypeLabels[p.anchor_type]}).</span></div>
+      </div></td></tr>}
+     </React.Fragment>;})}</tbody>
+    </table></div>
+    <aside className="smt-mix" aria-label="חלוקת הביטויים"><h3>חלוקת הביטויים<small>היום → אחרי ההזמנה</small></h3>
+     {TYPES.map(t=>{const now=result.history[t]||0,next=after[t]||0;return <div key={t} className="sm-bar"><header><span>{anchorTypeLabels[t]}</span><span dir="ltr">{next>now?now+' → '+next:now}</span></header><div className="sm-track"><i className="now" style={{width:now/scale*100+'%'}}/><i className="add" style={{width:(next-now)/scale*100+'%'}}/></div></div>;})}
+     <p className="sm-note">{result.note||'רוב הקישורים על שם העסק או הכתובת, חלק ביטויים חלקיים ומעט מדויקים. כך הפרופיל נראה טבעי.'}</p>
+    </aside>
     <div className="sm-sum"><span><b>{result.picks.length===1?'אתר אחד':result.picks.length+' אתרים'} · {money(result.picks.reduce((s,p)=>s+p.price_cents,0))}</b><small>המחירים לפני מע״מ. הביטויים והקישורים יוכנסו לכל כתבה בסל.</small></span>{result.picks.every(p=>p.added)?<button type="button" className="sm-all is-done" onClick={()=>{onClose();ctx.go('cart');}}><ShoppingCart size={18}/>מעבר לסל</button>:<button type="button" className="sm-all" disabled={!!adding} onClick={()=>void addAll()}>{adding==='all'?<Loader2 className="sm-spin" size={18}/>:<ShoppingCart size={18}/>}הוספת כולם לסל עם הביטויים</button>}</div>
    </section>}
   </div>
