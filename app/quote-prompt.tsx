@@ -32,8 +32,8 @@ export function QuotePrompt({ctx}:{ctx:Ctx}){
   <div className="pqd-body">
    <div className="pqd-rows">{q.domain&&<div className="pqd-row"><span>לאתר</span><span><b><bdi dir="ltr">{q.domain}</bdi></b></span></div>}<div className="pqd-row"><span>כמות אתרים</span><span><b>{q.count}</b></span></div><div className="pqd-row is-exp"><span>בתוקף עד</span><span><b>{dateHe(q.expires)}</b></span></div></div>
    <h3 className="pqd-h3">האתרים בהצעה</h3>
-   <div className="pqd-rows">{q.items.map((i:Row)=><div key={i.website_id} className="pqd-row"><span>{i.name}</span><span>{i.before_cents>i.price_cents&&<s>{money(i.before_cents)}</s>}<b>{money(i.price_cents)}</b></span></div>)}
-    {q.saving_cents>0&&<div className="pqd-row is-save"><span>חיסכון</span><span><b>{money(q.saving_cents)}</b></span></div>}
+   <div className="pqd-rows">{q.items.map((i:Row)=><div key={i.website_id} className="pqd-row"><span>{i.name}</span><span>{i.before_cents>i.price_cents&&<s>{money(i.before_cents)}</s>}{i.percent_off>0&&<em className="pqd-off" dir="ltr">-{i.percent_off}%</em>}<b>{money(i.price_cents)}</b></span></div>)}
+    {q.saving_cents>0&&<div className="pqd-row is-save"><span>הנחה</span><span>{q.percent_off>0&&<em className="pqd-off" dir="ltr">-{q.percent_off}%</em>}<b>{money(q.saving_cents)}</b></span></div>}
     <div className="pqd-row is-total"><span>סה״כ לפני מע״מ</span><span>{q.before_cents>q.total_cents&&<s>{money(q.before_cents)}</s>}<b>{money(q.total_cents)}</b></span></div></div>
    <div className="pqd-acts"><button type="button" className="pq-btn is-white" disabled={busy} onClick={close}>לא עכשיו</button><button type="button" className="pq-btn is-orange" disabled={busy} onClick={()=>void accept()}>{busy?<Loader2 className="pq-spin" size={20}/>:<ShoppingCart size={20}/>}הוספה לסל</button></div>
   </div></div></div>;

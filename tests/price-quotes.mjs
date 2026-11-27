@@ -20,7 +20,7 @@ const fakes={
   export const db=()=>({batch:async list=>{for(const s of list)await s.run();}});
   export const setting=async(k,f)=>f;export const saveSetting=async()=>{};export const audit=async()=>{};export const connection=async()=>({});export const externalFetch=async()=>{throw new Error('no network in tests');};`,
  'cloudflare:workers':`export const env={};`,
- './pricing':`export const pricingContext=async()=>({});export const pricedSite=row=>({...row,...JSON.parse(row.data||'{}'),price_cents:row.price});`,
+ './pricing':`export const pricingContext=async()=>({});export const pricedSite=row=>({...row,...JSON.parse(row.data||'{}'),price_cents:Math.round(row.price*0.9),regular_price_cents:row.price});`,
  './mail':`export const queueMail=async(id,user,data)=>{globalThis.__pq.mail.push({id,user,data});};`,
  './site-match':`export const domainHistory=async()=>({used:[],anchors:[]});`,
  './anthropic-request':`export const anthropicClient=()=>{throw new Error('no Claude in tests');};export const anthropicFailure=e=>e;`,
@@ -34,27 +34,34 @@ site('a','אתר א',100000,62000);site('b','אתר ב',45000,26000);
 T.users.set('cust',{id:'cust',name:'דני',email:'dani@example.com'});
 const future=new Date(Date.now()+5*86400000).toISOString(),past=new Date(Date.now()-1000).toISOString();
 const record=(id,data,user='cust')=>{T.records.set(id,{id,kind:'price_quote',user_id:user,created:new Date().toISOString(),data:JSON.stringify(data)});return {id,kind:'price_quote',user_id:user,...data,data};};
-const items=[{website_id:'a',price_cents:92000,list_cents:100000},{website_id:'b',price_cents:42000,list_cents:45000}];
+// list_cents: the customer's own price (10% off in this fake); base_cents: the catalog's original list price.
+const items=[{website_id:'a',price_cents:85000,list_cents:90000,base_cents:100000},{website_id:'b',price_cents:39000,list_cents:40500,base_cents:45000}];
 const base={number:1042,status:'sent',target_url:'run-shop.example',budget_ils:1500,days:14,expires:future,sent_at:new Date().toISOString(),items,messages:[{role:'user',text:'כמה עולה לי אתר א? העלות 620'},{role:'assistant',text:'העלות שלך 620 והרווח 300'}]};
 
 // --- 1. the customer's view ---
 const q=record('q1',base);
 const view=await m.customerQuote(q);
-assert.deepEqual(Object.keys(view).sort(),['before_cents','budget_ils','count','domain','expires','id','items','number','saving_cents','status','target_url','total_cents'].sort());
-assert.deepEqual(Object.keys(view.items[0]).sort(),['before_cents','name','price_cents','url','website_id']);
-assert.equal(view.before_cents,145000);assert.equal(view.total_cents,134000);assert.equal(view.saving_cents,11000);assert.equal(view.count,2);
+assert.deepEqual(Object.keys(view).sort(),['before_cents','budget_ils','count','domain','expires','id','items','number','percent_off','saving_cents','status','target_url','total_cents'].sort());
+assert.deepEqual(Object.keys(view.items[0]).sort(),['before_cents','name','percent_off','price_cents','url','website_id']);
+// "before" is the original list price (1,000 and 450), not the customer's own price (900 and 405)
+assert.equal(view.before_cents,145000);assert.equal(view.total_cents,124000);assert.equal(view.saving_cents,21000);assert.equal(view.count,2);
+assert.equal(view.items[0].before_cents,100000);assert.equal(view.items[0].percent_off,15);assert.equal(view.items[1].percent_off,13);assert.equal(view.percent_off,14);
+// a quote saved before base_cents existed falls back to the customer's price
+assert.equal((await m.customerQuote(record('q-old',{...base,items:[{website_id:'a',price_cents:85000,list_cents:90000}]}))).items[0].before_cents,90000);
 const leak=/cost|profit|supplier|sup-secret|620|260|300|messages|העלות|רווח|ספק/i;
 assert(!leak.test(JSON.stringify(view)),'the customer JSON must not carry cost, profit, supplier or the chat');
 const html=m.quoteMailHtml(view,'דני','https://app.example',false);
 assert(!leak.test(html.replace(/#[0-9a-f]{6}/gi,'').replace(/font-weight:\d+|font-size:\d+px|padding:[^;"]+|max-width:\d+px|border-radius:\d+px|line-height:[\d.]+/g,'')),'the e-mail must not carry cost, profit or supplier');
-for(const text of ['הצעת מחיר מס׳ 1042','run-shop.example','אתר א','https://a.example','₪1,000','₪920','₪1,340','₪1,450','₪110','בתוקף עד','https://app.example/catalog?quote=q1'])assert(html.includes(text),'e-mail misses '+text);
+for(const text of ['הצעת מחיר מס׳ 1042','run-shop.example','אתר א','https://a.example','₪1,000','₪850','₪1,240','₪1,450','₪210','-15%','-14%','בתוקף עד','https://app.example/catalog?quote=q1'])assert(html.includes(text),'e-mail misses '+text);
 assert(m.quoteMailHtml(view,'דני','https://app.example',true).includes('בתוקף לעוד 24 שעות'));
+// one text size in the e-mail: 16px everywhere, but the title, the logo, the final price and the button
+{const sizes=[...new Set(html.match(/font-size:\d+px/g))].sort();assert.deepEqual(sizes,['font-size:16px','font-size:18px','font-size:20px','font-size:22px','font-size:24px']);assert(!/Heebo/.test(html));}
 // a price above the list price is never shown as a "discount"
 const up=await m.customerQuote(record('q-up',{...base,items:[{website_id:'a',price_cents:110000,list_cents:100000}]}));
 assert.equal(up.items[0].before_cents,110000);assert.equal(up.saving_cents,0);
 // the admin's view does carry them
 const adminView=await m.adminQuote(q);
-assert.equal(adminView.items[0].cost_cents,62000);assert.equal(adminView.items[0].profit_cents,30000);assert.equal(adminView.totals.profit_cents,134000-88000);
+assert.equal(adminView.items[0].cost_cents,62000);assert.equal(adminView.items[0].profit_cents,23000);assert.equal(adminView.totals.profit_cents,124000-88000);assert.equal(adminView.items[0].base_cents,100000);assert.equal(adminView.items[0].list_cents,90000);
 assert.equal((await m.adminQuote(record('q-low',{...base,items:[{website_id:'a',price_cents:50000,list_cents:100000}]}))).items[0].below_cost,true);
 
 // --- 2. status and expiry ---
@@ -66,9 +73,11 @@ const line=(id,wid,quote_id,price,extra={})=>({id,website_id:wid,quote_id,active
 const cart=()=>[line('l1','a','q2',100000),line('l2','b','q2',45000),line('l3','b',undefined,45000)];
 record('q2',{...base,status:'accepted'});
 let c=await m.applyQuotePrices({id:'cust'},cart());
-assert.deepEqual(c.map(i=>i.price),[92000,42000,45000]);assert.equal(c[0].quote_applied,true);assert.equal(c[0].bundle_applied,true,'no coupon on top of a quote price');assert.equal(c[0].quote_normal_price,100000);assert.equal(c[2].quote_applied,undefined);
+assert.deepEqual(c.map(i=>i.price),[85000,39000,45000]);assert.equal(c[0].quote_applied,true);assert.equal(c[0].bundle_applied,true,'no coupon on top of a quote price');assert.equal(c[0].quote_normal_price,100000);assert.equal(c[2].quote_applied,undefined);
 // the writing add-on stays on top of the quote price
-c=await m.applyQuotePrices({id:'cust'},[line('l1','a','q2',100000,{editorial_price:6000,price:106000}),line('l2','b','q2',45000)]);assert.equal(c[0].price,98000);assert.equal(c[0].publication_price,92000);
+c=await m.applyQuotePrices({id:'cust'},[line('l1','a','q2',100000,{editorial_price:6000,price:106000}),line('l2','b','q2',45000)]);assert.equal(c[0].price,91000);assert.equal(c[0].publication_price,85000);
+// the quote price is for one publication: a line holding 3 pays the regular price for the other two
+c=await m.applyQuotePrices({id:'cust'},[line('l1','a','q2',100000,{quantity:3}),line('l2','b','q2',45000)]);assert.equal(c[0].publication_price*3,85000+2*100000);assert.equal(c[1].price,39000);
 // one site missing: the regular prices
 c=await m.applyQuotePrices({id:'cust'},[line('l1','a','q2',100000)]);assert.equal(c[0].price,100000);assert.equal(c[0].quote_applied,false);assert.equal(c[0].quote_number,1042);
 // expired, not approved yet, cancelled, another customer's quote, an unknown quote: the regular prices

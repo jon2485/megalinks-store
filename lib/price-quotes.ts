@@ -20,10 +20,14 @@ import {domainHistory} from './site-match';
 
 const KIND='price_quote',DAY=86400000,MODEL='claude-opus-5-5';
 export const QUOTE_DEFAULT_DAYS=14;
-type Item={website_id:string;price_cents:number;list_cents:number};
+// list_cents: this customer's own price (tier, personal price, sale). base_cents: the catalog's original list price,
+// with no sale and no customer discount; the customer's document shows it as the price before the discount (owner 27.11.2026).
+type Item={website_id:string;price_cents:number;list_cents:number;base_cents?:number};
+const beforeOf=(i:Item)=>Math.max(Number(i.base_cents??i.list_cents)||0,i.price_cents);
+const percentOff=(before:number,price:number)=>before>price?Math.round((before-price)/before*100):0;
 const ils=(cents:number)=>'₪'+(Math.round(cents)/100).toLocaleString('he-IL',{maximumFractionDigits:2});
 const dateHe=(iso:string)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric'}).format(new Date(iso));
-const dateTimeHe=(iso:string)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(iso));
+const dateTimeHe=(iso:string)=>new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(new Date(iso)).replace(', ',' בשעה ');
 const days=(v:unknown)=>Math.max(1,Math.min(90,Math.floor(Number(v)||QUOTE_DEFAULT_DAYS)));
 
 /** The live status: a sent or approved quote past its date is expired, whatever is stored. */
@@ -40,7 +44,7 @@ async function save(q:Row,patch:Row){
 async function pricedFor(customerId:string,ids:string[]){
  const [ctx,rows]=await Promise.all([pricingContext(customerId),mapIn('websites','id',[...new Set(ids)])]);
  const out=new Map<string,Row>();
- for(const [id,row] of rows){const s=pricedSite(row,ctx,true);out.set(String(id),{id:String(id),name:s.name,url:s.url,dr:s.dr??null,category:s.category||'',active:!!row.active,list_cents:Number(s.price_cents)||0,cost_cents:Number.isFinite(Number(s.cost_cents))&&s.cost_cents!==null&&s.cost_cents!==undefined?Number(s.cost_cents):null});}
+ for(const [id,row] of rows){const s=pricedSite(row,ctx,true);out.set(String(id),{id:String(id),name:s.name,url:s.url,dr:s.dr??null,category:s.category||'',active:!!row.active,list_cents:Number(s.price_cents)||0,base_cents:Number(s.regular_price_cents)||Number(row.price)||Number(s.price_cents)||0,cost_cents:Number.isFinite(Number(s.cost_cents))&&s.cost_cents!==null&&s.cost_cents!==undefined?Number(s.cost_cents):null});}
  return out;
 }
 function cleanItems(input:unknown,sites:Map<string,Row>):Item[]{
@@ -50,7 +54,7 @@ function cleanItems(input:unknown,sites:Map<string,Row>):Item[]{
   const id=String(raw?.website_id||''),site=sites.get(id);assert(site,'אתר בהצעה לא נמצא בקטלוג');assert(site.active,'האתר '+site.name+' אינו פעיל בקטלוג');
   assert(!seen.has(id),'האתר '+site.name+' מופיע פעמיים בהצעה');seen.add(id);
   const price=Math.round(Number(raw.price_cents));assert(Number.isSafeInteger(price)&&price>0&&price<=100000000,'המחיר של '+site.name+' אינו תקין');
-  items.push({website_id:id,price_cents:price,list_cents:site.list_cents});
+  items.push({website_id:id,price_cents:price,list_cents:site.list_cents,base_cents:site.base_cents});
  }
  return items;
 }
@@ -59,7 +63,7 @@ function cleanItems(input:unknown,sites:Map<string,Row>):Item[]{
 export async function adminQuote(q:Row){
  const items:Item[]=q.items||[];
  const [sites,customer]=await Promise.all([pricedFor(q.user_id,items.map(i=>i.website_id)),one('SELECT id,name,email,company FROM users WHERE id=?',q.user_id)]);
- const rows=items.map(i=>{const s=sites.get(i.website_id);const cost=s?.cost_cents??null;return {website_id:i.website_id,name:s?.name||'אתר שהוסר',url:s?.url||'',dr:s?.dr??null,active:!!s?.active,list_cents:s?.list_cents??i.list_cents,cost_cents:cost,price_cents:i.price_cents,profit_cents:cost===null?null:i.price_cents-cost,below_cost:cost!==null&&i.price_cents<cost};});
+ const rows=items.map(i=>{const s=sites.get(i.website_id);const cost=s?.cost_cents??null;return {website_id:i.website_id,name:s?.name||'אתר שהוסר',url:s?.url||'',dr:s?.dr??null,active:!!s?.active,base_cents:s?.base_cents??i.base_cents??i.list_cents,list_cents:s?.list_cents??i.list_cents,cost_cents:cost,price_cents:i.price_cents,profit_cents:cost===null?null:i.price_cents-cost,below_cost:cost!==null&&i.price_cents<cost};});
  const sum=(k:string)=>rows.reduce((t,r)=>t+(Number((r as Row)[k])||0),0);
  return {id:q.id,number:q.number,status:quoteStatus(q),customer:customer||{id:q.user_id,name:'לקוח שנמחק',email:''},target_url:q.target_url||'',budget_ils:Number(q.budget_ils)||0,days:days(q.days),expires:q.expires||null,sent_at:q.sent_at||null,created:q.created,
   items:rows,totals:{list_cents:sum('list_cents'),cost_cents:sum('cost_cents'),price_cents:sum('price_cents'),profit_cents:sum('price_cents')-sum('cost_cents'),cost_known:rows.every(r=>r.cost_cents!==null)},
@@ -68,9 +72,9 @@ export async function adminQuote(q:Row){
 // ---------- what the customer sees: only these fields, nothing else from the record ----------
 export async function customerQuote(q:Row){
  const items:Item[]=q.items||[];const sites=await mapIn('websites','id',items.map(i=>i.website_id));
- const rows=items.map(i=>{const s=sites.get(i.website_id);const before=Math.max(Number(i.list_cents)||0,i.price_cents);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:before,price_cents:i.price_cents};});
+ const rows=items.map(i=>{const s=sites.get(i.website_id);const before=beforeOf(i);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:before,price_cents:i.price_cents,percent_off:percentOff(before,i.price_cents)};});
  const before=rows.reduce((t,r)=>t+r.before_cents,0),total=rows.reduce((t,r)=>t+r.price_cents,0);
- return {id:q.id,number:q.number,status:quoteStatus(q),target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:rows.length,expires:q.expires||null,items:rows,before_cents:before,total_cents:total,saving_cents:before-total};
+ return {id:q.id,number:q.number,status:quoteStatus(q),target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:rows.length,expires:q.expires||null,items:rows,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total)};
 }
 
 // ---------- admin actions ----------
@@ -111,9 +115,9 @@ export async function pendingQuotes(u:Row){
  const rows=(await all("SELECT * FROM records WHERE kind=? AND user_id=? AND json_extract(data,'$.status')='sent' ORDER BY created DESC LIMIT 5",KIND,u.id)).map(r=>parse(r) as Row).filter(q=>quoteStatus(q)==='sent');
  if(!rows.length)return [];
  const sites=await mapIn('websites','id',rows.flatMap(q=>(q.items||[]).map((i:Item)=>i.website_id)));
- return rows.map(q=>{const items=(q.items||[]).map((i:Item)=>{const s=sites.get(i.website_id);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:Math.max(Number(i.list_cents)||0,i.price_cents),price_cents:i.price_cents};});
+ return rows.map(q=>{const items=(q.items||[]).map((i:Item)=>{const s=sites.get(i.website_id);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:beforeOf(i),price_cents:i.price_cents,percent_off:percentOff(beforeOf(i),i.price_cents)};});
   const before=items.reduce((t:number,r:Row)=>t+r.before_cents,0),total=items.reduce((t:number,r:Row)=>t+r.price_cents,0);
-  return {id:q.id,number:q.number,status:'sent',target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total};});
+  return {id:q.id,number:q.number,status:'sent',target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total)};});
 }
 type Brief=(input:Row,w:Row,u:Row)=>Promise<Row>;
 async function acceptQuote(u:Row,q:Row,validBrief:Brief){
@@ -144,7 +148,10 @@ export async function applyQuotePrices<T extends Row>(u:Row,items:T[]):Promise<T
   for(const line of group){
    line.quote_number=q?.number||null;line.quote_applied=complete;
    if(!complete)continue;
-   const price=list.find(i=>i.website_id===line.website_id)!.price_cents;
+   const quotePrice=list.find(i=>i.website_id===line.website_id)!.price_cents,units=Math.max(1,Number(line.quantity)||1);
+   // The quote price is for one publication. A line that holds more (it should not: the cart moves extra units to a
+   // regular line) pays the regular price for the rest, spread evenly so the line total is right.
+   const price=units===1?quotePrice:Math.round((quotePrice+(units-1)*line.publication_price)/units);
    line.quote_normal_price=line.publication_price;line.publication_price=price;line.sale_price=price;line.price=price+line.editorial_price;line.price_cents=line.price;line.bundle_applied=true;
   }
  }
@@ -165,27 +172,32 @@ export async function quotesOrdered(items:Row[],orderId:string){
 // ---------- the e-mail (this is also the quote document) ----------
 function quoteMailText(v:Row,name:string,reminder:boolean){
  return ['שלום '+(name||'')+',','',reminder?'הצעת מחיר מס׳ '+v.number+' בתוקף לעוד 24 שעות.':'הכנו עבורך הצעת מחיר מס׳ '+v.number+(v.domain?' לאתר '+v.domain:'')+'.',
-  ...v.items.map((i:Row,n:number)=>(n+1)+'. '+i.name+' ('+i.url+'): '+ils(i.before_cents)+' לפני הנחה, '+ils(i.price_cents)+' אחרי הנחה'),
-  'סה״כ: '+ils(v.total_cents)+' לפני מע״מ (במקום '+ils(v.before_cents)+').','ההצעה בתוקף עד '+dateTimeHe(v.expires)+'.'].join('\n');
+  ...v.items.map((i:Row,n:number)=>(n+1)+'. '+i.name+' ('+i.url+'): '+ils(i.before_cents)+' לפני הנחה, '+ils(i.price_cents)+' אחרי הנחה'+(i.percent_off?' ('+i.percent_off+'% הנחה)':'')),
+  'סה״כ: '+ils(v.total_cents)+' לפני מע״מ (במקום '+ils(v.before_cents)+(v.percent_off?', '+v.percent_off+'% הנחה':'')+').','ההצעה בתוקף עד '+dateTimeHe(v.expires)+'.'].join('\n');
 }
+// One font and one text size (16px) for everything; only the title and the final price are larger. Mail programs do
+// not load web fonts, so the font is one every computer and phone has.
 export function quoteMailHtml(v:Row,name:string,origin:string,reminder:boolean){
- const e=escapeHtml,font='Heebo,Arial,Helvetica,sans-serif',link=origin+'/catalog?quote='+encodeURIComponent(v.id);
- const row=(label:string,value:string,style='')=>`<tr><td style="padding:14px 18px;border-bottom:1px solid #edf1f6;font-size:17px;color:#3d526a;font-weight:600;font-family:${font}">${label}</td><td align="left" style="padding:14px 18px;border-bottom:1px solid #edf1f6;font-size:18px;font-weight:800;color:#09234b;font-family:${font};${style}">${value}</td></tr>`;
- const site=(i:Row,n:number)=>`<tr><td style="padding:13px 10px;border-bottom:1px solid #edf1f6;font-size:15px;color:#52677e;font-family:${font}">${n+1}</td><td style="padding:13px 10px;border-bottom:1px solid #edf1f6;font-family:${font}"><div style="font-size:17px;font-weight:800;color:#09234b">${e(i.name)}</div><a href="${e(i.url)}" style="font-size:14px;color:#1467cf;direction:ltr;unicode-bidi:embed">${e(String(i.url).replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,''))}</a></td><td align="left" style="padding:13px 10px;border-bottom:1px solid #edf1f6;font-size:15px;color:#7a8aa0;text-decoration:line-through;white-space:nowrap;font-family:${font}">${e(ils(i.before_cents))}</td><td align="left" style="padding:13px 10px;border-bottom:1px solid #edf1f6;font-size:18px;font-weight:800;color:#09234b;white-space:nowrap;font-family:${font}">${e(ils(i.price_cents))}</td></tr>`;
- const th=(t:string,a='right')=>`<th align="${a}" style="padding:11px 10px;background:#f5f8fc;border-bottom:1px solid #e3eaf3;font-size:13px;color:#52677e;font-weight:700;font-family:${font}">${t}</th>`;
+ const e=escapeHtml,font="Arial,'Segoe UI',Helvetica,sans-serif",link=origin+'/catalog?quote='+encodeURIComponent(v.id);
+ const cell='padding:13px 16px;border-bottom:1px solid #edf1f6;font-size:16px;line-height:1.4;font-family:'+font;
+ const row=(label:string,value:string,style='',last=false)=>`<tr><td style="${cell};color:#3d526a${last?';border-bottom:0':''}${/background:#[0-9a-f]+/.exec(style)?.[0]?';'+/background:#[0-9a-f]+/.exec(style)![0]:''}">${label}</td><td align="left" style="${cell};font-weight:bold;color:#09234b;${style}${last?';border-bottom:0':''}">${value}</td></tr>`;
+ const off=(n:number)=>n>0?`<span style="display:inline-block;background:#e7f7ed;color:#15803d;font-size:16px;font-weight:bold;padding:2px 8px;border-radius:8px;font-family:${font}" dir="ltr">-${n}%</span>`:'';
+ const site=(i:Row,n:number)=>`<tr><td style="${cell};color:#52677e;width:28px">${n+1}</td><td style="${cell}"><span style="font-weight:bold;color:#09234b">${e(i.name)}</span><br><a href="${e(i.url)}" style="font-size:16px;color:#1467cf;font-family:${font}" dir="ltr">${e(String(i.url).replace(/^https?:\/\/(www\.)?/,'').replace(/\/$/,''))}</a></td><td align="left" style="${cell};color:#7a8aa0;white-space:nowrap">${i.before_cents>i.price_cents?'<s>'+e(ils(i.before_cents))+'</s>':''}</td><td align="left" style="${cell};white-space:nowrap">${off(i.percent_off)}</td><td align="left" style="${cell};font-weight:bold;color:#09234b;white-space:nowrap">${e(ils(i.price_cents))}</td></tr>`;
+ const th=(t:string,a='right')=>`<th align="${a}" style="padding:11px 16px;background:#f5f8fc;border-bottom:1px solid #e3eaf3;font-size:16px;color:#52677e;font-weight:bold;font-family:${font};white-space:nowrap">${t}</th>`;
+ const p='margin:0 0 18px;font-size:16px;line-height:1.6;color:#22364f;font-family:'+font;
  return `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>הצעת מחיר מס׳ ${e(v.number)}</title></head><body style="margin:0;background:#e9eef5;padding:24px 12px;font-family:${font}">
-<table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" align="center" style="width:100%;max-width:680px;background:#ffffff;border-radius:22px;overflow:hidden">
-<tr><td style="background:#0b2850;padding:24px 28px"><table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:27px;font-weight:900;color:#ffffff;font-family:${font}">MegaLinks</td><td align="left" style="font-size:16px;font-weight:800;color:#ffffff;font-family:${font}">${reminder?'תזכורת':'הצעת מחיר מס׳ '+e(v.number)}</td></tr></table></td></tr>
+<table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" align="center" style="width:100%;max-width:680px;background:#ffffff;border-radius:18px;overflow:hidden">
+<tr><td style="background:#0b2850;padding:22px 28px"><table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0"><tr><td style="font-size:24px;font-weight:bold;color:#ffffff;font-family:${font}">MegaLinks</td><td align="left" style="font-size:16px;font-weight:bold;color:#ffffff;font-family:${font}">${reminder?'תזכורת':'הצעת מחיר מס׳ '+e(v.number)}</td></tr></table></td></tr>
 <tr><td style="padding:28px">
-<h1 style="margin:0 0 10px;font-size:27px;line-height:1.3;font-weight:800;color:#09234b;font-family:${font}">${reminder?'ההצעה שלך בתוקף לעוד 24 שעות':'הצעת מחיר'+(v.domain?' לאתר <span dir="ltr">'+e(v.domain)+'</span>':'')}</h1>
-<p style="margin:0 0 18px;font-size:18px;line-height:1.6;font-weight:600;color:#22364f;font-family:${font}">שלום ${e(name||'')}, ${reminder?'קיבלת מאיתנו הצעת מחיר ועוד לא אישרת אותה.':'זו ההצעה שהכנו עבורך.'}</p>
-<table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e3eaf3;border-radius:16px;border-collapse:separate;overflow:hidden">
-${row('מספר הצעה',e(v.number))}${v.domain?row('לאתר','<span dir="ltr">'+e(v.domain)+'</span>'):''}${v.budget_ils?row('תקציב',e(ils(v.budget_ils*100))):''}${row('כמות אתרים',String(v.count))}${row('מחיר לפני הנחה',e(ils(v.before_cents)),'text-decoration:line-through;color:#7a8aa0;font-weight:600')}${row('מחיר אחרי הנחה',e(ils(v.total_cents)),'font-size:23px')}${v.saving_cents>0?row('חיסכון',e(ils(v.saving_cents)),'color:#15803d'):''}<tr><td style="padding:14px 18px;font-size:17px;color:#3d526a;font-weight:600;font-family:${font}">בתוקף עד</td><td align="left" style="padding:14px 18px;font-size:18px;font-weight:800;color:#9a5b00;font-family:${font}">${e(dateTimeHe(v.expires))}</td></tr>
+<h1 style="margin:0 0 10px;font-size:22px;line-height:1.35;font-weight:bold;color:#09234b;font-family:${font}">${reminder?'ההצעה שלך בתוקף לעוד 24 שעות':'הצעת מחיר'+(v.domain?' לאתר <span dir="ltr">'+e(v.domain)+'</span>':'')}</h1>
+<p style="${p}">שלום ${e(name||'')}, ${reminder?'קיבלת מאיתנו הצעת מחיר ועוד לא אישרת אותה.':'זו ההצעה שהכנו עבורך.'}</p>
+<table role="presentation" dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e3eaf3;border-radius:14px;border-collapse:separate;overflow:hidden">
+${row('מספר הצעה',e(v.number))}${v.domain?row('לאתר','<span dir="ltr">'+e(v.domain)+'</span>'):''}${v.budget_ils?row('תקציב',e(ils(v.budget_ils*100))):''}${row('כמות אתרים',String(v.count))}${v.before_cents>v.total_cents?row('מחיר מחירון','<s>'+e(ils(v.before_cents))+'</s>','color:#7a8aa0;font-weight:normal'):''}${v.percent_off?row('הנחה',off(v.percent_off)+' &nbsp;'+e(ils(v.saving_cents)),'color:#15803d'):''}${row('מחיר אחרי הנחה (לפני מע״מ)',e(ils(v.total_cents)),'font-size:20px;background:#f2f7ff')}${row('בתוקף עד',e(dateTimeHe(v.expires)),'color:#9a5b00',true)}
 </table>
-<h2 style="margin:24px 0 8px;font-size:17px;font-weight:800;color:#3d526a;font-family:${font}">האתרים בהצעה</h2>
-<table dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e3eaf3;border-radius:16px;border-collapse:separate;overflow:hidden"><tr>${th('#')}${th('שם האתר וכתובת')}${th('לפני הנחה','left')}${th('אחרי הנחה','left')}</tr>${v.items.map(site).join('')}</table>
-<table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px"><tr><td align="center"><a href="${e(link)}" style="display:block;background:#f47b16;color:#ffffff;text-decoration:none;font-size:19px;font-weight:800;padding:18px 20px;border-radius:16px;text-align:center;font-family:${font}">${reminder?'לצפייה בהצעה ולאישור':'אישור ההצעה והוספה לסל'}</a></td></tr></table>
-<p style="margin:18px 0 0;font-size:15px;line-height:1.7;color:#52677e;font-family:${font}">הכפתור מעביר למערכת מגה לינקס ומוסיף את האתרים לסל במחירי ההצעה. המחירים לפני מע״מ. המחירים המיוחדים חלים על ההצעה כולה: הסרת אתר מהסל מחזירה את שאר האתרים למחיר הרגיל. אחרי ${e(dateTimeHe(v.expires))} המחירים המיוחדים לא יחולו.</p>
+<h2 style="margin:24px 0 8px;font-size:16px;font-weight:bold;color:#3d526a;font-family:${font}">האתרים בהצעה</h2>
+<table dir="rtl" width="100%" cellpadding="0" cellspacing="0" style="border:1px solid #e3eaf3;border-radius:14px;border-collapse:separate;overflow:hidden"><tr>${th('#')}${th('שם האתר וכתובת')}${th('מחירון','left')}${th('הנחה','left')}${th('אחרי הנחה','left')}</tr>${v.items.map(site).join('')}</table>
+<table role="presentation" dir="rtl" cellpadding="0" cellspacing="0" style="width:100%;margin-top:24px"><tr><td align="center"><a href="${e(link)}" style="display:block;background:#f47b16;color:#ffffff;text-decoration:none;font-size:18px;font-weight:bold;padding:17px 20px;border-radius:14px;text-align:center;font-family:${font}">${reminder?'לצפייה בהצעה ולאישור':'אישור ההצעה והוספה לסל'}</a></td></tr></table>
+<p style="margin:18px 0 0;font-size:16px;line-height:1.6;color:#52677e;font-family:${font}">הכפתור מעביר למערכת מגה לינקס ומוסיף את האתרים לסל במחירי ההצעה. המחירים לפני מע״מ. המחירים המיוחדים חלים על ההצעה כולה: הסרת אתר מהסל מחזירה את שאר האתרים למחיר הרגיל. אחרי ${e(dateTimeHe(v.expires))} המחירים המיוחדים לא יחולו.</p>
 </td></tr></table></body></html>`;
 }
 /** The quote as a PDF file: the customer's view only, with the brand font and logo. */
@@ -214,9 +226,9 @@ export async function quoteReminders(origin:string){
  return sent;
 }
 function customerQuoteFrom(q:Row,sites:Map<string,Row>){
- const items=(q.items||[]).map((i:Item)=>{const s=sites.get(i.website_id);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:Math.max(Number(i.list_cents)||0,i.price_cents),price_cents:i.price_cents};});
+ const items=(q.items||[]).map((i:Item)=>{const s=sites.get(i.website_id);return {website_id:i.website_id,name:String(s?.name||''),url:String(s?.url||''),before_cents:beforeOf(i),price_cents:i.price_cents,percent_off:percentOff(beforeOf(i),i.price_cents)};});
  const before=items.reduce((t:number,r:Row)=>t+r.before_cents,0),total=items.reduce((t:number,r:Row)=>t+r.price_cents,0);
- return {id:q.id,number:q.number,target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total};
+ return {id:q.id,number:q.number,target_url:q.target_url||'',domain:siteDomain(q.target_url||''),budget_ils:Number(q.budget_ils)||0,count:items.length,expires:q.expires,items,before_cents:before,total_cents:total,saving_cents:before-total,percent_off:percentOff(before,total)};
 }
 
 // ---------- the chat with Claude ----------
@@ -232,7 +244,7 @@ const toIls=(cents:number|null)=>cents===null?null:Math.round(cents)/100;
 async function siteRows(q:Row,rows:Row[]){
  const ctx=await pricingContext(q.user_id);const domain=siteDomain(q.target_url||'');
  const used=domain?new Set((await domainHistory({id:q.user_id},domain)).used.map((s:Row)=>String(s.id))):new Set<string>();
- return rows.map(row=>{const s=pricedSite(row,ctx,true);const cost=s.cost_cents===null||s.cost_cents===undefined||!Number.isFinite(Number(s.cost_cents))?null:Number(s.cost_cents);return {id:String(row.id),name:s.name,url:s.url,dr:s.dr??null,category:s.category||'',list_price_ils:toIls(Number(s.price_cents)||0),cost_ils:toIls(cost),profit_at_list_ils:cost===null?null:toIls((Number(s.price_cents)||0)-cost),already_linked_to_target:used.has(String(row.id))};});
+ return rows.map(row=>{const s=pricedSite(row,ctx,true);const cost=s.cost_cents===null||s.cost_cents===undefined||!Number.isFinite(Number(s.cost_cents))?null:Number(s.cost_cents);return {id:String(row.id),name:s.name,url:s.url,dr:s.dr??null,category:s.category||'',original_list_price_ils:toIls(Number(s.regular_price_cents)||Number(row.price)||0),list_price_ils:toIls(Number(s.price_cents)||0),cost_ils:toIls(cost),profit_at_list_ils:cost===null?null:toIls((Number(s.price_cents)||0)-cost),already_linked_to_target:used.has(String(row.id))};});
 }
 async function runTool(q:Row,name:string,input:Row):Promise<{out:unknown;q:Row}>{
  if(name==='find_sites'){
@@ -265,6 +277,7 @@ function systemPrompt(v:Row){
   'Money rules: never calculate or guess a price, cost, total or profit yourself. Every figure you state must come from a tool result. If you need a figure, call a tool. If the admin asks for "about 6% off", choose round prices and save them with set_quote, then report the totals the tool returned.',
   'When the admin names sites, call lookup_sites. When they describe a need (topic, count, budget), call find_sites and prefer sites that are not already linked to the target domain and that fit the budget. When several catalog sites match one name, ask which one.',
   'Whenever the admin decides on sites or prices, save with set_quote (the full list every time). Warn when a quote price is below the cost. Mention sites that already link to the target domain.',
+  'Two list prices exist: original_list_price_ils is the catalog price with no sale and no customer discount; list_price_ils is what this customer pays today. The customer document shows the original list price as the price before the discount, with the discount percent.',
   'All prices are in shekels before VAT. The cost and the profit are for the admin only; the customer document is produced by the system and never contains them.',
   'Customer: '+(v.customer?.name||'')+'. Target site: '+(v.target_url||'not set')+'. Budget: '+(v.budget_ils?v.budget_ils+' ILS':'not set')+'. Valid for '+v.days+' days. Quote number '+v.number+'.',
   'The quote right now: '+JSON.stringify(v.items.map((i:Row)=>({website_id:i.website_id,name:i.name,list_price_ils:toIls(i.list_cents),cost_ils:toIls(i.cost_cents),quote_price_ils:toIls(i.price_cents)})))].join('\n');

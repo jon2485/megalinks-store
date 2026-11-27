@@ -26,22 +26,23 @@ export async function makePriceQuotePdf(v:Row,name:string,link:string,fontBytes:
  // The summary rows: one line for each detail, the value bold-sized on the left.
  const rows:[string,string,any,number,boolean][]=[['מספר הצעה',String(v.number),ink,13,false]];
  if(v.domain)rows.push(['לאתר',v.domain,ink,13,false]);if(v.budget_ils)rows.push(['תקציב',ils(v.budget_ils*100),ink,13,false]);
- rows.push(['כמות אתרים',String(v.count),ink,13,false]);if(v.before_cents>v.total_cents)rows.push(['מחיר לפני הנחה',ils(v.before_cents),grey,12,true]);
- rows.push(['מחיר אחרי הנחה (לפני מע״מ)',ils(v.total_cents),ink,16,false]);if(v.saving_cents>0)rows.push(['חיסכון',ils(v.saving_cents),green,13,false]);rows.push(['בתוקף עד',dateTime(v.expires),amber,13,false]);
+ rows.push(['כמות אתרים',String(v.count),ink,13,false]);if(v.before_cents>v.total_cents)rows.push(['מחיר מחירון',ils(v.before_cents),grey,12,true]);if(v.percent_off>0)rows.push(['הנחה',v.percent_off+'%  ·  '+ils(v.saving_cents),green,13,false]);
+ rows.push(['מחיר אחרי הנחה (לפני מע״מ)',ils(v.total_cents),ink,16,false]);rows.push(['בתוקף עד',dateTime(v.expires),amber,13,false]);
  const rowH=27,boxTop=y;page.drawRectangle({x:L,y:H-boxTop-rows.length*rowH,width:R-L,height:rows.length*rowH,borderColor:line,borderWidth:1,color:white});
  rows.forEach(([label,value,color,size,strike],i)=>{const top=boxTop+i*rowH;if(label.startsWith('מחיר אחרי'))page.drawRectangle({x:L+.5,y:H-top-rowH+.5,width:R-L-1,height:rowH-1,color:rgb(.95,.97,1)});if(i)page.drawLine({start:{x:L,y:H-top},end:{x:R,y:H-top},thickness:.7,color:line});text(label,R-14,top+18,11.5,muted);const t=text(value,L+14,top+18.5,size,color,'left');if(strike)page.drawLine({start:{x:t.left,y:H-top-14.5},end:{x:t.left+t.w,y:H-top-14.5},thickness:.8,color:grey});});
  y=boxTop+rows.length*rowH+30;
  text('האתרים בהצעה',R,y,13,muted);y+=12;
  // The sites table. Columns from the right: #, name, address (a link), before, after.
- const cNum=R-12,cName=R-36,cUrl=R-212,cBefore=L+150,cAfter=L+12,itemH=26;
- const head=()=>{page.drawRectangle({x:L,y:H-y-24,width:R-L,height:24,color:pale,borderColor:line,borderWidth:1});text('#',cNum,y+16,9.5,muted);text('שם האתר',cName,y+16,9.5,muted);text('כתובת',cUrl,y+16,9.5,muted);text('לפני הנחה',cBefore,y+16,9.5,muted,'left');text('אחרי הנחה',cAfter,y+16,9.5,muted,'left');y+=24;};
+ const cNum=R-12,cName=R-36,cUrl=R-196,cBefore=L+178,cOff=L+104,cAfter=L+12,itemH=26;
+ const head=()=>{page.drawRectangle({x:L,y:H-y-24,width:R-L,height:24,color:pale,borderColor:line,borderWidth:1});text('#',cNum,y+16,9.5,muted);text('שם האתר',cName,y+16,9.5,muted);text('כתובת',cUrl,y+16,9.5,muted);text('מחירון',cBefore,y+16,9.5,muted,'left');text('הנחה',cOff,y+16,9.5,muted,'left');text('אחרי הנחה',cAfter,y+16,9.5,muted,'left');y+=24;};
  head();
  (v.items as Row[]).forEach((item,i)=>{
   if(y+itemH>H-70){newPage(false);head();}
   page.drawLine({start:{x:L,y:H-y-itemH},end:{x:R,y:H-y-itemH},thickness:.7,color:line});page.drawLine({start:{x:L,y:H-y},end:{x:L,y:H-y-itemH},thickness:1,color:line});page.drawLine({start:{x:R,y:H-y},end:{x:R,y:H-y-itemH},thickness:1,color:line});
-  text(String(i+1),cNum,y+17,10,muted);text(fit(item.name,165,11.5),cName,y+17,11.5);
-  const url=fit(bare(item.url),150,10),u=text(url,cUrl,y+17,10,blue);page.drawLine({start:{x:u.left,y:H-y-19},end:{x:u.left+u.w,y:H-y-19},thickness:.5,color:blue});if(/^https?:\/\//i.test(item.url))linkAt(u.left,y+6,u.w,15,item.url);
+  text(String(i+1),cNum,y+17,10,muted);text(fit(item.name,150,11.5),cName,y+17,11.5);
+  const url=fit(bare(item.url),135,10),u=text(url,cUrl,y+17,10,blue);page.drawLine({start:{x:u.left,y:H-y-19},end:{x:u.left+u.w,y:H-y-19},thickness:.5,color:blue});if(/^https?:\/\//i.test(item.url))linkAt(u.left,y+6,u.w,15,item.url);
   if(item.before_cents>item.price_cents){const b=text(ils(item.before_cents),cBefore,y+17,10.5,grey,'left');page.drawLine({start:{x:b.left,y:H-y-13.5},end:{x:b.left+b.w,y:H-y-13.5},thickness:.7,color:grey});}
+  if(item.percent_off>0)text(item.percent_off+'%',cOff,y+17,11,green,'left');
   text(ils(item.price_cents),cAfter,y+17,12.5,ink,'left');y+=itemH;
  });
  if(y+150>H-40)newPage(false);

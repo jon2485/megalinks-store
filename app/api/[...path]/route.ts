@@ -585,7 +585,14 @@ if (p[0] === 'cart') {
             const b = await json(r);
             const w = await website(item.website_id);
             const brief = await validBrief({ ...JSON.parse(item.data), ...b }, w, u);
-            const quantity = Math.max(1, Math.min(20, Math.floor(Number(b.quantity) || item.quantity)));
+            const asked = Math.max(1, Math.min(20, Math.floor(Number(b.quantity) || item.quantity)));
+            // A price-quote line stays at one publication; extra units go to a regular line of the same site (its normal price).
+            const quoteLine = !!JSON.parse(item.data).quote_id, quantity = quoteLine ? 1 : asked;
+            if (quoteLine && asked > 1) {
+                const plain = await one("SELECT id,quantity FROM cart WHERE user_id=? AND website_id=? AND id<>? AND json_extract(data,'$.quote_id') IS NULL AND json_extract(data,'$.bundle_group') IS NULL ORDER BY created LIMIT 1", item.user_id, item.website_id, item.id);
+                if (plain) await stmt('UPDATE cart SET quantity=? WHERE id=?', Math.min(20, Number(plain.quantity) + asked - 1), plain.id).run();
+                else await stmt('INSERT INTO cart(id,user_id,website_id,quantity,data,created) VALUES (?,?,?,?,?,?)', uid(), item.user_id, item.website_id, asked - 1, JSON.stringify(brief), now()).run();
+            }
             await stmt('UPDATE cart SET data=?,quantity=? WHERE id=?', JSON.stringify({ ...brief, ...(JSON.parse(item.data).bundle_group ? { bundle_id: JSON.parse(item.data).bundle_id, bundle_group: JSON.parse(item.data).bundle_group } : {}), ...(JSON.parse(item.data).quote_id ? { quote_id: JSON.parse(item.data).quote_id } : {}) }), quantity, item.id).run();
             return response({ ok: true });
         }
