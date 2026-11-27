@@ -20,6 +20,7 @@ import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
 import {payplusEnvironment} from '@/lib/integration-security';
 import {cardReady,gatewayPaymentUrl,payplusCallbackEvent,payplusConfigured,testPayplus} from '@/lib/payment-gateway';
+import {priceQuoteRoutes,applyQuotePrices,quoteLineRemoved,quotesOrdered,quoteReminders} from '@/lib/price-quotes';
 import {recommendSites,runSiteProfiles,siteProfileStatus,setSiteProfilesPaused,retryFailedProfiles,type AiRun} from '@/lib/site-match';
 import {englishQuery,pixabaySearchBroad,pixabayPhoto,pixabayImageHost,pixabayKeyWorks,cacheDrop} from '@/lib/image-search';
 import {claimAiBudget,safeFailure} from '@/lib/security';
@@ -195,7 +196,8 @@ async function cartItems(u: Row) { const pricing=await pricingContext(u.id); con
             allocated += price; item.publication_price = price; item.sale_price = price; item.price = price + item.editorial_price; item.price_cents = item.price;
         });
     }
-    return items;
+    // A quote the customer approved: its prices, while all its sites are in the cart.
+    return applyQuotePrices(u, items);
 }
 async function quote(u: Row, code = '') { const pricing_version=await pricingVersion();const items = await cartItems(u);assert(pricing_version===await pricingVersion(),'המחירים עודכנו תוך כדי החישוב. נסו שוב',409); assert(items.length, 'הסל ריק'); {const off=items.filter(x=>!x.active).map(x=>x.name);assert(!off.length,(off.length===1?'האתר '+off[0]+' כבר לא זמין לפרסום':'האתרים '+off.join(', ')+' כבר לא זמינים לפרסום')+'. הסירו '+(off.length===1?'אותו':'אותם')+' מהסל כדי להמשיך.');} const vatPercent = Number(await setting('vat', 18)); const subtotal = calculateQuote(items, 0, vatPercent).subtotal; const c = await coupon(code, u, subtotal); const eligible=items.filter(i=>!i.bundle_applied).reduce((sum,i)=>sum+i.price*i.quantity,0);const discount=Math.round(eligible*Number(c?.percent||0)/100),vat=Math.round((subtotal-discount)*vatPercent/100);const pricing_token=await hash(JSON.stringify(items.map(i=>[i.id,i.website_id,i.quantity,i.price,i.bundle_applied]).sort())+':'+discount+':'+vat);return {subtotal,discount,vat,total:subtotal-discount+vat,items,coupon:c,vatPercent,pricing_token,pricing_version}; }
 async function normalizeBundle(input: Row, prior: Row = {}) {
@@ -326,7 +328,7 @@ async function handle(r: Request,access:ResponseAccess) {
     // Google sign-in: called only by the gateway over loopback, with the automation key (lib/google-account.ts).
     if(p[0]==='auth'&&p[1]==='google'&&['resolve','accept'].includes(p[2])&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(p[2]==='resolve'?await resolveGoogle(b):await acceptGoogle(b));}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));waitUntil(autoAiDrafts(origin).catch(()=>{}));waitUntil(siteAi().then(ai=>runSiteProfiles(ai,{limit:12})).catch(()=>{}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));waitUntil(autoAiDrafts(origin).catch(()=>{}));waitUntil(siteAi().then(ai=>runSiteProfiles(ai,{limit:12})).catch(()=>{}));waitUntil(quoteReminders(origin).catch(()=>{}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
     if(p[0]==='export'){const res=await stagingExport(r,p);if(res)return res;}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
@@ -446,6 +448,8 @@ async function handle(r: Request,access:ResponseAccess) {
     const sellerResponse=await customerSellerRoutes(r,p,u);if(sellerResponse)return sellerResponse;
     const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
     const pricingResponse=await pricingRoutes(r,p,u,json);if(pricingResponse)return pricingResponse;
+    // "הצעות מחיר" (owner 27.11.2026): the admin's quotes and chat, and the customer's pending quotes and approval.
+    {const quoteResult=await priceQuoteRoutes(r,p,u,json,validBrief);if(quoteResult)return response(quoteResult);}
     const financeResponse=await financeRoutes(r,p,u,json);if(financeResponse)return financeResponse;
     const accountResponse=await accountManagementRoutes(r,p,u);if(accountResponse)return accountResponse;
     const workflowResponse=await workflowRoutes(r,p,u);if(workflowResponse)return workflowResponse;
@@ -570,8 +574,10 @@ if (p[0] === 'cart') {
             return response({ id }, 201);
         }
         if (p[1] && method === 'DELETE') {
-            owns(u, await one('SELECT * FROM cart WHERE id=?', p[1]));
+            const line = owns(u, await one('SELECT * FROM cart WHERE id=?', p[1]));
             await stmt('DELETE FROM cart WHERE id=?', p[1]).run();
+            // A line of an approved price quote: the quote's special prices are cancelled for the rest.
+            await quoteLineRemoved({ id: line.user_id }, line);
             return response({ ok: true });
         }
         if (p[1] && method === 'PATCH') {
@@ -580,7 +586,7 @@ if (p[0] === 'cart') {
             const w = await website(item.website_id);
             const brief = await validBrief({ ...JSON.parse(item.data), ...b }, w, u);
             const quantity = Math.max(1, Math.min(20, Math.floor(Number(b.quantity) || item.quantity)));
-            await stmt('UPDATE cart SET data=?,quantity=? WHERE id=?', JSON.stringify({ ...brief, ...(JSON.parse(item.data).bundle_group ? { bundle_id: JSON.parse(item.data).bundle_id, bundle_group: JSON.parse(item.data).bundle_group } : {}) }), quantity, item.id).run();
+            await stmt('UPDATE cart SET data=?,quantity=? WHERE id=?', JSON.stringify({ ...brief, ...(JSON.parse(item.data).bundle_group ? { bundle_id: JSON.parse(item.data).bundle_id, bundle_group: JSON.parse(item.data).bundle_group } : {}), ...(JSON.parse(item.data).quote_id ? { quote_id: JSON.parse(item.data).quote_id } : {}) }), quantity, item.id).run();
             return response({ ok: true });
         }
     }
@@ -608,6 +614,7 @@ if (p[0] === 'cart') {
         if(b.payment==='card'||(b.payment==='credits'&&await walletAvailable(u)<q.total)){const c=await connection('payments');assert(cardReady(c),'נדרשת השלמה באשראי, אך חיבור הסליקה טרם הופעל. היתרה לא חויבה וההזמנה לא בוצעה',503);}
 
         const created=await createOrder(u,u,q,b);
+        await quotesOrdered(q.items,String((created as Row).id||'')).catch(()=>{});
         // The newsletter box at checkout is separate and optional: only a ticked box subscribes; an empty box changes nothing.
         if(b.marketing===true)await setMarketing(u,true,'checkout');
         return response(created,201);

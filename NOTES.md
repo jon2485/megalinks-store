@@ -2590,3 +2590,15 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - Checked: tsc, build, anchor-mix test, local look on desktop and phone (catalog, window, edit, admin card). The window's answer was stubbed locally with fictional sites (no Claude key here).
 - Not checked: a real Claude call (profiles and recommendation). Needs `ANTHROPIC_API_KEY` on Staging and Claude chosen in "כתיבה עם AI". The admin card estimates the cost at $0.0005 per site profile (Haiku, short homepage text); a rough estimate, not billed numbers.
 - 27.11 (late): catalog button in the site's blue with "הוספת אתר לקטלוג" beside it in the search row (437e508). Results are now a table (mockups design/ai-ideas 11-12): detailed on a computer, short on a phone with "שינוי" opening the details. "כמות מהסוג" = links of that phrase type now and after; search volume is not in the system (would need a paid keyword service).
+
+## 27.11.2026 (night): "הצעות מחיר" built (local, waiting for the next Staging upload)
+- Owner's flow: admin page "הצעות מחיר" (under "מבצעים וחבילות", view `admin-quotes`): pick a customer, chat freely with Claude (API, model fixed to `claude-opus-5-5`, needs the AI connection set to Claude), the quote table beside the chat with the customer's list price, the admin's cost, the quote price (editable in the table too) and the profit. Validity 14 days by default, editable (1-90).
+- Claude never computes money: tools `find_sites`, `lookup_sites`, `set_quote` return figures computed in `lib/price-quotes.ts`.
+- Storage without a migration: `records` kind `price_quote`, `user_id` = the customer; number from setting `price_quote_seq` (starts at 1001). Statuses: draft, sent, accepted, ordered, declined (customer removed a line), cancelled; expired is computed from `expires`.
+- Customer: the e-mail is the document (number, site, budget, count, before/after, expiry, button to `/catalog?quote=<id>`; signed-out visitors sign in first). In the catalog a window asks to add the quote to the cart. Cart lines carry `quote_id`; prices apply only while the quote is approved, in date and complete; no coupon on top. Removing a quote line shows the owner's warning and then cancels the special prices. After an order the quote is closed.
+- Reminder e-mail 24 hours before expiry, from the maintenance tick (`quoteReminders`).
+- Privacy: `customerQuote()` and the e-mail are built from their own field list; test `tests/price-quotes.mjs` checks no cost, profit, supplier or chat reaches them.
+- The owner asked for a "file": the preview window prints or saves as PDF from the browser; there is no server-made PDF.
+- Checked locally with fictional data: create, edit prices and days, preview, send (mail job "blocked": no mail connection locally), catalog window, add to cart at quote prices, warning, removal cancels the prices. tsc, build, tests price-quotes, anchor-mix, payplus, anthropic-provider.
+- Not checked: the chat with a real Claude key (locally it answers "חיבור ה-AI אינו פעיל"), a real e-mail, the reminder on a real clock, the phone layout of the admin page.
+- Mockups: design/quotes 1-5.
