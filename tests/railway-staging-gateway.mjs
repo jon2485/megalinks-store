@@ -37,5 +37,8 @@ try {
   r=await req('/signout-with-chatgpt',{headers:{Cookie:cookie}});check(r.status===303&&r.headers.get('set-cookie').includes('Max-Age=0'),'logout clears cookie');
   r=await req('/api/me',{headers:{Cookie:cookie}});check(r.status===401,'logout revokes captured session');
   for(let i=0;i<20;i++)await login('bad');r=await login();check(r.status===429,'login rate limit');
+  // PayPlus's server may report a payment to its one callback address (POST, PayPlus user-agent); nothing else opens.
+  {const before=forwarded;r=await req('/api/payplus/callback',{method:'POST',headers:{'User-Agent':'PayPlus','Content-Type':'application/json'},body:'{}'});check(r.status===200&&forwarded===before+1&&(await r.json()).url==='/api/payplus/callback','PayPlus callback reaches the app');
+   for(const [p,o] of [['/api/payplus/callback',{method:'POST',headers:{'User-Agent':'curl/8'},body:'{}'}],['/api/payplus/callback?x=1',{method:'POST',headers:{'User-Agent':'PayPlus'},body:'{}'}],['/api/payplus/callback',{headers:{'User-Agent':'PayPlus'}}],['/api/payment-callback',{method:'POST',headers:{'User-Agent':'PayPlus'},body:'{}'}],['/api/me',{method:'POST',headers:{'User-Agent':'PayPlus'},body:'{}'}]]){const b=forwarded;r=await req(p,o);check(r.status>=300&&forwarded===b,'only the PayPlus callback is open: '+p);}}
   console.log('STAGING GATEWAY PASSED:',checks,'checks');
 }finally{await new Promise(r=>gateway.close(r));await new Promise(r=>upstream.close(r));rmSync(stateDir,{recursive:true,force:true});}

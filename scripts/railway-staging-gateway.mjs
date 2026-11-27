@@ -150,7 +150,11 @@ export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort
         return finish(303,'',{'Set-Cookie':[startUserSession(opened.user),signupCookie('')],Location:safeReturn(pendingSignup.returnTo||'/')});
       }
       if(signup&&url.pathname===PASSWORD_PAGE&&req.method==='GET')return finish(200,formPage(url.searchParams.get('return_to')||'/'),{'Content-Security-Policy':PAGE_CSP});
-      if(!['GET','HEAD','OPTIONS'].includes(req.method)&&(req.headers.origin!==publicOrigin||req.headers['sec-fetch-site']==='cross-site'))return finish(403,'הבקשה אינה מורשית.');
+      // 27.11.2026 (owner approved): PayPlus's server reports a card payment to this one address. It is not a signed-in
+      // browser, so only POST /api/payplus/callback from PayPlus's user-agent passes to the app, which checks the hash with
+      // the secret key and looks the transaction up again at PayPlus before anything is marked paid.
+      const payplusCallback=url.pathname==='/api/payplus/callback'&&req.method==='POST'&&!url.search&&String(req.headers['user-agent']||'').trim()==='PayPlus';
+      if(!payplusCallback&&!['GET','HEAD','OPTIONS'].includes(req.method)&&(req.headers.origin!==publicOrigin||req.headers['sec-fetch-site']==='cross-site'))return finish(403,'הבקשה אינה מורשית.');
       const session=cookieSession(req);
       if(url.pathname==='/signout-with-chatgpt'){
         if(req.headers['sec-fetch-site']==='cross-site')return finish(403,'הבקשה אינה מורשית.');
@@ -172,7 +176,7 @@ export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort
         return finish(303,'',{'Set-Cookie':cookie(id+'.'+sign(id)),Location:returnTo});
       }
       if(['/signin-with-chatgpt','/callback'].includes(url.pathname))return finish(200,signinPage(url.searchParams.get('return_to')||'/'),{'Content-Security-Policy':PAGE_CSP});
-      const open=!session&&(['GET','HEAD'].includes(req.method)&&!url.search&&publicMailPath(url.pathname)||signup&&['GET','HEAD'].includes(req.method)&&signupPublicPath(url.pathname)||exportAllowed(req,url.pathname));
+      const open=payplusCallback||!session&&(['GET','HEAD'].includes(req.method)&&!url.search&&publicMailPath(url.pathname)||signup&&['GET','HEAD'].includes(req.method)&&signupPublicPath(url.pathname)||exportAllowed(req,url.pathname));
       if(!session&&!open){
         if(url.pathname.startsWith('/api/')||url.pathname==='/mcp')return finish(401,JSON.stringify({error:'יש להתחבר כדי להמשיך'}),{'Content-Type':'application/json'});
         return finish(303,'',{Location:'/signin-with-chatgpt?return_to='+encodeURIComponent(safeReturn(url.pathname+url.search))});
