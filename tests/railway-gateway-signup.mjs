@@ -47,6 +47,7 @@ try{
   for(const p of ['/admin','/cart','/purchased','/mcp'])check((await req(p)).status===303||(await req(p)).status===401,'private page stays locked: '+p);
   r=await req('/api/cart',{method:'POST',headers:{Origin:origin},body:'{}'});check(r.status===401,'anonymous writes stay locked');
   check(!signupPublicPath('/admin')&&!signupPublicPath('/catalogx')&&signupPublicPath('/knowledge/a-b'),'public path list is exact');
+  check(signupPublicPath('/homepage/scrollcraft.js')&&signupPublicPath('/homepage/logos/g1.png')&&!signupPublicPath('/homepage')&&!signupPublicPath('/homepagex/a.js'),'home page files are readable without signing in');
   // new person: terms first, nothing opened before accepting
   r=await google('dana@gmail.com');check(r.status===303&&r.headers.get('location')==='/__staging/google/terms','new person goes to the terms step');
   check(!cookieOf(r,SESSION),'no session before the terms are accepted');const pending=cookieOf(r,SIGNUP);check(pending,'signup step remembered');

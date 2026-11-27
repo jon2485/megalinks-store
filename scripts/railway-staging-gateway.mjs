@@ -12,7 +12,9 @@ const GOOGLE_START='/__staging/google/start',GOOGLE_CALLBACK='/__staging/google/
 // With open sign-up (owner decision 25.11.2026) these are readable without signing in: the public pages (catalog,
 // legal, guides), the built files they need and reading the API. They reach the app with no identity and no cookies,
 // and the app itself decides what an anonymous visitor may read. Everything else, and every write, needs a session.
-export const signupPublicPath=pathname=>/^\/(?:|catalog|terms|privacy|accessibility|cookies|cancellation|knowledge(?:\/[^?#]*)?)$/.test(pathname)||/^\/(?:_next|assets|brand)\/[^?#]+$/.test(pathname)||/^\/[\w.-]+\.(?:ico|png|svg|webp|txt|xml|json)$/.test(pathname)||/^\/api\/[^?#]*$/.test(pathname);
+// 27.11.2026: /homepage/* too (the home page's scroll effects, logos and photos); without it a signed-out visitor got
+// the home page without its scroll script and styles, so the opening text stayed over the next section.
+export const signupPublicPath=pathname=>/^\/(?:|catalog|terms|privacy|accessibility|cookies|cancellation|knowledge(?:\/[^?#]*)?)$/.test(pathname)||/^\/(?:_next|assets|brand|homepage)\/[^?#]+$/.test(pathname)||/^\/[\w.-]+\.(?:ico|png|svg|webp|txt|xml|json)$/.test(pathname)||/^\/api\/[^?#]*$/.test(pathname);
 const sha=value=>createHash('sha256').update(value).digest('hex');
 const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function safeReturn(value='/') {
