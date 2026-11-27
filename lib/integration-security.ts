@@ -2,9 +2,10 @@ import {env} from 'cloudflare:workers';
 import type {Row} from './shared';
 import {assert,encrypt,externalUrl} from './server';
 import {RESEND_URL,RESEND_TEST_FROM} from './resend';
+import {AI_PROVIDERS,ANTHROPIC_DEFAULT_MODEL,ANTHROPIC_MODEL_FORMAT_ERROR,aiProvider,normalizeAnthropicModel,validAnthropicModel} from './anthropic-model';
 
-export function integrationEnvironmentName(key:string,provider='openai') {
-    if(key==='ai')return ({gemini:'GEMINI_API_KEY',openai:'OPENAI_API_KEY',groq:'GROQ_API_KEY',grok:'XAI_API_KEY'} as Row)[provider]||'';
+export function integrationEnvironmentName(key:string,provider?:string) {
+    if(key==='ai')return ({anthropic:'ANTHROPIC_API_KEY',gemini:'GEMINI_API_KEY',openai:'OPENAI_API_KEY',groq:'GROQ_API_KEY',grok:'XAI_API_KEY'} as Row)[provider||'anthropic']||'';
     return ({email:'POSTFLOW_EMAIL_SECRET',wordpress:'POSTFLOW_WORDPRESS_PASSWORD',payments:'POSTFLOW_PAYMENTS_SECRET',invoices:'POSTFLOW_GREENINVOICE_SECRET',whatsapp:'POSTFLOW_WHATSAPP_SECRET',images:'PEXELS_API_KEY',pixabay:'PIXABAY_API_KEY'} as Row)[key]||'';
 }
 export function integrationEnvironmentSecret(key:string,provider?:string) {
@@ -25,7 +26,15 @@ export async function updatedIntegration(key:string,b:Row,prev:Row) {
     for(const field of ['url','username','model'])assert(b[field]===undefined||typeof b[field]==='string'&&b[field].length<=(field==='url'?2000:200),'פרטי החיבור אינם תקינים');
     assert(b.secret===undefined||typeof b.secret==='string'&&b.secret.length<=4000,'מפתח החיבור אינו תקין');
     const value={...integrationMetadata(key,prev),...Object.fromEntries(Object.entries(b).filter(([k])=>!['secret','clear_secret'].includes(k)))};
-    if(key==='ai')assert(['openai','groq','grok'].includes(value.provider||'openai'),'ספק AI אינו נתמך');
+    if(key==='ai'){
+        // The provider is always saved explicitly; an old row without one stays OpenAI (see aiProvider).
+        value.provider=b.provider??aiProvider(prev);
+        assert(typeof value.provider==='string'&&AI_PROVIDERS.includes(value.provider),'ספק AI אינו נתמך');
+        if(value.provider==='anthropic'){
+            value.model=normalizeAnthropicModel(b.model!==undefined?b.model:aiProvider(prev)==='anthropic'?prev.model:'')||ANTHROPIC_DEFAULT_MODEL;
+            assert(validAnthropicModel(value.model),ANTHROPIC_MODEL_FORMAT_ERROR);
+        }
+    }
     // Email can go to a webhook (Zapier and the like) or straight to Resend (owner, 16.11.2026). Resend has a fixed address;
     // `test_to` sends every message to one inbox only, with the real recipient in the subject. `reply_to` is where a
     // customer's "reply" lands, as an ordinary email in that inbox (owner, 22.11.2026).
@@ -45,7 +54,7 @@ export async function updatedIntegration(key:string,b:Row,prev:Row) {
     assert(['environment','encrypted_server'].includes(storage),'אופן שמירת מפתח אינו תקין');
     assert(storage!=='environment'||!b.secret,'מפתח במצב משתנה סביבה מוגדר בסודות האירוח בלבד');
     value.secret_storage=storage;
-    const sameProvider=key==='email'?(prev.provider||'webhook')===(value.provider||'webhook'):key!=='ai'||(prev.provider||'openai')===(value.provider||'openai');
+    const sameProvider=key==='email'?(prev.provider||'webhook')===(value.provider||'webhook'):key!=='ai'||aiProvider(prev)===value.provider;
     value.secret=storage==='environment'||b.clear_secret?'':b.secret?.trim()?await encrypt(b.secret.trim()):sameProvider?prev.secret||'':'';
     if(b.clear_secret)value.enabled=false;
     if(b.enabled===true)assert(storage==='environment'?!!environment:!!value.secret,'יש להגדיר מפתח לפני הפעלת החיבור');
