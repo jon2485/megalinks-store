@@ -1,5 +1,6 @@
 'use client';
 import React,{useEffect,useState,useRef} from 'react';
+import {SiteProfilesCard} from './site-profiles-card';
 import {saveAdminViewState,takeAdminViewState} from '@/lib/admin-view-state';
 import {OrdersAreaHead} from './orders-area-head';
 import './catalog-v2-editors.css';
@@ -55,6 +56,7 @@ export default function CatalogPricingWorkspace({ctx,initialTab='sites',customer
  return <section dir="rtl" className="catalog-pricing-workspace orders-match-screen om-finance om-content om-catalog sv2 sv2-orders sv2-fin">
  <OrdersAreaHead ctx={ctx} current="admin-websites" title="קטלוג ותמחור" sub="האתרים והמחירים, רמות ההנחה, מחירונים אישיים והסנכרון מהשיטס." nav={<nav className="sv2-areas" aria-label="קטלוג ותמחור">{tabs.map(t=><a key={t.id} href={'/'+tabPage[t.id]} aria-current={tab===t.id?'page':undefined} onClick={e=>{if(e.button||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey)return;e.preventDefault();openTab(t.id);}}><t.icon size={24}/><span>{t.label}</span>{t.id==='tiers'&&alerts>0&&<b className="om-tab-count" aria-label={alerts+' מחירים לבדיקה'}>{alerts}</b>}</a>)}</nav>}/>
  <div className="om-catalog-phone-tabs"><OrderFilter label="קטגוריה בקטלוג ותמחור" icon={<Globe size={20}/>} value={tab} onChange={v=>openTab(v)} options={Object.fromEntries(tabs.map(t=>[t.id,t.label]))}/></div>
+ {tab==='sites'&&<SiteProfilesCard ctx={ctx}/>}
  {tab==='sites'&&<div className="orders-reference-panel">
   <div className="om-summary om-catalog-summary"><div><dt>אתרים פעילים</dt><dd><bdi>{active.toLocaleString('he-IL')}</bdi></dd><small>{(all.length-active).toLocaleString('he-IL')} מוסתרים מהקטלוג</small></div><button type="button" className={alerts?'is-report':undefined} onClick={()=>{saveAdminViewState('catalog-price-review',true);ctx.go('admin-pricing');}}><dt>מחירים לבדיקה</dt><dd><bdi>{alerts}</bdi></dd><small>{alerts?'מחיר מכירה נמוך מהעלות':'אין מחירים חריגים'}</small></button><button type="button" className={syncOk?'is-ok':'is-report'} onClick={()=>openTab('sheets')}><dt>סנכרון מהשיטס</dt><dd>{syncLabel}</dd><small>{sync.data?.last_success?'עדכון אחרון '+new Date(sync.data.last_success).toLocaleString('he-IL'):'הגדרות ומעקב'}</small></button></div>
   <div className="om-catalog-actions"><button type="button" className="om-btn is-primary" disabled={busy||!state.data} onClick={()=>openWebsite(null)}><Plus size={17}/>הוספת אתר</button><button type="button" className="om-btn" disabled={busy} aria-expanded={files} onClick={()=>setFiles(!files)}><Download size={17}/>ייבוא וייצוא לאקסל</button><button type="button" className="om-btn" onClick={()=>setListOpen(true)}><Search size={17}/>חיפוש לפי רשימה</button></div>

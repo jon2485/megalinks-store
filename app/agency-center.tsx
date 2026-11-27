@@ -3,6 +3,7 @@
 // header band, section tabs, and the customers page (list on the right, one customer's screen with tabs).
 // Every action uses the existing records and routes, so nothing here is a copy of "הכתבות שלי" or "ההזמנות שלי".
 import React,{useEffect,useMemo,useRef,useState} from 'react';
+import {SiteMatchButton} from './site-match';
 import {ArrowRight,ShoppingCart,Users,Globe,Search,UserPlus,FileText,IdCard,Download,ExternalLink,Archive,ArchiveRestore,Save,LoaderCircle,Plus,X,ShieldBan,ClipboardPaste,Upload,Trash2,LayoutDashboard,ListChecks,Wallet,PencilLine,RotateCcw,CreditCard,CalendarClock,Trophy,ChartColumn,FilePen,Link2,NotebookPen,Pin,PinOff,Printer,Settings as SettingsIcon,FileSpreadsheet,CalendarDays,ChevronRight,ChevronLeft,PackageOpen,ArrowLeft,Eye} from 'lucide-react';
 import {api,useData} from '@/lib/client';
 import {type Row,stages} from '@/lib/shared';
@@ -124,7 +125,7 @@ function CustomerScreen({ctx,customer,tab}:{ctx:Ctx;customer:Row;tab:string}){
    <div style={{flex:1,minWidth:0}}><h2>{customer.name}</h2>
     <div className="ag-chips">{customer.company&&<span className="ag-chip">{customer.company}</span>}{(customer.domains||[]).slice(0,2).map((d:string)=><span key={d} className="ag-chip"><Globe size={13}/><span className="ag-ltr">{d}</span></span>)}{(customer.tags||[]).map((t:string)=><span key={t} className="ag-chip tag">{t}</span>)}{customer.status==='archived'&&<span className="ag-chip">בארכיון</span>}</div>
    </div>
-   {customer.status!=='archived'&&<div className="ag-head-actions"><button type="button" className="ag-btn buy" onClick={()=>{setBuyingFor({id:customer.id,name:customer.name});ctx.go('catalog');}}><Plus size={17}/>רכישה עבור הלקוח</button></div>}
+   {customer.status!=='archived'&&<div className="ag-head-actions"><button type="button" className="ag-btn buy" onClick={()=>{setBuyingFor({id:customer.id,name:customer.name});ctx.go('catalog');}}><Plus size={17}/>רכישה עבור הלקוח</button><SiteMatchButton ctx={ctx} className="is-blue ag-match" label="אתרים מומלצים ללקוח" initial={{target_url:(customer.domains||[])[0]||'',customer_id:customer.id,customer_name:customer.name}}/></div>}
   </div>
   <BudgetLine customer={customer}/>
   {customer.stats?.unused>0&&current!=='articles'&&<button type="button" className="ag-unused-banner" onClick={()=>ctx.go(base+'/articles')}><PackageOpen size={18} aria-hidden="true"/><span><b><bdi>{customer.stats.unused}</bdi> {customer.stats.unused===1?'כתבה נרכשה':'כתבות נרכשו'} ללקוח ועוד לא {customer.stats.unused===1?'נוצלה':'נוצלו'}</b></span><span className="go">לצפייה<ArrowLeft size={15} aria-hidden="true"/></span></button>}

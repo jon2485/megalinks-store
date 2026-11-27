@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {realpathSync} from 'node:fs';
+const require=createRequire(realpathSync('node_modules/wrangler')+'/package.json'),{build}=require('esbuild');
+// "מצאו לי אתרים מתאימים" (owner 27.11.2026): the phrase types the recommendations balance.
+const out=await build({entryPoints:['lib/anchor-mix.ts'],bundle:true,platform:'node',format:'esm',write:false});
+const m=await import('data:text/javascript;base64,'+Buffer.from(out.outputFiles[0].text).toString('base64'));
+assert.equal(m.siteDomain('https://www.Shop-Example.co.il/page?x=1'),'shop-example.co.il');
+assert.equal(m.siteDomain('shop-example.co.il'),'shop-example.co.il');
+const ctx={domain:'shop-example.co.il',brand:'שופ אקזמפל',keywords:['נעלי ריצה']};
+assert.equal(m.classifyAnchor('shop-example.co.il',ctx),'naked');
+assert.equal(m.classifyAnchor('https://www.shop-example.co.il',ctx),'naked');
+assert.equal(m.classifyAnchor('שופ אקזמפל',ctx),'brand');
+assert.equal(m.classifyAnchor('נעלי ריצה',ctx),'exact');
+assert.equal(m.classifyAnchor('נעלי ריצה לנשים במבצע',ctx),'partial');
+assert.equal(m.classifyAnchor('לחצו כאן',ctx),'other');
+const counts=m.anchorCounts([{anchor:'נעלי ריצה'},{anchor:'נעלי ריצה'},{anchor:'שופ אקזמפל'}],ctx);
+assert.equal(counts.exact,2);assert.equal(counts.brand,1);
+const total=Object.values(m.anchorTarget).reduce((a,b)=>a+b,0);assert(Math.abs(total-1)<1e-9);
+console.log('anchor-mix: ok');

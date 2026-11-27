@@ -20,6 +20,7 @@ import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
 import {payplusEnvironment} from '@/lib/integration-security';
 import {cardReady,gatewayPaymentUrl,payplusCallbackEvent,payplusConfigured,testPayplus} from '@/lib/payment-gateway';
+import {recommendSites,runSiteProfiles,siteProfileStatus,setSiteProfilesPaused,retryFailedProfiles,type AiRun} from '@/lib/site-match';
 import {englishQuery,pixabaySearchBroad,pixabayPhoto,pixabayImageHost,pixabayKeyWorks,cacheDrop} from '@/lib/image-search';
 import {claimAiBudget,safeFailure} from '@/lib/security';
 import {customerArticleData,customerActivity,customerSharedRecord,supplierDelivery,protectCustomerResponse} from '@/lib/customer-privacy';
@@ -108,6 +109,12 @@ const maxText = (s: any, max = 10000) => String(s || '').slice(0, max);
 const adminKinds = ['supplier', 'bundle', 'instruction', 'package', 'announcement', 'newsletter', 'template'];
 const ownKinds = ['customer', 'strategy', 'ticket', 'affiliate', 'payout'];
 const aiDefaultModel = (provider = 'anthropic') => provider === 'anthropic' ? ANTHROPIC_DEFAULT_MODEL : provider === 'gemini' ? GEMINI_DEFAULT_MODEL : provider === 'openai' ? 'gpt-4.1-mini' : '';
+// "מצאו לי אתרים מתאימים" (owner 27.11.2026): the AI connection the admin set; site reading asks for the small model.
+async function siteAi(): Promise<AiRun> {
+    const c = await connection('ai');
+    assert(c.enabled && c.secret, 'חיבור ה-AI אינו פעיל. מגדירים אותו ב״חיבורים והגדרות״.', 503);
+    return async (prompt, cheap) => (await aiJson(cheap && aiProvider(c) === 'anthropic' ? { ...c, model: 'claude-haiku-5-5' } : c, prompt)).raw;
+}
 async function aiJson(c: Row, prompt: string) {
     const provider = aiProvider(c);
     const model = provider==='gemini'?normalizeGeminiModel(c.model||GEMINI_DEFAULT_MODEL):provider==='anthropic'?normalizeAnthropicModel(c.model)||ANTHROPIC_DEFAULT_MODEL:c.model||aiDefaultModel(provider);
@@ -319,7 +326,7 @@ async function handle(r: Request,access:ResponseAccess) {
     // Google sign-in: called only by the gateway over loopback, with the automation key (lib/google-account.ts).
     if(p[0]==='auth'&&p[1]==='google'&&['resolve','accept'].includes(p[2])&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(p[2]==='resolve'?await resolveGoogle(b):await acceptGoogle(b));}
     if(p[0]==='maintenance'&&p[1]==='month-close'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(await closeMonth(b.month,new URL(r.url).origin));}
-    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));waitUntil(autoAiDrafts(origin).catch(()=>{}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
+    if(p[0]==='maintenance'&&p[1]==='scheduled-articles'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;waitUntil(scheduledSheetsPull().catch(()=>{}));const exchanges=await syncExchanges(origin).catch(()=>null);const daily=await sendDailySummary(origin).catch(()=>({}));waitUntil(autoAiDrafts(origin).catch(()=>{}));waitUntil(siteAi().then(ai=>runSiteProfiles(ai,{limit:12})).catch(()=>{}));return response({...daily,...await releaseScheduledApprovals(origin),...await dispatchScheduledArticles(origin),exchanges});}
     if(p[0]==='export'){const res=await stagingExport(r,p);if(res)return res;}
     if(p[0]==='selling'&&p[1]==='logo'&&p[2]&&method==='GET')return sellerLogo(p[2]);
     if(p[0]==='maintenance'&&p[1]==='seller-months'&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const origin=new URL(r.url).origin;return response({...(await closeSellerMonths(origin)),manual:await closeManualSupplierMonths(origin)});}
@@ -549,6 +556,7 @@ if (p[0] === 'pr' && p[1] === 'cart' && method === 'POST') {
         }
         await db().batch(statements); return response({ added: statements.length, interview_group: group }, 201);
     }
+if (p[0] === 'site-match' && method === 'POST') { const b = await json(r); return response(await recommendSites(u, b as any, await siteAi())); }
 if (p[0] === 'cart') {
         if (method === 'GET')
             return response({ items: await cartItems(u) });
@@ -1362,6 +1370,13 @@ if (p[0] === 'cart') {
                 await audit(u, id, 'קופון עודכן');
                 return response({ id });
             }
+        }
+        if (p[1] === 'site-profiles') {
+            if (method === 'GET' && !p[2]) return response(await siteProfileStatus());
+            if (method === 'POST' && p[2] === 'run') { const result = await runSiteProfiles(await siteAi(), { limit: 12, force: true }); return response({ ...result, status: await siteProfileStatus() }); }
+            if (method === 'POST' && p[2] === 'pause') { const b = await json(r); await setSiteProfilesPaused(b.paused === true); return response(await siteProfileStatus()); }
+            if (method === 'POST' && p[2] === 'retry') { await retryFailedProfiles(); return response(await siteProfileStatus()); }
+            if (method === 'POST' && p[2] && p[3] === 'redo') { await runSiteProfiles(await siteAi(), { siteId: decodeURIComponent(p[2]) }); return response(await siteProfileStatus()); }
         }
         if (p[1] === 'settings') {
             if (method === 'GET') {
