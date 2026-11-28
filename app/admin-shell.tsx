@@ -7,7 +7,7 @@ import './orders-unified.css';
 import './admin-apex-shell.css';
 import {supplierPages} from './content-category-nav';
 import React,{useRef,useState} from 'react';
-import {Search,X,ArrowRight,LayoutDashboard,ShoppingCart,FileText,Users,Globe,Building2,Tag,MessageSquare,Settings,ChevronDown,ChevronLeft,Grid2X2,LogOut,Menu,CalendarDays,CreditCard,Wallet,ReceiptText,PenLine,BookOpen,Sun,Moon} from 'lucide-react';
+import {BarChart3,Search,X,ArrowRight,LayoutDashboard,ShoppingCart,FileText,Users,Globe,Building2,Tag,MessageSquare,Settings,ChevronDown,ChevronLeft,Grid2X2,LogOut,Menu,CalendarDays,CreditCard,Wallet,ReceiptText,PenLine,BookOpen,Sun,Moon} from 'lucide-react';
 import {adminAreas,adminArea} from '@/lib/admin-navigation';
 import {Sheet,SheetTrigger,SheetContent,SheetTitle,SheetDescription,SheetClose} from '@/components/ui/sheet';
 import type {Ctx} from './workspace';
@@ -18,7 +18,7 @@ import {WorkspaceAccountControls} from './workspace-account-controls';
 import AdminUpdateFeed from './admin-update-feed';
 import {adminMenuSections,adminAreaLabel,useAdminAttention,AdminAttentionBadge} from './admin-attention';
 
-const icons=[LayoutDashboard,ShoppingCart,FileText,Users,Globe,Building2,Tag,MessageSquare,Settings,ReceiptText];
+const icons=[LayoutDashboard,ShoppingCart,FileText,Users,Globe,Building2,Tag,MessageSquare,Settings,ReceiptText,BarChart3];
 export function AdminMenuContent({ctx,view,onSelect=()=>{}}:{ctx:Ctx;view:string;onSelect?:()=>void}){
  const [search,setSearch]=useState(''),input=useRef<HTMLInputElement>(null),active=adminArea(view),attention=useAdminAttention(ctx);
  const q=search.trim().toLocaleLowerCase('he');

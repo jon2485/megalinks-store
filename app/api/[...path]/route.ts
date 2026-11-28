@@ -20,6 +20,7 @@ import {knowledgePublicRoutes,knowledgeAdminRoutes} from '@/lib/knowledge-server
 import {integrationMetadata,integrationEnvironmentName,integrationEnvironmentSecret,updatedIntegration} from '@/lib/integration-security';
 import {payplusEnvironment} from '@/lib/integration-security';
 import {cardReady,gatewayPaymentUrl,payplusCallbackEvent,payplusConfigured,testPayplus} from '@/lib/payment-gateway';
+import {trackView,trafficRoutes} from '@/lib/traffic';
 import {priceQuoteRoutes,applyQuotePrices,quoteLineRemoved,quotesOrdered,quoteReminders} from '@/lib/price-quotes';
 import {recommendSites,runSiteProfiles,siteProfileStatus,setSiteProfilesPaused,retryFailedProfiles,type AiRun} from '@/lib/site-match';
 import {englishQuery,pixabaySearchBroad,pixabayPhoto,pixabayImageHost,pixabayKeyWorks,cacheDrop} from '@/lib/image-search';
@@ -324,6 +325,8 @@ async function handle(r: Request,access:ResponseAccess) {
         const origin = r.headers.get('origin');
         assert(!origin || origin === new URL(r.url).origin, 'מקור הבקשה אינו מורשה', 403);
     }
+    // "תנועה באתר" (owner 28.11.2026): a page view, from signed-in and signed-out visitors alike. No cookie, nothing personal.
+    if(p[0]==='track'&&method==='POST'&&!p[1])return response(await trackView(r,await json(r)).catch(()=>({ok:true})));
     if(p[0]==='sheets-sync'&&p[1]==='push'&&method==='POST'){const result=await receiveSheets(r);access.privileged=true;return response(result);}
     // Google sign-in: called only by the gateway over loopback, with the automation key (lib/google-account.ts).
     if(p[0]==='auth'&&p[1]==='google'&&['resolve','accept'].includes(p[2])&&method==='POST'){const key=String((env as any).POSTFLOW_AUTOMATION_KEY||'');assert(key&&matchingSignature(r.headers.get('authorization')||'','Bearer '+key),'נדרשת הרשאת שירות',403);const b=await json(r);return response(p[2]==='resolve'?await resolveGoogle(b):await acceptGoogle(b));}
@@ -449,6 +452,7 @@ async function handle(r: Request,access:ResponseAccess) {
     const knowledgeAdmin=await knowledgeAdminRoutes(r,p,u,json);if(knowledgeAdmin)return knowledgeAdmin;
     const pricingResponse=await pricingRoutes(r,p,u,json);if(pricingResponse)return pricingResponse;
     // "הצעות מחיר" (owner 27.11.2026): the admin's quotes and chat, and the customer's pending quotes and approval.
+    {const trafficResult=await trafficRoutes(r,p,u);if(trafficResult)return response(trafficResult);}
     {const quoteResult=await priceQuoteRoutes(r,p,u,json,validBrief);if(quoteResult)return quoteResult instanceof Response?quoteResult:response(quoteResult);}
     const financeResponse=await financeRoutes(r,p,u,json);if(financeResponse)return financeResponse;
     const accountResponse=await accountManagementRoutes(r,p,u);if(accountResponse)return accountResponse;

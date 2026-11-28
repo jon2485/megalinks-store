@@ -10,6 +10,7 @@ export const adminAreas = [
  {id:'admin-connections',label:'מערכת ודוחות',description:'הגדרות, דוחות, דיוור והיסטוריית פעולות.',pages:[['admin-connections','חיבורים והגדרות'],['admin-reports','דוחות'],['admin-notifications','דיוור'],['admin-jobs','יומן חיבורים'],['admin-audit','יומן פעילות']]},
  // Owner 27.11.2026: its own item in the menu. Kept last here: adminArea() below points at the others by position.
  {id:'admin-quotes',label:'הצעות מחיר',description:'צ׳אט עם Claude על הצעה ללקוח, שליחה במייל ואישור לסל.',pages:[['admin-quotes','הצעות מחיר']]},
+ {id:'admin-traffic',label:'תנועה באתר',description:'כמה נכנסו, מאיפה הגיעו, באילו עמודים היו וכמה זמן.',pages:[['admin-traffic','תנועה באתר']]},
 ] as const;
 export function adminArea(view:string){
  if(/^admin-supplier(-articles|-stock|-billing|-order|-package)?\//.test(view)||view.startsWith('admin-supplier-invoice/')||view.startsWith('admin-seller-request/'))return adminAreas[5];
