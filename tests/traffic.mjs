@@ -44,6 +44,9 @@ assert(!stored.includes('203.0.113.7'),'the address is never written');assert(!s
 const visitor=row[2];const again=async(a,ip)=>{T.writes.length=0;await m.trackView(req(a,ip),{path:'/cart'});return T.writes.find(w=>/^INSERT INTO page_views/.test(w.sql))?.a;};
 let next=await again(chrome);assert.equal(next[2],visitor);assert.equal(next[4],'','only the entry carries a source');
 assert.notEqual((await again(chrome,'198.51.100.9'))[2],visitor);next=await again(phone);assert.notEqual(next[2],visitor);assert.equal(next[5],'mobile');
+// the address the gateway passes wins over anything else, so two people behind one loopback are two visitors
+const viaGateway=async ip=>{T.writes.length=0;await m.trackView(new Request('https://megalinks.co.il/api/track',{method:'POST',headers:{'user-agent':chrome,'x-megalinks-visitor-ip':ip,'cf-connecting-ip':'127.0.0.1'}}),{path:'/cart'});return T.writes[0].a[2];};
+assert.notEqual(await viaGateway('203.0.113.7'),await viaGateway('198.51.100.9'));assert.equal(await viaGateway('203.0.113.7'),visitor);
 // 5. not counted: bots, admin screens, the API, a request with no browser
 for(const [agent,path] of [['Googlebot/2.1','/catalog'],['Mozilla/5.0 HeadlessChrome','/catalog'],['curl/8.0','/catalog'],[chrome,'/admin-orders'],[chrome,'/admin/x'],[chrome,'/api/me'],[chrome,'/__qa/login'],['','/catalog']]){T.writes.length=0;const res=await m.trackView(req(agent),{path});assert.equal(res.id,undefined,agent+' '+path);assert.equal(T.writes.length,0,agent+' '+path);}
 // 6. time on a page: capped, and tied to the visitor and the day

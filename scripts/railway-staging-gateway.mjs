@@ -186,6 +186,11 @@ export function createStagingGateway({accounts,sessionSecret,origin,upstreamPort
       const headers={...req.headers};
       for(const key of Object.keys(headers))if(key.startsWith('oai-')||key.startsWith('x-forwarded-')||['forwarded','authorization','connection','host','upgrade','proxy-authorization','proxy-connection'].includes(key))delete headers[key];
       headers.host=new URL(publicOrigin).host;headers['x-forwarded-proto']='https';
+      // Traffic count only (28.11.2026): the app sits on loopback, so without this every visitor with the same browser would
+      // count as one. X-Real-IP is set by Railway's edge. The app hashes it and never stores it; a client's own copy of
+      // this header is always dropped.
+      delete headers['x-megalinks-visitor-ip'];
+      if(url.pathname==='/api/track')headers['x-megalinks-visitor-ip']=String(req.headers['x-real-ip']||req.socket.remoteAddress||'').slice(0,64);
       if(session){
         headers['oai-authenticated-user-id']=session.account.id;headers['oai-authenticated-user-email']=session.account.email.toLowerCase();
         headers['oai-authenticated-user-full-name']=encodeURIComponent(session.account.name||session.account.email);headers['oai-authenticated-user-full-name-encoding']='percent-encoded-utf-8';

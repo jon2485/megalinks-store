@@ -36,7 +36,14 @@ try {
   r=await req('/api/me',{headers:{Cookie:cookie}});check(r.status===200,'session survives process restart');
   r=await req('/signout-with-chatgpt',{headers:{Cookie:cookie}});check(r.status===303&&r.headers.get('set-cookie').includes('Max-Age=0'),'logout clears cookie');
   r=await req('/api/me',{headers:{Cookie:cookie}});check(r.status===401,'logout revokes captured session');
+  r=await login();const cookie2=r.headers.get('set-cookie').split(';')[0];
   for(let i=0;i<20;i++)await login('bad');r=await login();check(r.status===429,'login rate limit');
+  // Traffic count: the visitor's address reaches the app only on /api/track, from Railway's X-Real-IP, and a client cannot set it.
+  {const spoof={Cookie:cookie2,Origin:options.origin,'x-real-ip':'203.0.113.7','x-megalinks-visitor-ip':'6.6.6.6'};
+   let t=await req('/api/track',{method:'POST',headers:spoof,body:'{}'});let seen=(await t.json()).headers;check(seen['x-megalinks-visitor-ip']==='203.0.113.7','the track call carries the real address');
+   t=await req('/api/cart',{method:'POST',headers:spoof,body:'{}'});seen=(await t.json()).headers;check(!('x-megalinks-visitor-ip' in seen),'no other call carries it, and a client copy is dropped');
+   t=await req('/api/track',{method:'POST',headers:{Cookie:cookie2,Origin:options.origin,'x-megalinks-visitor-ip':'6.6.6.6'},body:'{}'});seen=(await t.json()).headers;check(seen['x-megalinks-visitor-ip']&&seen['x-megalinks-visitor-ip']!=='6.6.6.6','without Railway the socket address is used, never the client value');
+   const before=forwarded;t=await req('/api/track',{method:'POST',headers:{Origin:options.origin},body:'{}'});check(t.status===401&&forwarded===before,'a signed-out visitor still does not reach the app');}
   // PayPlus's server may report a payment to its one callback address (POST, PayPlus user-agent); nothing else opens.
   {const before=forwarded;r=await req('/api/payplus/callback',{method:'POST',headers:{'User-Agent':'PayPlus','Content-Type':'application/json'},body:'{}'});check(r.status===200&&forwarded===before+1&&(await r.json()).url==='/api/payplus/callback','PayPlus callback reaches the app');
    for(const [p,o] of [['/api/payplus/callback',{method:'POST',headers:{'User-Agent':'curl/8'},body:'{}'}],['/api/payplus/callback?x=1',{method:'POST',headers:{'User-Agent':'PayPlus'},body:'{}'}],['/api/payplus/callback',{headers:{'User-Agent':'PayPlus'}}],['/api/payment-callback',{method:'POST',headers:{'User-Agent':'PayPlus'},body:'{}'}],['/api/me',{method:'POST',headers:{'User-Agent':'PayPlus'},body:'{}'}]]){const b=forwarded;r=await req(p,o);check(r.status>=300&&forwarded===b,'only the PayPlus callback is open: '+p);}}

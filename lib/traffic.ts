@@ -38,7 +38,8 @@ export async function trackView(r:Request,b:Row){
  const agent=r.headers.get('user-agent')||'';
  if(!agent||BOT.test(agent))return {ok:true};
  const now=Date.now(),day=dayOf(now);
- const address=(r.headers.get('cf-connecting-ip')||(r.headers.get('x-forwarded-for')||'').split(',')[0]||'').trim();
+ // On Railway the gateway passes the visitor's address in its own header (the app itself sits on loopback).
+ const address=(r.headers.get('x-megalinks-visitor-ip')||r.headers.get('cf-connecting-ip')||(r.headers.get('x-forwarded-for')||'').split(',')[0]||'').trim();
  const visitor=(await hash([await salt(),day,address,agent].join('|'))).slice(0,24);
  if(b.id!==undefined){
   const id=Math.floor(Number(b.id)),seconds=Math.max(0,Math.min(MAX_SECONDS,Math.round(Number(b.seconds)||0)));
