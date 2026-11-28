@@ -2616,3 +2616,4 @@ Owner: "הגיע אבל לא מיושר לעברית. והתמונה עצמה ל
 - Checked locally: three real views as the test customer showed up right (1 visitor, 3 views, time per page, exits, funnel), the admin's own visit was not counted. tsc, build, tests/traffic.mjs.
 - Not checked: a signed-out visitor (the Staging gate lets only signed-in people in, so on Staging only they are counted), phone layout, a privacy review against the Israeli privacy law before Production.
 - Also from today: homepage copy drafts in design/homepage-copy (draft-2.md is the working one; gpt-prompt-pending.md waits for the owner's GPT Work quota).
+- 28.11 (later): the quotes screen on a phone was wider than the screen (a `1fr` grid column grows to its widest content; use `minmax(0,1fr)`). Fixed, and on a phone the quote's sites are cards with a full-width price field. Checked at 390px locally (page width 390 of 390). The same fix went into the traffic dashboard.

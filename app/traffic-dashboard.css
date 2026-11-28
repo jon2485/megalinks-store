@@ -1,6 +1,6 @@
 /* "תנועה באתר" (owner 28.11.2026, mockup design/traffic-dashboard): light, the site's blue, one colour for all bars. */
 .tr,.tr *{box-sizing:border-box}
-.tr{display:grid;gap:14px;color:#09234b;text-align:right;padding:4px 0 24px;font-family:"Heebo ML","Rubik ML",Heebo,Arial,sans-serif}
+.tr{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;color:#09234b;text-align:right;padding:4px 0 24px;font-family:"Heebo ML","Rubik ML",Heebo,Arial,sans-serif}
 .tr-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
 .tr-head h1{margin:0;font-size:26px;font-weight:800}.tr-head p{margin:3px 0 0;color:#52677e;font-size:14.5px}
 .tr-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -30,5 +30,5 @@
 .tr-step.is-end{background:#e7f7ed}.tr-step.is-end b{color:#15803d}
 .tr-note{display:flex;gap:8px;align-items:center;margin:0;padding:10px 12px;border-radius:12px;background:#fff8ea;color:#8a5a00;font-size:13px}
 .tr-empty,.tr-none{margin:0;color:#52677e;font-size:14.5px}.tr-empty{padding:26px;text-align:center}
-@media (max-width:1300px){.tr-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.tr-two{grid-template-columns:1fr}}
+@media (max-width:1300px){.tr-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.tr-two{grid-template-columns:minmax(0,1fr)}}
 @media (max-width:700px){.tr-kpis,.tr-fun{grid-template-columns:repeat(2,minmax(0,1fr))}.tr-bar{grid-template-columns:104px minmax(0,1fr) 40px}}

@@ -1,7 +1,7 @@
 /* "הצעות מחיר" (owner 27.11.2026, mockups design/quotes): light, the site's blue and orange, ordered rows, large bold values. */
 .pq,.pq *,.pqd,.pqd *{box-sizing:border-box}
 .pq,.pqd{font-family:"Heebo ML","Rubik ML",Heebo,Arial,sans-serif;color:#09234b;text-align:right}
-.pq{display:grid;gap:16px;padding:4px 0 24px}
+.pq{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:4px 0 24px}
 .pq-head{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
 .pq-head h1{margin:0;font-size:26px;font-weight:800;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.pq-head p{margin:3px 0 0;color:#52677e;font-size:14.5px}
 .pq-back{display:inline-flex;align-items:center;gap:5px;border:0;background:none;color:#0a64b8;font:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:0;margin-bottom:6px}
@@ -74,7 +74,27 @@
 .pqd-h3{margin:20px 0 8px;font-size:16px;font-weight:800;color:#3d526a}
 .pqd-acts{display:flex;gap:12px;margin-top:22px}
 .pqd-acts .pq-btn{flex:1;min-height:58px;border-radius:16px;font-size:18.5px}.pqd-acts .pq-btn.is-red{background:#fff;border:1.5px solid #f3c7c2;color:#b42318}
-@media (max-width:1560px){.pq-cols{grid-template-columns:1fr}.pq-chat{height:520px}}
+@media (max-width:1560px){.pq-cols{grid-template-columns:minmax(0,1fr)}.pq-chat{height:520px}}
+/* Phone: the quote's sites become cards, so every figure and the price field are in view with no sideways scroll. */
+@media (max-width:760px){
+ .pq-head h1{font-size:22px}.pq-quote{padding:14px}.pq-chat{height:min(58vh,440px);min-height:320px}
+ .pq-in{flex-direction:column;align-items:stretch}.pq-acts .pq-btn{flex:1 1 100%}
+ .pq .pq-wide{display:none}
+ .pq .pq-items,.pq .pq-items tbody,.pq .pq-items tfoot{display:block}.pq .pq-items thead{display:none}
+ .pq .pq-items tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 8px;padding:14px 12px;border-bottom:1px solid #e3eaf3;position:relative}
+ .pq .pq-items tbody tr:last-child{border-bottom:1px solid #e3eaf3}
+ .pq .pq-items td{display:block;padding:0;border:0!important;background:none!important;white-space:normal!important;min-width:0;width:auto!important}
+ .pq .pq-items td:first-child{grid-column:1/-1;padding-inline-end:44px;font-size:15.5px}
+ .pq .pq-items td[data-label]::before{content:attr(data-label);display:block;font-size:11.5px;font-weight:700;color:#52677e;margin-bottom:3px;white-space:nowrap}
+ .pq .pq-items td.is-own,.pq .pq-items td[data-label]:not(.pq-pricecell){border-radius:10px;padding:6px 8px}
+ .pq .pq-items td.is-own{background:#fffaf0!important}.pq .pq-items td[data-label]:not(.is-own):not(.pq-pricecell){background:#f5f8fc!important}
+ .pq .pq-items td.is-own[data-label]::before{color:#8a5a00}
+ .pq .pq-items .pq-pricecell{grid-column:1/-1;grid-row:3}
+ .pq .pq-items .pq-price{display:flex;width:100%}.pq .pq-items .pq-price input{flex:1;width:auto;min-height:46px;font-size:18px}
+ .pq .pq-items .pq-rm{position:absolute;inset-inline-end:6px;top:8px}.pq .pq-items .pq-rm .pq-x{width:44px;height:44px}
+ .pq .pq-items tfoot tr{background:#f5f8fc;border-bottom:0}.pq .pq-items tfoot td{font-weight:800}.pq .pq-items tfoot .pq-pricecell{font-size:20px}
+ .pq-preview{height:calc(100vh - 20px)}
+}
 @media (max-width:760px){.pq-new{grid-template-columns:1fr 1fr}.pq-f-wide{grid-column:1/-1}.pq-new .pq-btn{grid-column:1/-1}.pq-meta{grid-template-columns:1fr 1fr}
  .pqd-scrim{padding:10px}.pqd-head{padding:18px}.pqd-head h2{font-size:21px}.pqd-body{padding:18px}.pqd-row{padding:12px 14px;font-size:16px}.pqd-acts{flex-direction:column-reverse}}
 @media (prefers-reduced-motion:reduce){.pq-spin{animation:none}}
